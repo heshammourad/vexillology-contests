@@ -1,7 +1,7 @@
 {
-  "name": "heroku-cra-node",
-  "version": "3.0.0",
-  "description": "How to use create-react-app with a custom Node API on Heroku",
+  "name": "vexilollogy-contests",
+  "version": "0.1.0",
+  "description": "App to view and vote on reddit /r/vexillology contest entries",
   "engines": {
     "node": "12.x"
   },
