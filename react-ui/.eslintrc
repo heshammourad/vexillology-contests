@@ -1,0 +1,54 @@
+{
+  "parser": "babel-eslint",
+  "env": {
+    "browser": true
+  },
+  "extends": [
+    "airbnb"
+  ],
+  "rules": {
+    "strict": 0,
+    "curly": [
+      "error",
+      "all"
+    ],
+    "import/order": [
+      "error",
+      {
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": false
+        }
+      }
+    ],
+    "no-alert": "error",
+    "no-console": "error",
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "@material-ui/core",
+            "message": "Please import specific method instead."
+          },
+          {
+            "name": "@material-ui/icons",
+            "message": "Please import specific method instead."
+          },
+          {
+            "name": "date-fns",
+            "message": "Please import specific method instead."
+          },
+          {
+            "name": "lodash",
+            "message": "Please import specific method instead, e.g. import debounce from 'lodash/debounce'."
+          }
+        ],
+        "patterns": [
+          "**/common/*", "**/components/*", "**/pages/*"
+        ]
+      }
+    ],
+  }
+}
