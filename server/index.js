@@ -1,8 +1,12 @@
+/* eslint-disable no-console */
 const cluster = require('cluster');
 const numCPUs = require('os').cpus().length;
 const path = require('path');
 
 const express = require('express');
+const helmet = require('helmet');
+
+const db = require('./db');
 
 const isDev = process.env.NODE_ENV !== 'production';
 const PORT = process.env.PORT || 5000;
@@ -24,14 +28,31 @@ if (!isDev && cluster.isMaster) {
 } else {
   const app = express();
 
+  app.use(helmet());
+
   // Priority serve any static files.
   app.use(express.static(path.resolve(__dirname, '../react-ui/build')));
 
-  // Answer API requests.
-  app.get('/api', (req, res) => {
-    res.set('Content-Type', 'application/json');
-    res.send('{"message":"Hello from the custom server!"}');
+  const router = express.Router();
+
+  router.use(express.json());
+
+  router.route('/contests').get(async (req, res) => {
+    try {
+      const result = await db.select('SELECT * FROM contests');
+      res.send(
+        result.rows.map((row) => ({
+          ...row,
+          date: row.date.toJSON().substr(0, 10),
+        })),
+      );
+    } catch (err) {
+      console.error(err.toString());
+      res.status(500).send();
+    }
   });
+
+  app.use('/api', router);
 
   // All remaining requests return the React app, so it can handle routing.
   app.get('*', (request, response) => {
