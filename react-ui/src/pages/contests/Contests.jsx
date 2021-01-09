@@ -1,4 +1,5 @@
 import AppBar from '@material-ui/core/AppBar';
+import Grid from '@material-ui/core/Grid';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -23,13 +24,15 @@ const Contests = () => {
         </Toolbar>
       </AppBar>
       {contests && !!contests.length && (
-        <List>
-          {contests.map(({ date, name }) => (
-            <ListItem>
-              <ListItemText primary={`${format(parseISO(date), 'MMM yy')} - ${name}`} />
-            </ListItem>
-          ))}
-        </List>
+        <Grid xs={2}>
+          <List>
+            {contests.map(({ date, name }) => (
+              <ListItem button>
+                <ListItemText primary={`${format(parseISO(date), 'MMM yy')} - ${name}`} />
+              </ListItem>
+            ))}
+          </List>
+        </Grid>
       )}
     </>
   );
