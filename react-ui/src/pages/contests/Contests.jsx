@@ -24,7 +24,7 @@ const Contests = () => {
         </Toolbar>
       </AppBar>
       {contests && !!contests.length && (
-        <Grid xs={2}>
+        <Grid xs={12} md={6}>
           <List>
             {contests.map(({ date, name }) => (
               <ListItem button>
