@@ -7,6 +7,7 @@ const express = require('express');
 const helmet = require('helmet');
 
 const db = require('./db');
+const reddit = require('./reddit');
 
 const isDev = process.env.NODE_ENV !== 'production';
 const PORT = process.env.PORT || 5000;
@@ -46,6 +47,16 @@ if (!isDev && cluster.isMaster) {
           date: row.date.toJSON().substr(0, 10),
         })),
       );
+    } catch (err) {
+      console.error(err.toString());
+      res.status(500).send();
+    }
+  });
+
+  router.route('/contests/:id').get(async ({ params: { id } }, res) => {
+    try {
+      const entries = await reddit.getEntries(id);
+      res.send(entries);
     } catch (err) {
       console.error(err.toString());
       res.status(500).send();

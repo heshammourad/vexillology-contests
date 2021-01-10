@@ -17,7 +17,8 @@
   "dependencies": {
     "express": "^4.17.1",
     "helmet": "^4.3.1",
-    "pg": "^8.5.1"
+    "pg": "^8.5.1",
+    "snoowrap": "^1.22.0"
   },
   "repository": {
     "type": "git",
