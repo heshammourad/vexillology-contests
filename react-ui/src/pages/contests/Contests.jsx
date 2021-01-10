@@ -5,14 +5,16 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
+import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 
 import { getData } from '../../api';
 import { ListItemLink } from '../../components';
 
-const Contests = () => {
+const Contests = ({ setContestName }) => {
   const [contests, setContests] = useState(null);
   useEffect(async () => {
+    setContestName(null);
     setContests(await getData('/contests'));
   }, []);
   return (
@@ -28,8 +30,11 @@ const Contests = () => {
             {contests.map(({ date, id, name }) => (
               <ListItemLink
                 key={id}
-                to={`/contests/${id}`}
+                onClick={() => {
+                  setContestName(name);
+                }}
                 primary={`${format(parseISO(date), 'MMM yy')} - ${name}`}
+                to={`/contests/${id}`}
               />
             ))}
           </List>
@@ -37,6 +42,10 @@ const Contests = () => {
       )}
     </>
   );
+};
+
+Contests.propTypes = {
+  setContestName: PropTypes.func.isRequired,
 };
 
 export default Contests;
