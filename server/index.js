@@ -76,14 +76,23 @@ if (!isDev && cluster.isMaster) {
     try {
       const memcacheKey = `contest.${id}`;
       mc.get(memcacheKey, async (err, val) => {
-        let entries;
+        let contestObj;
         if (!err && val) {
-          entries = JSON.parse(val);
+          contestObj = JSON.parse(val);
         } else {
-          entries = await reddit.getEntries(id);
-          mc.set(memcacheKey, JSON.stringify(entries), {});
+          const contestResult = await db.select('SELECT name FROM contests WHERE id = $1', [id]);
+          if (!contestResult.rowCount) {
+            res.status(404).send();
+            return;
+          }
+          const entries = await reddit.getEntries(id);
+          contestObj = {
+            name: contestResult.rows[0].name,
+            entries,
+          };
+          mc.set(memcacheKey, JSON.stringify(contestObj), {});
         }
-        res.send(entries);
+        res.send(contestObj);
       });
     } catch (err) {
       console.error(err.toString());
