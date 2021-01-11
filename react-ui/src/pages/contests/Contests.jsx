@@ -1,5 +1,4 @@
 import AppBar from '@material-ui/core/AppBar';
-import Grid from '@material-ui/core/Grid';
 import List from '@material-ui/core/List';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
@@ -11,21 +10,23 @@ import { useEffect, useState } from 'react';
 import { getData } from '../../api';
 import { ListItemLink } from '../../components';
 
+import './Contests.css';
+
 const Contests = ({ setContestName }) => {
-  const [contests, setContests] = useState(null);
+  const [contests, setContests] = useState();
   useEffect(async () => {
-    setContestName(null);
+    setContestName();
     setContests(await getData('/contests'));
   }, []);
   return (
-    <>
+    <div className="contests">
       <AppBar position="static" color="transparent">
         <Toolbar>
           <Typography variant="h6">Vexillology Contests</Typography>
         </Toolbar>
       </AppBar>
       {contests && !!contests.length && (
-        <Grid xs={12} md={6}>
+        <div className="list">
           <List>
             {contests.map(({ date, id, name }) => (
               <ListItemLink
@@ -38,9 +39,9 @@ const Contests = ({ setContestName }) => {
               />
             ))}
           </List>
-        </Grid>
+        </div>
       )}
-    </>
+    </div>
   );
 };
 
