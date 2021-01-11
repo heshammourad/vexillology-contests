@@ -44,7 +44,7 @@ if (!isDev && cluster.isMaster) {
       contentSecurityPolicy: {
         directives: {
           ...defaultDirectives,
-          'img-src': [...defaultDirectives['img-src'], 'imgur.com'],
+          'img-src': [...defaultDirectives['img-src'], '*.imgur.com'],
         },
       },
     }),
