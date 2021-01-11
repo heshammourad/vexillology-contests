@@ -22,7 +22,11 @@ const App = () => {
             path="/contests"
             render={() => <Contests setContestName={setContestName} />}
           />
-          <Route path="/contests/:contestid" render={() => <Contest contestName={contestName} />} />
+          <Route
+            path="/contests/:contestId"
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            render={(routeProps) => <Contest name={contestName} {...routeProps} />}
+          />
         </Router>
       </div>
     </ThemeProvider>
