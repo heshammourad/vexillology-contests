@@ -49,7 +49,7 @@ if (!isDev && cluster.isMaster) {
 
   router.route('/contests').get(async (req, res) => {
     try {
-      const result = await db.select('SELECT * FROM contests');
+      const result = await db.select('SELECT * FROM contests ORDER BY date DESC');
       res.send(
         result.rows.map((row) => ({
           ...row,
