@@ -38,7 +38,15 @@ if (!isDev && cluster.isMaster) {
 } else {
   const app = express();
 
-  app.use(helmet());
+  const defaultDirectives = helmet.contentSecurityPolicy.getDefaultDirectives();
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        ...defaultDirectives,
+        imgSrc: [...defaultDirectives['img-src'], 'i.imgur.com'],
+      },
+    }),
+  );
 
   // Priority serve any static files.
   app.use(express.static(path.resolve(__dirname, '../react-ui/build')));
