@@ -42,8 +42,10 @@ if (!isDev && cluster.isMaster) {
   app.use(
     helmet({
       contentSecurityPolicy: {
-        ...defaultDirectives,
-        imgSrc: [...defaultDirectives['img-src'], 'i.imgur.com'],
+        directives: {
+          ...defaultDirectives,
+          'img-src': [...defaultDirectives['img-src'], 'imgur.com'],
+        },
       },
     }),
   );
