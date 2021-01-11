@@ -5,12 +5,21 @@ const path = require('path');
 
 const express = require('express');
 const helmet = require('helmet');
+const memjs = require('memjs');
 
 const db = require('./db');
 const reddit = require('./reddit');
 
 const isDev = process.env.NODE_ENV !== 'production';
 const PORT = process.env.PORT || 5000;
+
+const mc = memjs.Client.create(process.env.MEMCACHIER_SERVERS, {
+  failover: true,
+  timeout: 1,
+  keepAlive: true,
+  username: process.env.MEMCACHIER_USERNAME,
+  password: process.env.MEMCACHIER_PASSWORD,
+});
 
 // Multi-process to utilize all CPU cores.
 if (!isDev && cluster.isMaster) {
@@ -55,8 +64,17 @@ if (!isDev && cluster.isMaster) {
 
   router.route('/contests/:id').get(async ({ params: { id } }, res) => {
     try {
-      const entries = await reddit.getEntries(id);
-      res.send(entries);
+      const memcacheKey = `contest.${id}`;
+      mc.get(memcacheKey, async (err, val) => {
+        let entries;
+        if (!err && val) {
+          entries = JSON.parse(val);
+        } else {
+          entries = await reddit.getEntries(id);
+          mc.set(memcacheKey, JSON.stringify(entries), {});
+        }
+        res.send(entries);
+      });
     } catch (err) {
       console.error(err.toString());
       res.status(500).send();

@@ -11,21 +11,30 @@ const r = new Snoowrap({
 });
 
 const getEntries = async (submissionId) => {
-  const entries = await r.getSubmission(submissionId).comments.map(({
-    body, body_html: bodyHtml, id, permalink,
-  }) => {
-    const name = body.match(/\*\*(.*?)\*\*/)[1];
-    const imgurLink = body.match(/https:\/\/i\.imgur\.com\/.*\.png/)[0];
-    const description = `<p>${bodyHtml.match(/<\/p>.*?<p>(.*)<\/p>/s)[1]}</p>`;
+  const entries = await r
+    .getSubmission(submissionId)
+    .comments.reduce((acc, {
+      author, body, body_html: bodyHtml, id, permalink,
+    }) => {
+      if (author.name !== 'Vexy') {
+        return acc;
+      }
 
-    return {
-      description,
-      id,
-      imgurLink,
-      name,
-      permalink,
-    };
-  });
+      const name = body.match(/\*\*(.*?)\*\*/)[1];
+      const imgurLink = body.match(/https:\/\/i\.imgur\.com\/.*\.png/)[0];
+      const description = `<p>${bodyHtml.match(/<\/p>.*?<p>(.*)<\/p>/s)[1]}</p>`;
+
+      return [
+        ...acc,
+        {
+          description,
+          id,
+          imgurLink,
+          name,
+          permalink,
+        },
+      ];
+    }, []);
   return entries;
 };
 
