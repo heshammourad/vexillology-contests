@@ -50,7 +50,7 @@ const Contest = () => {
             {name}
           </Typography>
           {entries && (
-            <Grid container spacing={2}>
+            <Grid container alignItems="center" spacing={2}>
               {entries.map(({ imgurLink }) => (
                 <Grid item xs={12} sm={6} lg={4}>
                   <Card>
