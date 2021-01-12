@@ -10,10 +10,11 @@ const r = new Snoowrap({
   password: REDDIT_PASSWORD,
 });
 
-const getEntries = async (submissionId) => {
-  const entries = await r
-    .getSubmission(submissionId)
-    .comments.reduce((acc, {
+const getContest = async (submissionId) => {
+  const submission = await r.getSubmission(submissionId);
+  const isContestMode = await submission.contest_mode;
+  const entries = await submission.comments.reduce(
+    (acc, {
       author, body, body_html: bodyHtml, id, permalink,
     }) => {
       if (author.name !== 'Vexy') {
@@ -34,13 +35,10 @@ const getEntries = async (submissionId) => {
           permalink,
         },
       ];
-    }, []);
-  return entries;
+    },
+    [],
+  );
+  return { entries, isContestMode };
 };
 
-const isContestMode = async (submissionId) => {
-  const contestMode = await r.getSubmission(submissionId).contest_mode;
-  return contestMode;
-};
-
-module.exports = { getEntries, isContestMode };
+module.exports = { getContest };

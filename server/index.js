@@ -6,21 +6,13 @@ const path = require('path');
 const express = require('express');
 const helmet = require('helmet');
 const shuffle = require('lodash/shuffle');
-const memjs = require('memjs');
 
 const db = require('./db');
+const memcache = require('./memcache');
 const reddit = require('./reddit');
 
 const isDev = process.env.NODE_ENV !== 'production';
 const PORT = process.env.PORT || 5000;
-
-const mc = memjs.Client.create(process.env.MEMCACHIER_SERVERS, {
-  failover: true,
-  timeout: 1,
-  keepAlive: true,
-  username: process.env.MEMCACHIER_USERNAME,
-  password: process.env.MEMCACHIER_PASSWORD,
-});
 
 // Multi-process to utilize all CPU cores.
 if (!isDev && cluster.isMaster) {
@@ -75,30 +67,27 @@ if (!isDev && cluster.isMaster) {
 
   router.route('/contests/:id').get(async ({ params: { id } }, res) => {
     try {
-      const memcacheKey = `contest.${id}`;
-      mc.get(memcacheKey, async (err, val) => {
-        let contestObj;
-        if (!err && val) {
-          contestObj = JSON.parse(val);
-        } else {
+      const response = await memcache.get(
+        `contest.${id}`,
+        async () => {
           const contestResult = await db.select('SELECT name FROM contests WHERE id = $1', [id]);
           if (!contestResult.rowCount) {
             res.status(404).send();
-            return;
+            return null;
           }
-          const entries = await reddit.getEntries(id);
-          contestObj = {
+          const contest = await reddit.getContest(id);
+          return {
             name: contestResult.rows[0].name,
-            entries,
+            ...contest,
           };
-          mc.set(memcacheKey, JSON.stringify(contestObj), {});
-        }
-        const isContestMode = await reddit.isContestMode(id);
-        if (isContestMode) {
-          contestObj.entries = shuffle(contestObj.entries);
-        }
-        res.send(contestObj);
-      });
+        },
+        3600,
+      );
+
+      if (response.isContestMode) {
+        response.entries = shuffle(response.entries);
+      }
+      res.send(response);
     } catch (err) {
       console.error(err.toString());
       res.status(500).send();
