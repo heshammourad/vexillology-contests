@@ -38,4 +38,9 @@ const getEntries = async (submissionId) => {
   return entries;
 };
 
-module.exports = { getEntries };
+const isContestMode = async (submissionId) => {
+  const contestMode = await r.getSubmission(submissionId).contest_mode;
+  return contestMode;
+};
+
+module.exports = { getEntries, isContestMode };

@@ -17,6 +17,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "helmet": "^4.3.1",
+    "lodash": "^4.17.20",
     "memjs": "^1.2.2",
     "pg": "^8.5.1",
     "snoowrap": "^1.22.0"

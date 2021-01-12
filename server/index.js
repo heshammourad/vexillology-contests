@@ -5,6 +5,7 @@ const path = require('path');
 
 const express = require('express');
 const helmet = require('helmet');
+const shuffle = require('lodash/shuffle');
 const memjs = require('memjs');
 
 const db = require('./db');
@@ -91,6 +92,10 @@ if (!isDev && cluster.isMaster) {
             entries,
           };
           mc.set(memcacheKey, JSON.stringify(contestObj), {});
+        }
+        const isContestMode = await reddit.isContestMode(id);
+        if (isContestMode) {
+          contestObj.entries = shuffle(contestObj.entries);
         }
         res.send(contestObj);
       });
