@@ -12,6 +12,7 @@ import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { useEffect, useState } from 'react';
+import LazyLoad from 'react-lazyload';
 import { Link as RouterLink, useParams } from 'react-router-dom';
 
 import { getData } from '../../api';
@@ -50,12 +51,14 @@ const Contest = () => {
             {name}
           </Typography>
           {entries && (
-            <Grid container alignItems="center" spacing={2}>
+            <Grid container spacing={2}>
               {entries.map(({ imgurLink }) => (
                 <Grid item xs={12} sm={6} lg={4}>
                   <Card>
                     <CardActionArea>
-                      <CardMedia component="img" image={imgurLink} />
+                      <LazyLoad height={600} offset={600} resize>
+                        <CardMedia component="img" image={imgurLink} />
+                      </LazyLoad>
                     </CardActionArea>
                   </Card>
                 </Grid>
