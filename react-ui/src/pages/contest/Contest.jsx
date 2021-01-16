@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import AppBar from '@material-ui/core/AppBar';
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
@@ -52,10 +53,10 @@ const Contest = () => {
           </Typography>
           {entries && (
             <Grid container spacing={2}>
-              {entries.map(({ imgurLink }) => (
-                <Grid item xs={12} sm={6} lg={4}>
+              {entries.map(({ id, imgurLink, permalink }) => (
+                <Grid key={id} item xs={12} sm={6} lg={4}>
                   <Card>
-                    <CardActionArea>
+                    <CardActionArea href={`https://www.reddit.com${permalink}`} target="_blank">
                       <LazyLoad height={600} offset={600} resize>
                         <CardMedia component="img" image={imgurLink} />
                       </LazyLoad>
