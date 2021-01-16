@@ -18,7 +18,7 @@ const Contests = () => {
   }, []);
   return (
     <div className="contests">
-      <AppBar position="static" color="transparent">
+      <AppBar position="static" color="default">
         <Toolbar>
           <Typography variant="h6">Vexillology Contests</Typography>
         </Toolbar>
