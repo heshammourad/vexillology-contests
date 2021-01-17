@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const memjs = require('memjs');
 
 const mc = memjs.Client.create(process.env.MEMCACHIER_SERVERS, {
@@ -9,15 +10,25 @@ const mc = memjs.Client.create(process.env.MEMCACHIER_SERVERS, {
 });
 
 const get = async (key, callback, expires = 0) => {
-  const { value } = await mc.get(key);
-  if (value) {
-    return JSON.parse(value);
+  try {
+    const { value } = await mc.get(key);
+    if (value) {
+      return JSON.parse(value);
+    }
+  } catch (err) {
+    console.error(err);
   }
 
   const newValue = await callback();
-  if (newValue) {
-    mc.set(key, JSON.stringify(newValue), { expires });
+
+  try {
+    if (newValue) {
+      mc.set(key, JSON.stringify(newValue), { expires });
+    }
+  } catch (err) {
+    console.error(err);
   }
+
   return newValue;
 };
 
