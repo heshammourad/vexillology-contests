@@ -13,7 +13,7 @@ import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import LazyLoad from 'react-lazyload';
-import { Link as RouterLink, useParams } from 'react-router-dom';
+import { Link as RouterLink, useParams, useRouteMatch } from 'react-router-dom';
 import useSWR from 'swr';
 
 import { ElevationScroll } from '../../components';
@@ -21,6 +21,7 @@ import { ElevationScroll } from '../../components';
 import './Contest.css';
 
 const Contest = () => {
+  const match = useRouteMatch();
   const { contestId } = useParams();
   const { data: contest = {} } = useSWR(`/contests/${contestId}`);
 
@@ -48,14 +49,18 @@ const Contest = () => {
           </Typography>
           {entries && (
             <Grid container spacing={2}>
-              {entries.map(({ id, imgurLink, permalink }) => (
+              {entries.map(({ id, imgurLink }) => (
                 <Grid key={id} item xs={12} sm={6} lg={4}>
-                  <Card>
-                    <CardActionArea href={`https://www.reddit.com${permalink}`} target="_blank">
-                      <LazyLoad height={600} offset={600} resize>
-                        <CardMedia component="img" image={imgurLink} />
-                      </LazyLoad>
-                    </CardActionArea>
+                  <Card id={id}>
+                    <RouterLink
+                      to={{ pathname: `${match.url}/entry/${id}`, state: { isFromContest: true } }}
+                    >
+                      <CardActionArea>
+                        <LazyLoad height={600} offset={600} resize>
+                          <CardMedia component="img" image={imgurLink} />
+                        </LazyLoad>
+                      </CardActionArea>
+                    </RouterLink>
                   </Card>
                 </Grid>
               ))}

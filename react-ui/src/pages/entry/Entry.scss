@@ -1,0 +1,12 @@
+.entry {
+  $background-color: #000;
+
+  background-color: $background-color;
+  height: 100vh;
+  width: 100vw;
+
+  .app-bar {
+    background-color: $background-color;
+    color: #fff;
+  }
+}

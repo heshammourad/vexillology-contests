@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Redirect, Route } from 'react-router-dom';
 import { SWRConfig } from 'swr';
 
 import { getData } from './api';
-import { Contest, Contests } from './pages';
+import { Contest, Contests, Entry } from './pages';
 
 import './App.css';
 
@@ -18,7 +18,8 @@ const App = () => (
             <Redirect to="/contests" />
           </Route>
           <Route exact path="/contests" component={Contests} />
-          <Route path="/contests/:contestId" component={Contest} />
+          <Route exact path="/contests/:contestId" component={Contest} />
+          <Route exact path="/contests/:contestId/entry/:entryId" component={Entry} />
         </Router>
       </div>
     </SWRConfig>
