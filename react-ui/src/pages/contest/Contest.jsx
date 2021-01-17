@@ -12,27 +12,22 @@ import Typography from '@material-ui/core/Typography';
 import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import { useEffect, useState } from 'react';
 import LazyLoad from 'react-lazyload';
 import { Link as RouterLink, useParams } from 'react-router-dom';
+import useSWR from 'swr';
 
-import { getData } from '../../api';
 import { ElevationScroll } from '../../components';
 
 import './Contest.css';
 
 const Contest = () => {
-  const [contestData, setContestData] = useState({});
   const { contestId } = useParams();
-
-  useEffect(async () => {
-    setContestData(await getData(`/contests/${contestId}`));
-  }, []);
+  const { data: contest = {} } = useSWR(`/contests/${contestId}`);
 
   const theme = useTheme();
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
 
-  const { name, entries } = contestData;
+  const { name, entries } = contest;
   return (
     <div className="contest">
       <CssBaseline />

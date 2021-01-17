@@ -4,18 +4,14 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
-import { useEffect, useState } from 'react';
+import useSWR from 'swr';
 
-import { getData } from '../../api';
 import { ListItemLink } from '../../components';
 
 import './Contests.css';
 
 const Contests = () => {
-  const [contests, setContests] = useState();
-  useEffect(async () => {
-    setContests(await getData('/contests'));
-  }, []);
+  const { data: contests } = useSWR('/contests');
   return (
     <div className="contests">
       <AppBar position="static" color="default">
