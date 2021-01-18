@@ -14,19 +14,19 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import LazyLoad from 'react-lazyload';
 import { Link as RouterLink, useParams, useRouteMatch } from 'react-router-dom';
-import useSWR from 'swr';
 
+import { useSwrData } from '../../common';
 import { ElevationScroll } from '../../components';
 
 import './Contest.css';
 
 const Contest = () => {
-  const match = useRouteMatch();
   const { contestId } = useParams();
-  const { data: contest = {} } = useSWR(`/contests/${contestId}`);
+  const contest = useSwrData(`/contests/${contestId}`) || {};
 
   const theme = useTheme();
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
+  const match = useRouteMatch();
 
   const { name, entries } = contest;
   return (
@@ -43,7 +43,7 @@ const Contest = () => {
       </ElevationScroll>
       <Toolbar />
       {name && (
-        <Container>
+        <Container fixed>
           <Typography className="heading" variant={isSmUp ? 'h3' : 'h5'} component="h1">
             {name}
           </Typography>

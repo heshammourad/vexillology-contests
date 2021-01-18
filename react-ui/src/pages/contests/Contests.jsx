@@ -4,14 +4,14 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
-import useSWR from 'swr';
 
+import { useSwrData } from '../../common';
 import { ListItemLink } from '../../components';
 
 import './Contests.css';
 
 const Contests = () => {
-  const { data: contests } = useSWR('/contests');
+  const contests = useSwrData('/contests');
   return (
     <div className="contests">
       <AppBar position="static" color="default">

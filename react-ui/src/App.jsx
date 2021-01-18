@@ -11,7 +11,14 @@ const theme = createMuiTheme();
 
 const App = () => (
   <ThemeProvider theme={theme}>
-    <SWRConfig value={{ fetcher: getData }}>
+    <SWRConfig
+      value={{
+        fetcher: getData,
+        revalidateOnMount: false,
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+      }}
+    >
       <div className="app">
         <Router>
           <Route exact path="/">
