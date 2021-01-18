@@ -8,6 +8,7 @@ const helmet = require('helmet');
 const shuffle = require('lodash/shuffle');
 
 const db = require('./db');
+const imgur = require('./imgur');
 const memcache = require('./memcache');
 const reddit = require('./reddit');
 
@@ -75,7 +76,13 @@ if (!isDev && cluster.isMaster) {
             res.status(404).send();
             return null;
           }
-          const contest = await reddit.getContest(id);
+
+          let contest = await reddit.getContest(id);
+          const imageData = db.select('SELECT * FROM entries WHERE contest_id = $1', [id]);
+          if (!imageData.rowCount) {
+            contest = imgur.getImagesData(contest);
+          }
+
           return {
             name: contestResult.rows[0].name,
             ...contest,
