@@ -1,5 +1,26 @@
+@mixin expand-image($toolbarHeight) {
+  $height: calc(100vh - #{$toolbarHeight});
+  $width: 100vw;
+
+  .flag {
+    height: $height;
+    width: $width;
+  }
+
+  .flag img {
+    max-height: $height;
+    max-width: $width;
+  }
+}
+
 .entry {
   $background-color: #000;
+
+  @include expand-image(56px);
+
+  @media (min-width: 600px) {
+    @include expand-image(64px);
+  }
 
   background-color: $background-color;
   height: 100vh;

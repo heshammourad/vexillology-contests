@@ -53,6 +53,12 @@ const Entry = () => {
           )}
         </Toolbar>
       </AppBar>
+      <Toolbar />
+      {entry && (
+        <Box className="flag" display="flex" alignItems="center" justifyContent="center">
+          <img src={entry.imgurLink} alt="" />
+        </Box>
+      )}
     </div>
   );
 };
