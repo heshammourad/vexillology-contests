@@ -55,7 +55,7 @@ if (!isDev && cluster.isMaster) {
     try {
       const result = await db.select('SELECT * FROM contests ORDER BY date DESC');
       res.send(
-        result.rows.map((row) => ({
+        result.map((row) => ({
           ...row,
           date: row.date.toJSON().substr(0, 10),
         })),
@@ -72,24 +72,29 @@ if (!isDev && cluster.isMaster) {
         `contest.${id}`,
         async () => {
           const contestResult = await db.select('SELECT name FROM contests WHERE id = $1', [id]);
-          if (!contestResult.rowCount) {
-            res.status(404).send();
+          if (!contestResult.length) {
             return null;
           }
 
           const contest = await reddit.getContest(id);
-          const imageData = db.select('SELECT * FROM entries WHERE contest_id = $1', [id]);
-          if (!imageData.rowCount) {
-            contest.entries = await imgur.getImagesData(contest.entries);
+          const imageData = await db.select('SELECT * FROM entries WHERE contest_id = $1', [id]);
+          if (!imageData.length) {
+            console.log(imageData);
+            // contest.entries = await imgur.getImagesData(contest.entries);
           }
 
           return {
-            name: contestResult.rows[0].name,
+            name: contestResult[0].name,
             ...contest,
           };
         },
         3600,
       );
+
+      if (!response) {
+        res.status(404).send();
+        return;
+      }
 
       if (response.isContestMode) {
         response.entries = shuffle(response.entries);

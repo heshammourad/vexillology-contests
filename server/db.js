@@ -1,25 +1,18 @@
-const { Pool } = require('pg');
+/* eslint-disable no-console */
+const { parse } = require('pg-connection-string');
+const pgp = require('pg-promise')();
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-});
-
-const query = async (queryStr, values) => {
-  const client = await pool.connect();
-  try {
-    const result = await client.query(queryStr, values);
-    return result;
-  } finally {
-    client.release();
-  }
-};
+const connection = parse(process.env.DATABASE_URL);
+const db = pgp({ ...connection, ssl: { rejectUnauthorized: false } });
 
 const select = async (queryStr, values) => {
-  const result = await query(queryStr, values);
-  return result;
+  try {
+    const data = await db.any(queryStr, values);
+    return data;
+  } catch (err) {
+    console.error(err);
+  }
+  return null;
 };
 
 module.exports = { select };
