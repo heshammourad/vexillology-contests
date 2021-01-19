@@ -1,3 +1,4 @@
+import CssBaseline from '@material-ui/core/CssBaseline';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import { BrowserRouter as Router, Redirect, Route } from 'react-router-dom';
 import { SWRConfig } from 'swr';
@@ -10,27 +11,30 @@ import './App.css';
 const theme = createMuiTheme();
 
 const App = () => (
-  <ThemeProvider theme={theme}>
-    <SWRConfig
-      value={{
-        fetcher: getData,
-        revalidateOnMount: false,
-        revalidateOnFocus: false,
-        revalidateOnReconnect: false,
-      }}
-    >
-      <div className="app">
-        <Router>
-          <Route exact path="/">
-            <Redirect to="/contests" />
-          </Route>
-          <Route exact path="/contests" component={Contests} />
-          <Route exact path="/contests/:contestId" component={Contest} />
-          <Route exact path="/contests/:contestId/entry/:entryId" component={Entry} />
-        </Router>
-      </div>
-    </SWRConfig>
-  </ThemeProvider>
+  <>
+    <CssBaseline />
+    <ThemeProvider theme={theme}>
+      <SWRConfig
+        value={{
+          fetcher: getData,
+          revalidateOnMount: false,
+          revalidateOnFocus: false,
+          revalidateOnReconnect: false,
+        }}
+      >
+        <div className="app">
+          <Router>
+            <Route exact path="/">
+              <Redirect to="/contests" />
+            </Route>
+            <Route exact path="/contests" component={Contests} />
+            <Route exact path="/contests/:contestId" component={Contest} />
+            <Route exact path="/contests/:contestId/entry/:entryId" component={Entry} />
+          </Router>
+        </div>
+      </SWRConfig>
+    </ThemeProvider>
+  </>
 );
 
 export default App;
