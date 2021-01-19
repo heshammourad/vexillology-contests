@@ -21,15 +21,16 @@ const getContest = async (submissionId) => {
         return acc;
       }
 
-      const name = body.match(/\*\*(.*?)\*\*/)[1];
-      const imgurLink = body.match(/https:\/\/i\.imgur\.com\/.*\.png/)[0];
       const description = `<p>${bodyHtml.match(/<\/p>.*?<p>(.*)<\/p>/s)[1]}</p>`;
+      const [imgurLink, imgurId] = body.match(/https:\/\/i\.imgur\.com\/(.*)\.png/);
+      const name = body.match(/\*\*(.*?)\*\*/)[1];
 
       return [
         ...acc,
         {
           description,
           id,
+          imgurId,
           imgurLink,
           name,
           permalink,

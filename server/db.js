@@ -15,4 +15,10 @@ const select = async (queryStr, values) => {
   return null;
 };
 
-module.exports = { select };
+const insert = async (table, values) => {
+  const cs = new pgp.helpers.ColumnSet(Object.keys(values[0]), { table });
+  const query = pgp.helpers.insert(values, cs);
+  await db.none(query);
+};
+
+module.exports = { insert, select };

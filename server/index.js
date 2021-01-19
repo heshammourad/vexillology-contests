@@ -79,8 +79,28 @@ if (!isDev && cluster.isMaster) {
           const contest = await reddit.getContest(id);
           const imageData = await db.select('SELECT * FROM entries WHERE contest_id = $1', [id]);
           if (!imageData.length) {
-            console.log(imageData);
-            // contest.entries = await imgur.getImagesData(contest.entries);
+            const entries = await imgur.getImagesData(contest.entries);
+            contest.entries = entries;
+
+            const dbValues = entries.map(({ imgurId, height, width }) => ({
+              id: imgurId,
+              contest_id: id,
+              height,
+              width,
+            }));
+            await db.insert('entries', dbValues);
+          } else {
+            contest.entries = contest.entries.map((entry) => {
+              const { id: imgurId, height, width } = imageData.find(
+                (row) => entry.imgurId === row.id,
+              );
+              return {
+                ...entry,
+                imgurId,
+                height,
+                width,
+              };
+            });
           }
 
           return {
