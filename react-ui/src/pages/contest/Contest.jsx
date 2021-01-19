@@ -25,8 +25,21 @@ const Contest = () => {
   const contest = useSwrData(`/contests/${contestId}`) || {};
 
   const theme = useTheme();
-  const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
   const match = useRouteMatch();
+
+  const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+  const isLgUp = useMediaQuery(theme.breakpoints.up('lg'));
+  let imageWidth;
+  if (isLgUp) {
+    imageWidth = 400;
+  } else if (isMdUp) {
+    imageWidth = 448;
+  } else if (isSmUp) {
+    imageWidth = 552;
+  } else {
+    imageWidth = document.getElementsByTagName('html').clientWidth - 32;
+  }
 
   const { name, entries } = contest;
   return (
@@ -49,14 +62,16 @@ const Contest = () => {
           </Typography>
           {entries && (
             <Grid container spacing={2}>
-              {entries.map(({ id, imgurLink }) => (
-                <Grid key={id} item xs={12} sm={6} lg={4}>
+              {entries.map(({
+                id, imgurLink, height, width,
+              }) => (
+                <Grid key={id} item xs={12} md={6} lg={4}>
                   <Card id={id}>
                     <RouterLink
                       to={{ pathname: `${match.url}/entry/${id}`, state: { isFromContest: true } }}
                     >
                       <CardActionArea>
-                        <LazyLoad height={600} offset={600} resize>
+                        <LazyLoad height={height * (imageWidth / width)} offset={1080} resize>
                           <CardMedia component="img" image={imgurLink} />
                         </LazyLoad>
                       </CardActionArea>
