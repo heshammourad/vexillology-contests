@@ -77,10 +77,10 @@ if (!isDev && cluster.isMaster) {
             return null;
           }
 
-          let contest = await reddit.getContest(id);
+          const contest = await reddit.getContest(id);
           const imageData = db.select('SELECT * FROM entries WHERE contest_id = $1', [id]);
           if (!imageData.rowCount) {
-            contest = imgur.getImagesData(contest);
+            contest.entries = await imgur.getImagesData(contest.entries);
           }
 
           return {
