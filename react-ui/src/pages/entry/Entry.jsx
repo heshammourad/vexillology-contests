@@ -12,12 +12,12 @@ import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import RedditIcon from '@material-ui/icons/Reddit';
 import clsx from 'clsx';
-import { useState } from 'react';
+import { useContext } from 'react';
 import {
   Link as RouterLink, useHistory, useLocation, useParams,
 } from 'react-router-dom';
 
-import { useSwrData } from '../../common';
+import { DrawerStateContext, useSwrData } from '../../common';
 import { AppBarIconButton, ListItemButton } from '../../components';
 
 import './Entry.css';
@@ -104,14 +104,15 @@ export default function PersistentDrawerRight() {
   const entry = entries.find(({ id }) => id === entryId) || {};
 
   const classes = useStyles();
-  const [open, setOpen] = useState(false);
+
+  const { isOpen, setOpen } = useContext(DrawerStateContext);
 
   const handleDrawerClose = () => {
     setOpen(false);
   };
 
   const handleDrawerToggle = () => {
-    setOpen(!open);
+    setOpen(!isOpen);
   };
 
   const history = useHistory();
@@ -132,7 +133,7 @@ export default function PersistentDrawerRight() {
       <AppBar
         position="fixed"
         className={clsx(classes.appBar, {
-          [classes.appBarShift]: open,
+          [classes.appBarShift]: isOpen,
         })}
       >
         <Toolbar>
@@ -165,7 +166,7 @@ export default function PersistentDrawerRight() {
       </AppBar>
       <main
         className={clsx(classes.content, {
-          [classes.contentShift]: open,
+          [classes.contentShift]: isOpen,
         })}
       >
         <div className={classes.drawerHeader} />
@@ -177,7 +178,7 @@ export default function PersistentDrawerRight() {
         className={classes.drawer}
         variant="persistent"
         anchor="right"
-        open={open}
+        open={isOpen}
         classes={{
           paper: `drawer ${classes.drawerPaper}`,
         }}
