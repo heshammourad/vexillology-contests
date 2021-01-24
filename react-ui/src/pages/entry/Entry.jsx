@@ -1,13 +1,16 @@
+/* eslint-disable react/no-danger */
 import AppBar from '@material-ui/core/AppBar';
 import Box from '@material-ui/core/Box';
 import Drawer from '@material-ui/core/Drawer';
 import IconButton from '@material-ui/core/IconButton';
+import List from '@material-ui/core/List';
 import Toolbar from '@material-ui/core/Toolbar';
 import { makeStyles } from '@material-ui/core/styles';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import CloseIcon from '@material-ui/icons/Close';
 import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import RedditIcon from '@material-ui/icons/Reddit';
 import clsx from 'clsx';
 import { useState } from 'react';
 import {
@@ -15,6 +18,7 @@ import {
 } from 'react-router-dom';
 
 import { useSwrData } from '../../common';
+import { AppBarIconButton, ListItemButton } from '../../components';
 
 import './Entry.css';
 
@@ -61,6 +65,22 @@ const useStyles = makeStyles((theme) => ({
   drawerHeading: {
     fontSize: '18px',
   },
+  drawerContent: {
+    fontSize: '16px',
+    padding: '20px 24px',
+  },
+  entryName: {
+    fontWeight: 'bold',
+  },
+  sectionHeader: {
+    color: '#5f6368',
+    fontSize: '.6875rem',
+    fontWeight: 500,
+    letterSpacing: '.07272727em',
+    lineHeight: '1rem',
+    padding: '14px 0',
+    textTransform: 'uppercase',
+  },
   content: {
     flexGrow: 1,
     transition: theme.transitions.create('margin', {
@@ -81,7 +101,7 @@ const useStyles = makeStyles((theme) => ({
 export default function PersistentDrawerRight() {
   const { contestId, entryId } = useParams();
   const { entries = [] } = useSwrData(`/contests/${contestId}`) || {};
-  const entry = entries.find(({ id }) => id === entryId);
+  const entry = entries.find(({ id }) => id === entryId) || {};
 
   const classes = useStyles();
   const [open, setOpen] = useState(false);
@@ -104,6 +124,9 @@ export default function PersistentDrawerRight() {
     backProps.to = `/contests/${contestId}`;
   }
 
+  const redditPermalink = `https://www.reddit.com${entry.permalink}`;
+  const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${entry.imgurLink}`;
+
   return (
     <div className={`entry ${classes.root}`}>
       <AppBar
@@ -119,23 +142,23 @@ export default function PersistentDrawerRight() {
               <ArrowBackIcon />
             </IconButton>
           </Box>
-          {entry && (
+          {entry.id && (
             <>
-              <IconButton
-                color="inherit"
-                href={`https://www.reddit.com${entry.permalink}`}
-                target="vexilollogy-contests-reddit"
-              >
-                <FlagTwoToneIcon />
-              </IconButton>
-              <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                edge="end"
+              <AppBarIconButton
+                href={redditPermalink}
+                ariaLabel="Open Reddit comment"
+                Icon={RedditIcon}
+              />
+              <AppBarIconButton
+                href={flagWaverLink}
+                ariaLabel="Open FlagWaver"
+                Icon={FlagTwoToneIcon}
+              />
+              <AppBarIconButton
+                aria-label="Open info"
                 onClick={handleDrawerToggle}
-              >
-                <InfoOutlinedIcon />
-              </IconButton>
+                Icon={InfoOutlinedIcon}
+              />
             </>
           )}
         </Toolbar>
@@ -164,6 +187,15 @@ export default function PersistentDrawerRight() {
             <CloseIcon />
           </IconButton>
           <div className={classes.drawerHeading}>Info</div>
+        </div>
+        <div className={classes.drawerContent}>
+          <div className={classes.entryName}>{entry.name}</div>
+          <div dangerouslySetInnerHTML={{ __html: entry.description }} />
+          <div className={classes.sectionHeader}>Links</div>
+          <List>
+            <ListItemButton href={redditPermalink} Icon={RedditIcon} text="Open Reddit comment" />
+            <ListItemButton href={flagWaverLink} Icon={FlagTwoToneIcon} text="Open FlagWaver" />
+          </List>
         </div>
       </Drawer>
     </div>
