@@ -68,6 +68,7 @@ const useStyles = makeStyles((theme) => ({
   drawerContent: {
     fontSize: '16px',
     padding: '20px 24px',
+    wordBreak: 'break-word',
   },
   entryName: {
     fontWeight: 'bold',
