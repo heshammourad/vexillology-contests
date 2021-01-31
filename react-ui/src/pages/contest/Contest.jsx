@@ -9,7 +9,7 @@ import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import { useTheme } from '@material-ui/core/styles';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import LazyLoad from 'react-lazyload';
@@ -18,7 +18,11 @@ import { Link as RouterLink, useParams, useRouteMatch } from 'react-router-dom';
 import { useSwrData } from '../../common';
 import { ElevationScroll } from '../../components';
 
-import './Contest.css';
+const useStyles = makeStyles({
+  heading: {
+    margin: '24px auto',
+  },
+});
 
 const Contest = () => {
   const { contestId } = useParams();
@@ -41,9 +45,11 @@ const Contest = () => {
     imageWidth = document.getElementsByTagName('html').clientWidth - 32;
   }
 
+  const classes = useStyles();
+
   const { name, entries } = contest;
   return (
-    <div className="contest">
+    <div>
       <CssBaseline />
       <ElevationScroll>
         <AppBar color="default">
@@ -57,7 +63,7 @@ const Contest = () => {
       <Toolbar />
       {name && (
         <Container fixed>
-          <Typography className="heading" variant={isSmUp ? 'h3' : 'h5'} component="h1">
+          <Typography className={classes.heading} variant={isSmUp ? 'h3' : 'h5'} component="h1">
             {name}
           </Typography>
           {entries && (
