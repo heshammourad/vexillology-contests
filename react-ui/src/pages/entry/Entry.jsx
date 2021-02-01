@@ -7,6 +7,7 @@ import List from '@material-ui/core/List';
 import Toolbar from '@material-ui/core/Toolbar';
 import { makeStyles } from '@material-ui/core/styles';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import CloseIcon from '@material-ui/icons/Close';
 import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
@@ -52,10 +53,15 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.up('sm')]: {
       height: calculateImageContainerHeight(64),
     },
+    color: '#fff',
   },
   image: {
     maxHeight: '100%',
     maxWidth: '100%',
+  },
+  navigationButton: {
+    position: 'relative',
+    left: -60,
   },
   drawer: {
     width: drawerWidth,
@@ -191,6 +197,9 @@ export default function PersistentDrawerRight() {
           justifyContent="center"
         >
           {entry && <img className={classes.image} src={entry.imgurLink} alt="" />}
+          <IconButton color="inherit" aria-label="next" component="span">
+            <ChevronRightIcon fontSize="large" />
+          </IconButton>
         </Box>
       </main>
       <Drawer
