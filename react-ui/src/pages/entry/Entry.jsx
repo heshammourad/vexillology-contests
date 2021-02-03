@@ -20,7 +20,7 @@ import {
 import { DrawerStateContext, useSwrData } from '../../common';
 import { AppBarIconButton, ListItemButton } from '../../components';
 
-import './Entry.css';
+const calculateImageContainerHeight = (offset) => `calc(100vh - ${offset}px)`;
 
 const drawerWidth = 360;
 
@@ -47,12 +47,25 @@ const useStyles = makeStyles((theme) => ({
   title: {
     flexGrow: 1,
   },
+  imageContainer: {
+    height: calculateImageContainerHeight(56),
+    [theme.breakpoints.up('sm')]: {
+      height: calculateImageContainerHeight(64),
+    },
+  },
+  image: {
+    maxHeight: '100%',
+    maxWidth: '100%',
+  },
   drawer: {
     width: drawerWidth,
     flexShrink: 0,
   },
   drawerPaper: {
-    width: drawerWidth,
+    width: '100%',
+    [theme.breakpoints.up('sm')]: {
+      width: drawerWidth,
+    },
   },
   drawerHeader: {
     display: 'flex',
@@ -171,8 +184,13 @@ export default function PersistentDrawerRight() {
         })}
       >
         <div className={classes.drawerHeader} />
-        <Box className="flag" display="flex" alignItems="center" justifyContent="center">
-          {entry && <img className="flag-img" src={entry.imgurLink} alt="" />}
+        <Box
+          className={classes.imageContainer}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          {entry && <img className={classes.image} src={entry.imgurLink} alt="" />}
         </Box>
       </main>
       <Drawer
@@ -181,7 +199,7 @@ export default function PersistentDrawerRight() {
         anchor="right"
         open={isOpen}
         classes={{
-          paper: `drawer ${classes.drawerPaper}`,
+          paper: classes.drawerPaper,
         }}
       >
         <div className={classes.drawerHeader}>
