@@ -46,7 +46,10 @@
           }
         ],
         "patterns": [
-          "**/common/*", "**/components/*", "**/pages/*"
+          "**/common/*",
+          "!**/common/types",
+          "**/components/*",
+          "**/pages/*"
         ]
       }
     ],
