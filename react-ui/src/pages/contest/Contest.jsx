@@ -4,13 +4,18 @@ import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import Container from '@material-ui/core/Container';
+import Divider from '@material-ui/core/Divider';
+import FormControl from '@material-ui/core/FormControl';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormLabel from '@material-ui/core/FormLabel';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
-import Switch from '@material-ui/core/Switch';
+import ListSubheader from '@material-ui/core/ListSubheader';
+import RadioGroup from '@material-ui/core/RadioGroup';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -22,9 +27,15 @@ import { Link as RouterLink, useParams, useRouteMatch } from 'react-router-dom';
 import createPersistedState from 'use-persisted-state';
 
 import { useSwrData } from '../../common';
-import { AppBarIconButton, PageWithDrawer, PlainLink } from '../../components';
+import {
+  AppBarIconButton,
+  CustomRadio,
+  CustomSwitch,
+  PageWithDrawer,
+  PlainLink,
+} from '../../components';
 
-const useHideTitlesState = createPersistedState('vc.settings.hideTitles');
+const useSettingsState = createPersistedState('settings');
 
 const useStyles = makeStyles({
   heading: {
@@ -36,8 +47,20 @@ const useStyles = makeStyles({
   listItemText: {
     color: '#3c4043',
   },
+  listSubheader: {
+    color: '#202124',
+    fontSize: '.6875rem',
+    fontWeight: 500,
+    letterSpacing: '.8px',
+    lineHeight: 1,
+    margin: '16px 0',
+    textTransform: 'uppercase',
+  },
   entryName: {
     color: 'black',
+  },
+  switch: {
+    color: '#4285f4',
   },
 });
 
@@ -46,10 +69,19 @@ const Contest = () => {
   const contest = useSwrData(`/contests/${contestId}`) || {};
 
   const [isSettingsOpen, setSettingsOpen] = useState(false);
-  const [isHideTitles, setHideTitles] = useHideTitlesState(false);
+  const [settings, setSettings] = useSettingsState({ isHideTitles: false, density: 'default' });
+  const { density, isHideTitles } = settings;
+
+  const updateSettings = (key, value) => {
+    setSettings({ ...settings, [key]: value });
+  };
 
   const toggleHideTitles = () => {
-    setHideTitles(!isHideTitles);
+    updateSettings('isHideTitles', !isHideTitles);
+  };
+
+  const handleDensityChange = (event) => {
+    updateSettings('density', event.target.value);
   };
 
   const theme = useTheme();
@@ -101,23 +133,60 @@ const Contest = () => {
       drawer={{
         heading: 'Settings',
         children: (
-          <List>
-            <ListItem>
-              <ListItemText
-                className={classes.listItemText}
-                id="switch-list-label-hide-titles"
-                primary="Hide Titles"
-              />
-              <ListItemSecondaryAction>
-                <Switch
-                  edge="end"
-                  onChange={toggleHideTitles}
-                  checked={isHideTitles}
-                  inputProps={{ 'aria-labelledby': 'switch-list-label-hide-titles' }}
+          <>
+            <List
+              subheader={<ListSubheader className={classes.listSubheader}>Display</ListSubheader>}
+            >
+              <ListItem>
+                <ListItemText
+                  className={classes.listItemText}
+                  id="switch-list-label-hide-titles"
+                  primary="Hide Titles"
                 />
-              </ListItemSecondaryAction>
-            </ListItem>
-          </List>
+                <ListItemSecondaryAction>
+                  <CustomSwitch
+                    edge="end"
+                    onChange={toggleHideTitles}
+                    checked={isHideTitles}
+                    inputProps={{ 'aria-labelledby': 'switch-list-label-hide-titles' }}
+                  />
+                </ListItemSecondaryAction>
+              </ListItem>
+            </List>
+            <Divider />
+            <FormControl component="fieldset">
+              <List
+                dense
+                subheader={(
+                  <ListSubheader>
+                    <FormLabel className={classes.listSubheader}>Density</FormLabel>
+                  </ListSubheader>
+                )}
+              >
+                <RadioGroup
+                  ariaLabel="density"
+                  name="density"
+                  value={density}
+                  onChange={handleDensityChange}
+                >
+                  <ListItem>
+                    <FormControlLabel
+                      value="default"
+                      control={<CustomRadio color="primary" />}
+                      label="Default"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <FormControlLabel
+                      value="compact"
+                      control={<CustomRadio color="primary" />}
+                      label="Compact"
+                    />
+                  </ListItem>
+                </RadioGroup>
+              </List>
+            </FormControl>
+          </>
         ),
       }}
     >
