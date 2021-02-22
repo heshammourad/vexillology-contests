@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
