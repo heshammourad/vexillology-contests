@@ -24,7 +24,7 @@ const AppBarIconButton = ({
 AppBarIconButton.propTypes = {
   ariaLabel: PropTypes.string.isRequired,
   href: PropTypes.string,
-  Icon: PropTypes.node.isRequired,
+  Icon: PropTypes.shape({}).isRequired,
   onClick: PropTypes.func,
 };
 
