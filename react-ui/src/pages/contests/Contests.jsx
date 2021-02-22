@@ -1,13 +1,11 @@
-import AppBar from '@material-ui/core/AppBar';
 import List from '@material-ui/core/List';
-import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 
 import { useSwrData } from '../../common';
-import { ListItemLink } from '../../components';
+import { AppBarDivided, ListItemLink } from '../../components';
 
 const useStyles = makeStyles({
   list: {
@@ -20,11 +18,9 @@ const Contests = () => {
   const classes = useStyles();
   return (
     <div>
-      <AppBar position="static" color="default">
-        <Toolbar>
-          <Typography variant="h6">Vexillology Contests</Typography>
-        </Toolbar>
-      </AppBar>
+      <AppBarDivided position="static" color="default">
+        <Typography variant="h6">Vexillology Contests</Typography>
+      </AppBarDivided>
       {contests && !!contests.length && (
         <div className={classes.list}>
           <List>

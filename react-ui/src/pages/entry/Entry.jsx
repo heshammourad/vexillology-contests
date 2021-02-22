@@ -1,10 +1,8 @@
 /* eslint-disable react/no-danger */
-import AppBar from '@material-ui/core/AppBar';
 import Box from '@material-ui/core/Box';
 import Drawer from '@material-ui/core/Drawer';
 import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
-import Toolbar from '@material-ui/core/Toolbar';
 import { makeStyles } from '@material-ui/core/styles';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import CloseIcon from '@material-ui/icons/Close';
@@ -18,7 +16,7 @@ import {
 } from 'react-router-dom';
 
 import { DrawerStateContext, useSwrData } from '../../common';
-import { AppBarIconButton, ListItemButton } from '../../components';
+import { AppBarDivided, AppBarIconButton, ListItemButton } from '../../components';
 
 const calculateImageContainerHeight = (offset) => `calc(100vh - ${offset}px)`;
 
@@ -144,20 +142,13 @@ export default function PersistentDrawerRight() {
 
   return (
     <div className={`entry ${classes.root}`}>
-      <AppBar
+      <AppBarDivided
         position="fixed"
         className={clsx(classes.appBar, {
           [classes.appBarShift]: isOpen,
         })}
-      >
-        <Toolbar>
-          <Box display="flex" flexGrow={1}>
-            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-            <IconButton color="inherit" {...backProps}>
-              <ArrowBackIcon />
-            </IconButton>
-          </Box>
-          {entry.id && (
+        right={
+          entry.id && (
             <>
               <AppBarIconButton
                 href={redditPermalink}
@@ -175,9 +166,14 @@ export default function PersistentDrawerRight() {
                 Icon={InfoOutlinedIcon}
               />
             </>
-          )}
-        </Toolbar>
-      </AppBar>
+          )
+        }
+      >
+        {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+        <IconButton color="inherit" {...backProps}>
+          <ArrowBackIcon />
+        </IconButton>
+      </AppBarDivided>
       <main
         className={clsx(classes.content, {
           [classes.contentShift]: isOpen,
