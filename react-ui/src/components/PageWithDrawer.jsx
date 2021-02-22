@@ -17,7 +17,6 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
   },
   appBar: {
-    backgroundColor: 'inherit',
     transition: theme.transitions.create(['margin', 'width'], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
@@ -75,10 +74,11 @@ const PageWithDrawer = ({
   return (
     <div className={clsx(classes.root, className)}>
       <AppBarDivided
-        className={clsx(classes.appBar, {
+        className={clsx(classes.appBar, appBar.className, {
           [classes.appBarShift]: isOpen,
         })}
         color={appBar.color}
+        isElevationScroll={appBar.isElevationScroll}
         position={appBar.position}
         right={appBar.right}
       >

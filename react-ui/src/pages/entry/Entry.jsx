@@ -21,6 +21,9 @@ const useStyles = makeStyles((theme) => ({
   root: {
     backgroundColor: '#000',
   },
+  appBar: {
+    backgroundColor: 'inherit',
+  },
   imageContainer: {
     height: calculateImageContainerHeight(56),
     [theme.breakpoints.up('sm')]: {
@@ -87,6 +90,7 @@ export default function PersistentDrawerRight() {
       className={classes.root}
       appBar={{
         position: 'fixed',
+        className: classes.appBar,
         right: entry.id && (
           <>
             <AppBarIconButton
