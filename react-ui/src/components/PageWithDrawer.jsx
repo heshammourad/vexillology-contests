@@ -113,7 +113,7 @@ const PageWithDrawer = ({
 
 PageWithDrawer.propTypes = {
   appBar: types.AppBar.isRequired,
-  children: PropTypes.node.isRequired,
+  children: PropTypes.node,
   className: PropTypes.string,
   drawer: PropTypes.shape({
     children: PropTypes.node,
@@ -124,6 +124,7 @@ PageWithDrawer.propTypes = {
 };
 
 PageWithDrawer.defaultProps = {
+  children: null,
   className: null,
 };
 
