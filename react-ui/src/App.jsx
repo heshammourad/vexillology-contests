@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Redirect, Route } from 'react-router-dom';
 import { SWRConfig } from 'swr';
 
 import { getData } from './api';
-import { DrawerStateContext } from './common';
+import { DrawerStateContext, withTracker } from './common';
 import { Contest, Contests, Entry } from './pages';
 
 import './App.css';
@@ -40,9 +40,13 @@ const App = () => {
                 <Route exact path="/">
                   <Redirect to="/contests" />
                 </Route>
-                <Route exact path="/contests" component={Contests} />
-                <Route exact path="/contests/:contestId" component={Contest} />
-                <Route exact path="/contests/:contestId/entry/:entryId" component={Entry} />
+                <Route exact path="/contests" component={withTracker(Contests)} />
+                <Route exact path="/contests/:contestId" component={withTracker(Contest)} />
+                <Route
+                  exact
+                  path="/contests/:contestId/entry/:entryId"
+                  component={withTracker(Entry)}
+                />
               </Router>
             </div>
           </DrawerStateContext.Provider>
