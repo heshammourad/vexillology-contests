@@ -63,13 +63,26 @@ const useStyles = makeStyles({
   },
 });
 
+const imageWidths = {
+  default: {
+    lg: 400,
+    md: 448,
+    sm: 552,
+  },
+  compact: {
+    lg: 302,
+    md: 299,
+    sm: 272,
+  },
+};
+
 const Contest = () => {
   const { contestId } = useParams();
   const contest = useSwrData(`/contests/${contestId}`) || {};
 
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [settings, setSettings] = useSettingsState({ isHideTitles: false, density: 'default' });
-  const { density, isHideTitles } = settings;
+  const { density = 'default', isHideTitles } = settings;
 
   const updateSettings = (key, value) => {
     setSettings({ ...settings, [key]: value });
@@ -89,18 +102,45 @@ const Contest = () => {
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   const isLgUp = useMediaQuery(theme.breakpoints.up('lg'));
-  let imageWidth;
+
+  let key;
   if (isLgUp) {
-    imageWidth = 400;
+    key = 'lg';
   } else if (isMdUp) {
-    imageWidth = 448;
+    key = 'md';
   } else if (isSmUp) {
-    imageWidth = 552;
-  } else {
-    imageWidth = document.getElementsByTagName('html').clientWidth - 32;
+    key = 'sm';
   }
 
+  const imageWidth = key
+    ? imageWidths[density][key]
+    : document.getElementsByTagName('html').clientWidth - 32;
+
   const classes = useStyles();
+
+  const getGridVariables = () => {
+    let spacing = 2;
+    const xs = 12;
+    let sm = 12;
+    let md = 6;
+    let lg = 4;
+    if (density === 'compact') {
+      spacing = 1;
+      sm = 6;
+      md = 4;
+      lg = 3;
+    }
+    return {
+      spacing,
+      xs,
+      sm,
+      md,
+      lg,
+    };
+  };
+  const {
+    spacing, xs, sm, md, lg,
+  } = getGridVariables();
 
   const toggleSettingsOpen = () => {
     setSettingsOpen(!isSettingsOpen);
@@ -163,7 +203,7 @@ const Contest = () => {
                 )}
               >
                 <RadioGroup
-                  ariaLabel="density"
+                  aria-label="density"
                   name="density"
                   value={density}
                   onChange={handleDensityChange}
@@ -195,11 +235,11 @@ const Contest = () => {
             {name}
           </Typography>
           {entries && (
-            <Grid container spacing={2}>
+            <Grid container spacing={spacing}>
               {entries.map(({
                 id, imgurLink, height, name: entryName, width,
               }) => (
-                <Grid key={id} item xs={12} md={6} lg={4}>
+                <Grid key={id} item xs={xs} sm={sm} md={md} lg={lg}>
                   <Card id={id}>
                     <RouterLink
                       component={PlainLink}
