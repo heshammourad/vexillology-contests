@@ -38,7 +38,9 @@ if (!isDev && cluster.isMaster) {
       contentSecurityPolicy: {
         directives: {
           ...defaultDirectives,
+          'default-src': [...defaultDirectives['default-src'], '*.google-analytics.com'],
           'img-src': [...defaultDirectives['img-src'], '*.imgur.com'],
+          'script-src': [...defaultDirectives['script-src'], '*.google-analytics.com'],
         },
       },
     }),
