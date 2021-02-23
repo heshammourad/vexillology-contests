@@ -39,6 +39,7 @@ if (!isDev && cluster.isMaster) {
         directives: {
           ...defaultDirectives,
           'img-src': [...defaultDirectives['img-src'], '*.imgur.com'],
+          'script-src': [...defaultDirectives['script-src'], '*.google-analytics.com'],
         },
       },
     }),
