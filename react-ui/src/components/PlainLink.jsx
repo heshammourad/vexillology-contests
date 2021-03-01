@@ -9,12 +9,12 @@ const useStyles = makeStyles({
   },
 });
 
-const PlainLink = forwardRef((props, ref) => {
+const PlainLink = forwardRef(({ className, children, href }, ref) => {
   const classes = useStyles();
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <a ref={ref} {...props} className={clsx(classes.link, props.className)}>
-      {props.children}
+    <a ref={ref} href={href} className={clsx(classes.link, className)}>
+      {children}
     </a>
   );
 });
@@ -22,6 +22,7 @@ const PlainLink = forwardRef((props, ref) => {
 PlainLink.propTypes = {
   className: PropTypes.string,
   children: PropTypes.node.isRequired,
+  href: PropTypes.string.isRequired,
 };
 
 PlainLink.defaultProps = {
