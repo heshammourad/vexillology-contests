@@ -97,6 +97,7 @@ if (!isDev && cluster.isMaster) {
               return {
                 ...entry,
                 imgurId,
+                imgurLink: `https://i.imgur.com/${imgurId}.png`,
                 height,
                 width,
               };

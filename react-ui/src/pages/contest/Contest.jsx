@@ -25,13 +25,9 @@ import LazyLoad from 'react-lazyload';
 import { Link as RouterLink, useParams, useRouteMatch } from 'react-router-dom';
 import createPersistedState from 'use-persisted-state';
 
-import { urlUtils, useSwrData } from '../../common';
+import { useSwrData } from '../../common';
 import {
-  AppBarIconButton,
-  CustomRadio,
-  CustomSwitch,
-  PageWithDrawer,
-  PlainLink,
+  AppBarIconButton, CustomRadio, CustomSwitch, PageWithDrawer,
 } from '../../components';
 
 const useSettingsState = createPersistedState('settings');
@@ -237,20 +233,17 @@ const Contest = () => {
           {entries && (
             <Grid container spacing={spacing}>
               {entries.map(({
-                id, imgurId, height, name: entryName, width,
+                id, imgurLink, height, name: entryName, width,
               }) => (
                 <Grid key={id} item xs={xs} sm={sm} md={md} lg={lg}>
                   <Card id={id}>
                     <RouterLink
-                      component={PlainLink}
                       to={{ pathname: `${match.url}/entry/${id}`, state: { isFromContest: true } }}
+                      style={{ textDecoration: 'none' }}
                     >
                       <CardActionArea>
                         <LazyLoad height={height * (imageWidth / width)} offset={1080} resize>
-                          <CardMedia
-                            component="img"
-                            image={urlUtils.generateImgurUrlFromId(imgurId)}
-                          />
+                          <CardMedia component="img" image={imgurLink} />
                         </LazyLoad>
                         {!isHideTitles && (
                         <CardContent>
