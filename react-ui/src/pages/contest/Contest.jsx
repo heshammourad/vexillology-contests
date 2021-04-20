@@ -25,7 +25,7 @@ import LazyLoad from 'react-lazyload';
 import { Link as RouterLink, useParams, useRouteMatch } from 'react-router-dom';
 import createPersistedState from 'use-persisted-state';
 
-import { useSwrData } from '../../common';
+import { urlUtils, useSwrData } from '../../common';
 import {
   AppBarIconButton,
   CustomRadio,
@@ -247,7 +247,10 @@ const Contest = () => {
                     >
                       <CardActionArea>
                         <LazyLoad height={height * (imageWidth / width)} offset={1080} resize>
-                          <CardMedia component="img" image={`https://i.imgur.com/${imgurId}.png`} />
+                          <CardMedia
+                            component="img"
+                            image={urlUtils.generateImgurUrlFromId(imgurId)}
+                          />
                         </LazyLoad>
                         {!isHideTitles && (
                         <CardContent>

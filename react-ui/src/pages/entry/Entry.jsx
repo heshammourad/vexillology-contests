@@ -12,7 +12,7 @@ import {
   Link as RouterLink, useHistory, useLocation, useParams,
 } from 'react-router-dom';
 
-import { DrawerStateContext, useSwrData } from '../../common';
+import { DrawerStateContext, urlUtils, useSwrData } from '../../common';
 import { AppBarIconButton, ListItemButton, PageWithDrawer } from '../../components';
 
 const calculateImageContainerHeight = (offset) => `calc(100vh - ${offset}px)`;
@@ -80,8 +80,10 @@ export default function PersistentDrawerRight() {
     backProps.to = `/contests/${contestId}`;
   }
 
+  const imgurUrl = urlUtils.generateImgurUrlFromId(entry.imgurId);
+
   const redditPermalink = `https://www.reddit.com${entry.permalink}`;
-  const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${entry.imgurLink}`;
+  const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${imgurUrl}`;
 
   return (
     <PageWithDrawer
@@ -140,7 +142,7 @@ export default function PersistentDrawerRight() {
         alignItems="center"
         justifyContent="center"
       >
-        {entry && <img className={classes.image} src={entry.imgurLink} alt="" />}
+        {entry && <img className={classes.image} src={imgurUrl} alt="" />}
       </Box>
     </PageWithDrawer>
   );
