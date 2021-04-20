@@ -237,7 +237,7 @@ const Contest = () => {
           {entries && (
             <Grid container spacing={spacing}>
               {entries.map(({
-                id, imgurLink, height, name: entryName, width,
+                id, imgurId, height, name: entryName, width,
               }) => (
                 <Grid key={id} item xs={xs} sm={sm} md={md} lg={lg}>
                   <Card id={id}>
@@ -247,7 +247,7 @@ const Contest = () => {
                     >
                       <CardActionArea>
                         <LazyLoad height={height * (imageWidth / width)} offset={1080} resize>
-                          <CardMedia component="img" image={imgurLink} />
+                          <CardMedia component="img" image={`https://i.imgur.com/${imgurId}.png`} />
                         </LazyLoad>
                         {!isHideTitles && (
                         <CardContent>
