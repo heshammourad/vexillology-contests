@@ -12,8 +12,10 @@ const imgur = require('./imgur');
 const memcache = require('./memcache');
 const reddit = require('./reddit');
 
-const isDev = process.env.NODE_ENV !== 'production';
-const PORT = process.env.PORT || 5000;
+const { ENV_LEVEL, NODE_ENV, PORT: ENV_PORT } = process.env;
+
+const isDev = NODE_ENV !== 'production';
+const PORT = ENV_PORT || 5000;
 
 // Multi-process to utilize all CPU cores.
 if (!isDev && cluster.isMaster) {
@@ -53,7 +55,10 @@ if (!isDev && cluster.isMaster) {
 
   router.route('/contests').get(async (req, res) => {
     try {
-      const result = await db.select('SELECT * FROM contests ORDER BY date DESC');
+      const result = await db.select(
+        'SELECT id, name, date FROM contests WHERE env_level >= $1 ORDER BY date DESC',
+        [ENV_LEVEL],
+      );
       res.send(
         result.map((row) => ({
           ...row,
@@ -71,7 +76,10 @@ if (!isDev && cluster.isMaster) {
       const response = await memcache.get(
         `contest.${id}`,
         async () => {
-          const contestResult = await db.select('SELECT name FROM contests WHERE id = $1', [id]);
+          const contestResult = await db.select(
+            'SELECT name FROM contests WHERE id = $1 AND env_level >= $2',
+            [id, ENV_LEVEL],
+          );
           if (!contestResult.length) {
             return null;
           }
