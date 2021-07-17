@@ -85,32 +85,38 @@ if (!isDev && cluster.isMaster) {
           }
 
           const contest = await reddit.getContest(id);
-          const imageData = await db.select('SELECT * FROM entries WHERE contest_id = $1', [id]);
-          if (!imageData.length) {
-            const entries = await imgur.getImagesData(contest.entries);
-            contest.entries = entries;
+          const imagesData = await db.select('SELECT * FROM entries WHERE contest_id = $1', [id]);
 
-            const dbValues = entries.map(({ imgurId, height, width }) => ({
+          const missingEntries = contest.entries.filter(
+            (entry) => !imagesData.find((image) => image.id === entry.imgurId),
+          );
+
+          const missingEntriesData = await imgur.getImagesData(missingEntries);
+          if (missingEntriesData.length) {
+            const dbValues = imagesData.map(({ imgurId, height, width }) => ({
               id: imgurId,
               contest_id: id,
               height,
               width,
             }));
             await db.insert('entries', dbValues);
-          } else {
-            contest.entries = contest.entries.map((entry) => {
-              const { id: imgurId, height, width } = imageData.find(
-                (row) => entry.imgurId === row.id,
-              );
-              return {
-                ...entry,
+          }
+
+          const allImagesData = [...imagesData, ...missingEntriesData];
+          contest.entries = contest.entries.reduce((acc, cur) => {
+            const imageData = allImagesData.find((row) => cur.imgurId === row.id);
+            if (imageData) {
+              const { id: imgurId, height, width } = imageData;
+              acc.push({
+                ...cur,
                 imgurId,
                 imgurLink: `https://i.imgur.com/${imgurId}.png`,
                 height,
                 width,
-              };
-            });
-          }
+              });
+            }
+            return acc;
+          }, []);
 
           return {
             name: contestResult[0].name,
