@@ -91,20 +91,21 @@ if (!isDev && cluster.isMaster) {
             (entry) => !imagesData.find((image) => image.id === entry.imgurId),
           );
 
-          const missingEntriesData = await imgur.getImagesData(missingEntries);
-          if (missingEntriesData.length) {
-            const dbValues = imagesData.map(({ imgurId, height, width }) => ({
+          const missingEntriesData = (await imgur.getImagesData(missingEntries)).map(
+            ({ imgurId, height, width }) => ({
               id: imgurId,
               contest_id: id,
               height,
               width,
-            }));
-            await db.insert('entries', dbValues);
+            }),
+          );
+          if (missingEntriesData.length) {
+            await db.insert('entries', missingEntriesData);
           }
 
           const allImagesData = [...imagesData, ...missingEntriesData];
           contest.entries = contest.entries.reduce((acc, cur) => {
-            const imageData = allImagesData.find((row) => cur.imgurId === row.id);
+            const imageData = allImagesData.find((image) => cur.imgurId === image.id);
             if (imageData) {
               const { id: imgurId, height, width } = imageData;
               acc.push({
@@ -117,6 +118,9 @@ if (!isDev && cluster.isMaster) {
             }
             return acc;
           }, []);
+          if (!contest.entries.length) {
+            return null;
+          }
 
           return {
             name: contestResult[0].name,
