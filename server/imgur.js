@@ -1,5 +1,7 @@
 const axios = require('axios');
 
+const { IMGUR_CLIENT_ID, RAPIDAPI_KEY } = process.env;
+
 const getImagesData = async (images) => {
   const enhancedImages = Promise.all(
     images.map(async (image) => {
@@ -8,8 +10,11 @@ const getImagesData = async (images) => {
           data: {
             data: { width, height },
           },
-        } = await axios.get(`https://api.imgur.com/3/image/${image.imgurId}`, {
-          headers: { Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}` },
+        } = await axios.get(`https://imgur-apiv3.p.rapidapi.com/3/image/${image.imgurId}`, {
+          headers: {
+            Authorization: `Client-ID ${IMGUR_CLIENT_ID}`,
+            'x-rapidapi-key': RAPIDAPI_KEY,
+          },
         });
         return {
           ...image,
