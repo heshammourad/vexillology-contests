@@ -1,6 +1,8 @@
 const Snoowrap = require('snoowrap');
 
-const { REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_PASSWORD } = process.env;
+const {
+  IMAGE_FORMATS, REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_PASSWORD,
+} = process.env;
 
 const r = new Snoowrap({
   userAgent: 'node:com.herokuapp.vexillology-contests:v0.1.0',
@@ -22,7 +24,7 @@ const getContest = async (submissionId) => {
       }
 
       const description = `<p>${bodyHtml.match(/<\/p>.*?<p>(.*)<\/p>/s)[1]}</p>`;
-      const imgurId = body.match(/imgur\.com\/(.*)\.png/)[1];
+      const imgurId = body.match(`imgur\\.com\\/(.*)\\.(${IMAGE_FORMATS})`)[1];
       const name = body.match(/\*\*(.*?)\*\*/)[1];
 
       return [
