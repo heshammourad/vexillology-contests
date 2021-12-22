@@ -56,13 +56,17 @@ if (!isDev && cluster.isMaster) {
   router.route('/contests').get(async (req, res) => {
     try {
       const result = await db.select(
-        'SELECT id, name, date FROM contests WHERE env_level >= $1 ORDER BY date DESC',
+        'SELECT id, name, date, year_end FROM contests WHERE env_level >= $1 ORDER BY date DESC',
         [ENV_LEVEL],
       );
       res.send(
-        result.map((row) => ({
-          ...row,
-          date: row.date.toJSON().substr(0, 10),
+        result.map(({
+          date, id, name, year_end: yearEnd,
+        }) => ({
+          date: date.toJSON().substr(0, 10),
+          id,
+          name,
+          yearEnd,
         })),
       );
     } catch (err) {

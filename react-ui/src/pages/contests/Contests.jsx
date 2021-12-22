@@ -24,10 +24,12 @@ const Contests = () => {
       {contests && !!contests.length && (
         <div className={classes.list}>
           <List>
-            {contests.map(({ date, id, name }) => (
+            {contests.map(({
+              date, id, name, yearEnd,
+            }) => (
               <ListItemLink
                 key={id}
-                primary={`${format(parseISO(date), 'MMM yy')} - ${name}`}
+                primary={`${!yearEnd ? `${format(parseISO(date), 'MMM yy')} - ` : ''}${name}`}
                 to={`/contests/${id}`}
               />
             ))}
