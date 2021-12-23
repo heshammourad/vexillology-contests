@@ -1,8 +1,6 @@
 const Snoowrap = require('snoowrap');
 
-const {
-  IMAGE_FORMATS, REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_PASSWORD,
-} = process.env;
+const { REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_PASSWORD } = process.env;
 
 const r = new Snoowrap({
   userAgent: 'node:com.herokuapp.vexillology-contests:v0.1.0',
