@@ -121,13 +121,13 @@ if (!isDev && cluster.isMaster) {
 
           missingEntries = findMissingEntries(contest, allImagesData);
           if (missingEntries.length) {
-            const imgurData = (
-              await imgur.getImagesData(findMissingEntries(contest, allImagesData))
-            ).map(({ imgurId, height, width }) => ({
-              id: imgurId,
-              height,
-              width,
-            }));
+            const imgurData = (await imgur.getImagesData(missingEntries)).map(
+              ({ imgurId, height, width }) => ({
+                id: imgurId,
+                height,
+                width,
+              }),
+            );
             if (imgurData.length) {
               await db.insert('entries', imgurData);
               await addContestEntries(id, imgurData);
