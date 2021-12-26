@@ -46,6 +46,19 @@ if (!isDev && cluster.isMaster) {
     }),
   );
 
+  // eslint-disable-next-line max-len
+  const findMissingEntries = (contest, imagesData) => contest.entries.filter((entry) => !imagesData.find((image) => image.id === entry.imgurId));
+
+  const addContestEntries = async (contestId, entries) => {
+    await db.insert(
+      'contest_entries',
+      entries.map((entry) => ({
+        contest_id: contestId,
+        entry_id: entry.id,
+      })),
+    );
+  };
+
   // Priority serve any static files.
   app.use(express.static(path.resolve(__dirname, '../react-ui/build')));
 
@@ -89,25 +102,39 @@ if (!isDev && cluster.isMaster) {
           }
 
           const contest = await reddit.getContest(id);
-          const imagesData = await db.select('SELECT * FROM entries WHERE contest_id = $1', [id]);
-
-          const missingEntries = contest.entries.filter(
-            (entry) => !imagesData.find((image) => image.id === entry.imgurId),
+          const imagesData = await db.select(
+            'SELECT * FROM entries e JOIN contest_entries ce ON e.id = ce.entry_id WHERE contest_id = $1',
+            [id],
           );
+          const allImagesData = [...imagesData];
 
-          const missingEntriesData = (await imgur.getImagesData(missingEntries)).map(
-            ({ imgurId, height, width }) => ({
-              id: imgurId,
-              contest_id: id,
-              height,
-              width,
-            }),
-          );
-          if (missingEntriesData.length) {
-            await db.insert('entries', missingEntriesData);
+          let missingEntries = findMissingEntries(contest, allImagesData);
+          if (missingEntries.length) {
+            const entriesData = await db.select('SELECT * FROM entries WHERE id = ANY ($1)', [
+              missingEntries.map((entry) => entry.imgurId),
+            ]);
+            if (entriesData.length) {
+              await addContestEntries(id, entriesData);
+              allImagesData.push(...entriesData);
+            }
           }
 
-          const allImagesData = [...imagesData, ...missingEntriesData];
+          missingEntries = findMissingEntries(contest, allImagesData);
+          if (missingEntries.length) {
+            const imgurData = (
+              await imgur.getImagesData(findMissingEntries(contest, allImagesData))
+            ).map(({ imgurId, height, width }) => ({
+              id: imgurId,
+              height,
+              width,
+            }));
+            if (imgurData.length) {
+              await db.insert('entries', imgurData);
+              await addContestEntries(id, imgurData);
+              allImagesData.push(...imgurData);
+            }
+          }
+
           contest.entries = contest.entries.reduce((acc, cur) => {
             const imageData = allImagesData.find((image) => cur.imgurId === image.id);
             if (imageData) {
