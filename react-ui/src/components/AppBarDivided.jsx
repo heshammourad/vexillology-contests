@@ -7,11 +7,17 @@ import { defaultProps, objects } from '../common/types';
 import ElevationScroll from './ElevationScroll';
 
 const AppBarDivided = ({
-  children, className, color, isElevationScroll, position, right,
+  children,
+  className,
+  color,
+  disableGutters,
+  isElevationScroll,
+  position,
+  right,
 }) => {
   const appBar = (
     <AppBar className={className} color={color} position={position}>
-      <Toolbar>
+      <Toolbar disableGutters={disableGutters}>
         <Box display="flex" flexGrow={1}>
           {children}
         </Box>

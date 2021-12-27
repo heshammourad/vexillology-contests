@@ -176,6 +176,42 @@ if (!isDev && cluster.isMaster) {
     }
   });
 
+  router.route('/hallOfFame').get(async (req, res) => {
+    try {
+      const result = await db.select('SELECT * FROM hall_of_fame');
+      res.send(
+        result.map(
+          ({
+            contest_id: contestId,
+            contest_name: contestName,
+            date,
+            entry_id: entryId,
+            entry_name: entryName,
+            valid_reddit_id: validRedditId,
+            winners_thread_id: winnersThreadId,
+            ...rest
+          }) => {
+            let redditThreadId = winnersThreadId;
+            if (!redditThreadId && validRedditId) {
+              redditThreadId = contestId;
+            }
+            return {
+              date: date.toJSON().substr(0, 7),
+              contestName,
+              entryId,
+              entryName,
+              redditThreadId,
+              ...rest,
+            };
+          },
+        ),
+      );
+    } catch (err) {
+      console.error(err.toString());
+      res.status(500).send();
+    }
+  });
+
   app.use('/api', router);
 
   // All remaining requests return the React app, so it can handle routing.

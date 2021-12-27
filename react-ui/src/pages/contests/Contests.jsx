@@ -3,7 +3,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
-import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
@@ -12,9 +11,10 @@ import getYear from 'date-fns/getYear';
 import parseISO from 'date-fns/parseISO';
 import groupBy from 'lodash/groupBy';
 import { Fragment, useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 import { useSwrData } from '../../common';
-import { AppBarDivided, ListItemLink } from '../../components';
+import { Header, ListItemLink } from '../../components';
 
 const useStyles = makeStyles((theme) => ({
   list: {
@@ -27,6 +27,7 @@ const useStyles = makeStyles((theme) => ({
 
 const Contests = () => {
   const contests = useSwrData('/contests');
+  const location = useLocation();
 
   const [openYear, setOpenYear] = useState(null);
   useEffect(() => {
@@ -45,10 +46,8 @@ const Contests = () => {
 
   const classes = useStyles();
   return (
-    <div>
-      <AppBarDivided position="static" color="default">
-        <Typography variant="h6">Vexillology Contests</Typography>
-      </AppBarDivided>
+    <>
+      <Header to="/home">Vexillology Contests</Header>
       {!!groups && (
         <div className={classes.list}>
           <List
@@ -78,7 +77,7 @@ const Contests = () => {
                           primary={`${
                             !yearEnd ? `${format(parseISO(date), 'MMM yy')} - ` : ''
                           }${name}`}
-                          to={`/contests/${id}`}
+                          to={{ pathname: `/contests/${id}`, state: { back: location.pathname } }}
                         />
                       ))}
                     </List>
@@ -88,7 +87,7 @@ const Contests = () => {
           </List>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

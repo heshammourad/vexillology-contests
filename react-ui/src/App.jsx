@@ -6,7 +6,9 @@ import { SWRConfig } from 'swr';
 
 import { getData } from './api';
 import { DrawerStateContext } from './common';
-import { Contest, Contests, Entry } from './pages';
+import {
+  Contest, Contests, Entry, HallOfFame, Home,
+} from './pages';
 
 import './App.css';
 
@@ -38,11 +40,13 @@ const App = () => {
             <div className="app">
               <Router>
                 <Route exact path="/">
-                  <Redirect to="/contests" />
+                  <Redirect to="/home" />
                 </Route>
+                <Route exact path="/home" component={Home} />
                 <Route exact path="/contests" component={Contests} />
                 <Route exact path="/contests/:contestId" component={Contest} />
                 <Route exact path="/contests/:contestId/entry/:entryId" component={Entry} />
+                <Route exact path="/hallOfFame" component={HallOfFame} />
               </Router>
             </div>
           </DrawerStateContext.Provider>

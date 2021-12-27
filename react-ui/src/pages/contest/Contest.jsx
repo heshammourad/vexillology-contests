@@ -1,14 +1,12 @@
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
-import CardMedia from '@material-ui/core/CardMedia';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
 import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormLabel from '@material-ui/core/FormLabel';
 import Grid from '@material-ui/core/Grid';
-import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
@@ -18,16 +16,21 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
 import { useState } from 'react';
-import LazyLoad from 'react-lazyload';
-import { Link as RouterLink, useParams, useRouteMatch } from 'react-router-dom';
+import {
+  Link as RouterLink, useLocation, useParams, useRouteMatch,
+} from 'react-router-dom';
 import createPersistedState from 'use-persisted-state';
 
 import { useSwrData } from '../../common';
 import {
-  AppBarIconButton, CustomRadio, CustomSwitch, PageWithDrawer,
+  AppBarIconButton,
+  ArrowBackButton,
+  CustomRadio,
+  CustomSwitch,
+  LazyLoadCardImage,
+  PageWithDrawer,
 } from '../../components';
 
 const useSettingsState = createPersistedState('settings');
@@ -92,6 +95,13 @@ const Contest = () => {
     updateSettings('density', event.target.value);
   };
 
+  const toggleSettingsOpen = () => {
+    setSettingsOpen(!isSettingsOpen);
+  };
+
+  const { state = {} } = useLocation();
+  const backLink = state.back || '/contests';
+
   const theme = useTheme();
   const match = useRouteMatch();
 
@@ -108,9 +118,9 @@ const Contest = () => {
     key = 'sm';
   }
 
-  const imageWidth = key
+  const displayWidth = key
     ? imageWidths[density][key]
-    : document.getElementsByTagName('html').clientWidth - 32;
+    : document.getElementsByTagName('html')[0].clientWidth - 32;
 
   const classes = useStyles();
 
@@ -138,10 +148,6 @@ const Contest = () => {
     spacing, xs, sm, md, lg,
   } = getGridVariables();
 
-  const toggleSettingsOpen = () => {
-    setSettingsOpen(!isSettingsOpen);
-  };
-
   const { name, entries } = contest;
   return (
     <PageWithDrawer
@@ -159,11 +165,7 @@ const Contest = () => {
             Icon={SettingsOutlinedIcon}
           />
         ),
-        children: (
-          <IconButton component={RouterLink} to="/contests">
-            <ArrowBackIcon />
-          </IconButton>
-        ),
+        children: <ArrowBackButton to={backLink} />,
       }}
       drawer={{
         heading: 'Settings',
@@ -242,9 +244,12 @@ const Contest = () => {
                       style={{ textDecoration: 'none' }}
                     >
                       <CardActionArea>
-                        <LazyLoad height={height * (imageWidth / width)} offset={1080} resize>
-                          <CardMedia component="img" image={imgurLink} />
-                        </LazyLoad>
+                        <LazyLoadCardImage
+                          displayWidth={displayWidth}
+                          height={height}
+                          image={imgurLink}
+                          width={width}
+                        />
                         {!isHideTitles && (
                         <CardContent>
                           <Typography className={classes.entryName} variant="caption">

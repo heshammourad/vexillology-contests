@@ -1,19 +1,20 @@
 /* eslint-disable react/no-danger */
 import Box from '@material-ui/core/Box';
-import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
 import { makeStyles } from '@material-ui/core/styles';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import RedditIcon from '@material-ui/icons/Reddit';
 import { useContext } from 'react';
-import {
-  Link as RouterLink, useHistory, useLocation, useParams,
-} from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { DrawerStateContext, useSwrData } from '../../common';
-import { AppBarIconButton, ListItemButton, PageWithDrawer } from '../../components';
+import {
+  AppBarIconButton,
+  ArrowBackButton,
+  ListItemButton,
+  PageWithDrawer,
+} from '../../components';
 
 const calculateImageContainerHeight = (offset) => `calc(100vh - ${offset}px)`;
 
@@ -70,16 +71,6 @@ export default function PersistentDrawerRight() {
     setOpen(!isOpen);
   };
 
-  const history = useHistory();
-  const { state = {} } = useLocation();
-  const backProps = {};
-  if (state.isFromContest) {
-    backProps.onClick = () => history.goBack();
-  } else {
-    backProps.component = RouterLink;
-    backProps.to = `/contests/${contestId}`;
-  }
-
   const redditPermalink = `https://www.reddit.com${entry.permalink}`;
   const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${entry.imgurLink}`;
 
@@ -110,14 +101,7 @@ export default function PersistentDrawerRight() {
             />
           </>
         ),
-        children: (
-          <>
-            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-            <IconButton color="inherit" {...backProps}>
-              <ArrowBackIcon />
-            </IconButton>
-          </>
-        ),
+        children: <ArrowBackButton color="inherit" to={`/contests/${contestId}`} />,
       }}
       drawer={{
         heading: 'Info',
