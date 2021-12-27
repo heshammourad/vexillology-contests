@@ -2,7 +2,6 @@ import Collapse from '@material-ui/core/Collapse';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import { makeStyles } from '@material-ui/core/styles';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
@@ -42,22 +41,13 @@ const Contests = () => {
     setOpenYear(openYear === year ? null : year);
   };
 
-  const monthlyContestsSubheaderId = 'monthly-contests-subheader';
-
   const classes = useStyles();
   return (
     <>
       <Header to="/home">Vexillology Contests</Header>
       {!!groups && (
         <div className={classes.list}>
-          <List
-            aria-labelledby={monthlyContestsSubheaderId}
-            subheader={(
-              <ListSubheader component="div" id={monthlyContestsSubheaderId}>
-                Monthly Contests
-              </ListSubheader>
-            )}
-          >
+          <List>
             {Object.keys(groups)
               .sort((a, b) => b - a)
               .map((year) => (
