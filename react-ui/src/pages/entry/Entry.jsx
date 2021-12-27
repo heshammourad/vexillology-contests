@@ -1,4 +1,3 @@
-/* eslint-disable react/no-danger */
 import Box from '@material-ui/core/Box';
 import List from '@material-ui/core/List';
 import { makeStyles } from '@material-ui/core/styles';
@@ -12,6 +11,7 @@ import { DrawerStateContext, useSwrData } from '../../common';
 import {
   AppBarIconButton,
   ArrowBackButton,
+  HtmlWrapper,
   ListItemButton,
   PageWithDrawer,
 } from '../../components';
@@ -108,7 +108,7 @@ export default function PersistentDrawerRight() {
         children: (
           <div className={classes.drawerContent}>
             <div className={classes.entryName}>{entry.name}</div>
-            <div dangerouslySetInnerHTML={{ __html: entry.description }} />
+            <HtmlWrapper html={entry.description} />
             <div className={classes.sectionHeader}>Links</div>
             <List>
               <ListItemButton href={redditPermalink} Icon={RedditIcon} text="Open Reddit comment" />

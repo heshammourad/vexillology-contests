@@ -1,4 +1,3 @@
-/* eslint-disable react/no-danger */
 import Box from '@material-ui/core/Box';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
@@ -15,7 +14,9 @@ import parseISO from 'date-fns/parseISO';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 
-import { AppBarIconButton, ExternalLink, LazyLoadCardImage } from '../../components';
+import {
+  AppBarIconButton, ExternalLink, HtmlWrapper, LazyLoadCardImage,
+} from '../../components';
 
 const useStyles = makeStyles((theme) => ({
   card: {
@@ -113,7 +114,7 @@ const HallOfFameCard = ({
       </Box>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <Typography className={classes.description} component="div" variant="caption">
-          <div dangerouslySetInnerHTML={{ __html: description }} />
+          <HtmlWrapper html={description} />
         </Typography>
       </Collapse>
     </Card>
