@@ -67,7 +67,12 @@ const HallOfFameCard = ({
   const classes = useStyles();
   return (
     <Card className={classes.card}>
-      <LazyLoadCardImage height={height * (imageDisplayWidth / width)} image={imgurUrl} />
+      <LazyLoadCardImage
+        displayWidth={imageDisplayWidth}
+        height={height}
+        image={imgurUrl}
+        width={width}
+      />
       <Box alignItems="flex-end" display="flex">
         <CardContent className={classes.cardContent}>
           {entryName && (

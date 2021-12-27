@@ -3,6 +3,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
+import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
@@ -13,7 +14,7 @@ import groupBy from 'lodash/groupBy';
 import { Fragment, useEffect, useState } from 'react';
 
 import { useSwrData } from '../../common';
-import { Header, ListItemLink } from '../../components';
+import { AppBarDivided, ListItemLink } from '../../components';
 
 const useStyles = makeStyles((theme) => ({
   list: {
@@ -45,7 +46,9 @@ const Contests = () => {
   const classes = useStyles();
   return (
     <>
-      <Header header="Vexillology Contests" />
+      <AppBarDivided position="static" color="default">
+        <Typography variant="h6">Vexillology Contests</Typography>
+      </AppBarDivided>
       {!!groups && (
         <div className={classes.list}>
           <List

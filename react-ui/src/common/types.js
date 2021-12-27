@@ -7,6 +7,7 @@ export const objects = {
     children: node.isRequired,
     className: string,
     color: oneOf(['default', 'inherit', 'primary', 'secondary', 'transparent']),
+    disableGutters: bool,
     isElevationScroll: bool,
     position: oneOf(['absolute', 'fixed', 'relative', 'static', 'sticky']),
     right: node,
@@ -17,6 +18,7 @@ export const defaultProps = {
   AppBar: {
     className: undefined,
     color: 'primary',
+    disableGutters: false,
     isElevationScroll: false,
     position: 'fixed',
     right: null,

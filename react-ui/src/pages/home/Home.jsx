@@ -1,10 +1,9 @@
 import Container from '@material-ui/core/Container';
-import Link from '@material-ui/core/Link';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { useSwrData } from '../../common';
-import { InternalLink } from '../../components';
+import { ExternalLink, InternalLink } from '../../components';
 
 const useStyles = makeStyles({
   contestName: {
@@ -27,18 +26,20 @@ const Home = () => {
       <p>
         This site is a companion site to the vexillology contests held at
         {' '}
-        <Link href="https://reddit.com/r/vexillology">/r/vexillology</Link>
+        <ExternalLink href="https://reddit.com/r/vexillology">/r/vexillology</ExternalLink>
         {' '}
-        to help view all the
-        great entries in one place.
+        to help
+        view all the great entries in one place.
       </p>
       {contests && !!contests.length && (
         <p>
           Feel free to browse the entries in the most recent contest,
           {' '}
-          <InternalLink to={`/contests/${contests[0].id}`}>{contests[0].name}</InternalLink>
-          , check
-          out
+          <InternalLink className={classes.contestName} to={`/contests/${contests[0].id}`}>
+            {contests[0].name}
+          </InternalLink>
+          , check out
+          {' '}
           <InternalLink to="/contests">older contests</InternalLink>
           , or view the
           {' '}

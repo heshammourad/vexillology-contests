@@ -109,7 +109,7 @@ const Contest = () => {
     key = 'sm';
   }
 
-  const imageWidth = key
+  const displayWidth = key
     ? imageWidths[density][key]
     : document.getElementsByTagName('html')[0].clientWidth - 32;
 
@@ -240,8 +240,10 @@ const Contest = () => {
                     >
                       <CardActionArea>
                         <LazyLoadCardImage
-                          height={height * (imageWidth / width)}
+                          displayWidth={displayWidth}
+                          height={height}
                           image={imgurLink}
+                          width={width}
                         />
                         {!isHideTitles && (
                         <CardContent>

@@ -26,7 +26,7 @@ const HallOfFame = () => {
   const classes = useStyles();
   return (
     <>
-      <AppBarDivided color="default" position="static">
+      <AppBarDivided color="default" disableGutters position="static">
         <Toolbar>
           <ArrowBackButton to="/" useRouterLink />
           <Typography variant="h6">Hall of Fame</Typography>
