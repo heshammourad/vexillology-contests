@@ -1,5 +1,5 @@
 import {
-  bool, node, oneOf, shape, string,
+  bool, node, oneOf, oneOfType, shape, string,
 } from 'prop-types';
 
 export const objects = {
@@ -27,6 +27,13 @@ export const defaultProps = {
 
 const types = {
   AppBar: shape({ ...objects.AppBar }),
+  to: oneOfType([
+    shape({
+      pathname: string,
+      state: shape({}),
+    }),
+    string,
+  ]),
 };
 
 export default types;

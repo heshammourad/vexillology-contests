@@ -1,11 +1,9 @@
 import Container from '@material-ui/core/Container';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
 import { useTheme, makeStyles } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 import { useClientWidth, useSwrData } from '../../common';
-import { AppBarDivided, ArrowBackButton } from '../../components';
+import { Header } from '../../components';
 
 import HallOfFameCard from './HallOfFameCard';
 
@@ -26,12 +24,7 @@ const HallOfFame = () => {
   const classes = useStyles();
   return (
     <>
-      <AppBarDivided color="default" disableGutters position="static">
-        <Toolbar>
-          <ArrowBackButton to="/" useRouterLink />
-          <Typography variant="h6">Hall of Fame</Typography>
-        </Toolbar>
-      </AppBarDivided>
+      <Header to="/">Hall of Fame</Header>
       {hallOfFame && !!hallOfFame.length && (
         <Container className={classes.container} maxWidth="md">
           {hallOfFame.map((entry) => (

@@ -4,6 +4,8 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+import types from '../common/types';
+
 const ListItemLink = ({
   className, onClick, primary, to,
 }) => {
@@ -28,7 +30,7 @@ ListItemLink.propTypes = {
   className: PropTypes.string,
   onClick: PropTypes.func,
   primary: PropTypes.string.isRequired,
-  to: PropTypes.string.isRequired,
+  to: types.to.isRequired,
 };
 
 ListItemLink.defaultProps = {

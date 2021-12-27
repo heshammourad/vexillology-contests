@@ -1,6 +1,7 @@
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
+import { useLocation } from 'react-router-dom';
 
 import { useSwrData } from '../../common';
 import { ExternalLink, InternalLink } from '../../components';
@@ -16,6 +17,7 @@ const useStyles = makeStyles({
 
 const Home = () => {
   const contests = useSwrData('/contests');
+  const location = useLocation();
 
   const classes = useStyles();
   return (
@@ -35,7 +37,10 @@ const Home = () => {
         <p>
           Feel free to browse the entries in the most recent contest,
           {' '}
-          <InternalLink className={classes.contestName} to={`/contests/${contests[0].id}`}>
+          <InternalLink
+            className={classes.contestName}
+            to={{ pathname: `/contests/${contests[0].id}`, state: { back: location.pathname } }}
+          >
             {contests[0].name}
           </InternalLink>
           , check out

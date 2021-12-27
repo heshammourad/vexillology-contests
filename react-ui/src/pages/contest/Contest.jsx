@@ -18,7 +18,9 @@ import { makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
 import { useState } from 'react';
-import { Link as RouterLink, useParams, useRouteMatch } from 'react-router-dom';
+import {
+  Link as RouterLink, useLocation, useParams, useRouteMatch,
+} from 'react-router-dom';
 import createPersistedState from 'use-persisted-state';
 
 import { useSwrData } from '../../common';
@@ -93,6 +95,13 @@ const Contest = () => {
     updateSettings('density', event.target.value);
   };
 
+  const toggleSettingsOpen = () => {
+    setSettingsOpen(!isSettingsOpen);
+  };
+
+  const { state = {} } = useLocation();
+  const backLink = state.back || '/contests';
+
   const theme = useTheme();
   const match = useRouteMatch();
 
@@ -139,10 +148,6 @@ const Contest = () => {
     spacing, xs, sm, md, lg,
   } = getGridVariables();
 
-  const toggleSettingsOpen = () => {
-    setSettingsOpen(!isSettingsOpen);
-  };
-
   const { name, entries } = contest;
   return (
     <PageWithDrawer
@@ -160,7 +165,7 @@ const Contest = () => {
             Icon={SettingsOutlinedIcon}
           />
         ),
-        children: <ArrowBackButton to="/contests" />,
+        children: <ArrowBackButton to={backLink} />,
       }}
       drawer={{
         heading: 'Settings',

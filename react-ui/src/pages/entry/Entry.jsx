@@ -6,7 +6,7 @@ import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import RedditIcon from '@material-ui/icons/Reddit';
 import { useContext } from 'react';
-import { useHistory, useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { DrawerStateContext, useSwrData } from '../../common';
 import {
@@ -71,16 +71,6 @@ export default function PersistentDrawerRight() {
     setOpen(!isOpen);
   };
 
-  const history = useHistory();
-  const { state = {} } = useLocation();
-  const backProps = {};
-  if (state.isFromContest) {
-    backProps.onClick = () => history.goBack();
-    backProps.useRouterLink = false;
-  } else {
-    backProps.to = `/contests/${contestId}`;
-  }
-
   const redditPermalink = `https://www.reddit.com${entry.permalink}`;
   const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${entry.imgurLink}`;
 
@@ -111,12 +101,7 @@ export default function PersistentDrawerRight() {
             />
           </>
         ),
-        children: (
-          <>
-            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-            <ArrowBackButton color="inherit" {...backProps} />
-          </>
-        ),
+        children: <ArrowBackButton color="inherit" to={`/contests/${contestId}`} />,
       }}
       drawer={{
         heading: 'Info',
