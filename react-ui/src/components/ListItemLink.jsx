@@ -4,7 +4,9 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const ListItemLink = ({ onClick, primary, to }) => {
+const ListItemLink = ({
+  className, onClick, primary, to,
+}) => {
   const renderLink = React.useMemo(
     () => React.forwardRef((itemProps, ref) => (
       // eslint-disable-next-line react/jsx-props-no-spreading
@@ -15,7 +17,7 @@ const ListItemLink = ({ onClick, primary, to }) => {
 
   return (
     <li>
-      <ListItem button component={renderLink} onClick={onClick}>
+      <ListItem button className={className} component={renderLink} onClick={onClick}>
         <ListItemText primary={primary} />
       </ListItem>
     </li>
@@ -23,12 +25,14 @@ const ListItemLink = ({ onClick, primary, to }) => {
 };
 
 ListItemLink.propTypes = {
+  className: PropTypes.string,
   onClick: PropTypes.func,
   primary: PropTypes.string.isRequired,
   to: PropTypes.string.isRequired,
 };
 
 ListItemLink.defaultProps = {
+  className: null,
   onClick: () => {},
 };
 
