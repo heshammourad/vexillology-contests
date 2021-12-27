@@ -11,7 +11,7 @@ const AppBarDivided = ({
 }) => {
   const appBar = (
     <AppBar className={className} color={color} position={position}>
-      <Toolbar>
+      <Toolbar disableGutters>
         <Box display="flex" flexGrow={1}>
           {children}
         </Box>
