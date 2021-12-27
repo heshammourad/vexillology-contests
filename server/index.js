@@ -183,8 +183,10 @@ if (!isDev && cluster.isMaster) {
         result.map(
           ({
             contest_id: contestId,
+            contest_name: contestName,
             date,
             entry_id: entryId,
+            entry_name: entryName,
             valid_reddit_id: validRedditId,
             winners_thread_id: winnersThreadId,
             ...rest
@@ -195,7 +197,9 @@ if (!isDev && cluster.isMaster) {
             }
             return {
               date: date.toJSON().substr(0, 7),
+              contestName,
               entryId,
+              entryName,
               redditThreadId,
               ...rest,
             };
