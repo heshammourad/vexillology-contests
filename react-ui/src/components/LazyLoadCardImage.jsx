@@ -4,11 +4,14 @@ import LazyLoad from 'react-lazyload';
 
 const LazyLoadCardImage = ({
   displayWidth, height, width, image,
-}) => (
-  <LazyLoad height={Math.ceil((height * displayWidth) / width)} offset={1080} resize>
-    <CardMedia component="img" image={image} />
-  </LazyLoad>
-);
+}) => {
+  const displayHeight = Math.ceil((height * displayWidth) / width);
+  return (
+    <LazyLoad height={displayHeight} offset={1080} resize>
+      <CardMedia component="img" image={image} style={{ minHeight: displayHeight }} />
+    </LazyLoad>
+  );
+};
 
 LazyLoadCardImage.propTypes = {
   displayWidth: PropTypes.number.isRequired,

@@ -44,7 +44,9 @@ const Contests = () => {
   const classes = useStyles();
   return (
     <>
-      <Header to="/home">Vexillology Contests</Header>
+      <Header position="static" to="/home">
+        Vexillology Contests
+      </Header>
       {!!groups && (
         <div className={classes.list}>
           <List>
