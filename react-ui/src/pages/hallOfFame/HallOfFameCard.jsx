@@ -10,6 +10,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import clsx from 'clsx';
 import format from 'date-fns/format';
+import getYear from 'date-fns/getYear';
 import parseISO from 'date-fns/parseISO';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
@@ -20,7 +21,7 @@ import {
 
 const useStyles = makeStyles((theme) => ({
   card: {
-    marginTop: 24,
+    marginTop: theme.spacing(3),
   },
   cardContent: {
     flex: 1,
@@ -67,7 +68,7 @@ const HallOfFameCard = ({
 
   const classes = useStyles();
   return (
-    <Card className={classes.card} id={`hofc-${date}`}>
+    <Card className={classes.card} id={`hofc-${date}`} data-year={getYear(parseISO(date))}>
       <LazyLoadCardImage
         displayWidth={imageDisplayWidth}
         height={height}

@@ -7,9 +7,11 @@ const LazyLoadCardImage = ({
 }) => {
   const displayHeight = Math.ceil((height * displayWidth) / width);
   return (
-    <LazyLoad height={displayHeight} offset={1080} resize>
-      <CardMedia component="img" image={image} style={{ minHeight: displayHeight }} />
-    </LazyLoad>
+    <div style={{ height: displayHeight }}>
+      <LazyLoad height={displayHeight} offset={1080} resize>
+        <CardMedia component="img" image={image} />
+      </LazyLoad>
+    </div>
   );
 };
 
