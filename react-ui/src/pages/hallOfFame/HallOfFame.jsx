@@ -121,30 +121,32 @@ const HallOfFame = () => {
         Hall of Fame
       </Header>
       <Toolbar id={TOOLBAR_ID} />
-      <Paper className={classes.tabsContainer} square>
-        <Tabs
-          classes={{
-            indicator: classes.tabsIndicator,
-            root: classes.tabsRoot,
-            scroller: classes.tabsScroller,
-          }}
-          onChange={handleTabsChange}
-          variant="scrollable"
-          value={selectedYear}
-        >
-          {Object.keys(groups)
-            .sort((a, b) => b - a)
-            .map((year) => (
-              <Tab key={year} label={year} value={year} />
-            ))}
-        </Tabs>
-      </Paper>
       {hallOfFame && !!hallOfFame.length && (
-        <Container className={classes.content} maxWidth="md">
-          {hallOfFame.map((entry) => (
-            <HallOfFameCard key={entry.entryId} entry={entry} imageDisplayWidth={imageWidth} />
-          ))}
-        </Container>
+        <>
+          <Paper className={classes.tabsContainer} square>
+            <Tabs
+              classes={{
+                indicator: classes.tabsIndicator,
+                root: classes.tabsRoot,
+                scroller: classes.tabsScroller,
+              }}
+              onChange={handleTabsChange}
+              variant="scrollable"
+              value={selectedYear}
+            >
+              {Object.keys(groups)
+                .sort((a, b) => b - a)
+                .map((year) => (
+                  <Tab key={year} label={year} value={year} />
+                ))}
+            </Tabs>
+          </Paper>
+          <Container className={classes.content} maxWidth="md">
+            {hallOfFame.map((entry) => (
+              <HallOfFameCard key={entry.entryId} entry={entry} imageDisplayWidth={imageWidth} />
+            ))}
+          </Container>
+        </>
       )}
     </>
   );
