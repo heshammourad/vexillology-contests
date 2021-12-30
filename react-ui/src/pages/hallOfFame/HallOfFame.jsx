@@ -10,6 +10,7 @@ import parseISO from 'date-fns/parseISO';
 import groupBy from 'lodash/groupBy';
 import throttle from 'lodash/throttle';
 import { useState, useEffect } from 'react';
+import { Events, animateScroll } from 'react-scroll';
 
 import { useClientWidth, useSwrData } from '../../common';
 import { Header } from '../../components';
@@ -42,7 +43,7 @@ const TOOLBAR_ID = 'hofToolbar';
 
 const getToolbarHeight = () => document.getElementById(TOOLBAR_ID).offsetHeight;
 
-let targetTop = null;
+let pauseScollListener = false;
 
 const HallOfFame = () => {
   const hallOfFame = useSwrData('/hallOfFame');
@@ -60,10 +61,7 @@ const HallOfFame = () => {
   }, [hallOfFame]);
 
   const scrollHandler = throttle(() => {
-    if (targetTop) {
-      if (window.scrollY === targetTop) {
-        targetTop = null;
-      }
+    if (pauseScollListener) {
       return;
     }
     const year = Array.from(document.querySelectorAll('[id^=hofc]')).find(
@@ -76,8 +74,18 @@ const HallOfFame = () => {
 
   useEffect(() => {
     document.addEventListener('scroll', scrollHandler);
+    Events.scrollEvent.register('begin', () => {
+      pauseScollListener = true;
+    });
+    Events.scrollEvent.register('end', () => {
+      pauseScollListener = false;
+    });
 
-    return () => document.removeEventListener('scroll', scrollHandler);
+    return () => {
+      document.removeEventListener('scroll', scrollHandler);
+      Events.scrollEvent.remove('begin');
+      Events.scrollEvent.remove('end');
+    };
   }, []);
 
   const theme = useTheme();
@@ -96,8 +104,11 @@ const HallOfFame = () => {
         - tabsHeight
         - theme.spacing(3) / 2,
     );
-    targetTop = top;
-    window.scrollTo({ behavior: 'smooth', top });
+    animateScroll.scrollTo(top, {
+      duration: 650,
+      delay: 0,
+      smooth: 'easeInOutQuad',
+    });
   };
 
   const classes = useStyles();
@@ -110,7 +121,6 @@ const HallOfFame = () => {
       <Paper className={classes.tabsContainer} square>
         <Tabs
           classes={{ root: classes.tabsRoot, scroller: classes.tabsScroller }}
-          centered
           onChange={handleTabsChange}
           variant="scrollable"
           value={selectedYear}
