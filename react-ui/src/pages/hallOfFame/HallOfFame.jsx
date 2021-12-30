@@ -1,7 +1,5 @@
-import Box from '@material-ui/core/Box';
 import Container from '@material-ui/core/Container';
-import Drawer from '@material-ui/core/Drawer';
-import Hidden from '@material-ui/core/Hidden';
+import Paper from '@material-ui/core/Paper';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -18,27 +16,31 @@ import { Header } from '../../components';
 
 import HallOfFameCard from './HallOfFameCard';
 
-const drawerWidth = 160;
+const tabsHeight = 48;
 
 const useStyles = makeStyles((theme) => ({
-  appBar: {
-    zIndex: theme.zIndex.drawer + 1,
-  },
-  container: {
-    marginBottom: theme.spacing(4),
-    marginTop: theme.spacing(4),
-  },
   content: {
+    marginBottom: theme.spacing(4),
+    marginTop: theme.spacing(4) + tabsHeight,
+  },
+  tabsContainer: {
     flexGrow: 1,
+    left: 0,
+    position: 'fixed',
+    right: 0,
+    zIndex: 1000,
   },
-  drawer: {
-    width: drawerWidth,
-    flexShrink: 0,
+  tabsRoot: {
+    justifyContent: 'center',
   },
-  drawerPaper: {
-    width: drawerWidth,
+  tabsScroller: {
+    flexGrow: '0',
   },
 }));
+
+const TOOLBAR_ID = 'hofToolbar';
+
+const getToolbarHeight = () => document.getElementById(TOOLBAR_ID).offsetHeight;
 
 let targetTop = null;
 
@@ -64,9 +66,8 @@ const HallOfFame = () => {
       }
       return;
     }
-    const toolbarHeight = document.getElementById('toolbar').offsetHeight;
     const year = Array.from(document.querySelectorAll('[id^=hofc]')).find(
-      (entry) => entry.getBoundingClientRect().bottom > toolbarHeight,
+      (entry) => entry.getBoundingClientRect().bottom > getToolbarHeight() + tabsHeight,
     ).attributes['data-year'].value;
     if (year !== selectedYear) {
       setSelectedYear(year);
@@ -79,16 +80,11 @@ const HallOfFame = () => {
     return () => document.removeEventListener('scroll', scrollHandler);
   }, []);
 
-  // const handleDrawerToggle = () => {
-  //   setMobileOpen(!mobileOpen);
-  // };
-
   const theme = useTheme();
   const clientWidth = useClientWidth();
 
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
-  // eslint-disable-next-line max-len
-  const imageWidth = Math.min(clientWidth - drawerWidth, theme.breakpoints.values.md) - (isSmUp ? 48 : 32);
+  const imageWidth = Math.min(clientWidth, theme.breakpoints.values.md) - (isSmUp ? 48 : 32);
 
   const handleTabsChange = (event, newValue) => {
     setSelectedYear(newValue);
@@ -96,7 +92,8 @@ const HallOfFame = () => {
     const top = Math.floor(
       el.getBoundingClientRect().top
         + window.scrollY
-        - document.getElementById('toolbar').offsetHeight
+        - getToolbarHeight()
+        - tabsHeight
         - theme.spacing(3) / 2,
     );
     targetTop = top;
@@ -104,48 +101,35 @@ const HallOfFame = () => {
   };
 
   const classes = useStyles();
-  const drawer = (
-    <div>
-      <Toolbar id="toolbar" />
-      <Tabs
-        orientation="vertical"
-        onChange={handleTabsChange}
-        variant="scrollable"
-        value={selectedYear}
-      >
-        {Object.keys(groups)
-          .sort((a, b) => b - a)
-          .map((year) => (
-            <Tab key={year} label={year} value={year} />
-          ))}
-      </Tabs>
-    </div>
-  );
-
   return (
-    <Box display="flex">
+    <>
       <Header className={classes.appBar} position="fixed" to="/">
         Hall of Fame
       </Header>
-      <Hidden smUp implementation="css">
-        {/* Add mobile implementation here */}
-      </Hidden>
-      <Hidden xsDown className={classes.drawer} implementation="css">
-        <Drawer classes={{ paper: classes.drawerPaper }} open variant="permanent">
-          {drawer}
-        </Drawer>
-      </Hidden>
-      <main className={classes.content}>
-        <Toolbar />
-        {hallOfFame && !!hallOfFame.length && (
-          <Container className={classes.container} maxWidth="md">
-            {hallOfFame.map((entry) => (
-              <HallOfFameCard key={entry.entryId} entry={entry} imageDisplayWidth={imageWidth} />
+      <Toolbar id={TOOLBAR_ID} />
+      <Paper className={classes.tabsContainer} square>
+        <Tabs
+          classes={{ root: classes.tabsRoot, scroller: classes.tabsScroller }}
+          centered
+          onChange={handleTabsChange}
+          variant="scrollable"
+          value={selectedYear}
+        >
+          {Object.keys(groups)
+            .sort((a, b) => b - a)
+            .map((year) => (
+              <Tab key={year} label={year} value={year} />
             ))}
-          </Container>
-        )}
-      </main>
-    </Box>
+        </Tabs>
+      </Paper>
+      {hallOfFame && !!hallOfFame.length && (
+        <Container className={classes.content} maxWidth="md">
+          {hallOfFame.map((entry) => (
+            <HallOfFameCard key={entry.entryId} entry={entry} imageDisplayWidth={imageWidth} />
+          ))}
+        </Container>
+      )}
+    </>
   );
 };
 
