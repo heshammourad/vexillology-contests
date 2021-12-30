@@ -95,7 +95,8 @@ const HallOfFame = () => {
   const clientWidth = useClientWidth();
 
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
-  const imageWidth = Math.min(clientWidth, theme.breakpoints.values.md) - (isSmUp ? 48 : 32);
+  // eslint-disable-next-line max-len
+  const imageWidth = Math.min(clientWidth, theme.breakpoints.values.md) - theme.spacing(isSmUp ? 3 : 2) * 2;
 
   const handleTabsChange = (event, newValue) => {
     setSelectedYear(newValue);
