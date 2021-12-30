@@ -12,7 +12,13 @@ import {
 
 import './App.css';
 
-const theme = createMuiTheme();
+const theme = createMuiTheme({
+  palette: {
+    secondary: {
+      main: '#fb7878',
+    },
+  },
+});
 
 const App = () => {
   const [isOpen, setOpen] = useState(false);

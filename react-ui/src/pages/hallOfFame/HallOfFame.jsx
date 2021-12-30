@@ -21,8 +21,8 @@ const tabsHeight = 48;
 
 const useStyles = makeStyles((theme) => ({
   content: {
-    marginBottom: theme.spacing(4),
-    marginTop: theme.spacing(4) + tabsHeight,
+    paddingBottom: theme.spacing(3),
+    paddingTop: tabsHeight,
   },
   tabsContainer: {
     flexGrow: 1,
@@ -30,6 +30,9 @@ const useStyles = makeStyles((theme) => ({
     position: 'fixed',
     right: 0,
     zIndex: 1000,
+  },
+  tabsIndicator: {
+    backgroundColor: 'blue',
   },
   tabsRoot: {
     justifyContent: 'center',
@@ -120,7 +123,11 @@ const HallOfFame = () => {
       <Toolbar id={TOOLBAR_ID} />
       <Paper className={classes.tabsContainer} square>
         <Tabs
-          classes={{ root: classes.tabsRoot, scroller: classes.tabsScroller }}
+          classes={{
+            indicator: classes.indicator,
+            root: classes.tabsRoot,
+            scroller: classes.tabsScroller,
+          }}
           onChange={handleTabsChange}
           variant="scrollable"
           value={selectedYear}
