@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 1000,
   },
   tabsIndicator: {
-    backgroundColor: 'blue',
+    backgroundColor: '#fb7878',
   },
   tabsRoot: {
     justifyContent: 'center',
@@ -51,7 +51,6 @@ let pauseScollListener = false;
 const HallOfFame = () => {
   const hallOfFame = useSwrData('/hallOfFame');
 
-  // const [mobileOpen, setMobileOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState();
   const [groups, setGroups] = useState({});
 
@@ -67,6 +66,7 @@ const HallOfFame = () => {
     if (pauseScollListener) {
       return;
     }
+
     const year = Array.from(document.querySelectorAll('[id^=hofc]')).find(
       (entry) => entry.getBoundingClientRect().bottom > getToolbarHeight() + tabsHeight,
     ).attributes['data-year'].value;
@@ -99,32 +99,31 @@ const HallOfFame = () => {
 
   const handleTabsChange = (event, newValue) => {
     setSelectedYear(newValue);
-    const el = document.getElementById(`hofc-${groups[newValue][0].date}`);
-    const top = Math.floor(
-      el.getBoundingClientRect().top
+    animateScroll.scrollTo(
+      document.getElementById(`hofc-${groups[newValue][0].date}`).getBoundingClientRect().top
         + window.scrollY
         - getToolbarHeight()
         - tabsHeight
         - theme.spacing(3) / 2,
+      {
+        duration: 650,
+        delay: 0,
+        smooth: 'easeInOutQuad',
+      },
     );
-    animateScroll.scrollTo(top, {
-      duration: 650,
-      delay: 0,
-      smooth: 'easeInOutQuad',
-    });
   };
 
   const classes = useStyles();
   return (
     <>
-      <Header className={classes.appBar} position="fixed" to="/">
+      <Header position="fixed" to="/">
         Hall of Fame
       </Header>
       <Toolbar id={TOOLBAR_ID} />
       <Paper className={classes.tabsContainer} square>
         <Tabs
           classes={{
-            indicator: classes.indicator,
+            indicator: classes.tabsIndicator,
             root: classes.tabsRoot,
             scroller: classes.tabsScroller,
           }}
