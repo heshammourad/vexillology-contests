@@ -33,6 +33,7 @@ const useStyles = makeStyles((theme) => ({
   },
   tabsIndicator: {
     backgroundColor: '#fb7878',
+    height: 4,
   },
   tabsRoot: {
     justifyContent: 'center',
