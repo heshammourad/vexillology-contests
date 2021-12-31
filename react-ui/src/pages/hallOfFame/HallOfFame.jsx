@@ -132,8 +132,8 @@ const HallOfFame = () => {
                 scroller: classes.tabsScroller,
               }}
               onChange={handleTabsChange}
-              variant="scrollable"
               value={selectedYear}
+              variant="scrollable"
             >
               {Object.keys(groups)
                 .sort((a, b) => b - a)
