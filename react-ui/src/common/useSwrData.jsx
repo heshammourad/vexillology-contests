@@ -1,5 +1,5 @@
 import addMinutes from 'date-fns/addMinutes';
-import isPast from 'date-fns/isPast';
+import isFuture from 'date-fns/isFuture';
 import { useState } from 'react';
 import useSWR from 'swr';
 import createPersistedState from 'use-persisted-state';
@@ -16,7 +16,7 @@ const useSwrData = (key) => {
   if (!isFetched) {
     setTimeout(async () => {
       const expiryDate = expires[key];
-      if (expiryDate && !isPast(new Date(expiryDate))) {
+      if (expiryDate && isFuture(new Date(expiryDate)) && cache[key]) {
         mutate(cache[key], false);
         return;
       }
