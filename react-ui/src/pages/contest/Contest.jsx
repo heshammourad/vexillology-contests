@@ -17,10 +17,11 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Link as RouterLink, useLocation, useParams, useRouteMatch,
 } from 'react-router-dom';
+import { animateScroll } from 'react-scroll';
 import createPersistedState from 'use-persisted-state';
 
 import { useSwrData } from '../../common';
@@ -33,6 +34,7 @@ import {
   PageWithDrawer,
 } from '../../components';
 
+const useScrollState = createPersistedState('scroll');
 const useSettingsState = createPersistedState('settings');
 
 const useStyles = makeStyles({
@@ -79,7 +81,24 @@ const Contest = () => {
   const { contestId } = useParams();
   const contest = useSwrData(`/contests/${contestId}`) || {};
 
+  const { state = {} } = useLocation();
+
   const [isSettingsOpen, setSettingsOpen] = useState(false);
+
+  const [scroll, setScroll] = useScrollState({});
+
+  useEffect(() => {
+    const entryEl = document.getElementById(state.entry);
+    const { height, width, y } = scroll;
+    if (entryEl && y) {
+      if (height !== window.innerHeight || width !== window.innerWidth) {
+        return;
+      }
+
+      animateScroll.scrollTo(y, { duration: 0, delay: 0 });
+    }
+  }, [state, contest]);
+
   const [settings, setSettings] = useSettingsState({ isHideTitles: false, density: 'default' });
   const { density = 'default', isHideTitles } = settings;
 
@@ -99,7 +118,6 @@ const Contest = () => {
     setSettingsOpen(!isSettingsOpen);
   };
 
-  const { state = {} } = useLocation();
   const backLink = state.back || '/contests';
 
   const theme = useTheme();
@@ -240,6 +258,13 @@ const Contest = () => {
                 <Grid key={id} item xs={xs} sm={sm} md={md} lg={lg}>
                   <Card id={id}>
                     <RouterLink
+                      onClick={() => {
+                        setScroll({
+                          height: window.innerHeight,
+                          width: window.innerWidth,
+                          y: window.scrollY,
+                        });
+                      }}
                       to={{ pathname: `${match.url}/entry/${id}`, state: { isFromContest: true } }}
                       style={{ textDecoration: 'none' }}
                     >

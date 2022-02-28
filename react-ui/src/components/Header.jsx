@@ -2,6 +2,8 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
 
+import types from '../common/types';
+
 import AppBarDivided from './AppBarDivided';
 import ArrowBackButton from './ArrowBackButton';
 
@@ -17,7 +19,7 @@ const Header = ({ children, position, to }) => (
 Header.propTypes = {
   children: PropTypes.node.isRequired,
   position: PropTypes.string.isRequired,
-  to: PropTypes.string.isRequired,
+  to: types.to.isRequired,
 };
 
 export default Header;

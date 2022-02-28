@@ -3,8 +3,12 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import PropTypes from 'prop-types';
 import { Link as RouterLink } from 'react-router-dom';
 
-const ArrowBackButton = ({ color, onClick, to }) => (
-  <IconButton color={color} component={RouterLink} onClick={onClick} to={to}>
+import types from '../common/types';
+
+const ArrowBackButton = ({
+  color, onClick, state, to,
+}) => (
+  <IconButton color={color} component={RouterLink} onClick={onClick} state={state} to={to}>
     <ArrowBackIcon />
   </IconButton>
 );
@@ -12,13 +16,14 @@ const ArrowBackButton = ({ color, onClick, to }) => (
 ArrowBackButton.propTypes = {
   color: PropTypes.string,
   onClick: PropTypes.func,
-  to: PropTypes.string,
+  state: PropTypes.shape({}),
+  to: types.to.isRequired,
 };
 
 ArrowBackButton.defaultProps = {
-  color: '',
+  color: 'default',
   onClick: () => {},
-  to: '',
+  state: {},
 };
 
 export default ArrowBackButton;

@@ -14,7 +14,11 @@ const HtmlWrapper = ({ html }) => {
 };
 
 HtmlWrapper.propTypes = {
-  html: PropTypes.string.isRequired,
+  html: PropTypes.string,
+};
+
+HtmlWrapper.defaultProps = {
+  html: '',
 };
 
 export default HtmlWrapper;

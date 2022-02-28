@@ -14,7 +14,7 @@ const ListItemButton = ({ href, Icon, text }) => (
 
 ListItemButton.propTypes = {
   href: PropTypes.string.isRequired,
-  Icon: PropTypes.node.isRequired,
+  Icon: PropTypes.elementType.isRequired,
   text: PropTypes.string.isRequired,
 };
 
