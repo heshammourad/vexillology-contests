@@ -41,4 +41,13 @@ const getContest = async (submissionId) => {
   return { entries, isContestMode };
 };
 
-module.exports = { getContest };
+const getWinners = async (winnersThreadId) => {
+  const submission = await r.getSubmission(winnersThreadId);
+  const selftext = await submission.selftext;
+  return Array.from(selftext.matchAll(/(\d*).*imgur\.com\/(\w*)(\.|\))/g), (match) => ({
+    rank: parseInt(match[1], 10),
+    imgurId: match[2],
+  }));
+};
+
+module.exports = { getContest, getWinners };

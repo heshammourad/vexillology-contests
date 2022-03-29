@@ -94,7 +94,7 @@ if (!isDev && cluster.isMaster) {
         `contest.${id}`,
         async () => {
           const contestResult = await db.select(
-            'SELECT name FROM contests WHERE id = $1 AND env_level >= $2',
+            'SELECT name, winners_thread_id FROM contests WHERE id = $1 AND env_level >= $2',
             [id, ENV_LEVEL],
           );
           if (!contestResult.length) {
@@ -106,8 +106,19 @@ if (!isDev && cluster.isMaster) {
             'SELECT * FROM entries e JOIN contest_entries ce ON e.id = ce.entry_id WHERE contest_id = $1',
             [id],
           );
-          const allImagesData = [...imagesData];
 
+          const winnersThreadId = contestResult[0].winners_thread_id;
+          if (winnersThreadId) {
+            const contestTop20 = imagesData.filter(
+              (image) => image.position && image.position <= 20,
+            );
+            if (contestTop20.length < 20) {
+              const winners = await reddit.getWinners(winnersThreadId);
+              // TODO: db.update(winners);
+            }
+          }
+
+          const allImagesData = [...imagesData];
           let missingEntries = findMissingEntries(contest, allImagesData);
           if (missingEntries.length) {
             const entriesData = await db.select('SELECT * FROM entries WHERE id = ANY ($1)', [
