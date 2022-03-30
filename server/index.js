@@ -109,12 +109,21 @@ if (!isDev && cluster.isMaster) {
 
           const winnersThreadId = contestResult[0].winners_thread_id;
           if (winnersThreadId) {
-            const contestTop20 = imagesData.filter(
-              (image) => image.position && image.position <= 20,
-            );
+            const contestTop20 = imagesData.filter((image) => image.rank && image.rank <= 20);
             if (contestTop20.length < 20) {
               const winners = await reddit.getWinners(winnersThreadId);
-              // TODO: db.update(winners);
+
+              const data = [];
+              winners.forEach(({ imgurId, rank }) => {
+                imagesData.find((image) => image.id === imgurId).rank = rank;
+                data.push({
+                  contest_id: id,
+                  entry_id: imgurId,
+                  rank,
+                });
+              });
+
+              await db.update(data, ['?contest_id', '?entry_id', 'rank'], 'contest_entries');
             }
           }
 
@@ -149,12 +158,15 @@ if (!isDev && cluster.isMaster) {
           contest.entries = contest.entries.reduce((acc, cur) => {
             const imageData = allImagesData.find((image) => cur.imgurId === image.id);
             if (imageData) {
-              const { id: imgurId, height, width } = imageData;
+              const {
+                id: imgurId, height, rank, width,
+              } = imageData;
               acc.push({
                 ...cur,
                 imgurId,
                 imgurLink: `https://i.imgur.com/${imgurId}.png`,
                 height,
+                rank,
                 width,
               });
             }
@@ -179,6 +191,9 @@ if (!isDev && cluster.isMaster) {
 
       if (response.isContestMode) {
         response.entries = shuffle(response.entries);
+      } else {
+        const result = partition(response.entries, 'rank');
+        response.entries = [...result[0].sort((a, b) => a.rank - b.rank), ...result[1]];
       }
       res.send(response);
     } catch (err) {

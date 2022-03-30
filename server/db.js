@@ -21,4 +21,22 @@ const insert = async (table, values) => {
   await db.none(query);
 };
 
-module.exports = { insert, select };
+const update = async (data, columns, table) => {
+  const cs = new pgp.helpers.ColumnSet(columns, { table });
+  const whereCondition = ` WHERE ${columns.reduce((acc, cur) => {
+    if (!cur.startsWith('?')) {
+      return acc;
+    }
+    let result = acc;
+    if (acc) {
+      result += ' AND';
+    }
+    const column = cur.substring(1);
+    return `${result} v.${column} = t.${column}`;
+  }, '')}`;
+
+  const query = pgp.helpers.update(data, cs) + whereCondition;
+  await db.none(query);
+};
+
+module.exports = { insert, select, update };
