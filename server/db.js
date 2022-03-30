@@ -23,17 +23,20 @@ const insert = async (table, values) => {
 
 const update = async (data, columns, table) => {
   const cs = new pgp.helpers.ColumnSet(columns, { table });
-  const whereCondition = ` WHERE ${columns.reduce((acc, cur) => {
+  const whereCondition = columns.reduce((acc, cur, idx) => {
     if (!cur.startsWith('?')) {
       return acc;
     }
+
     let result = acc;
-    if (acc) {
+    if (idx) {
       result += ' AND';
     }
+
     const column = cur.substring(1);
     return `${result} v.${column} = t.${column}`;
-  }, '')}`;
+  }, ' WHERE');
+  console.log(whereCondition);
 
   const query = pgp.helpers.update(data, cs) + whereCondition;
   await db.none(query);
