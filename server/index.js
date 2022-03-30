@@ -5,6 +5,7 @@ const path = require('path');
 
 const express = require('express');
 const helmet = require('helmet');
+const partition = require('lodash/partition');
 const shuffle = require('lodash/shuffle');
 
 const db = require('./db');
@@ -94,7 +95,7 @@ if (!isDev && cluster.isMaster) {
         `contest.${id}`,
         async () => {
           const contestResult = await db.select(
-            'SELECT name FROM contests WHERE id = $1 AND env_level >= $2',
+            'SELECT name, winners_thread_id FROM contests WHERE id = $1 AND env_level >= $2',
             [id, ENV_LEVEL],
           );
           if (!contestResult.length) {
@@ -106,8 +107,28 @@ if (!isDev && cluster.isMaster) {
             'SELECT * FROM entries e JOIN contest_entries ce ON e.id = ce.entry_id WHERE contest_id = $1',
             [id],
           );
-          const allImagesData = [...imagesData];
 
+          const winnersThreadId = contestResult[0].winners_thread_id;
+          if (winnersThreadId) {
+            const contestTop20 = imagesData.filter((image) => image.rank && image.rank <= 20);
+            if (contestTop20.length < 20) {
+              const winners = await reddit.getWinners(winnersThreadId);
+
+              const data = [];
+              winners.forEach(({ imgurId, rank }) => {
+                imagesData.find((image) => image.id === imgurId).rank = rank;
+                data.push({
+                  contest_id: id,
+                  entry_id: imgurId,
+                  rank,
+                });
+              });
+
+              await db.update(data, ['?contest_id', '?entry_id', 'rank'], 'contest_entries');
+            }
+          }
+
+          const allImagesData = [...imagesData];
           let missingEntries = findMissingEntries(contest, allImagesData);
           if (missingEntries.length) {
             const entriesData = await db.select('SELECT * FROM entries WHERE id = ANY ($1)', [
@@ -138,12 +159,15 @@ if (!isDev && cluster.isMaster) {
           contest.entries = contest.entries.reduce((acc, cur) => {
             const imageData = allImagesData.find((image) => cur.imgurId === image.id);
             if (imageData) {
-              const { id: imgurId, height, width } = imageData;
+              const {
+                id: imgurId, height, rank, width,
+              } = imageData;
               acc.push({
                 ...cur,
                 imgurId,
                 imgurLink: `https://i.imgur.com/${imgurId}.png`,
                 height,
+                rank,
                 width,
               });
             }
@@ -168,7 +192,11 @@ if (!isDev && cluster.isMaster) {
 
       if (response.isContestMode) {
         response.entries = shuffle(response.entries);
+      } else {
+        const result = partition(response.entries, 'rank');
+        response.entries = [...result[0].sort((a, b) => a.rank - b.rank), ...result[1]];
       }
+
       res.send(response);
     } catch (err) {
       console.error(err.toString());
