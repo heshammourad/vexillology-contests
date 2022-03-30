@@ -5,6 +5,7 @@ const path = require('path');
 
 const express = require('express');
 const helmet = require('helmet');
+const partition = require('lodash/partition');
 const shuffle = require('lodash/shuffle');
 
 const db = require('./db');
@@ -195,6 +196,7 @@ if (!isDev && cluster.isMaster) {
         const result = partition(response.entries, 'rank');
         response.entries = [...result[0].sort((a, b) => a.rank - b.rank), ...result[1]];
       }
+
       res.send(response);
     } catch (err) {
       console.error(err.toString());
