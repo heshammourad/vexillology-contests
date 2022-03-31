@@ -1,3 +1,4 @@
+export { default as Analytics } from './Analytics';
 export { default as AppBarDivided } from './AppBarDivided';
 export { default as AppBarIconButton } from './AppBarIconButton';
 export { default as ArrowBackButton } from './ArrowBackButton';

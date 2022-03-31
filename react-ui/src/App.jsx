@@ -6,6 +6,7 @@ import { SWRConfig } from 'swr';
 
 import { getData } from './api';
 import { DrawerStateContext } from './common';
+import { Analytics } from './components';
 import {
   Contest, Contests, Entry, HallOfFame, Home,
 } from './pages';
@@ -39,6 +40,7 @@ const App = () => {
           <DrawerStateContext.Provider value={drawerStateContextValue}>
             <div className="app">
               <Router>
+                <Analytics />
                 <Route exact path="/">
                   <Redirect to="/home" />
                 </Route>
