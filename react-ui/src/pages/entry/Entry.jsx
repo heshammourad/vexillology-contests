@@ -56,8 +56,8 @@ const useStyles = makeStyles((theme) => ({
 
 export default function PersistentDrawerRight() {
   const { contestId, entryId } = useParams();
-  const { entries = [] } = useSwrData(`/contests/${contestId}`) || {};
-  const entry = entries.find(({ id }) => id === entryId) || {};
+  const { entries = [], winners = [] } = useSwrData(`/contests/${contestId}`) || {};
+  const entry = [...entries, ...winners].find(({ id }) => id === entryId) || {};
 
   const classes = useStyles();
 
