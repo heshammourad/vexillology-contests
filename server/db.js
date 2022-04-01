@@ -36,7 +36,6 @@ const update = async (data, columns, table) => {
     const column = cur.substring(1);
     return `${result} v.${column} = t.${column}`;
   }, ' WHERE');
-  console.log(whereCondition);
 
   const query = pgp.helpers.update(data, cs) + whereCondition;
   await db.none(query);
