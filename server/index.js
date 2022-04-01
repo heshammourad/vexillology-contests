@@ -210,8 +210,9 @@ if (!isDev && cluster.isMaster) {
       if (response.isContestMode) {
         response.entries = shuffle(response.entries);
       } else {
-        const result = partition(response.entries, 'rank');
-        response.entries = [...result[0].sort((a, b) => a.rank - b.rank), ...result[1]];
+        const [winners, entries] = partition(response.entries, 'rank');
+        response.entries = entries;
+        response.winners = winners.sort((a, b) => a.rank - b.rank);
       }
 
       res.send(response);

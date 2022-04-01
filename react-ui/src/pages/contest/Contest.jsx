@@ -17,7 +17,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Link as RouterLink, useLocation, useParams, useRouteMatch,
 } from 'react-router-dom';
@@ -31,6 +31,7 @@ import {
   CustomSwitch,
   LazyLoadCardImage,
   PageWithDrawer,
+  RedditUserAttribution,
 } from '../../components';
 
 const useSettingsState = createPersistedState('settings');
@@ -38,6 +39,13 @@ const useSettingsState = createPersistedState('settings');
 const useStyles = makeStyles({
   heading: {
     margin: '24px auto',
+  },
+  divider: {
+    height: 2,
+    marginBottom: 16,
+  },
+  entryName: {
+    color: 'black',
   },
   icon: {
     color: '#5f6368',
@@ -54,11 +62,21 @@ const useStyles = makeStyles({
     margin: '16px 0',
     textTransform: 'uppercase',
   },
-  entryName: {
-    color: 'black',
+  numberSymbol: {
+    marginRight: 8,
+  },
+  subheader: {
+    margin: '16px auto',
   },
   switch: {
     color: '#4285f4',
+  },
+  winnerCard: {
+    marginTop: 4,
+    marginBottom: 16,
+  },
+  winnerContent: {
+    paddingTop: 8,
   },
 });
 
@@ -72,6 +90,11 @@ const imageWidths = {
     lg: 302,
     md: 299,
     sm: 272,
+  },
+  full: {
+    lg: 1280,
+    md: 960,
+    sm: 600,
   },
 };
 
@@ -118,9 +141,14 @@ const Contest = () => {
     key = 'sm';
   }
 
-  const displayWidth = key
-    ? imageWidths[density][key]
-    : document.getElementsByTagName('html')[0].clientWidth - 32;
+  const defaultContainerWidth = document.getElementsByTagName('html')[0].clientWidth - 32;
+
+  let gridDisplayWidth = defaultContainerWidth;
+  let winnerDisplayWidth = defaultContainerWidth;
+  if (key) {
+    gridDisplayWidth = imageWidths[density][key];
+    winnerDisplayWidth = imageWidths.full[key] - 48;
+  }
 
   const classes = useStyles();
 
@@ -148,7 +176,8 @@ const Contest = () => {
     spacing, xs, sm, md, lg,
   } = getGridVariables();
 
-  const { name, entries } = contest;
+  const headingVariant = isSmUp ? 'h3' : 'h5';
+  const { name, entries, winners } = contest;
   return (
     <PageWithDrawer
       handleClose={() => {
@@ -229,9 +258,58 @@ const Contest = () => {
     >
       {name && (
         <Container fixed>
-          <Typography className={classes.heading} variant={isSmUp ? 'h3' : 'h5'} component="h1">
+          <Typography className={classes.heading} variant={headingVariant} component="h1">
             {name}
           </Typography>
+          {winners && (
+            <>
+              <Typography
+                className={classes.subheader}
+                component="h2"
+                variant={isSmUp ? 'h4' : 'h6'}
+              >
+                Top 20
+              </Typography>
+              {winners.map(({
+                height, id, imgurLink, name: entryName, rank, user, width,
+              }) => (
+                <React.Fragment key={id}>
+                  <Grid container spacing={2}>
+                    <Grid item>
+                      <Typography variant={headingVariant}>
+                        <span className={classes.numberSymbol}>#</span>
+                        {rank}
+                      </Typography>
+                    </Grid>
+                    <Grid item>
+                      <div className={classes.winnerContent}>
+                        <Typography variant="subtitle2">{entryName}</Typography>
+                        <Typography variant="caption">
+                          <RedditUserAttribution user={user} />
+                        </Typography>
+                      </div>
+                    </Grid>
+                  </Grid>
+                  <Card className={classes.winnerCard} elevation={2}>
+                    <RouterLink
+                      to={{ pathname: `${match.url}/entry/${id}`, state: { isFromContest: true } }}
+                      style={{ textDecoration: 'none' }}
+                    >
+                      <CardActionArea>
+                        <LazyLoadCardImage
+                          displayWidth={winnerDisplayWidth}
+                          height={height}
+                          image={imgurLink}
+                          width={width}
+                        />
+                      </CardActionArea>
+                    </RouterLink>
+                  </Card>
+                </React.Fragment>
+              ))}
+              <Divider className={classes.divider} />
+            </>
+          )}
           {entries && (
             <Grid container spacing={spacing}>
               {entries.map(({
@@ -245,7 +323,7 @@ const Contest = () => {
                     >
                       <CardActionArea>
                         <LazyLoadCardImage
-                          displayWidth={displayWidth}
+                          displayWidth={gridDisplayWidth}
                           height={height}
                           image={imgurLink}
                           width={width}
