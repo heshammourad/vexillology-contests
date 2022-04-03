@@ -5,7 +5,7 @@ import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import RedditIcon from '@material-ui/icons/Reddit';
 import { useContext } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 
 import { DrawerStateContext, useSwrData } from '../../common';
 import {
@@ -59,6 +59,7 @@ export default function PersistentDrawerRight() {
   const { entries = [], winners = [] } = useSwrData(`/contests/${contestId}`) || {};
   const entry = [...winners, ...entries].find(({ id }) => id === entryId) || {};
 
+  const { state = {} } = useLocation();
   const classes = useStyles();
 
   const { isOpen, setOpen } = useContext(DrawerStateContext);
@@ -104,7 +105,10 @@ export default function PersistentDrawerRight() {
         children: (
           <ArrowBackButton
             color="inherit"
-            to={{ pathname: `/contests/${contestId}`, state: { entry: entry.id } }}
+            to={{
+              pathname: `/contests/${contestId}`,
+              state: { back: state.back, entry: entry.id },
+            }}
           />
         ),
       }}
