@@ -101,7 +101,12 @@ export default function PersistentDrawerRight() {
             />
           </>
         ),
-        children: <ArrowBackButton color="inherit" to={`/contests/${contestId}`} />,
+        children: (
+          <ArrowBackButton
+            color="inherit"
+            to={{ pathname: `/contests/${contestId}`, state: { entry: entry.id } }}
+          />
+        ),
       }}
       drawer={{
         heading: 'Info',

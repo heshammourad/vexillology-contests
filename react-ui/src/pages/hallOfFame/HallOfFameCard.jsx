@@ -97,6 +97,7 @@ const HallOfFameCard = ({
         </CardContent>
         <CardActions>
           <AppBarIconButton
+            ariaLabel="Open FlagWaver"
             href={`https://krikienoid.github.io/flagwaver/#?src=${imgurUrl}`}
             Icon={FlagTwoToneIcon}
           />

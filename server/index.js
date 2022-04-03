@@ -35,6 +35,19 @@ if (!isDev && cluster.isMaster) {
 } else {
   const app = express();
 
+  app.enable('trust proxy');
+  app.use((req, res, next) => {
+    const host = req.header('host');
+    const isOldDomain = host === 'vexillology-contests.herokuapp.com';
+    if (!isDev && (!req.secure || isOldDomain)) {
+      const newDomain = isOldDomain ? 'www.vexillologycontests.com' : req.headers.host;
+      res.redirect(301, `https://${newDomain}${req.url}`);
+      return;
+    }
+
+    next();
+  });
+
   const defaultDirectives = helmet.contentSecurityPolicy.getDefaultDirectives();
   app.use(
     helmet({

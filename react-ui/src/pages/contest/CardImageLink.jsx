@@ -5,11 +5,12 @@ import { Link as RouterLink, useRouteMatch } from 'react-router-dom';
 import { LazyLoadCardImage } from '../../components';
 
 const CardImageLink = ({
-  children, displayWidth, height, id, image, width,
+  children, displayWidth, height, id, image, onClick, width,
 }) => {
   const match = useRouteMatch();
   return (
     <RouterLink
+      onClick={onClick}
       to={{ pathname: `${match.url}/entry/${id}`, state: { isFromContest: true } }}
       style={{ textDecoration: 'none' }}
     >
@@ -32,11 +33,13 @@ CardImageLink.propTypes = {
   height: PropTypes.number.isRequired,
   id: PropTypes.string.isRequired,
   image: PropTypes.string.isRequired,
+  onClick: PropTypes.func,
   width: PropTypes.number.isRequired,
 };
 
 CardImageLink.defaultProps = {
   children: null,
+  onClick: () => {},
 };
 
 export default CardImageLink;
