@@ -16,7 +16,11 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 
 import {
-  AppBarIconButton, ExternalLink, HtmlWrapper, LazyLoadCardImage,
+  AppBarIconButton,
+  ExternalLink,
+  HtmlWrapper,
+  LazyLoadCardImage,
+  RedditUserAttribution,
 } from '../../components';
 
 const useStyles = makeStyles((theme) => ({
@@ -82,11 +86,7 @@ const HallOfFameCard = ({
               {entryName}
             </Typography>
           )}
-          <div>
-            by
-            {' '}
-            <ExternalLink href={`https://reddit.com${user}`}>{user}</ExternalLink>
-          </div>
+          <RedditUserAttribution user={user} />
           <div className={classes.contestLabel}>
             {redditThreadId ? (
               <ExternalLink href={`https://redd.it/${redditThreadId}`}>{contestLabel}</ExternalLink>

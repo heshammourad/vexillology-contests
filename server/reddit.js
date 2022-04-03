@@ -44,9 +44,10 @@ const getContest = async (submissionId) => {
 const getWinners = async (winnersThreadId) => {
   const submission = await r.getSubmission(winnersThreadId);
   const selftext = await submission.selftext;
-  return Array.from(selftext.matchAll(/(\d*).*imgur\.com\/(\w*)(\.|\))/g), (match) => ({
-    imgurId: match[2],
+  return Array.from(selftext.matchAll(/(\d*)\|(.*)\|.*imgur\.com\/(\w*)(\.|\))/g), (match) => ({
+    imgurId: match[3],
     rank: parseInt(match[1], 10),
+    user: match[2],
   }));
 };
 

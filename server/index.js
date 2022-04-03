@@ -127,17 +127,33 @@ if (!isDev && cluster.isMaster) {
             if (contestTop20.length < 20) {
               const winners = await reddit.getWinners(winnersThreadId);
 
-              const data = [];
-              winners.forEach(({ imgurId, rank }) => {
-                imagesData.find((image) => image.id === imgurId).rank = rank;
-                data.push({
+              const contestEntriesData = [];
+              const entriesData = [];
+              winners.forEach(({ imgurId, rank, user }) => {
+                const imageData = imagesData.find((image) => image.id === imgurId);
+                imageData.rank = rank;
+                imageData.user = user;
+
+                contestEntriesData.push({
                   contest_id: id,
                   entry_id: imgurId,
                   rank,
                 });
+
+                const { description } = contest.entries.find((entry) => entry.imgurId === imgurId);
+                entriesData.push({
+                  description: rank === 1 ? description : null,
+                  id: imgurId,
+                  user,
+                });
               });
 
-              await db.update(data, ['?contest_id', '?entry_id', 'rank'], 'contest_entries');
+              await db.update(
+                contestEntriesData,
+                ['?contest_id', '?entry_id', 'rank'],
+                'contest_entries',
+              );
+              await db.update(entriesData, ['?id', 'description', 'user'], 'entries');
             }
           }
 
@@ -173,7 +189,7 @@ if (!isDev && cluster.isMaster) {
             const imageData = allImagesData.find((image) => cur.imgurId === image.id);
             if (imageData) {
               const {
-                id: imgurId, height, rank, width,
+                id: imgurId, height, rank, width, user,
               } = imageData;
               acc.push({
                 ...cur,
@@ -182,6 +198,7 @@ if (!isDev && cluster.isMaster) {
                 height,
                 rank,
                 width,
+                user,
               });
             }
             return acc;
@@ -206,8 +223,9 @@ if (!isDev && cluster.isMaster) {
       if (response.isContestMode) {
         response.entries = shuffle(response.entries);
       } else {
-        const result = partition(response.entries, 'rank');
-        response.entries = [...result[0].sort((a, b) => a.rank - b.rank), ...result[1]];
+        const [winners, entries] = partition(response.entries, ({ rank }) => rank && rank < 20);
+        response.entries = entries;
+        response.winners = winners.sort((a, b) => a.rank - b.rank);
       }
 
       res.send(response);
@@ -237,8 +255,8 @@ if (!isDev && cluster.isMaster) {
               redditThreadId = contestId;
             }
             return {
-              date: date.toJSON().substr(0, 7),
               contestName,
+              date: date.toJSON().substr(0, 7),
               entryId,
               entryName,
               redditThreadId,

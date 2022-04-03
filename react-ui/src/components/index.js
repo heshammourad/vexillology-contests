@@ -12,3 +12,4 @@ export { default as LazyLoadCardImage } from './LazyLoadCardImage';
 export { default as ListItemButton } from './ListItemButton';
 export { default as ListItemLink } from './ListItemLink';
 export { default as PageWithDrawer } from './PageWithDrawer';
+export { default as RedditUserAttribution } from './RedditUserAttribution';
