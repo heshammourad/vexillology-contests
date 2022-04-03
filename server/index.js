@@ -35,6 +35,16 @@ if (!isDev && cluster.isMaster) {
 } else {
   const app = express();
 
+  app.enable('trust proxy');
+  app.use((request, response, next) => {
+    if (!isDev && !request.secure) {
+      response.redirect(`https://${request.headers.host}${request.url}`);
+      return;
+    }
+
+    next();
+  });
+
   const defaultDirectives = helmet.contentSecurityPolicy.getDefaultDirectives();
   app.use(
     helmet({
