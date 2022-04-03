@@ -210,7 +210,7 @@ if (!isDev && cluster.isMaster) {
       if (response.isContestMode) {
         response.entries = shuffle(response.entries);
       } else {
-        const [winners, entries] = partition(response.entries, 'rank');
+        const [winners, entries] = partition(response.entries, ({ rank }) => rank && rank < 20);
         response.entries = entries;
         response.winners = winners.sort((a, b) => a.rank - b.rank);
       }
@@ -242,8 +242,8 @@ if (!isDev && cluster.isMaster) {
               redditThreadId = contestId;
             }
             return {
-              date: date.toJSON().substr(0, 7),
               contestName,
+              date: date.toJSON().substr(0, 7),
               entryId,
               entryName,
               redditThreadId,

@@ -23,7 +23,7 @@ import {
 } from 'react-router-dom';
 import createPersistedState from 'use-persisted-state';
 
-import { useSwrData } from '../../common';
+import { useClientWidth, useSwrData } from '../../common';
 import {
   AppBarIconButton,
   ArrowBackButton,
@@ -36,7 +36,7 @@ import {
 
 const useSettingsState = createPersistedState('settings');
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   heading: {
     margin: '24px auto',
   },
@@ -63,7 +63,10 @@ const useStyles = makeStyles({
     textTransform: 'uppercase',
   },
   numberSymbol: {
-    marginRight: 8,
+    marginRight: 4,
+    [theme.breakpoints.up('sm')]: {
+      marginRight: 8,
+    },
   },
   subheader: {
     margin: '16px auto',
@@ -76,9 +79,11 @@ const useStyles = makeStyles({
     marginBottom: 16,
   },
   winnerContent: {
-    paddingTop: 8,
+    [theme.breakpoints.up('sm')]: {
+      paddingTop: 8,
+    },
   },
-});
+}));
 
 const imageWidths = {
   default: {
@@ -141,7 +146,8 @@ const Contest = () => {
     key = 'sm';
   }
 
-  const defaultContainerWidth = document.getElementsByTagName('html')[0].clientWidth - 32;
+  const clientWidth = useClientWidth();
+  const defaultContainerWidth = clientWidth - 32;
 
   let gridDisplayWidth = defaultContainerWidth;
   let winnerDisplayWidth = defaultContainerWidth;
@@ -308,6 +314,13 @@ const Contest = () => {
                 </React.Fragment>
               ))}
               <Divider className={classes.divider} />
+              <Typography
+                className={classes.subheader}
+                component="h2"
+                variant={isSmUp ? 'h4' : 'h6'}
+              >
+                Other entries
+              </Typography>
             </>
           )}
           {entries && (
