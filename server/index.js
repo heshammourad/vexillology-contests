@@ -38,7 +38,7 @@ if (!isDev && cluster.isMaster) {
   app.enable('trust proxy');
   app.use((req, res, next) => {
     const host = req.header('host');
-    const isOldDomain = host.equals('vexillology-contests.herokuapp.com');
+    const isOldDomain = host === 'vexillology-contests.herokuapp.com';
     if (!isDev && (!req.secure || isOldDomain)) {
       const newDomain = isOldDomain ? 'www.vexillologycontests.com' : req.headers.host;
       res.redirect(301, `https://${newDomain}${req.url}`);
