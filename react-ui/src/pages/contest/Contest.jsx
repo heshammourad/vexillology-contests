@@ -313,7 +313,7 @@ const Contest = () => {
                       </div>
                     </Grid>
                   </Grid>
-                  <Card className={classes.winnerCard} elevation={2}>
+                  <Card className={classes.winnerCard} elevation={2} id={id}>
                     <CardImageLink
                       displayWidth={winnerDisplayWidth}
                       height={height}
