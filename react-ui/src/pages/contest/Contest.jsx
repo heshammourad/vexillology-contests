@@ -299,7 +299,7 @@ const Contest = () => {
                 </React.Fragment>
               ))}
               <Divider className={classes.divider} />
-              <Subheader>Other entries</Subheader>
+              <Subheader>All other entries</Subheader>
             </>
           )}
           {entries && (
