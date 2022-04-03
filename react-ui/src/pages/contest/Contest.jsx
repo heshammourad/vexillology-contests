@@ -290,7 +290,7 @@ const Contest = () => {
           <Typography className={classes.heading} variant={headingVariant} component="h1">
             {name}
           </Typography>
-          {winners && winners.length && (
+          {winners && (
             <>
               <Subheader>Top 20</Subheader>
               {winners.map(({
