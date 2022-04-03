@@ -1,5 +1,4 @@
 import Card from '@material-ui/core/Card';
-import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
@@ -18,9 +17,7 @@ import { makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
 import React, { useState } from 'react';
-import {
-  Link as RouterLink, useLocation, useParams, useRouteMatch,
-} from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import createPersistedState from 'use-persisted-state';
 
 import { useClientWidth, useSwrData } from '../../common';
@@ -29,10 +26,12 @@ import {
   ArrowBackButton,
   CustomRadio,
   CustomSwitch,
-  LazyLoadCardImage,
   PageWithDrawer,
   RedditUserAttribution,
 } from '../../components';
+
+import CardImageLink from './CardImageLink';
+import Subheader from './Subheader';
 
 const useSettingsState = createPersistedState('settings');
 
@@ -131,8 +130,6 @@ const Contest = () => {
   const backLink = state.back || '/contests';
 
   const theme = useTheme();
-  const match = useRouteMatch();
-
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   const isLgUp = useMediaQuery(theme.breakpoints.up('lg'));
@@ -269,13 +266,7 @@ const Contest = () => {
           </Typography>
           {winners && (
             <>
-              <Typography
-                className={classes.subheader}
-                component="h2"
-                variant={isSmUp ? 'h4' : 'h6'}
-              >
-                Top 20
-              </Typography>
+              <Subheader>Top 20</Subheader>
               {winners.map(({
                 height, id, imgurLink, name: entryName, rank, user, width,
               }) => (
@@ -297,30 +288,18 @@ const Contest = () => {
                     </Grid>
                   </Grid>
                   <Card className={classes.winnerCard} elevation={2}>
-                    <RouterLink
-                      to={{ pathname: `${match.url}/entry/${id}`, state: { isFromContest: true } }}
-                      style={{ textDecoration: 'none' }}
-                    >
-                      <CardActionArea>
-                        <LazyLoadCardImage
-                          displayWidth={winnerDisplayWidth}
-                          height={height}
-                          image={imgurLink}
-                          width={width}
-                        />
-                      </CardActionArea>
-                    </RouterLink>
+                    <CardImageLink
+                      displayWidth={winnerDisplayWidth}
+                      height={height}
+                      id={id}
+                      image={imgurLink}
+                      width={width}
+                    />
                   </Card>
                 </React.Fragment>
               ))}
               <Divider className={classes.divider} />
-              <Typography
-                className={classes.subheader}
-                component="h2"
-                variant={isSmUp ? 'h4' : 'h6'}
-              >
-                Other entries
-              </Typography>
+              <Subheader>Other entries</Subheader>
             </>
           )}
           {entries && (
@@ -330,26 +309,21 @@ const Contest = () => {
               }) => (
                 <Grid key={id} item xs={xs} sm={sm} md={md} lg={lg}>
                   <Card id={id}>
-                    <RouterLink
-                      to={{ pathname: `${match.url}/entry/${id}`, state: { isFromContest: true } }}
-                      style={{ textDecoration: 'none' }}
+                    <CardImageLink
+                      displayWidth={gridDisplayWidth}
+                      height={height}
+                      id={id}
+                      image={imgurLink}
+                      width={width}
                     >
-                      <CardActionArea>
-                        <LazyLoadCardImage
-                          displayWidth={gridDisplayWidth}
-                          height={height}
-                          image={imgurLink}
-                          width={width}
-                        />
-                        {!isHideTitles && (
-                        <CardContent>
-                          <Typography className={classes.entryName} variant="caption">
-                            {entryName}
-                          </Typography>
-                        </CardContent>
-                        )}
-                      </CardActionArea>
-                    </RouterLink>
+                      {!isHideTitles && (
+                      <CardContent>
+                        <Typography className={classes.entryName} variant="caption">
+                          {entryName}
+                        </Typography>
+                      </CardContent>
+                      )}
+                    </CardImageLink>
                   </Card>
                 </Grid>
               ))}
