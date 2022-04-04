@@ -122,38 +122,44 @@ if (!isDev && cluster.isMaster) {
           );
 
           const winnersThreadId = contestResult[0].winners_thread_id;
+          const contestEntriesData = [];
           if (winnersThreadId) {
             const contestTop20 = imagesData.filter((image) => image.rank && image.rank <= 20);
             if (contestTop20.length < 20) {
               const winners = await reddit.getWinners(winnersThreadId);
 
-              const contestEntriesData = [];
               const entriesData = [];
               winners.forEach(({ imgurId, rank, user }) => {
-                const imageData = imagesData.find((image) => image.id === imgurId);
-                imageData.rank = rank;
-                imageData.user = user;
-
                 contestEntriesData.push({
                   contest_id: id,
                   entry_id: imgurId,
                   rank,
                 });
 
-                const { description } = contest.entries.find((entry) => entry.imgurId === imgurId);
-                entriesData.push({
-                  description: rank === 1 ? description : null,
-                  id: imgurId,
-                  user,
-                });
+                const imageData = imagesData.find((image) => image.id === imgurId);
+                if (imageData) {
+                  imageData.rank = rank;
+                  imageData.user = user;
+
+                  const { description } = contest.entries.find(
+                    (entry) => entry.imgurId === imgurId,
+                  );
+                  entriesData.push({
+                    description: rank === 1 ? description : null,
+                    id: imgurId,
+                    user,
+                  });
+                }
               });
 
-              await db.update(
-                contestEntriesData,
-                ['?contest_id', '?entry_id', 'rank'],
-                'contest_entries',
-              );
-              await db.update(entriesData, ['?id', 'description', 'user'], 'entries');
+              if (entriesData.length) {
+                await db.update(
+                  contestEntriesData,
+                  ['?contest_id', '?entry_id', 'rank'],
+                  'contest_entries',
+                );
+                await db.update(entriesData, ['?id', 'description', 'user'], 'entries');
+              }
             }
           }
 
@@ -180,7 +186,20 @@ if (!isDev && cluster.isMaster) {
             );
             if (imgurData.length) {
               await db.insert('entries', imgurData);
-              await addContestEntries(id, imgurData);
+              const contestEntries = imgurData.map((imageData) => {
+                let rank = null;
+                const contestEntry = contestEntriesData.find(
+                  (entry) => entry.entry_id === imageData.imgurId,
+                );
+                if (contestEntry) {
+                  rank = contestEntry.rank;
+                }
+                return {
+                  ...imageData,
+                  rank,
+                };
+              });
+              await addContestEntries(id, contestEntries);
               allImagesData.push(...imgurData);
             }
           }
