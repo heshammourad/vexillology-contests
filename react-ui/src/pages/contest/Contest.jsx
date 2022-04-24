@@ -206,7 +206,9 @@ const Contest = () => {
   } = getGridVariables();
 
   const headingVariant = isSmUp ? 'h3' : 'h5';
-  const { name, entries, winners } = contest;
+  const {
+    date, entries, name, winners,
+  } = contest;
   return (
     <PageWithDrawer
       handleClose={() => {
@@ -223,7 +225,7 @@ const Contest = () => {
             Icon={SettingsOutlinedIcon}
           />
         ),
-        children: <ArrowBackButton to={backLink} />,
+        children: <ArrowBackButton to={{ pathname: backLink, state: { date } }} />,
       }}
       drawer={{
         heading: 'Settings',
