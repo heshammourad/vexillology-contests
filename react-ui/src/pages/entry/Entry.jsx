@@ -4,10 +4,9 @@ import { makeStyles } from '@material-ui/core/styles';
 import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import RedditIcon from '@material-ui/icons/Reddit';
-import { useContext } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 
-import { DrawerStateContext, useSwrData } from '../../common';
+import { useSettingsState, useSwrData } from '../../common';
 import {
   AppBarIconButton,
   ArrowBackButton,
@@ -54,7 +53,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function PersistentDrawerRight() {
+const Entry = () => {
   const { contestId, entryId } = useParams();
   const { entries = [], winners = [] } = useSwrData(`/contests/${contestId}`) || {};
   const entry = [...winners, ...entries].find(({ id }) => id === entryId) || {};
@@ -62,14 +61,18 @@ export default function PersistentDrawerRight() {
   const { state = {} } = useLocation();
   const classes = useStyles();
 
-  const { isOpen, setOpen } = useContext(DrawerStateContext);
+  const [{ isInfoOpen }, updateSettings] = useSettingsState();
+
+  const updateInfoSetting = (infoOpen) => {
+    updateSettings('isInfoOpen', infoOpen);
+  };
 
   const handleDrawerClose = () => {
-    setOpen(false);
+    updateInfoSetting(false);
   };
 
   const handleDrawerToggle = () => {
-    setOpen(!isOpen);
+    updateInfoSetting(!isInfoOpen);
   };
 
   const redditPermalink = `https://www.reddit.com${entry.permalink}`;
@@ -78,7 +81,7 @@ export default function PersistentDrawerRight() {
   return (
     <PageWithDrawer
       handleClose={handleDrawerClose}
-      isOpen={isOpen}
+      isOpen={isInfoOpen}
       className={classes.root}
       appBar={{
         position: 'fixed',
@@ -137,4 +140,6 @@ export default function PersistentDrawerRight() {
       </Box>
     </PageWithDrawer>
   );
-}
+};
+
+export default Entry;

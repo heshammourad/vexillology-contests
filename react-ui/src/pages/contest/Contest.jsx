@@ -21,7 +21,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
 import createPersistedState from 'use-persisted-state';
 
-import { useClientWidth, useSwrData } from '../../common';
+import { useClientWidth, useSettingsState, useSwrData } from '../../common';
 import {
   AppBarIconButton,
   ArrowBackButton,
@@ -35,7 +35,6 @@ import CardImageLink from './CardImageLink';
 import Subheader from './Subheader';
 
 const useScrollState = createPersistedState('scroll');
-const useSettingsState = createPersistedState('settings');
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -134,12 +133,7 @@ const Contest = () => {
     }
   }, [state, contest]);
 
-  const [settings, setSettings] = useSettingsState({ isHideTitles: false, density: 'default' });
-  const { density = 'default', isHideTitles } = settings;
-
-  const updateSettings = (key, value) => {
-    setSettings({ ...settings, [key]: value });
-  };
+  const [{ density = 'default', isHideTitles }, updateSettings] = useSettingsState();
 
   const toggleHideTitles = () => {
     updateSettings('isHideTitles', !isHideTitles);
