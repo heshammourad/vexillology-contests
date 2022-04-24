@@ -13,7 +13,9 @@ const imgur = require('./imgur');
 const memcache = require('./memcache');
 const reddit = require('./reddit');
 
-const { ENV_LEVEL, NODE_ENV, PORT: ENV_PORT } = process.env;
+const {
+  CONTESTS_CACHE_TIMEOUT = 3600, ENV_LEVEL, NODE_ENV, PORT: ENV_PORT,
+} = process.env;
 
 const isDev = NODE_ENV !== 'production';
 const PORT = ENV_PORT || 5000;
@@ -69,6 +71,7 @@ if (!isDev && cluster.isMaster) {
       entries.map((entry) => ({
         contest_id: contestId,
         entry_id: entry.id,
+        rank: entry.rank,
       })),
     );
   };
@@ -163,15 +166,27 @@ if (!isDev && cluster.isMaster) {
             }
           }
 
+          const getEntryRank = (entryId) => {
+            const contestEntry = contestEntriesData.find((entry) => entry.entry_id === entryId);
+            if (contestEntry) {
+              return contestEntry.rank;
+            }
+            return null;
+          };
+
           const allImagesData = [...imagesData];
           let missingEntries = findMissingEntries(contest, allImagesData);
           if (missingEntries.length) {
             const entriesData = await db.select('SELECT * FROM entries WHERE id = ANY ($1)', [
               missingEntries.map((entry) => entry.imgurId),
             ]);
+            const contestEntries = entriesData.map((entry) => ({
+              ...entry,
+              rank: getEntryRank(entry.id),
+            }));
             if (entriesData.length) {
-              await addContestEntries(id, entriesData);
-              allImagesData.push(...entriesData);
+              await addContestEntries(id, contestEntries);
+              allImagesData.push(...contestEntries);
             }
           }
 
@@ -186,21 +201,12 @@ if (!isDev && cluster.isMaster) {
             );
             if (imgurData.length) {
               await db.insert('entries', imgurData);
-              const contestEntries = imgurData.map((imageData) => {
-                let rank = null;
-                const contestEntry = contestEntriesData.find(
-                  (entry) => entry.entry_id === imageData.imgurId,
-                );
-                if (contestEntry) {
-                  rank = contestEntry.rank;
-                }
-                return {
-                  ...imageData,
-                  rank,
-                };
-              });
+              const contestEntries = imgurData.map((imageData) => ({
+                ...imageData,
+                rank: getEntryRank(imageData.imgurId),
+              }));
               await addContestEntries(id, contestEntries);
-              allImagesData.push(...imgurData);
+              allImagesData.push(...contestEntries);
             }
           }
 
@@ -232,7 +238,7 @@ if (!isDev && cluster.isMaster) {
             ...contest,
           };
         },
-        3600,
+        CONTESTS_CACHE_TIMEOUT,
       );
 
       if (!response) {
