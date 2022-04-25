@@ -111,13 +111,14 @@ if (!isDev && cluster.isMaster) {
       const response = await memcache.get(
         `contest.${id}`,
         async () => {
-          const contestResult = await db.select(
-            'SELECT name, date, winners_thread_id FROM contests WHERE id = $1 AND env_level >= $2',
+          const contestResults = await db.select(
+            'SELECT name, date, valid_reddit_id, winners_thread_id FROM contests WHERE id = $1 AND env_level >= $2',
             [id, ENV_LEVEL],
           );
-          if (!contestResult.length) {
+          if (!contestResults.length) {
             return null;
           }
+          const contestResult = contestResults[0];
 
           const contest = await reddit.getContest(id);
           const imagesData = await db.select(
@@ -125,7 +126,7 @@ if (!isDev && cluster.isMaster) {
             [id],
           );
 
-          winnersThreadId = contestResult[0].winners_thread_id;
+          winnersThreadId = contestResult.winners_thread_id;
           const contestEntriesData = [];
           if (winnersThreadId) {
             const contestTop20 = imagesData.filter((image) => image.rank && image.rank <= 20);
@@ -236,8 +237,10 @@ if (!isDev && cluster.isMaster) {
           }
 
           return {
-            date: contestResult[0].date.toJSON().substr(0, 10),
-            name: contestResult[0].name,
+            date: contestResult.date.toJSON().substr(0, 10),
+            name: contestResult.name,
+            validRedditId: contestResult.valid_reddit_id,
+            winnersThreadId,
             ...contest,
           };
         },

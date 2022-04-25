@@ -15,7 +15,9 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import EmojiEventsOutlinedIcon from '@material-ui/icons/EmojiEventsOutlined';
 import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
+import ThumbsUpDownOutlinedIcon from '@material-ui/icons/ThumbsUpDownOutlined';
 import React, { useState, useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
@@ -201,7 +203,7 @@ const Contest = () => {
 
   const headingVariant = isSmUp ? 'h3' : 'h5';
   const {
-    date, entries, name, winners,
+    date, entries, name, validRedditId, winners, winnersThreadId,
   } = contest;
   return (
     <PageWithDrawer
@@ -213,11 +215,29 @@ const Contest = () => {
         className: classes.icon,
         color: 'default',
         right: (
-          <AppBarIconButton
-            ariaLabel="View settings"
-            onClick={toggleSettingsOpen}
-            Icon={SettingsOutlinedIcon}
-          />
+          <>
+            {validRedditId && (
+              <>
+                <AppBarIconButton
+                  href={`https://redd.it/${contestId}`}
+                  ariaLabel="Open voting thread"
+                  Icon={ThumbsUpDownOutlinedIcon}
+                />
+                {winnersThreadId && (
+                  <AppBarIconButton
+                    href={`https://redd.it/${winnersThreadId}`}
+                    ariaLabel="Open winners thread"
+                    Icon={EmojiEventsOutlinedIcon}
+                  />
+                )}
+              </>
+            )}
+            <AppBarIconButton
+              ariaLabel="View settings"
+              onClick={toggleSettingsOpen}
+              Icon={SettingsOutlinedIcon}
+            />
+          </>
         ),
         children: <ArrowBackButton to={{ pathname: backLink, state: { date } }} />,
       }}
