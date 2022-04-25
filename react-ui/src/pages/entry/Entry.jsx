@@ -3,6 +3,8 @@ import List from '@material-ui/core/List';
 import { makeStyles } from '@material-ui/core/styles';
 import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
+import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import RedditIcon from '@material-ui/icons/Reddit';
 import { useParams, useLocation } from 'react-router-dom';
 
@@ -14,6 +16,8 @@ import {
   ListItemButton,
   PageWithDrawer,
 } from '../../components';
+
+import NavigateIconButton from './NavigateIconButton';
 
 const calculateImageContainerHeight = (offset) => `calc(100vh - ${offset}px)`;
 
@@ -41,6 +45,12 @@ const useStyles = makeStyles((theme) => ({
   },
   entryName: {
     fontWeight: 'bold',
+  },
+  navigateBefore: {
+    left: 28,
+  },
+  navigateNext: {
+    right: 28,
   },
   sectionHeader: {
     color: '#5f6368',
@@ -136,7 +146,9 @@ const Entry = () => {
         alignItems="center"
         justifyContent="center"
       >
+        <NavigateIconButton className={classes.navigateBefore} Icon={NavigateBeforeIcon} />
         {entry && <img className={classes.image} src={entry.imgurLink} alt="" />}
+        <NavigateIconButton className={classes.navigateNext} Icon={NavigateNextIcon} />
       </Box>
     </PageWithDrawer>
   );
