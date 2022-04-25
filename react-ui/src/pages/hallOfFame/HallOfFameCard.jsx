@@ -22,31 +22,56 @@ import {
   LazyLoadCardImage,
   RedditUserAttribution,
 } from '../../components';
+import flair from '../../images/flair.png';
 
-const useStyles = makeStyles((theme) => ({
-  card: {
-    marginTop: theme.spacing(3),
-  },
-  cardContent: {
-    flex: 1,
-  },
-  contestLabel: {
-    fontStyle: 'italic',
-  },
-  description: {
-    padding: '0 16px 16px',
-  },
-  expand: {
-    transform: 'rotate(0deg)',
-    marginLeft: 'auto',
-    transition: theme.transitions.create('transform', {
-      duration: theme.transitions.duration.shortest,
-    }),
-  },
-  expandOpen: {
-    transform: 'rotate(180deg)',
-  },
-}));
+const useStyles = makeStyles((theme) => {
+  const FLAIR_START_YEAR = 2015;
+  const FLAIR_WIDTH = 25;
+
+  const styles = {
+    bestOfYear: {
+      '&::after': {
+        background: `url("${flair}")`,
+        backgroundSize: 'auto 14px',
+        content: '""',
+        display: 'inline-block',
+        height: 14,
+        verticalAlign: -2,
+        width: FLAIR_WIDTH - 5,
+      },
+    },
+    bestOfYearLabel: {
+      marginRight: 4,
+    },
+    card: {
+      marginTop: theme.spacing(3),
+    },
+    cardContent: {
+      flex: 1,
+    },
+    contestLabel: {
+      fontStyle: 'italic',
+    },
+    description: {
+      padding: '0 16px 16px',
+    },
+    expand: {
+      transform: 'rotate(0deg)',
+      marginLeft: 'auto',
+      transition: theme.transitions.create('transform', {
+        duration: theme.transitions.duration.shortest,
+      }),
+    },
+    expandOpen: {
+      transform: 'rotate(180deg)',
+    },
+  };
+  for (let i = FLAIR_START_YEAR; i <= 2021; i += 1) {
+    const offset = (i - FLAIR_START_YEAR) * FLAIR_WIDTH;
+    styles[`bestOfYear${i}`] = { '&::after': { backgroundPosition: `-${offset}px 0` } };
+  }
+  return styles;
+});
 
 const HallOfFameCard = ({
   entry: {
@@ -59,6 +84,8 @@ const HallOfFameCard = ({
     redditThreadId,
     user,
     width,
+    yearEndContest,
+    yearEndWinner,
   },
   imageDisplayWidth,
 }) => {
@@ -67,12 +94,14 @@ const HallOfFameCard = ({
     setExpanded(!expanded);
   };
 
-  const contestLabel = `${format(parseISO(date), 'MMM yyyy')} - ${contestName}`;
+  const contestYearLabel = yearEndContest ? '' : `${format(parseISO(date), 'MMM yyyy')} - `;
+  const contestLabel = `${contestYearLabel}${contestName}`;
   const imgurUrl = `https://i.imgur.com/${entryId}.png`;
+  const year = getYear(parseISO(date));
 
   const classes = useStyles();
   return (
-    <Card className={classes.card} id={`hofc-${date}`} data-year={getYear(parseISO(date))}>
+    <Card className={classes.card} id={`hofc-${date}`} data-year={year}>
       <LazyLoadCardImage
         displayWidth={imageDisplayWidth}
         height={height}
@@ -82,8 +111,17 @@ const HallOfFameCard = ({
       <Box alignItems="flex-end" display="flex">
         <CardContent className={classes.cardContent}>
           {entryName && (
-            <Typography component="div" variant="subtitle2">
+            <Typography
+              className={clsx({
+                [`${classes.bestOfYear} ${classes[`bestOfYear${year}`]}`]: yearEndWinner,
+              })}
+              component="div"
+              variant="subtitle2"
+            >
               {entryName}
+              {yearEndWinner && (
+                <span className={classes.bestOfYearLabel}>&nbsp;|&nbsp;BEST OF</span>
+              )}
             </Typography>
           )}
           <RedditUserAttribution user={user} />
@@ -134,6 +172,8 @@ HallOfFameCard.propTypes = {
     redditThreadId: PropTypes.string,
     user: PropTypes.string,
     width: PropTypes.number,
+    yearEndContest: PropTypes.bool,
+    yearEndWinner: PropTypes.bool,
   }).isRequired,
   imageDisplayWidth: PropTypes.number.isRequired,
 };

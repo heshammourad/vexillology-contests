@@ -107,6 +107,7 @@ if (!isDev && cluster.isMaster) {
 
   router.route('/contests/:id').get(async ({ params: { id } }, res) => {
     try {
+      let winnersThreadId;
       const response = await memcache.get(
         `contest.${id}`,
         async () => {
@@ -124,11 +125,12 @@ if (!isDev && cluster.isMaster) {
             [id],
           );
 
-          const winnersThreadId = contestResult[0].winners_thread_id;
+          winnersThreadId = contestResult[0].winners_thread_id;
           const contestEntriesData = [];
           if (winnersThreadId) {
             const contestTop20 = imagesData.filter((image) => image.rank && image.rank <= 20);
-            if (contestTop20.length < 20) {
+            const winner = contestTop20.filter(({ rank }) => rank === 1);
+            if (contestTop20.length < 20 || !winner.description) {
               const winners = await reddit.getWinners(winnersThreadId);
 
               const entriesData = [];
@@ -144,12 +146,13 @@ if (!isDev && cluster.isMaster) {
                   imageData.rank = rank;
                   imageData.user = user;
 
-                  const { description } = contest.entries.find(
+                  const { description, name } = contest.entries.find(
                     (entry) => entry.imgurId === imgurId,
                   );
                   entriesData.push({
-                    description: rank === 1 ? description : null,
+                    description,
                     id: imgurId,
+                    name,
                     user,
                   });
                 }
@@ -161,7 +164,7 @@ if (!isDev && cluster.isMaster) {
                   ['?contest_id', '?entry_id', 'rank'],
                   'contest_entries',
                 );
-                await db.update(entriesData, ['?id', 'description', 'user'], 'entries');
+                await db.update(entriesData, ['?id', 'description', 'name', 'user'], 'entries');
               }
             }
           }
@@ -246,7 +249,7 @@ if (!isDev && cluster.isMaster) {
         return;
       }
 
-      if (response.isContestMode) {
+      if (response.isContestMode && !winnersThreadId) {
         response.entries = shuffle(response.entries);
       } else {
         const [winners, entries] = partition(response.entries, ({ rank }) => rank && rank < 20);
@@ -264,9 +267,12 @@ if (!isDev && cluster.isMaster) {
   router.route('/hallOfFame').get(async (req, res) => {
     try {
       const result = await db.select('SELECT * FROM hall_of_fame');
-      res.send(
-        result.map(
-          ({
+
+      const removedYearEndWinners = [];
+      const response = result.reduce(
+        (
+          acc,
+          {
             contest_id: contestId,
             contest_name: contestName,
             date,
@@ -274,23 +280,35 @@ if (!isDev && cluster.isMaster) {
             entry_name: entryName,
             valid_reddit_id: validRedditId,
             winners_thread_id: winnersThreadId,
+            year_end: yearEnd,
             ...rest
-          }) => {
-            let redditThreadId = winnersThreadId;
-            if (!redditThreadId && validRedditId) {
-              redditThreadId = contestId;
-            }
-            return {
-              contestName,
-              date: date.toJSON().substr(0, 7),
-              entryId,
-              entryName,
-              redditThreadId,
-              ...rest,
-            };
           },
-        ),
+        ) => {
+          if (yearEnd && result.filter((entry) => entry.entry_id === entryId).length > 1) {
+            removedYearEndWinners.push(entryId);
+            return acc;
+          }
+
+          let redditThreadId = winnersThreadId;
+          if (!redditThreadId && validRedditId) {
+            redditThreadId = contestId;
+          }
+
+          acc.push({
+            contestName,
+            date: date.toJSON().substr(0, 7),
+            entryId,
+            entryName,
+            redditThreadId,
+            yearEndContest: yearEnd,
+            yearEndWinner: yearEnd || removedYearEndWinners.includes(entryId),
+            ...rest,
+          });
+          return acc;
+        },
+        [],
       );
+      res.send(response);
     } catch (err) {
       console.error(err.toString());
       res.status(500).send();
