@@ -294,17 +294,19 @@ if (!isDev && cluster.isMaster) {
             redditThreadId = contestId;
           }
 
-          acc.push({
-            contestName,
-            date: date.toJSON().substr(0, 7),
-            entryId,
-            entryName,
-            redditThreadId,
-            yearEndContest: yearEnd,
-            yearEndWinner: yearEnd || removedYearEndWinners.includes(entryId),
-            ...rest,
-          });
-          return acc;
+          return [
+            ...acc,
+            {
+              contestName,
+              date: date.toJSON().substr(0, 7),
+              entryId,
+              entryName,
+              redditThreadId,
+              yearEndContest: yearEnd,
+              yearEndWinner: yearEnd || removedYearEndWinners.includes(entryId),
+              ...rest,
+            },
+          ];
         },
         [],
       );
