@@ -1,5 +1,9 @@
 const Snoowrap = require('snoowrap');
 
+const { createLogger } = require('./logger');
+
+const logger = createLogger('REDDIT');
+
 const { REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_PASSWORD } = process.env;
 
 const r = new Snoowrap({
@@ -11,6 +15,7 @@ const r = new Snoowrap({
 });
 
 const getContest = async (submissionId) => {
+  logger.debug(`Getting contest submission: '${submissionId}`);
   const submission = await r.getSubmission(submissionId);
   const isContestMode = await submission.contest_mode;
   const entries = await submission.comments.reduce(
@@ -38,17 +43,22 @@ const getContest = async (submissionId) => {
     },
     [],
   );
-  return { entries, isContestMode };
+  const contest = { entries, isContestMode };
+  logger.debug(`Got contest: '${JSON.stringify(contest)}'`);
+  return contest;
 };
 
 const getWinners = async (winnersThreadId) => {
+  logger.debug(`Getting winners submission: '${winnersThreadId}'`);
   const submission = await r.getSubmission(winnersThreadId);
   const selftext = await submission.selftext;
-  return Array.from(selftext.matchAll(/(\d*)\|(.*)\|.*imgur\.com\/(\w*)(\.|\))/g), (match) => ({
+  const winners = Array.from(selftext.matchAll(/(\d*)\|(.*)\|.*imgur\.com\/(\w*)(\.|\))/g), (match) => ({
     imgurId: match[3],
     rank: parseInt(match[1], 10),
     user: match[2],
   }));
+  logger.debug(`Got winners: '${JSON.stringify(winners)}'`);
+  return winners;
 };
 
 module.exports = { getContest, getWinners };
