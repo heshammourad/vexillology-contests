@@ -25,7 +25,7 @@ const PORT = ENV_PORT || 5000;
 
 // Multi-process to utilize all CPU cores.
 if (!isDev && cluster.isMaster) {
-  logger.error(`Node cluster master ${process.pid} is running`);
+  logger.info(`Node cluster master ${process.pid} is running`);
 
   // Fork workers.
   for (let i = 0; i < numCPUs; i += 1) {
@@ -33,7 +33,7 @@ if (!isDev && cluster.isMaster) {
   }
 
   cluster.on('exit', (worker, code, signal) => {
-    logger.error(
+    logger.info(
       `Node cluster worker ${worker.process.pid} exited: code ${code}, signal ${signal}`,
     );
   });
