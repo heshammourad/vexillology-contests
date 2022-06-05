@@ -8,10 +8,6 @@ const createLogger = (customLabel) => winston.createLogger({
   level: LOG_LEVEL,
   format: format.combine(
     format.label({ label: customLabel }),
-    format.timestamp(),
-    format.printf(({
-      label, level, message, timestamp,
-    }) => `${timestamp} [${label}] ${level}: ${message}`),
     format.json(),
   ),
   transports: [
