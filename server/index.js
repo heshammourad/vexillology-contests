@@ -102,7 +102,7 @@ if (!isDev && cluster.isMaster) {
         })),
       );
     } catch (err) {
-      logger.error(`Error getting /contests: ${JSON.stringify(err)}`);
+      logger.error(`Error getting /contests: ${err}`);
       res.status(500).send();
     }
   });
@@ -133,7 +133,7 @@ if (!isDev && cluster.isMaster) {
           const contestEntriesData = [];
           if (winnersThreadId) {
             const contestTop20 = imagesData.filter((image) => image.rank && image.rank <= 20);
-            const winner = contestTop20.filter(({ rank }) => rank === 1);
+            const winner = contestTop20.find(({ rank }) => rank === 1);
             if (contestTop20.length < 20 || !winner.description) {
               const winners = await reddit.getWinners(winnersThreadId);
 
@@ -276,7 +276,7 @@ if (!isDev && cluster.isMaster) {
 
       res.send(response);
     } catch (err) {
-      logger.error(`Error getting /contest/${id}: ${JSON.stringify(err)}`);
+      logger.error(`Error getting /contest/${id}: ${err})}`);
       res.status(500).send();
     }
   });
@@ -326,7 +326,7 @@ if (!isDev && cluster.isMaster) {
       logger.debug(`Got '${JSON.stringify(response)}' for /hallOfFame`);
       res.send(response);
     } catch (err) {
-      logger.error(`Error getting /hallOfFame: ${JSON.stringify(err)}`);
+      logger.error(`Error getting /hallOfFame: ${err}`);
       res.status(500).send();
     }
   });

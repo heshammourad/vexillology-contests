@@ -22,7 +22,7 @@ const get = async (key, callback, expires = 0) => {
       return JSON.parse(value);
     }
   } catch (err) {
-    logger.error(`Error looking up '${key}' in cache: ${JSON.stringify(err)}`);
+    logger.error(`Error looking up '${key}' in cache: ${err.getMessage()}`);
   }
 
   const newValue = await callback();
@@ -34,7 +34,7 @@ const get = async (key, callback, expires = 0) => {
       mc.set(key, valueObj, { expires });
     }
   } catch (err) {
-    logger.error(`Error setting '${key}' in cache: ${JSON.stringify(err)}`);
+    logger.error(`Error setting '${key}' in cache: ${err.getMessage()}`);
   }
 
   return newValue;
