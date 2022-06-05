@@ -22,7 +22,8 @@
     "memjs": "^1.2.2",
     "pg-connection-string": "^2.4.0",
     "pg-promise": "^10.9.1",
-    "snoowrap": "^1.22.0"
+    "snoowrap": "^1.22.0",
+    "winston": "^3.7.2"
   },
   "repository": {
     "type": "git",

@@ -10,8 +10,11 @@ const shuffle = require('lodash/shuffle');
 
 const db = require('./db');
 const imgur = require('./imgur');
+const { createLogger } = require('./logger');
 const memcache = require('./memcache');
 const reddit = require('./reddit');
+
+const logger = createLogger('INDEX');
 
 const {
   CONTESTS_CACHE_TIMEOUT = 3600, ENV_LEVEL, NODE_ENV, PORT: ENV_PORT,
@@ -22,7 +25,7 @@ const PORT = ENV_PORT || 5000;
 
 // Multi-process to utilize all CPU cores.
 if (!isDev && cluster.isMaster) {
-  console.error(`Node cluster master ${process.pid} is running`);
+  logger.info(`Node cluster master ${process.pid} is running`);
 
   // Fork workers.
   for (let i = 0; i < numCPUs; i += 1) {
@@ -30,7 +33,7 @@ if (!isDev && cluster.isMaster) {
   }
 
   cluster.on('exit', (worker, code, signal) => {
-    console.error(
+    logger.info(
       `Node cluster worker ${worker.process.pid} exited: code ${code}, signal ${signal}`,
     );
   });
@@ -38,12 +41,15 @@ if (!isDev && cluster.isMaster) {
   const app = express();
 
   app.enable('trust proxy');
-  app.use((req, res, next) => {
-    const host = req.header('host');
-    const isOldDomain = host === 'vexillology-contests.herokuapp.com';
-    if (!isDev && (!req.secure || isOldDomain)) {
-      const newDomain = isOldDomain ? 'www.vexillologycontests.com' : req.headers.host;
-      res.redirect(301, `https://${newDomain}${req.url}`);
+  app.use(({
+    hostname, protocol, secure, url,
+  }, res, next) => {
+    const isOldDomain = hostname === 'vexillology-contests.herokuapp.com';
+    if (!isDev && (!secure || isOldDomain)) {
+      const newDomain = isOldDomain ? 'www.vexillologycontests.com' : hostname;
+      const redirectUrl = `https://${newDomain}${url}`;
+      res.redirect(301, redirectUrl);
+      logger.info(`Request: ${protocol}://${hostname}${url}, redirecting to ${redirectUrl}`);
       return;
     }
 
@@ -90,17 +96,13 @@ if (!isDev && cluster.isMaster) {
         [ENV_LEVEL],
       );
       res.send(
-        result.map(({
-          date, id, name, year_end: yearEnd,
-        }) => ({
+        result.map(({ date, ...rest }) => ({
+          ...rest,
           date: date.toJSON().substr(0, 10),
-          id,
-          name,
-          yearEnd,
         })),
       );
     } catch (err) {
-      console.error(err.toString());
+      logger.error(`Error getting /contests: ${err}`);
       res.status(500).send();
     }
   });
@@ -116,6 +118,7 @@ if (!isDev && cluster.isMaster) {
             [id, ENV_LEVEL],
           );
           if (!contestResults.length) {
+            logger.warn(`Contest id: ${id} not found in database.`);
             return null;
           }
           const contestResult = contestResults[0];
@@ -126,11 +129,11 @@ if (!isDev && cluster.isMaster) {
             [id],
           );
 
-          winnersThreadId = contestResult.winners_thread_id;
+          winnersThreadId = contestResult.winnersThreadId;
           const contestEntriesData = [];
           if (winnersThreadId) {
             const contestTop20 = imagesData.filter((image) => image.rank && image.rank <= 20);
-            const winner = contestTop20.filter(({ rank }) => rank === 1);
+            const winner = contestTop20.find(({ rank }) => rank === 1);
             if (contestTop20.length < 20 || !winner.description) {
               const winners = await reddit.getWinners(winnersThreadId);
 
@@ -171,7 +174,7 @@ if (!isDev && cluster.isMaster) {
           }
 
           const getEntryRank = (entryId) => {
-            const contestEntry = contestEntriesData.find((entry) => entry.entry_id === entryId);
+            const contestEntry = contestEntriesData.find((entry) => entry.entryId === entryId);
             if (contestEntry) {
               return contestEntry.rank;
             }
@@ -214,6 +217,15 @@ if (!isDev && cluster.isMaster) {
             }
           }
 
+          missingEntries = findMissingEntries(contest, allImagesData);
+          if (missingEntries.length) {
+            logger.warn(
+              `Unable to retrieve image data for: [${allImagesData
+                .map(({ imgurId }) => imgurId)
+                .join(', ')}]`,
+            );
+          }
+
           contest.entries = contest.entries.reduce((acc, cur) => {
             const imageData = allImagesData.find((image) => cur.imgurId === image.id);
             if (imageData) {
@@ -233,13 +245,14 @@ if (!isDev && cluster.isMaster) {
             return acc;
           }, []);
           if (!contest.entries.length) {
+            logger.warn(`Unable to retrieve entries for contest: '${id}'`);
             return null;
           }
 
           return {
             date: contestResult.date.toJSON().substr(0, 10),
             name: contestResult.name,
-            validRedditId: contestResult.valid_reddit_id,
+            validRedditId: contestResult.validRedditId,
             winnersThreadId,
             ...contest,
           };
@@ -248,6 +261,7 @@ if (!isDev && cluster.isMaster) {
       );
 
       if (!response) {
+        logger.warn(`Unable to find contest: '${id}'`);
         res.status(404).send();
         return;
       }
@@ -262,7 +276,7 @@ if (!isDev && cluster.isMaster) {
 
       res.send(response);
     } catch (err) {
-      console.error(err.toString());
+      logger.error(`Error getting /contest/${id}: ${err})}`);
       res.status(500).send();
     }
   });
@@ -276,18 +290,16 @@ if (!isDev && cluster.isMaster) {
         (
           acc,
           {
-            contest_id: contestId,
-            contest_name: contestName,
+            contestId,
             date,
-            entry_id: entryId,
-            entry_name: entryName,
-            valid_reddit_id: validRedditId,
-            winners_thread_id: winnersThreadId,
-            year_end: yearEnd,
+            entryId,
+            validRedditId,
+            winnersThreadId,
+            yearEnd,
             ...rest
           },
         ) => {
-          if (yearEnd && result.filter((entry) => entry.entry_id === entryId).length > 1) {
+          if (yearEnd && result.filter((entry) => entry.entryId === entryId).length > 1) {
             removedYearEndWinners.push(entryId);
             return acc;
           }
@@ -300,10 +312,8 @@ if (!isDev && cluster.isMaster) {
           return [
             ...acc,
             {
-              contestName,
               date: date.toJSON().substr(0, 7),
               entryId,
-              entryName,
               redditThreadId,
               yearEndContest: yearEnd,
               yearEndWinner: yearEnd || removedYearEndWinners.includes(entryId),
@@ -313,9 +323,10 @@ if (!isDev && cluster.isMaster) {
         },
         [],
       );
+      logger.debug(`Got '${JSON.stringify(response)}' for /hallOfFame`);
       res.send(response);
     } catch (err) {
-      console.error(err.toString());
+      logger.error(`Error getting /hallOfFame: ${err}`);
       res.status(500).send();
     }
   });
@@ -328,7 +339,7 @@ if (!isDev && cluster.isMaster) {
   });
 
   app.listen(PORT, () => {
-    console.error(
+    logger.info(
       `Node ${isDev ? 'dev server' : `cluster worker ${process.pid}`}: listening on port ${PORT}`,
     );
   });

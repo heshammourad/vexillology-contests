@@ -1,5 +1,9 @@
 const axios = require('axios');
 
+const { createLogger } = require('./logger');
+
+const logger = createLogger('IMGUR');
+
 const { IMGUR_CLIENT_ID, RAPIDAPI_KEY } = process.env;
 
 const getImagesData = async (images) => {
@@ -22,11 +26,14 @@ const getImagesData = async (images) => {
           height,
         };
       } catch (e) {
+        logger.error(`Unable to retrieve image with ID: ${image.imgurId}`);
         return null;
       }
     }),
   );
-  return (await enhancedImages).filter((image) => image);
+  const imagesData = (await enhancedImages).filter((image) => image);
+  logger.debug(`Retrieved images: ${JSON.stringify(imagesData)}`);
+  return imagesData;
 };
 
 module.exports = { getImagesData };
