@@ -8,6 +8,10 @@ const logger = createLogger('DB');
 
 const camelizeColumnNames = (data) => {
   const tmp = data[0];
+  if (!tmp) {
+    logger.debug('No data returned, no columns to camelize.');
+    return;
+  }
   Object.keys(tmp).forEach((prop) => {
     const camel = pgp.utils.camelize(prop);
     if (!(camel in tmp)) {
@@ -23,11 +27,16 @@ const camelizeColumnNames = (data) => {
 const connection = parse(process.env.DATABASE_URL);
 const db = pgp({ ...connection, ssl: { rejectUnauthorized: false } });
 
+db.$config.options.error = (err) => {
+  logger.error(`${err.toString()}`);
+};
+
 db.$config.options.query = ({ query }) => {
   logger.debug(`QUERY: ${query}`);
 };
 
 db.$config.options.receive = (data) => {
+  logger.debug(`Camelizing column names of: ${JSON.stringify(data)}`);
   camelizeColumnNames(data);
   logger.debug(`RECEIVE: ${JSON.stringify(data)}`);
 };
