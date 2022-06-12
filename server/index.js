@@ -220,7 +220,7 @@ if (!isDev && cluster.isMaster) {
           missingEntries = findMissingEntries(contest, allImagesData);
           if (missingEntries.length) {
             logger.warn(
-              `Unable to retrieve image data for: [${allImagesData
+              `Unable to retrieve image data for: [${missingEntries
                 .map(({ imgurId }) => imgurId)
                 .join(', ')}]`,
             );
