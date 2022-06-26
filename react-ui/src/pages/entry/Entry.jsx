@@ -55,7 +55,7 @@ const useStyles = makeStyles((theme) => ({
 
 const Entry = () => {
   const { contestId, entryId } = useParams();
-  const { entries = [], winners = [] } = useSwrData(`/contests/${contestId}`) || {};
+  const { entries = [], requestId, winners = [] } = useSwrData(`/contests/${contestId}`) || {};
   const entry = [...winners, ...entries].find(({ id }) => id === entryId) || {};
 
   const { state = {} } = useLocation();
@@ -110,7 +110,7 @@ const Entry = () => {
             color="inherit"
             to={{
               pathname: `/contests/${contestId}`,
-              state: { back: state.back, entry: entry.id },
+              state: { back: state.back, entry: entry.id, requestId },
             }}
           />
         ),

@@ -18,6 +18,7 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import EmojiEventsOutlinedIcon from '@material-ui/icons/EmojiEventsOutlined';
 import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
 import ThumbsUpDownOutlinedIcon from '@material-ui/icons/ThumbsUpDownOutlined';
+import clsx from 'clsx';
 import React, { useState, useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
@@ -45,6 +46,9 @@ const useStyles = makeStyles((theme) => ({
   divider: {
     height: 2,
     marginBottom: 16,
+  },
+  entriesLoading: {
+    visibility: 'hidden',
   },
   entryName: {
     color: 'black',
@@ -105,12 +109,14 @@ const imageWidths = {
   },
 };
 
+let scrollingIntervalId;
+
 const Contest = () => {
   const { contestId } = useParams();
-  const contest = useSwrData(`/contests/${contestId}`) || {};
-
   const { state = {} } = useLocation();
+  const contest = useSwrData(`/contests/${contestId}`, !!state.requestId) || {};
 
+  const [isLoaded, setLoaded] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
 
   const [scroll, setScroll] = useScrollState({});
@@ -124,14 +130,41 @@ const Contest = () => {
   };
 
   useEffect(() => {
-    const entryEl = document.getElementById(state.entry);
-    const { height, width, y } = scroll;
-    if (entryEl && y) {
-      if (height !== window.innerHeight || width !== window.innerWidth) {
-        return;
-      }
+    if (!contest.name) {
+      return;
+    }
+    if (!state.entry) {
+      setLoaded(true);
+      return;
+    }
 
-      animateScroll.scrollTo(y, { duration: 0, delay: 0 });
+    if (!scrollingIntervalId) {
+      scrollingIntervalId = setInterval(() => {
+        const entryEl = document.getElementById(state.entry);
+        if (!entryEl) {
+          return;
+        }
+
+        let scrollTop = scroll.y;
+
+        const headerHeight = document.getElementsByTagName('header')[0].offsetHeight;
+        const { bottom, top } = entryEl.getBoundingClientRect();
+        const windowTop = scrollTop + headerHeight;
+        const windowBottom = scrollTop + window.innerHeight;
+        if (
+          !scrollTop
+          || (bottom < windowTop && top < windowTop)
+          || (bottom > windowBottom && top > windowBottom)
+          || state.requestId !== contest.requestId
+        ) {
+          scrollTop = top - headerHeight - 8;
+        }
+
+        animateScroll.scrollTo(scrollTop, { duration: 0, delay: 0 });
+        setLoaded(true);
+        clearInterval(scrollingIntervalId);
+        scrollingIntervalId = null;
+      }, 50);
     }
   }, [state, contest]);
 
@@ -302,7 +335,7 @@ const Contest = () => {
       }}
     >
       {name && (
-        <Container fixed>
+        <Container className={clsx({ [classes.entriesLoading]: !isLoaded })} fixed>
           <Typography className={classes.heading} variant={headingVariant} component="h1">
             {name}
           </Typography>
