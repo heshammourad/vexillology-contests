@@ -22,9 +22,10 @@ import clsx from 'clsx';
 import React, { useState, useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
-import createPersistedState from 'use-persisted-state';
 
-import { useClientWidth, useSettingsState, useSwrData } from '../../common';
+import {
+  useClientWidth, useScrollState, useSettingsState, useSwrData,
+} from '../../common';
 import {
   AppBarIconButton,
   ArrowBackButton,
@@ -36,8 +37,6 @@ import {
 
 import CardImageLink from './CardImageLink';
 import Subheader from './Subheader';
-
-const useScrollState = createPersistedState('scroll');
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -119,12 +118,10 @@ const Contest = () => {
   const [isLoaded, setLoaded] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
 
-  const [scroll, setScroll] = useScrollState({});
+  const [scroll, setScroll] = useScrollState();
 
   const updateScroll = () => {
     setScroll({
-      height: window.innerHeight,
-      width: window.innerWidth,
       y: window.scrollY,
     });
   };
@@ -133,19 +130,21 @@ const Contest = () => {
     if (!contest.name) {
       return;
     }
-    if (!state.entry) {
+
+    const { entryId, y } = scroll;
+    if (!entryId) {
       setLoaded(true);
       return;
     }
 
     if (!scrollingIntervalId) {
       scrollingIntervalId = setInterval(() => {
-        const entryEl = document.getElementById(state.entry);
+        const entryEl = document.getElementById(entryId);
         if (!entryEl) {
           return;
         }
 
-        let scrollTop = scroll.y;
+        let scrollTop = y;
 
         const headerHeight = document.getElementsByTagName('header')[0].offsetHeight;
         const { bottom, top } = entryEl.getBoundingClientRect();
@@ -162,6 +161,7 @@ const Contest = () => {
 
         animateScroll.scrollTo(scrollTop, { duration: 0, delay: 0 });
         setLoaded(true);
+        setScroll({});
         clearInterval(scrollingIntervalId);
         scrollingIntervalId = null;
       }, 50);
