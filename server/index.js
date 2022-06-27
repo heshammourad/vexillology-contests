@@ -174,7 +174,7 @@ if (!isDev && cluster.isMaster) {
           }
 
           const getEntryRank = (entryId) => {
-            const contestEntry = contestEntriesData.find((entry) => entry.entryId === entryId);
+            const contestEntry = contestEntriesData.find((entry) => entry.entry_id === entryId);
             if (contestEntry) {
               return contestEntry.rank;
             }
@@ -210,7 +210,7 @@ if (!isDev && cluster.isMaster) {
               await db.insert('entries', imgurData);
               const contestEntries = imgurData.map((imageData) => ({
                 ...imageData,
-                rank: getEntryRank(imageData.imgurId),
+                rank: getEntryRank(imageData.id),
               }));
               await addContestEntries(id, contestEntries);
               allImagesData.push(...contestEntries);
@@ -222,7 +222,7 @@ if (!isDev && cluster.isMaster) {
             logger.warn(
               `Unable to retrieve image data for: [${missingEntries
                 .map(({ imgurId }) => imgurId)
-                .join(', ')}]`,
+                .join(', ')}] in contest ${id}.`,
             );
           }
 
