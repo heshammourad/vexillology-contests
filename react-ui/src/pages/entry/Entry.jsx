@@ -6,7 +6,7 @@ import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import RedditIcon from '@material-ui/icons/Reddit';
 import { useParams, useLocation } from 'react-router-dom';
 
-import { useSettingsState, useSwrData } from '../../common';
+import { useScrollState, useSettingsState, useSwrData } from '../../common';
 import {
   AppBarIconButton,
   ArrowBackButton,
@@ -55,12 +55,13 @@ const useStyles = makeStyles((theme) => ({
 
 const Entry = () => {
   const { contestId, entryId } = useParams();
-  const { entries = [], winners = [] } = useSwrData(`/contests/${contestId}`) || {};
+  const { entries = [], requestId, winners = [] } = useSwrData(`/contests/${contestId}`) || {};
   const entry = [...winners, ...entries].find(({ id }) => id === entryId) || {};
 
   const { state = {} } = useLocation();
   const classes = useStyles();
 
+  const [scroll, setScroll] = useScrollState();
   const [{ isInfoOpen }, updateSettings] = useSettingsState();
 
   const updateInfoSetting = (infoOpen) => {
@@ -108,9 +109,12 @@ const Entry = () => {
         children: (
           <ArrowBackButton
             color="inherit"
+            onClick={() => {
+              setScroll({ ...scroll, entryId: entry.id });
+            }}
             to={{
               pathname: `/contests/${contestId}`,
-              state: { back: state.back, entry: entry.id },
+              state: { back: state.back, requestId },
             }}
           />
         ),

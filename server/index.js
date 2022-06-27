@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 const cluster = require('cluster');
 const numCPUs = require('os').cpus().length;
 const path = require('path');
@@ -7,6 +6,7 @@ const express = require('express');
 const helmet = require('helmet');
 const partition = require('lodash/partition');
 const shuffle = require('lodash/shuffle');
+const { v4: uuidv4 } = require('uuid');
 
 const db = require('./db');
 const imgur = require('./imgur');
@@ -265,6 +265,8 @@ if (!isDev && cluster.isMaster) {
         res.status(404).send();
         return;
       }
+
+      response.requestId = uuidv4();
 
       if (response.isContestMode && !winnersThreadId) {
         response.entries = shuffle(response.entries);

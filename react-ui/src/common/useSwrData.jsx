@@ -7,11 +7,15 @@ import createPersistedState from 'use-persisted-state';
 const usePersistentState = createPersistedState('data');
 const useExpiresState = createPersistedState('expires');
 
-const useSwrData = (key) => {
+const useSwrData = (key, allowRefresh = true) => {
   const { data, mutate } = useSWR(key);
   const [isFetched, setFetched] = useState(!!data);
   const [cache, setCache] = usePersistentState({});
   const [expires, setExpires] = useExpiresState({});
+
+  if (data && !allowRefresh) {
+    return data;
+  }
 
   if (!isFetched) {
     setTimeout(async () => {
