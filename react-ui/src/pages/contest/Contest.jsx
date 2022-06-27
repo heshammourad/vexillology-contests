@@ -112,13 +112,12 @@ let scrollingIntervalId;
 
 const Contest = () => {
   const { contestId } = useParams();
-  const { state = {} } = useLocation();
-  const contest = useSwrData(`/contests/${contestId}`, !!state.requestId) || {};
+  const [scroll, setScroll] = useScrollState();
+  const contest = useSwrData(`/contests/${contestId}`, !!scroll.entryId) || {};
 
+  const { state = {} } = useLocation();
   const [isLoaded, setLoaded] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
-
-  const [scroll, setScroll] = useScrollState();
 
   const updateScroll = () => {
     setScroll({
@@ -151,7 +150,7 @@ const Contest = () => {
         const windowTop = scrollTop + headerHeight;
         const windowBottom = scrollTop + window.innerHeight;
         if (
-          !scrollTop
+          scrollTop === undefined
           || (bottom < windowTop && top < windowTop)
           || (bottom > windowBottom && top > windowBottom)
           || state.requestId !== contest.requestId
