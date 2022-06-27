@@ -26,7 +26,13 @@ const getImagesData = async (images) => {
           height,
         };
       } catch (e) {
-        logger.error(`Unable to retrieve image with ID: ${image.imgurId}`);
+        if (e.response.status === 404) {
+          logger.error(`Unable to find image with ID: ${image.imgurId}.`);
+          return {
+            ...image, height: 0, removed: true, width: 0,
+          };
+        }
+        logger.error(`Error retrieving image with ID, ${image.imgurId}: ${e.message}.`);
         return null;
       }
     }),
