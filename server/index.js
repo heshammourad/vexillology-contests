@@ -33,9 +33,7 @@ if (!isDev && cluster.isMaster) {
   }
 
   cluster.on('exit', (worker, code, signal) => {
-    logger.info(
-      `Node cluster worker ${worker.process.pid} exited: code ${code}, signal ${signal}`,
-    );
+    logger.info(`Node cluster worker ${worker.process.pid} exited: code ${code}, signal ${signal}`);
   });
 } else {
   const app = express();
@@ -273,7 +271,9 @@ if (!isDev && cluster.isMaster) {
       } else {
         const [winners, entries] = partition(response.entries, ({ rank }) => rank && rank < 20);
         response.entries = entries;
-        response.winners = winners.sort((a, b) => a.rank - b.rank);
+        if (winners.length) {
+          response.winners = winners.sort((a, b) => a.rank - b.rank);
+        }
       }
 
       res.send(response);
@@ -289,18 +289,9 @@ if (!isDev && cluster.isMaster) {
 
       const removedYearEndWinners = [];
       const response = result.reduce(
-        (
-          acc,
-          {
-            contestId,
-            date,
-            entryId,
-            validRedditId,
-            winnersThreadId,
-            yearEnd,
-            ...rest
-          },
-        ) => {
+        (acc, {
+          contestId, date, entryId, validRedditId, winnersThreadId, yearEnd, ...rest
+        }) => {
           if (yearEnd && result.filter((entry) => entry.entryId === entryId).length > 1) {
             removedYearEndWinners.push(entryId);
             return acc;
