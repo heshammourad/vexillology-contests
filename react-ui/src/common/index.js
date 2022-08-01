@@ -1,3 +1,4 @@
+export { default as AppHelmet } from './AppHelmet';
 export { default as useClientWidth } from './useClientWidth';
 export { default as useScrollState } from './useScrollState';
 export { default as useSettingsState } from './useSettingsState';

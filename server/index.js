@@ -17,7 +17,11 @@ const reddit = require('./reddit');
 const logger = createLogger('INDEX');
 
 const {
-  CONTESTS_CACHE_TIMEOUT = 3600, ENV_LEVEL, NODE_ENV, PORT: ENV_PORT,
+  CONTESTS_CACHE_TIMEOUT = 3600,
+  ENV_LEVEL,
+  NODE_ENV,
+  PORT: ENV_PORT,
+  TITLE = 'Vexillology Contests',
 } = process.env;
 
 const isDev = NODE_ENV !== 'production';
@@ -86,6 +90,17 @@ if (!isDev && cluster.isMaster) {
   const router = express.Router();
 
   router.use(express.json());
+
+  router.route('/init').get(async (req, res) => {
+    try {
+      res.send({
+        title: TITLE,
+      });
+    } catch (err) {
+      logger.error(`Error getting /init: ${err}`);
+      res.status(500).send();
+    }
+  });
 
   router.route('/contests').get(async (req, res) => {
     try {

@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Redirect, Route } from 'react-router-dom';
 import { SWRConfig } from 'swr';
 
 import { getData } from './api';
+import { AppHelmet } from './common';
 import {
   Contest, Contests, Entry, HallOfFame, Home,
 } from './pages';
@@ -25,6 +26,7 @@ const App = () => (
         }}
       >
         <div className="app">
+          <AppHelmet />
           <Router>
             <Route exact path="/">
               <Redirect to="/home" />
