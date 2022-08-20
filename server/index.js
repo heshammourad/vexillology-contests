@@ -73,10 +73,38 @@ if (!isDev && cluster.isMaster) {
   // eslint-disable-next-line max-len
   const findMissingEntries = (contest, imagesData) => contest.entries.filter((entry) => !imagesData.find((image) => image.id === entry.imgurId));
 
+  const filterRepeatedIds = async (data, idField) => {
+    const ids = new Set();
+    const filteredData = [];
+    const repeatedIds = [];
+    data.forEach((datum) => {
+      const id = datum[idField];
+      if (ids.has(id)) {
+        repeatedIds.push(id);
+      } else {
+        filteredData.push(datum);
+      }
+      ids.add(id);
+    });
+    return { filteredData, repeatedIds };
+  };
+
+  const addEntries = async (entries) => {
+    const { filteredData, repeatedIds } = filterRepeatedIds(entries, 'id');
+    if (repeatedIds.length) {
+      logger.warn(`Error adding entries. Repeated ids: ${repeatedIds.join(', ')}`);
+    }
+    await db.insert('entries', filteredData);
+  };
+
   const addContestEntries = async (contestId, entries) => {
+    const { filteredData, repeatedIds } = filterRepeatedIds(entries, 'id');
+    if (repeatedIds.length) {
+      logger.warn(`Error adding contest entries. Repeated ids: ${repeatedIds.join(', ')}`);
+    }
     await db.insert(
       'contest_entries',
-      entries.map((entry) => ({
+      filteredData.map((entry) => ({
         contest_id: contestId,
         entry_id: entry.id,
         rank: entry.rank,
@@ -220,7 +248,7 @@ if (!isDev && cluster.isMaster) {
               }),
             );
             if (imgurData.length) {
-              await db.insert('entries', imgurData);
+              await addEntries(imgurData);
               const contestEntries = imgurData.map((imageData) => ({
                 ...imageData,
                 rank: getEntryRank(imageData.id),
