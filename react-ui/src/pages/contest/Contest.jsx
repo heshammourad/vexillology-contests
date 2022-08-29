@@ -27,8 +27,8 @@ import {
   useClientWidth, useScrollState, useSettingsState, useSwrData,
 } from '../../common';
 import {
-  AppBarIconButton,
   ArrowBackButton,
+  CustomIconButton,
   CustomRadio,
   CustomSwitch,
   PageWithDrawer,
@@ -250,13 +250,13 @@ const Contest = () => {
           <>
             {validRedditId && (
               <>
-                <AppBarIconButton
+                <CustomIconButton
                   href={`https://redd.it/${contestId}`}
                   ariaLabel="Open voting thread"
                   Icon={ThumbsUpDownOutlinedIcon}
                 />
                 {winnersThreadId && (
-                  <AppBarIconButton
+                  <CustomIconButton
                     href={`https://redd.it/${winnersThreadId}`}
                     ariaLabel="Open winners thread"
                     Icon={EmojiEventsOutlinedIcon}
@@ -264,7 +264,7 @@ const Contest = () => {
                 )}
               </>
             )}
-            <AppBarIconButton
+            <CustomIconButton
               ariaLabel="View settings"
               onClick={toggleSettingsOpen}
               Icon={SettingsOutlinedIcon}

@@ -8,8 +8,8 @@ import { useParams, useLocation } from 'react-router-dom';
 
 import { useScrollState, useSettingsState, useSwrData } from '../../common';
 import {
-  AppBarIconButton,
   ArrowBackButton,
+  CustomIconButton,
   HtmlWrapper,
   ListItemButton,
   PageWithDrawer,
@@ -89,17 +89,17 @@ const Entry = () => {
         className: classes.appBar,
         right: entry.id && (
           <>
-            <AppBarIconButton
+            <CustomIconButton
               href={redditPermalink}
               ariaLabel="Open Reddit comment"
               Icon={RedditIcon}
             />
-            <AppBarIconButton
+            <CustomIconButton
               href={flagWaverLink}
               ariaLabel="Open FlagWaver"
               Icon={FlagTwoToneIcon}
             />
-            <AppBarIconButton
+            <CustomIconButton
               ariaLabel="Open info"
               onClick={handleDrawerToggle}
               Icon={InfoOutlinedIcon}
