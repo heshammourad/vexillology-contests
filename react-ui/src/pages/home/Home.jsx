@@ -127,7 +127,7 @@ const Home = () => {
           <Box className={classes.footerSocial}>
             <CustomIconButton
               ariaLabel="Visit Vexillology Contests Page on Facebook"
-              href="https://www.facebook.com/Vexillology-Contests-108702005212804"
+              href="https://fb.me/VexContests"
               Icon={FacebookIcon}
             />
             <CustomIconButton
