@@ -24,10 +24,10 @@ const useStyles = makeStyles((theme) => ({
   },
   footerContent: {
     flexWrap: 'wrap',
-    padding: '32px 0',
+    padding: '32px 16px',
     [theme.breakpoints.up('sm')]: {
       display: 'flex',
-      padding: '64px 0',
+      padding: '48px 24px',
     },
   },
   footerLeft: {
