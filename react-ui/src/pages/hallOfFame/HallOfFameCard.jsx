@@ -16,7 +16,7 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 
 import {
-  AppBarIconButton,
+  CustomIconButton,
   ExternalLink,
   HtmlWrapper,
   LazyLoadCardImage,
@@ -134,7 +134,7 @@ const HallOfFameCard = ({
           </div>
         </CardContent>
         <CardActions>
-          <AppBarIconButton
+          <CustomIconButton
             ariaLabel="Open FlagWaver"
             href={`https://krikienoid.github.io/flagwaver/#?src=${imgurUrl}`}
             Icon={FlagTwoToneIcon}

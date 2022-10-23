@@ -1,6 +1,6 @@
 export { default as AppBarDivided } from './AppBarDivided';
-export { default as AppBarIconButton } from './AppBarIconButton';
 export { default as ArrowBackButton } from './ArrowBackButton';
+export { default as CustomIconButton } from './CustomIconButton';
 export { default as CustomRadio } from './CustomRadio';
 export { default as CustomSwitch } from './CustomSwitch';
 export { default as ElevationScroll } from './ElevationScroll';

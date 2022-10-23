@@ -1,7 +1,7 @@
 import IconButton from '@material-ui/core/IconButton';
 import PropTypes from 'prop-types';
 
-const AppBarIconButton = ({
+const CustomIconButton = ({
   ariaLabel, href, Icon, onClick,
 }) => {
   let target;
@@ -21,16 +21,16 @@ const AppBarIconButton = ({
   );
 };
 
-AppBarIconButton.propTypes = {
+CustomIconButton.propTypes = {
   ariaLabel: PropTypes.string.isRequired,
   href: PropTypes.string,
   Icon: PropTypes.shape({}).isRequired,
   onClick: PropTypes.func,
 };
 
-AppBarIconButton.defaultProps = {
+CustomIconButton.defaultProps = {
   href: undefined,
   onClick: undefined,
 };
 
-export default AppBarIconButton;
+export default CustomIconButton;
