@@ -73,7 +73,7 @@ const useStyles = makeStyles((theme) => {
   return styles;
 });
 
-const HallOfFameCard = ({
+function HallOfFameCard({
   entry: {
     contestName,
     date,
@@ -88,7 +88,7 @@ const HallOfFameCard = ({
     yearEndWinner,
   },
   imageDisplayWidth,
-}) => {
+}) {
   const [expanded, setExpanded] = useState(false);
   const handleExpandClick = () => {
     setExpanded(!expanded);
@@ -159,7 +159,7 @@ const HallOfFameCard = ({
       </Collapse>
     </Card>
   );
-};
+}
 
 HallOfFameCard.propTypes = {
   entry: PropTypes.shape({

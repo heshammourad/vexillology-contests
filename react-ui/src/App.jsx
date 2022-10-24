@@ -1,6 +1,8 @@
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
-import { BrowserRouter as Router, Redirect, Route } from 'react-router-dom';
+import {
+  BrowserRouter, Navigate, Route, Routes,
+} from 'react-router-dom';
 import { SWRConfig } from 'swr';
 
 import { getData } from './api';
@@ -13,34 +15,36 @@ import './App.css';
 
 const theme = createTheme();
 
-const App = () => (
-  <>
-    <CssBaseline />
-    <ThemeProvider theme={theme}>
-      <SWRConfig
-        value={{
-          fetcher: getData,
-          revalidateOnMount: false,
-          revalidateOnFocus: false,
-          revalidateOnReconnect: false,
-        }}
-      >
-        <div className="app">
-          <AppHelmet />
-          <Router>
-            <Route exact path="/">
-              <Redirect to="/home" />
-            </Route>
-            <Route exact path="/home" component={Home} />
-            <Route exact path="/contests" component={Contests} />
-            <Route exact path="/contests/:contestId" component={Contest} />
-            <Route exact path="/contests/:contestId/entry/:entryId" component={Entry} />
-            <Route exact path="/hallOfFame" component={HallOfFame} />
-          </Router>
-        </div>
-      </SWRConfig>
-    </ThemeProvider>
-  </>
-);
+function App() {
+  return (
+    <>
+      <CssBaseline />
+      <ThemeProvider theme={theme}>
+        <SWRConfig
+          value={{
+            fetcher: getData,
+            revalidateOnMount: false,
+            revalidateOnFocus: false,
+            revalidateOnReconnect: false,
+          }}
+        >
+          <div className="app">
+            <AppHelmet />
+            <BrowserRouter>
+              <Routes>
+                <Route exact path="/" element={<Navigate replace to="home" />} />
+                <Route exact path="/home" element={<Home />} />
+                <Route exact path="/contests" element={<Contests />} />
+                <Route exact path="/contests/:contestId" element={<Contest />} />
+                <Route exact path="/contests/:contestId/entry/:entryId" element={<Entry />} />
+                <Route exact path="/hallOfFame" element={<HallOfFame />} />
+              </Routes>
+            </BrowserRouter>
+          </div>
+        </SWRConfig>
+      </ThemeProvider>
+    </>
+  );
+}
 
 export default App;

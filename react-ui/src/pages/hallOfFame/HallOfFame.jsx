@@ -49,7 +49,7 @@ const getToolbarHeight = () => document.getElementById(TOOLBAR_ID).offsetHeight;
 
 let pauseScollListener = false;
 
-const HallOfFame = () => {
+function HallOfFame() {
   const hallOfFame = useSwrData('/hallOfFame');
 
   const [selectedYear, setSelectedYear] = useState();
@@ -151,6 +151,6 @@ const HallOfFame = () => {
       )}
     </>
   );
-};
+}
 
 export default HallOfFame;

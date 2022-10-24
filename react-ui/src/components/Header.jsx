@@ -7,14 +7,16 @@ import types from '../common/types';
 import AppBarDivided from './AppBarDivided';
 import ArrowBackButton from './ArrowBackButton';
 
-const Header = ({ children, position, to }) => (
-  <AppBarDivided color="default" disableGutters position={position}>
-    <Toolbar>
-      <ArrowBackButton to={to} />
-      <Typography variant="h6">{children}</Typography>
-    </Toolbar>
-  </AppBarDivided>
-);
+function Header({ children, position, to }) {
+  return (
+    <AppBarDivided color="default" disableGutters position={position}>
+      <Toolbar>
+        <ArrowBackButton to={to} />
+        <Typography variant="h6">{children}</Typography>
+      </Toolbar>
+    </AppBarDivided>
+  );
+}
 
 Header.propTypes = {
   children: PropTypes.node.isRequired,

@@ -15,7 +15,7 @@ const useStyles = makeStyles({
   },
 });
 
-const Home = () => {
+function Home() {
   const contests = useSwrData('/contests');
   const location = useLocation();
 
@@ -54,6 +54,6 @@ const Home = () => {
       )}
     </Container>
   );
-};
+}
 
 export default Home;

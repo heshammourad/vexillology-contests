@@ -110,12 +110,12 @@ const imageWidths = {
 
 let scrollingIntervalId;
 
-const Contest = () => {
+function Contest() {
   const { contestId } = useParams();
   const [scroll, setScroll] = useScrollState();
   const contest = useSwrData(`/contests/${contestId}`, !!scroll.entryId) || {};
 
-  const { state = {} } = useLocation();
+  const { state } = useLocation();
   const [isLoaded, setLoaded] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
 
@@ -153,7 +153,7 @@ const Contest = () => {
           scrollTop === undefined
           || (bottom < windowTop && top < windowTop)
           || (bottom > windowBottom && top > windowBottom)
-          || state.requestId !== contest.requestId
+          || (state || {}).requestId !== contest.requestId
         ) {
           scrollTop = top - headerHeight - 8;
         }
@@ -181,7 +181,7 @@ const Contest = () => {
     setSettingsOpen(!isSettingsOpen);
   };
 
-  const backLink = state.back || '/contests';
+  const backLink = (state || {}).back || '/contests';
 
   const theme = useTheme();
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
@@ -409,6 +409,6 @@ const Contest = () => {
       )}
     </PageWithDrawer>
   );
-};
+}
 
 export default Contest;

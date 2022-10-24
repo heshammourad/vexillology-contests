@@ -1,20 +1,19 @@
 import CardActionArea from '@material-ui/core/CardActionArea';
 import PropTypes from 'prop-types';
-import { Link as RouterLink, useRouteMatch, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 
 import { LazyLoadCardImage } from '../../components';
 
-const CardImageLink = ({
+function CardImageLink({
   children, displayWidth, height, id, image, onClick, width,
-}) => {
-  const { state = {} } = useLocation();
-  const match = useRouteMatch();
+}) {
+  const { state } = useLocation();
   return (
     <RouterLink
       onClick={onClick}
       to={{
-        pathname: `${match.url}/entry/${id}`,
-        state: { back: state.back, isFromContest: true },
+        pathname: `entry/${id}`,
+        state: { back: (state || {}).back, isFromContest: true },
       }}
       style={{ textDecoration: 'none' }}
     >
@@ -29,7 +28,7 @@ const CardImageLink = ({
       </CardActionArea>
     </RouterLink>
   );
-};
+}
 
 CardImageLink.propTypes = {
   children: PropTypes.node,
