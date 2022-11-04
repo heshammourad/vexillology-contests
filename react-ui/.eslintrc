@@ -5,6 +5,9 @@
   "extends": [
     "airbnb"
   ],
+  "plugins": [
+    "react"
+  ],
   "rules": {
     "strict": 0,
     "curly": [
