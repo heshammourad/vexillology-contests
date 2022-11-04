@@ -1,0 +1,69 @@
+module.exports = {
+  env: {
+    browser: true,
+    es2021: true,
+  },
+  extends: [
+    'plugin:react/recommended',
+    'airbnb',
+  ],
+  overrides: [
+  ],
+  parserOptions: {
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+  },
+  plugins: [
+    'react',
+  ],
+  rules: {
+    strict: 0,
+    curly: [
+      'error',
+      'all',
+    ],
+    'import/order': [
+      'error',
+      {
+        'newlines-between': 'always',
+        alphabetize: {
+          order: 'asc',
+          caseInsensitive: false,
+        },
+      },
+    ],
+    'no-alert': 'error',
+    'no-console': 'error',
+    'no-restricted-imports': [
+      'error',
+      {
+        paths: [
+          {
+            name: '@material-ui/core',
+            message: 'Please import specific method instead.',
+          },
+          {
+            name: '@material-ui/icons',
+            message: 'Please import specific method instead.',
+          },
+          {
+            name: 'date-fns',
+            message: 'Please import specific method instead.',
+          },
+          {
+            name: 'lodash',
+            message: "Please import specific method instead, e.g. import debounce from 'lodash/debounce'.",
+          },
+        ],
+        patterns: [
+          '**/common/*',
+          '!**/common/types',
+          '**/components/*',
+          '**/pages/*',
+        ],
+      },
+    ],
+    'react/jsx-uses-react': 'off',
+    'react/react-in-jsx-scope': 'off',
+  },
+};

@@ -10,6 +10,7 @@ function ListItemLink({
   className, onClick, primary, to,
 }) {
   const renderLink = React.useMemo(
+    // eslint-disable-next-line react/no-unstable-nested-components
     () => React.forwardRef((itemProps, ref) => (
       // eslint-disable-next-line react/jsx-props-no-spreading
       <Link to={to} ref={ref} {...itemProps} />
