@@ -67,9 +67,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const PageWithDrawer = ({
+function PageWithDrawer({
   appBar, children, className, drawer, handleClose, isOpen,
-}) => {
+}) {
   const classes = useStyles();
   return (
     <div className={clsx(classes.root, className)}>
@@ -109,7 +109,7 @@ const PageWithDrawer = ({
       </Drawer>
     </div>
   );
-};
+}
 
 PageWithDrawer.propTypes = {
   appBar: types.AppBar.isRequired,

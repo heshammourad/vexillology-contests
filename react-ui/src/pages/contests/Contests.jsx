@@ -24,7 +24,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Contests = () => {
+function Contests() {
   const contests = useSwrData('/contests');
   const { pathname, state = {} } = useLocation();
 
@@ -82,6 +82,6 @@ const Contests = () => {
       )}
     </>
   );
-};
+}
 
 export default Contests;

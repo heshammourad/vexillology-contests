@@ -13,34 +13,36 @@ import './App.css';
 
 const theme = createTheme();
 
-const App = () => (
-  <>
-    <CssBaseline />
-    <ThemeProvider theme={theme}>
-      <SWRConfig
-        value={{
-          fetcher: getData,
-          revalidateOnMount: false,
-          revalidateOnFocus: false,
-          revalidateOnReconnect: false,
-        }}
-      >
-        <div className="app">
-          <AppHelmet />
-          <Router>
-            <Route exact path="/">
-              <Redirect to="/home" />
-            </Route>
-            <Route exact path="/home" component={Home} />
-            <Route exact path="/contests" component={Contests} />
-            <Route exact path="/contests/:contestId" component={Contest} />
-            <Route exact path="/contests/:contestId/entry/:entryId" component={Entry} />
-            <Route exact path="/hallOfFame" component={HallOfFame} />
-          </Router>
-        </div>
-      </SWRConfig>
-    </ThemeProvider>
-  </>
-);
+function App() {
+  return (
+    <>
+      <CssBaseline />
+      <ThemeProvider theme={theme}>
+        <SWRConfig
+          value={{
+            fetcher: getData,
+            revalidateOnMount: false,
+            revalidateOnFocus: false,
+            revalidateOnReconnect: false,
+          }}
+        >
+          <div className="app">
+            <AppHelmet />
+            <Router>
+              <Route exact path="/">
+                <Redirect to="/home" />
+              </Route>
+              <Route exact path="/home" component={Home} />
+              <Route exact path="/contests" component={Contests} />
+              <Route exact path="/contests/:contestId" component={Contest} />
+              <Route exact path="/contests/:contestId/entry/:entryId" component={Entry} />
+              <Route exact path="/hallOfFame" component={HallOfFame} />
+            </Router>
+          </div>
+        </SWRConfig>
+      </ThemeProvider>
+    </>
+  );
+}
 
 export default App;

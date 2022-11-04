@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet';
 
 import useSwrData from './useSwrData';
 
-const AppHelmet = () => {
+function AppHelmet() {
   const { title = 'Vexillology Contests' } = useSwrData('/init') || {};
 
   return (
@@ -10,6 +10,6 @@ const AppHelmet = () => {
       <title>{title}</title>
     </Helmet>
   );
-};
+}
 
 export default AppHelmet;

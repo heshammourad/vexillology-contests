@@ -53,7 +53,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Entry = () => {
+function Entry() {
   const { contestId, entryId } = useParams();
   const { entries = [], requestId, winners = [] } = useSwrData(`/contests/${contestId}`) || {};
   const entry = [...winners, ...entries].find(({ id }) => id === entryId) || {};
@@ -144,6 +144,6 @@ const Entry = () => {
       </Box>
     </PageWithDrawer>
   );
-};
+}
 
 export default Entry;

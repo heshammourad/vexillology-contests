@@ -4,11 +4,13 @@ import { Link as RouterLink } from 'react-router-dom';
 
 import types from '../common/types';
 
-const InternalLink = ({ children, className, to }) => (
-  <Link className={className} component={RouterLink} to={to}>
-    {children}
-  </Link>
-);
+function InternalLink({ children, className, to }) {
+  return (
+    <Link className={className} component={RouterLink} to={to}>
+      {children}
+    </Link>
+  );
+}
 
 InternalLink.propTypes = {
   children: PropTypes.node.isRequired,

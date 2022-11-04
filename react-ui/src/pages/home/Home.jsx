@@ -72,7 +72,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Home = () => {
+function Home() {
   const contests = useSwrData('/contests');
   const location = useLocation();
 
@@ -140,6 +140,6 @@ const Home = () => {
       </footer>
     </>
   );
-};
+}
 
 export default Home;

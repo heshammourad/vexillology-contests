@@ -110,7 +110,7 @@ const imageWidths = {
 
 let scrollingIntervalId;
 
-const Contest = () => {
+function Contest() {
   const { contestId } = useParams();
   const [scroll, setScroll] = useScrollState();
   const contest = useSwrData(`/contests/${contestId}`, !!scroll.entryId) || {};
@@ -409,6 +409,6 @@ const Contest = () => {
       )}
     </PageWithDrawer>
   );
-};
+}
 
 export default Contest;

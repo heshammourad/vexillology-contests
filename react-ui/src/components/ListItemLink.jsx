@@ -6,9 +6,9 @@ import { Link } from 'react-router-dom';
 
 import types from '../common/types';
 
-const ListItemLink = ({
+function ListItemLink({
   className, onClick, primary, to,
-}) => {
+}) {
   const renderLink = React.useMemo(
     () => React.forwardRef((itemProps, ref) => (
       // eslint-disable-next-line react/jsx-props-no-spreading
@@ -24,7 +24,7 @@ const ListItemLink = ({
       </ListItem>
     </li>
   );
-};
+}
 
 ListItemLink.propTypes = {
   className: PropTypes.string,

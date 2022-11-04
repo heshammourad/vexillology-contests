@@ -1,9 +1,9 @@
 import IconButton from '@material-ui/core/IconButton';
 import PropTypes from 'prop-types';
 
-const CustomIconButton = ({
+function CustomIconButton({
   ariaLabel, href, Icon, onClick,
-}) => {
+}) {
   let target;
   if (href) {
     target = 'vexillology-contests';
@@ -19,7 +19,7 @@ const CustomIconButton = ({
       <Icon />
     </IconButton>
   );
-};
+}
 
 CustomIconButton.propTypes = {
   ariaLabel: PropTypes.string.isRequired,

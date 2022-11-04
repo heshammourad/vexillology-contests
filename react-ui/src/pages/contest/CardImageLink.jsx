@@ -4,9 +4,9 @@ import { Link as RouterLink, useRouteMatch, useLocation } from 'react-router-dom
 
 import { LazyLoadCardImage } from '../../components';
 
-const CardImageLink = ({
+function CardImageLink({
   children, displayWidth, height, id, image, onClick, width,
-}) => {
+}) {
   const { state = {} } = useLocation();
   const match = useRouteMatch();
   return (
@@ -29,7 +29,7 @@ const CardImageLink = ({
       </CardActionArea>
     </RouterLink>
   );
-};
+}
 
 CardImageLink.propTypes = {
   children: PropTypes.node,
