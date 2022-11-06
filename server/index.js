@@ -58,7 +58,12 @@ if (!isDev && cluster.isMaster) {
     next();
   });
 
-  app.use(helmet.contentSecurityPolicy({ directives: { imgSrc: ['*.imgur.com'] } }));
+  const defaultDirectives = helmet.contentSecurityPolicy.getDefaultDirectives();
+  app.use(
+    helmet.contentSecurityPolicy({
+      directives: { imgSrc: [...defaultDirectives['img-src'], '*.imgur.com'] },
+    }),
+  );
 
   // eslint-disable-next-line max-len
   const findMissingEntries = (contest, imagesData) => contest.entries.filter((entry) => !imagesData.find((image) => image.id === entry.imgurId));
