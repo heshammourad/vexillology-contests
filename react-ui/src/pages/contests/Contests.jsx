@@ -24,14 +24,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Contests = () => {
+function Contests() {
   const contests = useSwrData('/contests');
   const { pathname, state = {} } = useLocation();
 
   const [openYear, setOpenYear] = useState(null);
   useEffect(() => {
     if (contests) {
-      const dateToOpen = state.date || contests[0].date;
+      const dateToOpen = (state || {}).date || contests[0].date;
       setOpenYear(getYear(parseISO(dateToOpen)).toString());
     }
   }, [contests]);
@@ -70,7 +70,8 @@ const Contests = () => {
                           primary={`${
                             !yearEnd ? `${format(parseISO(date), 'MMM yy')} - ` : ''
                           }${name}`}
-                          to={{ pathname: `/contests/${id}`, state: { back: pathname } }}
+                          state={{ back: pathname }}
+                          to={`/contests/${id}`}
                         />
                       ))}
                     </List>
@@ -82,6 +83,6 @@ const Contests = () => {
       )}
     </>
   );
-};
+}
 
 export default Contests;

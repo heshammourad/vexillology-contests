@@ -72,7 +72,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Home = () => {
+function Home() {
   const contests = useSwrData('/contests');
   const location = useLocation();
 
@@ -97,7 +97,8 @@ const Home = () => {
             {' '}
             <InternalLink
               className={classes.contestName}
-              to={{ pathname: `/contests/${contests[0].id}`, state: { back: location.pathname } }}
+              state={{ back: location.pathname }}
+              to={`/contests/${contests[0].id}`}
             >
               {contests[0].name}
             </InternalLink>
@@ -140,6 +141,6 @@ const Home = () => {
       </footer>
     </>
   );
-};
+}
 
 export default Home;

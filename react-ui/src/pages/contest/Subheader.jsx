@@ -9,7 +9,7 @@ const useStyles = makeStyles({
   },
 });
 
-const Subheader = ({ children }) => {
+function Subheader({ children }) {
   const classes = useStyles();
 
   const theme = useTheme();
@@ -19,7 +19,7 @@ const Subheader = ({ children }) => {
       {children}
     </Typography>
   );
-};
+}
 
 Subheader.propTypes = {
   children: PropTypes.node.isRequired,

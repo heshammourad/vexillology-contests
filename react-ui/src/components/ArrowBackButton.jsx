@@ -5,13 +5,15 @@ import { Link as RouterLink } from 'react-router-dom';
 
 import types from '../common/types';
 
-const ArrowBackButton = ({
+function ArrowBackButton({
   color, onClick, state, to,
-}) => (
-  <IconButton color={color} component={RouterLink} onClick={onClick} state={state} to={to}>
-    <ArrowBackIcon />
-  </IconButton>
-);
+}) {
+  return (
+    <IconButton color={color} component={RouterLink} onClick={onClick} state={state} to={to}>
+      <ArrowBackIcon />
+    </IconButton>
+  );
+}
 
 ArrowBackButton.propTypes = {
   color: PropTypes.string,
