@@ -53,7 +53,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Entry = () => {
+function Entry() {
   const { contestId, entryId } = useParams();
   const { entries = [], requestId, winners = [] } = useSwrData(`/contests/${contestId}`) || {};
   const entry = [...winners, ...entries].find(({ id }) => id === entryId) || {};
@@ -112,10 +112,8 @@ const Entry = () => {
             onClick={() => {
               setScroll({ ...scroll, entryId: entry.id });
             }}
-            to={{
-              pathname: `/contests/${contestId}`,
-              state: { back: state.back, requestId },
-            }}
+            state={{ back: (state || {}).back, requestId }}
+            to={`/contests/${contestId}`}
           />
         ),
       }}
@@ -144,6 +142,6 @@ const Entry = () => {
       </Box>
     </PageWithDrawer>
   );
-};
+}
 
 export default Entry;

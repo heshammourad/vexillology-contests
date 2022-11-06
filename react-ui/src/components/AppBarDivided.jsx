@@ -6,7 +6,7 @@ import { defaultProps, objects } from '../common/types';
 
 import ElevationScroll from './ElevationScroll';
 
-const AppBarDivided = ({
+function AppBarDivided({
   children,
   className,
   color,
@@ -14,7 +14,7 @@ const AppBarDivided = ({
   isElevationScroll,
   position,
   right,
-}) => {
+}) {
   const appBar = (
     <AppBar className={className} color={color} position={position}>
       <Toolbar disableGutters={disableGutters}>
@@ -29,7 +29,7 @@ const AppBarDivided = ({
     return appBar;
   }
   return <ElevationScroll>{appBar}</ElevationScroll>;
-};
+}
 
 AppBarDivided.propTypes = objects.AppBar;
 AppBarDivided.defaultProps = defaultProps.AppBar;

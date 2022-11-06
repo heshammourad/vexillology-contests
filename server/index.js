@@ -60,13 +60,8 @@ if (!isDev && cluster.isMaster) {
 
   const defaultDirectives = helmet.contentSecurityPolicy.getDefaultDirectives();
   app.use(
-    helmet({
-      contentSecurityPolicy: {
-        directives: {
-          ...defaultDirectives,
-          'img-src': [...defaultDirectives['img-src'], '*.imgur.com'],
-        },
-      },
+    helmet.contentSecurityPolicy({
+      directives: { imgSrc: [...defaultDirectives['img-src'], '*.imgur.com'] },
     }),
   );
 
@@ -285,9 +280,6 @@ if (!isDev && cluster.isMaster) {
             }
             return acc;
           }, []);
-          if (!contest || !contest.entries) {
-            console.log('MISSING');
-          }
           if (!contest.entries.length) {
             logger.warn(`Unable to retrieve entries for contest: '${id}'`);
             return null;
@@ -317,9 +309,6 @@ if (!isDev && cluster.isMaster) {
       } else {
         const [winners, entries] = partition(response.entries, ({ rank }) => rank && rank < 20);
         response.entries = entries;
-        if (!winners) {
-          console.log('MISSING');
-        }
         if (winners.length) {
           response.winners = winners.sort((a, b) => a.rank - b.rank);
         }

@@ -2,9 +2,9 @@ import CardMedia from '@material-ui/core/CardMedia';
 import PropTypes from 'prop-types';
 import LazyLoad from 'react-lazyload';
 
-const LazyLoadCardImage = ({
+function LazyLoadCardImage({
   displayWidth, height, width, image,
-}) => {
+}) {
   const displayHeight = Math.floor((height * displayWidth) / width);
   return (
     <div style={{ height: displayHeight }}>
@@ -13,7 +13,7 @@ const LazyLoadCardImage = ({
       </LazyLoad>
     </div>
   );
-};
+}
 
 LazyLoadCardImage.propTypes = {
   displayWidth: PropTypes.number.isRequired,

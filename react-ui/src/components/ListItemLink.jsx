@@ -6,16 +6,17 @@ import { Link } from 'react-router-dom';
 
 import types from '../common/types';
 
-const ListItemLink = ({
-  className, onClick, primary, to,
-}) => {
-  const renderLink = React.useMemo(
-    () => React.forwardRef((itemProps, ref) => (
-      // eslint-disable-next-line react/jsx-props-no-spreading
-      <Link to={to} ref={ref} {...itemProps} />
-    )),
-    [to],
-  );
+function listItemComponent({ state, to }) {
+  return React.forwardRef((itemProps, ref) => (
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    <Link state={state} to={to} ref={ref} {...itemProps} />
+  ));
+}
+
+function ListItemLink({
+  className, onClick, primary, state, to,
+}) {
+  const renderLink = React.useMemo(() => listItemComponent({ state, to }), [to]);
 
   return (
     <li>
@@ -24,18 +25,20 @@ const ListItemLink = ({
       </ListItem>
     </li>
   );
-};
+}
 
 ListItemLink.propTypes = {
   className: PropTypes.string,
   onClick: PropTypes.func,
   primary: PropTypes.string.isRequired,
   to: types.to.isRequired,
+  state: PropTypes.shape({}),
 };
 
 ListItemLink.defaultProps = {
   className: null,
   onClick: () => {},
+  state: {},
 };
 
 export default ListItemLink;
