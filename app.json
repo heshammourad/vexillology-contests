@@ -1,17 +1,14 @@
 {
-  "name": "heroku-cra-node",
-  "description": "web app made of create-react-app UI + Node API",
-  "scripts": {
-  },
-  "env": {
-  },
+  "name": "vexillology-contests",
+  "description": "App to view and vote on reddit /r/vexillology contest entries",
   "formation": {
     "web": {
-      "quantity": 1
+      "quantity": 1,
+      "size": "hobby"
     }
   },
   "addons": [
-
+    "papertrail:choklad"
   ],
   "buildpacks": [
     {
