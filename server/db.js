@@ -1,8 +1,9 @@
-/* eslint-disable no-console */
 const { parse } = require('pg-connection-string');
 const pgp = require('pg-promise')();
 
 const { createLogger } = require('./logger');
+
+const { DATABASE_SCHEMA, DATABASE_URL } = process.env;
 
 const logger = createLogger('DB');
 
@@ -24,7 +25,7 @@ const camelizeColumnNames = (data) => {
   });
 };
 
-const connection = parse(process.env.DATABASE_URL);
+const connection = parse(DATABASE_URL);
 const db = pgp({ ...connection, ssl: { rejectUnauthorized: false } });
 
 db.$config.options.error = (err) => {
@@ -40,6 +41,8 @@ db.$config.options.receive = (data) => {
   camelizeColumnNames(data);
   logger.debug(`RECEIVE: ${JSON.stringify(data)}`);
 };
+
+db.$config.options.schema = DATABASE_SCHEMA;
 
 const select = async (queryStr, values) => {
   try {
