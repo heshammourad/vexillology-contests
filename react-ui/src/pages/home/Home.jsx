@@ -3,6 +3,7 @@ import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
+import EmailIcon from '@material-ui/icons/Email';
 import FacebookIcon from '@material-ui/icons/Facebook';
 import TwitterIcon from '@material-ui/icons/Twitter';
 import { useLocation } from 'react-router-dom';
@@ -25,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
   footerContent: {
     flexWrap: 'wrap',
     padding: '32px 16px',
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up('md')]: {
       display: 'flex',
       padding: '48px 24px',
     },
@@ -33,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
   footerLeft: {
     display: 'block',
     textAlign: 'center',
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up('md')]: {
       display: 'flex',
       flexGrow: 1,
     },
@@ -41,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
       color: '#616161',
       marginLeft: 50,
       '&:first-of-type': {
-        [theme.breakpoints.down('xs')]: {
+        [theme.breakpoints.down('sm')]: {
           marginLeft: 0,
         },
       },
@@ -50,7 +51,7 @@ const useStyles = makeStyles((theme) => ({
   footerLogo: {
     marginBottom: 16,
     justifyContent: 'center',
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up('md')]: {
       marginBottom: 0,
       justifyContent: 'flex-start',
     },
@@ -58,7 +59,7 @@ const useStyles = makeStyles((theme) => ({
   footerSocial: {
     marginTop: 16,
     textAlign: 'center',
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up('md')]: {
       marginTop: 0,
       textAlign: 'right',
     },
@@ -126,6 +127,11 @@ function Home() {
             <InternalLink to="/hallOfFame">Hall of Fame</InternalLink>
           </Box>
           <Box className={classes.footerSocial}>
+            <CustomIconButton
+              ariaLabel="Email Vexillology Contests"
+              href="mailto:admin@vexillologycontests.com"
+              Icon={EmailIcon}
+            />
             <CustomIconButton
               ariaLabel="Visit Vexillology Contests Page on Facebook"
               href="https://fb.me/VexContests"
