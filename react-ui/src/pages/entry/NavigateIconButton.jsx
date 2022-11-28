@@ -19,7 +19,7 @@ const useStyles = makeStyles({
   },
 });
 
-const NavigateIconButton = ({ className, Icon }) => {
+function NavigateIconButton({ className, Icon }) {
   const classes = useStyles();
 
   return (
@@ -27,7 +27,7 @@ const NavigateIconButton = ({ className, Icon }) => {
       <Icon className={classes.navigateIcon} fontSize="large" />
     </IconButton>
   );
-};
+}
 
 NavigateIconButton.propTypes = {
   className: PropTypes.string,
