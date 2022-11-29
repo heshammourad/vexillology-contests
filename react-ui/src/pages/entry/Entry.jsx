@@ -226,6 +226,17 @@ function Entry() {
     [imageContainerRef, navigationSide, shouldShowNavigation],
   );
 
+  const touchTimeoutId = useRef(null);
+  const handleTouchEnd = () => {
+    if (touchTimeoutId.current) {
+      clearTimeout(touchTimeoutId.current);
+    }
+
+    touchTimeoutId.current = setTimeout(() => {
+      setNavigationSide('');
+    }, 5000);
+  };
+
   if (!entry) {
     return null;
   }
@@ -294,6 +305,7 @@ function Entry() {
         justifyContent="center"
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMoveThrottled}
+        onTouchEnd={handleTouchEnd}
       >
         {shouldShowNavigation.before && (
           <NavigateIconButton
