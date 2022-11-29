@@ -345,7 +345,7 @@ function Contest() {
                 height, id, imgurLink, name: entryName, rank, user, width,
               }) => (
                 <React.Fragment key={id}>
-                  <Grid container spacing={2}>
+                  <Grid container id={id} spacing={2}>
                     <Grid item>
                       <Typography variant={headingVariant}>
                         <span className={classes.numberSymbol}>#</span>
@@ -361,7 +361,7 @@ function Contest() {
                       </div>
                     </Grid>
                   </Grid>
-                  <Card className={classes.winnerCard} elevation={2} id={id}>
+                  <Card className={classes.winnerCard} elevation={2}>
                     <CardImageLink
                       displayWidth={winnerDisplayWidth}
                       height={height}
