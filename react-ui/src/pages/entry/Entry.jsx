@@ -206,10 +206,19 @@ function Entry() {
     handleNavigate(indexChange);
   };
 
+  const touchTimeoutId = useRef(null);
+  const clearTouchTimeout = () => {
+    if (touchTimeoutId.current) {
+      clearTimeout(touchTimeoutId.current);
+    }
+  };
+
   const handleMouseMove = ({ clientX }) => {
     if (!imageContainerRef.current) {
       return;
     }
+
+    clearTouchTimeout();
 
     const ratio = (clientX * 1.0) / imageContainerRef.current.offsetWidth;
     let newNavigationSide = '';
@@ -226,11 +235,8 @@ function Entry() {
     [imageContainerRef, navigationSide, shouldShowNavigation],
   );
 
-  const touchTimeoutId = useRef(null);
   const handleTouchEnd = () => {
-    if (touchTimeoutId.current) {
-      clearTimeout(touchTimeoutId.current);
-    }
+    clearTouchTimeout();
 
     touchTimeoutId.current = setTimeout(() => {
       setNavigationSide('');
