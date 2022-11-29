@@ -19,11 +19,11 @@ const useStyles = makeStyles({
   },
 });
 
-function NavigateIconButton({ className, Icon }) {
+function NavigateIconButton({ className, Icon, onClick }) {
   const classes = useStyles();
 
   return (
-    <IconButton className={clsx(classes.navigateButton, className)}>
+    <IconButton className={clsx(classes.navigateButton, className)} onClick={onClick}>
       <Icon className={classes.navigateIcon} fontSize="large" />
     </IconButton>
   );
@@ -32,10 +32,12 @@ function NavigateIconButton({ className, Icon }) {
 NavigateIconButton.propTypes = {
   className: PropTypes.string,
   Icon: PropTypes.elementType.isRequired,
+  onClick: PropTypes.func,
 };
 
 NavigateIconButton.defaultProps = {
   className: '',
+  onClick: () => {},
 };
 
 export default NavigateIconButton;

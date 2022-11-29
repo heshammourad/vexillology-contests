@@ -1,4 +1,3 @@
-// TODO: Handle tab
 import Box from '@material-ui/core/Box';
 import List from '@material-ui/core/List';
 import { makeStyles } from '@material-ui/core/styles';
@@ -58,14 +57,18 @@ const useStyles = makeStyles((theme) => ({
   },
   navigateBefore: {
     left: 28,
-    visibility: 'hidden',
+  },
+  navigateButton: {
+    opacity: 0,
+    '&:focus': {
+      opacity: 1,
+    },
   },
   navigateNext: {
     right: 28,
-    visibility: 'hidden',
   },
   navigateVisible: {
-    visibility: 'visible',
+    opacity: 1,
   },
   sectionHeader: {
     color: '#5f6368',
@@ -179,8 +182,12 @@ function Entry() {
     updateInfoSetting(!isInfoOpen);
   };
 
-  const handleMouseUp = ({ button }) => {
-    if (entryIndex < 0 || button !== 0) {
+  const handleMouseUp = ({ button, target }) => {
+    if (
+      entryIndex < 0
+      || button !== 0
+      || target.matches(`.${classes.navigateButton},.${classes.navigateButton} *`)
+    ) {
       return;
     }
 
@@ -290,19 +297,25 @@ function Entry() {
       >
         {shouldShowNavigation.before && (
           <NavigateIconButton
-            className={clsx(classes.navigateBefore, {
+            className={clsx(classes.navigateButton, classes.navigateBefore, {
               [classes.navigateVisible]: navigationSide === 'before',
             })}
             Icon={NavigateBeforeIcon}
+            onClick={() => {
+              handleNavigate(-1);
+            }}
           />
         )}
         {entry.imgurLink && <img className={classes.image} src={entry.imgurLink} alt="" />}
         {shouldShowNavigation.next && (
           <NavigateIconButton
-            className={clsx(classes.navigateNext, {
+            className={clsx(classes.navigateButton, classes.navigateNext, {
               [classes.navigateVisible]: navigationSide === 'next',
             })}
             Icon={NavigateNextIcon}
+            onClick={() => {
+              handleNavigate(1);
+            }}
           />
         )}
       </Box>
