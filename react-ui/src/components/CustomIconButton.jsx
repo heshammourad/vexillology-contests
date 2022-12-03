@@ -2,7 +2,7 @@ import IconButton from '@material-ui/core/IconButton';
 import PropTypes from 'prop-types';
 
 function CustomIconButton({
-  ariaLabel, href, Icon, onClick,
+  ariaLabel, href, Icon, innerRef, onClick,
 }) {
   let target;
   if (href) {
@@ -10,6 +10,7 @@ function CustomIconButton({
   }
   return (
     <IconButton
+      ref={innerRef}
       color="inherit"
       href={href}
       target={target}
@@ -25,11 +26,16 @@ CustomIconButton.propTypes = {
   ariaLabel: PropTypes.string.isRequired,
   href: PropTypes.string,
   Icon: PropTypes.shape({}).isRequired,
+  innerRef: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.shape({ current: PropTypes.instanceOf(HTMLElement) }),
+  ]),
   onClick: PropTypes.func,
 };
 
 CustomIconButton.defaultProps = {
   href: undefined,
+  innerRef: undefined,
   onClick: undefined,
 };
 
