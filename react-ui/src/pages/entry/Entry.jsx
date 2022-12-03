@@ -206,6 +206,9 @@ function Entry() {
 
   const updateMouseMove = (clientX) => {
     clearTouchTimeout();
+    if (navigationVisibleTimeoutRef.current) {
+      clearTimeout(navigationVisibleTimeoutRef.current);
+    }
 
     const ratio = (clientX * 1.0) / imageContainerRef.current.offsetWidth;
     const newNavigationSide = { before: false, next: false };
