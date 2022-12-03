@@ -91,6 +91,11 @@ function Entry() {
 
   const [scroll, setScroll] = useScrollState();
   const [{ isInfoOpen }, updateSettings] = useSettingsState();
+  const isInfoOpenRef = useRef(isInfoOpen);
+  const updateInfoSetting = (infoOpen) => {
+    isInfoOpenRef.current = infoOpen;
+    updateSettings('isInfoOpen', infoOpen);
+  };
 
   const allEntriesRef = useRef([]);
   const [entryIndex, updateEntryIndex] = useState(-1);
@@ -115,7 +120,17 @@ function Entry() {
     setNavigationVisible({ before: false, next: false });
   };
 
+  const redditCommentButtonRef = useRef(null);
+  const flagWaverButtonRef = useRef(null);
   const imageContainerRef = useRef(null);
+
+  const handleDrawerClose = () => {
+    updateInfoSetting(false);
+  };
+
+  const toggleInfoDrawerOpen = () => {
+    updateInfoSetting(!isInfoOpenRef.current);
+  };
 
   const handleNavigate = (indexChange) => {
     if (
@@ -142,6 +157,15 @@ function Entry() {
       case 'ArrowRight':
         indexChange = 1;
         break;
+      case 'f':
+        flagWaverButtonRef.current.click();
+        return;
+      case 'i':
+        toggleInfoDrawerOpen();
+        return;
+      case 'r':
+        redditCommentButtonRef.current.click();
+        return;
       default:
         return;
     }
@@ -176,18 +200,6 @@ function Entry() {
     });
     setEntry(newEntryIndex > -1 ? allEntries[newEntryIndex] : {});
   }, [entries, entryId]);
-
-  const updateInfoSetting = (infoOpen) => {
-    updateSettings('isInfoOpen', infoOpen);
-  };
-
-  const handleDrawerClose = () => {
-    updateInfoSetting(false);
-  };
-
-  const handleDrawerToggle = () => {
-    updateInfoSetting(!isInfoOpen);
-  };
 
   const touchTimeoutId = useRef(null);
   const clearTouchTimeout = () => {
@@ -264,7 +276,7 @@ function Entry() {
   return (
     <PageWithDrawer
       handleClose={handleDrawerClose}
-      isOpen={isInfoOpen}
+      isOpen={isInfoOpenRef.current}
       className={classes.root}
       appBar={{
         position: 'fixed',
@@ -272,18 +284,20 @@ function Entry() {
         right: entry.id && (
           <>
             <CustomIconButton
+              innerRef={redditCommentButtonRef}
               href={redditPermalink}
               ariaLabel="Open Reddit comment"
               Icon={RedditIcon}
             />
             <CustomIconButton
+              innerRef={flagWaverButtonRef}
               href={flagWaverLink}
               ariaLabel="Open FlagWaver"
               Icon={FlagTwoToneIcon}
             />
             <CustomIconButton
               ariaLabel="Open info"
-              onClick={handleDrawerToggle}
+              onClick={toggleInfoDrawerOpen}
               Icon={InfoOutlinedIcon}
             />
           </>
