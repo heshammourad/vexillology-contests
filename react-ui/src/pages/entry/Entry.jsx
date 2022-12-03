@@ -205,7 +205,6 @@ function Entry() {
   };
 
   const updateMouseMove = (clientX) => {
-    clearTouchTimeout();
     if (navigationVisibleTimeoutRef.current) {
       clearTimeout(navigationVisibleTimeoutRef.current);
     }
