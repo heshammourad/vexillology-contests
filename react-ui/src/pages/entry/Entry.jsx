@@ -101,26 +101,29 @@ function Entry() {
   };
   const [entry, setEntry] = useState({});
 
-  const [shouldShowNavigation, updateShouldShowNavigation] = useState({
+  const [isNavigationAvailable, updateNavigationAvailable] = useState({
     before: false,
     next: false,
   });
-  const shouldShowNavigationRef = useRef(shouldShowNavigation);
-  const setShouldShowNavigation = (value) => {
-    shouldShowNavigationRef.current = value;
-    updateShouldShowNavigation(value);
+  const isNavigationAvailableRef = useRef(isNavigationAvailable);
+  const setNavigationAvailable = (value) => {
+    isNavigationAvailableRef.current = value;
+    updateNavigationAvailable(value);
   };
-  const [navigationSide, setNavigationSide] = useState('');
+  const [isNavigationVisible, setNavigationVisible] = useState({ before: true, next: true });
+  const hideNavigation = () => {
+    setNavigationVisible({ before: false, next: false });
+  };
 
   const imageContainerRef = useRef(null);
 
   const handleNavigate = (indexChange) => {
     if (
       !indexChange
-      || (indexChange < 0 && !shouldShowNavigationRef.current.before)
-      || (indexChange > 0 && !shouldShowNavigationRef.current.next)
+      || (indexChange < 0 && !isNavigationAvailableRef.current.before)
+      || (indexChange > 0 && !isNavigationAvailableRef.current.next)
     ) {
-      setNavigationSide('');
+      hideNavigation();
       return;
     }
 
@@ -145,9 +148,13 @@ function Entry() {
     handleNavigate(indexChange);
   };
 
+  const navigationVisibleTimeoutRef = useRef(null);
   useEffect(() => {
-    window.addEventListener('keyup', handleKeyUp);
+    navigationVisibleTimeoutRef.current = setTimeout(() => {
+      hideNavigation();
+    }, 3000);
 
+    window.addEventListener('keyup', handleKeyUp);
     return () => {
       window.removeEventListener('keyup', handleKeyUp);
     };
@@ -163,7 +170,7 @@ function Entry() {
     const newEntryIndex = allEntries.findIndex(({ id }) => id === entryId);
 
     setEntryIndex(newEntryIndex);
-    setShouldShowNavigation({
+    setNavigationAvailable({
       before: newEntryIndex > 0,
       next: newEntryIndex >= 0 && newEntryIndex < allEntries.length - 1,
     });
@@ -182,7 +189,52 @@ function Entry() {
     updateInfoSetting(!isInfoOpen);
   };
 
-  const handleMouseUp = ({ button, target }) => {
+  const touchTimeoutId = useRef(null);
+  const clearTouchTimeout = () => {
+    if (touchTimeoutId.current) {
+      clearTimeout(touchTimeoutId.current);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    clearTouchTimeout();
+
+    touchTimeoutId.current = setTimeout(() => {
+      hideNavigation();
+    }, 5000);
+  };
+
+  const updateMouseMove = (clientX) => {
+    clearTouchTimeout();
+    if (navigationVisibleTimeoutRef.current) {
+      clearTimeout(navigationVisibleTimeoutRef.current);
+    }
+
+    const ratio = (clientX * 1.0) / imageContainerRef.current.offsetWidth;
+    const newNavigationSide = { before: false, next: false };
+    if (isNavigationAvailable.before && ratio <= 1 / 3) {
+      newNavigationSide.before = true;
+    } else if (isNavigationAvailable.next && ratio >= 2 / 3) {
+      newNavigationSide.next = true;
+    }
+    setNavigationVisible(newNavigationSide);
+    return newNavigationSide;
+  };
+
+  const handleMouseMove = ({ clientX }) => {
+    if (!imageContainerRef.current) {
+      return;
+    }
+
+    updateMouseMove(clientX);
+  };
+
+  const handleMouseMoveThrottled = useMemo(
+    () => throttle(handleMouseMove, 100),
+    [imageContainerRef, isNavigationVisible, isNavigationAvailable],
+  );
+
+  const handleMouseUp = ({ button, clientX, target }) => {
     if (
       entryIndex < 0
       || button !== 0
@@ -191,56 +243,16 @@ function Entry() {
       return;
     }
 
+    const newNavigationSide = updateMouseMove(clientX);
+
     let indexChange;
-    switch (navigationSide) {
-      case 'before':
-        indexChange = -1;
-        break;
-      case 'next':
-        indexChange = 1;
-        break;
-      default:
-        return;
+    if (newNavigationSide.before) {
+      indexChange = -1;
+    } else if (newNavigationSide.next) {
+      indexChange = 1;
     }
 
     handleNavigate(indexChange);
-  };
-
-  const touchTimeoutId = useRef(null);
-  const clearTouchTimeout = () => {
-    if (touchTimeoutId.current) {
-      clearTimeout(touchTimeoutId.current);
-    }
-  };
-
-  const handleMouseMove = ({ clientX }) => {
-    if (!imageContainerRef.current) {
-      return;
-    }
-
-    clearTouchTimeout();
-
-    const ratio = (clientX * 1.0) / imageContainerRef.current.offsetWidth;
-    let newNavigationSide = '';
-    if (shouldShowNavigation.before && ratio <= 1 / 3) {
-      newNavigationSide = 'before';
-    } else if (shouldShowNavigation.next && ratio >= 2 / 3) {
-      newNavigationSide = 'next';
-    }
-    setNavigationSide(newNavigationSide);
-  };
-
-  const handleMouseMoveThrottled = useMemo(
-    () => throttle(handleMouseMove, 100),
-    [imageContainerRef, navigationSide, shouldShowNavigation],
-  );
-
-  const handleTouchEnd = () => {
-    clearTouchTimeout();
-
-    touchTimeoutId.current = setTimeout(() => {
-      setNavigationSide('');
-    }, 5000);
   };
 
   if (!entry) {
@@ -305,7 +317,9 @@ function Entry() {
     >
       <Box
         ref={imageContainerRef}
-        className={clsx(classes.imageContainer, { [classes.clickActive]: !!navigationSide })}
+        className={clsx(classes.imageContainer, {
+          [classes.clickActive]: isNavigationVisible.before || isNavigationVisible.next,
+        })}
         display="flex"
         alignItems="center"
         justifyContent="center"
@@ -313,10 +327,10 @@ function Entry() {
         onMouseMove={handleMouseMoveThrottled}
         onTouchEnd={handleTouchEnd}
       >
-        {shouldShowNavigation.before && (
+        {isNavigationAvailable.before && (
           <NavigateIconButton
             className={clsx(classes.navigateButton, classes.navigateBefore, {
-              [classes.navigateVisible]: navigationSide === 'before',
+              [classes.navigateVisible]: isNavigationVisible.before,
             })}
             Icon={NavigateBeforeIcon}
             onClick={() => {
@@ -325,10 +339,10 @@ function Entry() {
           />
         )}
         {entry.imgurLink && <img className={classes.image} src={entry.imgurLink} alt="" />}
-        {shouldShowNavigation.next && (
+        {isNavigationAvailable.next && (
           <NavigateIconButton
             className={clsx(classes.navigateButton, classes.navigateNext, {
-              [classes.navigateVisible]: navigationSide === 'next',
+              [classes.navigateVisible]: isNavigationVisible.next,
             })}
             Icon={NavigateNextIcon}
             onClick={() => {
