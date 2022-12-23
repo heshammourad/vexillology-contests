@@ -45,7 +45,7 @@
     "eslint-plugin-react": "^7.31.10",
     "eslint-plugin-react-hooks": "^4.6.0",
     "husky": "^8.0.0",
-    "lint-staged": "^13.0.3",
+    "lint-staged": "^13.1.0",
     "nodemon": "2.0.7",
     "prettier": "^2.7.1",
     "prettier-eslint": "^15.0.1",
@@ -54,8 +54,7 @@
   "lint-staged": {
     "src/**/*.{js,jsx}": [
       "eslint",
-      "prettier-eslint --write",
-      "git add"
+      "prettier-eslint --write"
     ]
   }
 }

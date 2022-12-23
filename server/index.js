@@ -13,6 +13,7 @@ const imgur = require('./imgur');
 const { createLogger } = require('./logger');
 const memcache = require('./memcache');
 const reddit = require('./reddit');
+const { camelizeObjectKeys } = require('./util');
 
 const logger = createLogger('INDEX');
 
@@ -22,6 +23,7 @@ const {
   NODE_ENV,
   PORT: ENV_PORT,
   TITLE = 'Vexillology Contests',
+  WEB_APP_CLIENT_ID = '-SiCGPr5sPG4Xg',
 } = process.env;
 
 const isDev = NODE_ENV !== 'production';
@@ -118,9 +120,47 @@ if (!isDev && cluster.isMaster) {
     try {
       res.send({
         title: TITLE,
+        webAppClientId: WEB_APP_CLIENT_ID,
       });
     } catch (err) {
       logger.error(`Error getting /init: ${err}`);
+      res.status(500).send();
+    }
+  });
+
+  router.route('/accessToken/:code').get(async ({ params: { code } }, res) => {
+    try {
+      const result = await reddit.retrieveAccessToken(code);
+      if (!result) {
+        throw new Error('No access token returned.');
+      }
+
+      camelizeObjectKeys([result]);
+      const { accessToken, refreshToken } = result;
+      if (!accessToken || !refreshToken) {
+        throw new Error(`Missing auth tokens: ${result}`);
+      }
+
+      const response = { accessToken, refreshToken };
+      response.username = await reddit.getUser();
+
+      res.send(response);
+    } catch (err) {
+      logger.error(`Error retrieving access token: ${err}`);
+      res.status(500).send();
+    }
+  });
+
+  router.route('/revokeToken/:refreshToken').get(async ({ params: { refreshToken } }, res) => {
+    try {
+      if (!refreshToken) {
+        logger.warn('Missing refresh token');
+        res.status(400).send();
+      }
+      await reddit.revokeRefreshToken(refreshToken);
+      res.status(200).send();
+    } catch (err) {
+      logger.error(`Error revoking token: ${err}`);
       res.status(500).send();
     }
   });
@@ -320,6 +360,16 @@ if (!isDev && cluster.isMaster) {
       res.status(500).send();
     }
   });
+
+  router
+    .route('/votes/:id')
+    .get(async ({ headers: { accesstoken, refreshtoken }, params: { id } }, res) => {
+      if (!accesstoken || !refreshtoken) {
+        res.status(401).send('Missing authentication headers.');
+      }
+      const votes = await reddit.getVotes(id, { accesstoken, refreshtoken });
+      res.status(200).send(votes);
+    });
 
   router.route('/hallOfFame').get(async (req, res) => {
     try {

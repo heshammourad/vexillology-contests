@@ -1,3 +1,4 @@
+export { default as AccountMenu } from './AccountMenu';
 export { default as AppBarDivided } from './AppBarDivided';
 export { default as ArrowBackButton } from './ArrowBackButton';
 export { default as CustomIconButton } from './CustomIconButton';

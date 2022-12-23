@@ -15,6 +15,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 
 import { useScrollState, useSettingsState, useSwrData } from '../../common';
 import {
+  AccountMenu,
   ArrowBackButton,
   CustomIconButton,
   HtmlWrapper,
@@ -300,6 +301,7 @@ function Entry() {
               onClick={toggleInfoDrawerOpen}
               Icon={InfoOutlinedIcon}
             />
+            <AccountMenu />
           </>
         ),
         children: (

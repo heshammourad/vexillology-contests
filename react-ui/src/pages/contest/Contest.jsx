@@ -24,9 +24,14 @@ import { useLocation, useParams } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
 
 import {
-  useClientWidth, useScrollState, useSettingsState, useSwrData,
+  useClientWidth,
+  useScrollState,
+  useSettingsState,
+  useSwrData,
+  useVotes,
 } from '../../common';
 import {
+  AccountMenu,
   ArrowBackButton,
   CustomIconButton,
   CustomRadio,
@@ -113,7 +118,8 @@ let scrollingIntervalId;
 function Contest() {
   const { contestId } = useParams();
   const [scroll, setScroll] = useScrollState();
-  const contest = useSwrData(`/contests/${contestId}`, !!scroll.entryId) || {};
+  const contest = useSwrData(`/contests/${contestId}`, { allowRefresh: !!scroll.entryId }) || {};
+  const { votes } = useVotes();
 
   const { state = {} } = useLocation();
   const [isLoaded, setLoaded] = useState(false);
@@ -124,6 +130,11 @@ function Contest() {
       y: window.scrollY,
     });
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log('votes', votes);
+  }, [votes]);
 
   useEffect(() => {
     if (!contest.name) {
@@ -269,6 +280,7 @@ function Contest() {
               onClick={toggleSettingsOpen}
               Icon={SettingsOutlinedIcon}
             />
+            <AccountMenu />
           </>
         ),
         children: <ArrowBackButton state={{ date }} to={backLink} />,
