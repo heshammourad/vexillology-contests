@@ -27,6 +27,8 @@ const {
 const isDev = NODE_ENV !== 'production';
 const PORT = ENV_PORT || 5000;
 
+const LAST_WINNER_RANK = 20;
+
 // Multi-process to utilize all CPU cores.
 if (!isDev && cluster.isMaster) {
   logger.info(`Node cluster master ${process.pid} is running`);
@@ -168,9 +170,11 @@ if (!isDev && cluster.isMaster) {
           winnersThreadId = contestResult.winnersThreadId;
           const contestEntriesData = [];
           if (winnersThreadId) {
-            const contestTop20 = imagesData.filter((image) => image.rank && image.rank <= 20);
-            const winner = contestTop20.find(({ rank }) => rank === 1);
-            if (contestTop20.length < 20 || !winner.description) {
+            const contestWinners = imagesData.filter(
+              (image) => image.rank && image.rank <= LAST_WINNER_RANK,
+            );
+            const winner = contestWinners.find(({ rank }) => rank === 1);
+            if (contestWinners.length < LAST_WINNER_RANK || !winner.description) {
               const winners = await reddit.getWinners(winnersThreadId);
 
               const entriesData = [];
@@ -307,7 +311,10 @@ if (!isDev && cluster.isMaster) {
       if (response.isContestMode && !winnersThreadId) {
         response.entries = shuffle(response.entries);
       } else {
-        const [winners, entries] = partition(response.entries, ({ rank }) => rank && rank <= 20);
+        const [winners, entries] = partition(
+          response.entries,
+          ({ rank }) => rank && rank <= LAST_WINNER_RANK,
+        );
         response.entries = entries;
         if (winners.length) {
           response.winners = winners.sort((a, b) => a.rank - b.rank);
