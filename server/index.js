@@ -307,7 +307,7 @@ if (!isDev && cluster.isMaster) {
       if (response.isContestMode && !winnersThreadId) {
         response.entries = shuffle(response.entries);
       } else {
-        const [winners, entries] = partition(response.entries, ({ rank }) => rank && rank < 20);
+        const [winners, entries] = partition(response.entries, ({ rank }) => rank && rank <= 20);
         response.entries = entries;
         if (winners.length) {
           response.winners = winners.sort((a, b) => a.rank - b.rank);
