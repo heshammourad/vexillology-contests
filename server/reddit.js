@@ -130,11 +130,31 @@ const revokeRefreshToken = async (token) => {
   await redditApi.post('/revoke_token', { token, token_type_hint: 'refresh_token' });
 };
 
+const getComment = async (commentId, auth) => {
+  const comment = await getSnoowrap(auth).getComment(commentId);
+  return comment;
+};
+
+const downvote = async (commentId, auth) => {
+  (await getComment(commentId, auth)).downvote();
+};
+
+const unvote = async (commentId, auth) => {
+  (await getComment(commentId, auth)).unvote();
+};
+
+const upvote = async (commentId, auth) => {
+  (await getComment(commentId, auth)).upvote();
+};
+
 module.exports = {
+  downvote,
   getContest,
   getUser,
   getVotes,
   getWinners,
   retrieveAccessToken,
   revokeRefreshToken,
+  unvote,
+  upvote,
 };

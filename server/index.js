@@ -29,6 +29,14 @@ const {
 const isDev = NODE_ENV !== 'production';
 const PORT = ENV_PORT || 5000;
 
+const verifyAuthHeadersPresent = ({ headers: { accesstoken, refreshtoken } }, res, next) => {
+  if (!accesstoken || !refreshtoken) {
+    res.status(401).send('Missing authentication headers.');
+    return;
+  }
+  next();
+};
+
 // Multi-process to utilize all CPU cores.
 if (!isDev && cluster.isMaster) {
   logger.info(`Node cluster master ${process.pid} is running`);
@@ -116,7 +124,7 @@ if (!isDev && cluster.isMaster) {
 
   router.use(express.json());
 
-  router.route('/init').get(async (req, res) => {
+  router.get('/init', async (req, res) => {
     try {
       res.send({
         title: TITLE,
@@ -128,7 +136,7 @@ if (!isDev && cluster.isMaster) {
     }
   });
 
-  router.route('/accessToken/:code').get(async ({ params: { code } }, res) => {
+  router.get('/accessToken/:code', async ({ params: { code } }, res) => {
     try {
       const result = await reddit.retrieveAccessToken(code);
       if (!result) {
@@ -151,7 +159,7 @@ if (!isDev && cluster.isMaster) {
     }
   });
 
-  router.route('/revokeToken/:refreshToken').get(async ({ params: { refreshToken } }, res) => {
+  router.get('/revokeToken/:refreshToken', async ({ params: { refreshToken } }, res) => {
     try {
       if (!refreshToken) {
         logger.warn('Missing refresh token');
@@ -165,7 +173,7 @@ if (!isDev && cluster.isMaster) {
     }
   });
 
-  router.route('/contests').get(async (req, res) => {
+  router.get('/contests', async (req, res) => {
     try {
       const result = await db.select(
         'SELECT id, name, date, year_end FROM contests WHERE env_level >= $1 ORDER BY date DESC',
@@ -183,7 +191,7 @@ if (!isDev && cluster.isMaster) {
     }
   });
 
-  router.route('/contests/:id').get(async ({ params: { id } }, res) => {
+  router.get('/contests/:id', async ({ params: { id } }, res) => {
     try {
       let winnersThreadId;
       const response = await memcache.get(
@@ -361,17 +369,67 @@ if (!isDev && cluster.isMaster) {
     }
   });
 
-  router
-    .route('/votes/:id')
-    .get(async ({ headers: { accesstoken, refreshtoken }, params: { id } }, res) => {
-      if (!accesstoken || !refreshtoken) {
-        res.status(401).send('Missing authentication headers.');
+  router.post(
+    '/vote',
+    verifyAuthHeadersPresent,
+    async ({ body: { dir, id }, headers: { accesstoken, refreshtoken } }, res) => {
+      try {
+        const missingFields = [];
+        if (dir === undefined) {
+          missingFields.push('dir');
+        }
+        if (!id) {
+          missingFields.push('id');
+        }
+        if (missingFields.length) {
+          res
+            .status(400)
+            .send(
+              `Missing required field${missingFields.length >= 2 ? 's' : ''}: ${missingFields.join(
+                ', ',
+              )}`,
+            );
+          return;
+        }
+
+        const auth = { accesstoken, refreshtoken };
+
+        let likes = null;
+        switch (dir) {
+          case -1:
+            await reddit.downvote(id, auth);
+            likes = false;
+            break;
+          case 0:
+            await reddit.unvote(id, auth);
+            break;
+          case 1:
+            likes = true;
+            await reddit.upvote(id, auth);
+            break;
+          default:
+            res.status(400).send('dir must be one of (1, 0, -1)');
+            break;
+        }
+
+        res.status(200).send({ id, likes });
+      } catch (err) {
+        logger.error(`Error posting /vote/${id}: ${err})}`);
+        res.status(500).send();
       }
+    },
+  );
+
+  router.get(
+    '/votes/:id',
+    verifyAuthHeadersPresent,
+    async ({ headers: { accesstoken, refreshtoken }, params: { id } }, res) => {
       const votes = await reddit.getVotes(id, { accesstoken, refreshtoken });
       res.status(200).send(votes);
-    });
+    },
+  );
 
-  router.route('/hallOfFame').get(async (req, res) => {
+  router.get('/hallOfFame', async (req, res) => {
     try {
       const result = await db.select('SELECT * FROM hall_of_fame');
 
