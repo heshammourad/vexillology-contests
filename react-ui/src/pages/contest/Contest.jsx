@@ -1,4 +1,6 @@
+import Box from '@material-ui/core/Box';
 import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
@@ -6,6 +8,7 @@ import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormLabel from '@material-ui/core/FormLabel';
 import Grid from '@material-ui/core/Grid';
+import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
@@ -19,11 +22,12 @@ import EmojiEventsOutlinedIcon from '@material-ui/icons/EmojiEventsOutlined';
 import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
 import ThumbsUpDownOutlinedIcon from '@material-ui/icons/ThumbsUpDownOutlined';
 import clsx from 'clsx';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
 
 import {
+  useAuthState,
   useClientWidth,
   useScrollState,
   useSettingsState,
@@ -39,23 +43,30 @@ import {
   PageWithDrawer,
   RedditUserAttribution,
 } from '../../components';
+import downvoteActive from '../../images/downvote_active.png';
+import downvoteInactive from '../../images/downvote_inactive.png';
+import upvoteActive from '../../images/upvote_active.png';
+import upvoteInactive from '../../images/upvote_inactive.png';
 
 import CardImageLink from './CardImageLink';
 import Subheader from './Subheader';
 
 const useStyles = makeStyles((theme) => ({
-  heading: {
-    margin: '24px auto',
-  },
   divider: {
     height: 2,
     marginBottom: 16,
+  },
+  downvoted: {
+    border: '2px solid #97b0f7',
   },
   entriesLoading: {
     visibility: 'hidden',
   },
   entryName: {
     color: 'black',
+  },
+  heading: {
+    margin: '24px auto',
   },
   icon: {
     color: '#5f6368',
@@ -83,6 +94,18 @@ const useStyles = makeStyles((theme) => ({
   },
   switch: {
     color: '#4285f4',
+  },
+  upvoted: {
+    border: '2px solid #fc7d60',
+  },
+  voteControlsPresent: {
+    paddingLeft: 0,
+    '&:last-child': {
+      paddingBottom: 16,
+    },
+  },
+  voteIcon: {
+    width: 24,
   },
   winnerCard: {
     marginTop: 4,
@@ -116,6 +139,7 @@ const imageWidths = {
 let scrollingIntervalId;
 
 function Contest() {
+  const [{ isLoggedIn }] = useAuthState();
   const { contestId } = useParams();
   const [scroll, setScroll] = useScrollState();
   const contest = useSwrData(`/contests/${contestId}`, { allowRefresh: !!scroll.entryId }) || {};
@@ -125,6 +149,8 @@ function Contest() {
   const [isLoaded, setLoaded] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
 
+  const allEntriesRef = useRef(null);
+
   const updateScroll = () => {
     setScroll({
       y: window.scrollY,
@@ -132,13 +158,18 @@ function Contest() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('votes', votes);
-  }, [votes]);
-
-  useEffect(() => {
     if (!contest.name) {
       return;
+    }
+
+    if (!votes) {
+      allEntriesRef.current = contest.entries;
+    } else {
+      allEntriesRef.current = contest.entries.reduce((acc, cur) => {
+        const { likes } = votes.find((entry) => entry.id === cur.id);
+        acc.push({ ...cur, likes });
+        return acc;
+      }, []);
     }
 
     const { entryId, y } = scroll;
@@ -176,7 +207,7 @@ function Contest() {
         scrollingIntervalId = null;
       }, 50);
     }
-  }, [state, contest]);
+  }, [state, contest, votes]);
 
   const [{ density = 'default', isHideTitles }, updateSettings] = useSettingsState();
 
@@ -246,8 +277,9 @@ function Contest() {
 
   const headingVariant = isSmUp ? 'h3' : 'h5';
   const {
-    date, entries, name, validRedditId, winners, winnersThreadId,
+    date, isContestMode, name, validRedditId, winners, winnersThreadId,
   } = contest;
+  const shouldShowVoting = isContestMode && isLoggedIn;
   return (
     <PageWithDrawer
       handleClose={() => {
@@ -389,32 +421,62 @@ function Contest() {
               <Subheader>All other entries</Subheader>
             </>
           )}
-          {entries && (
+          {allEntriesRef.current && (
             <Grid container spacing={spacing}>
-              {entries.map(({
-                id, imgurLink, height, name: entryName, width,
-              }) => (
-                <Grid key={id} item xs={xs} sm={sm} md={md} lg={lg}>
-                  <Card id={id}>
-                    <CardImageLink
-                      displayWidth={gridDisplayWidth}
-                      height={height}
+              {allEntriesRef.current.map(
+                ({
+                  height, id, imgurLink, likes, name: entryName, width,
+                }) => (
+                  <Grid key={id} item xs={xs} sm={sm} md={md} lg={lg}>
+                    <Card
+                      className={clsx({
+                        [classes.downvoted]: likes === false,
+                        [classes.upvoted]: likes,
+                      })}
                       id={id}
-                      image={imgurLink}
-                      onClick={updateScroll}
-                      width={width}
+                      variant="outlined"
                     >
-                      {!isHideTitles && (
-                      <CardContent>
-                        <Typography className={classes.entryName} variant="caption">
-                          {entryName}
-                        </Typography>
-                      </CardContent>
-                      )}
-                    </CardImageLink>
-                  </Card>
-                </Grid>
-              ))}
+                      <CardImageLink
+                        displayWidth={gridDisplayWidth}
+                        height={height}
+                        id={id}
+                        image={imgurLink}
+                        onClick={updateScroll}
+                        width={width}
+                      />
+                      <Box display="flex">
+                        {shouldShowVoting && (
+                        <CardActions disableSpacing>
+                          <IconButton size="small">
+                            <img
+              className={classes.voteIcon}
+              src={likes ? upvoteActive : upvoteInactive}
+              alt="Upvote"
+            />
+                          </IconButton>
+                          <IconButton size="small">
+                            <img
+              className={classes.voteIcon}
+              src={likes === false ? downvoteActive : downvoteInactive}
+              alt="Downvote"
+            />
+                          </IconButton>
+                        </CardActions>
+                        )}
+                        {!isHideTitles && (
+                        <CardContent
+                          className={clsx({ [classes.voteControlsPresent]: shouldShowVoting })}
+                        >
+                          <Typography className={classes.entryName} variant="caption">
+                            {entryName}
+                          </Typography>
+                        </CardContent>
+                        )}
+                      </Box>
+                    </Card>
+                  </Grid>
+                ),
+              )}
             </Grid>
           )}
         </Container>

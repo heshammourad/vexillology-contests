@@ -8,6 +8,7 @@ const useVotes = () => {
   const { contestId } = useParams();
   const { data, mutate } = useSWR(
     isLoggedIn ? [`/votes/${contestId}`, { accessToken, refreshToken }] : null,
+    { revalidateOnMount: true },
   );
 
   return { mutate, votes: data };

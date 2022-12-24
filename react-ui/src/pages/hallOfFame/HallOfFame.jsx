@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 1000,
   },
   tabsIndicator: {
-    backgroundColor: '#fb7878',
+    backgroundColor: '#fc7d60',
     height: 4,
   },
   tabsRoot: {
