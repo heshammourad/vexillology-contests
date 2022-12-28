@@ -373,6 +373,7 @@ if (!isDev && cluster.isMaster) {
     '/vote',
     verifyAuthHeadersPresent,
     async ({ body: { dir, id }, headers: { accesstoken, refreshtoken } }, res) => {
+      logger.debug(`Voting for '${id}' in dir: ${dir}`);
       try {
         const missingFields = [];
         if (dir === undefined) {
@@ -382,13 +383,11 @@ if (!isDev && cluster.isMaster) {
           missingFields.push('id');
         }
         if (missingFields.length) {
-          res
-            .status(400)
-            .send(
-              `Missing required field${missingFields.length >= 2 ? 's' : ''}: ${missingFields.join(
-                ', ',
-              )}`,
-            );
+          const msg = `Missing required field${
+            missingFields.length >= 2 ? 's' : ''
+          }: ${missingFields.join(', ')}`;
+          logger.warn(`${msg} in /vote`);
+          res.status(400).send(msg);
           return;
         }
 
@@ -407,9 +406,12 @@ if (!isDev && cluster.isMaster) {
             likes = true;
             await reddit.upvote(id, auth);
             break;
-          default:
-            res.status(400).send('dir must be one of (1, 0, -1)');
+          default: {
+            const msg = 'dir must be one of (1, 0, -1)';
+            logger.warn(`${msg}. Received '${dir}' instead`);
+            res.status(400).send(msg);
             break;
+          }
         }
 
         res.status(200).send({ id, likes });

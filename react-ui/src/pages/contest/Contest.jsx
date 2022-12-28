@@ -52,12 +52,15 @@ import CardImageLink from './CardImageLink';
 import Subheader from './Subheader';
 
 const useStyles = makeStyles((theme) => ({
+  cardContent: {
+    backgroundColor: '#e0e0e0',
+  },
   divider: {
     height: 2,
     marginBottom: 16,
   },
   downvoted: {
-    border: '2px solid #97b0f7',
+    borderColor: '#97b0f7',
   },
   entriesLoading: {
     visibility: 'hidden',
@@ -96,7 +99,7 @@ const useStyles = makeStyles((theme) => ({
     color: '#4285f4',
   },
   upvoted: {
-    border: '2px solid #fc7d60',
+    borderColor: '#fc7d60',
   },
   voteControlsPresent: {
     paddingLeft: 0,
@@ -143,13 +146,18 @@ function Contest() {
   const { contestId } = useParams();
   const [scroll, setScroll] = useScrollState();
   const contest = useSwrData(`/contests/${contestId}`, { allowRefresh: !!scroll.entryId }) || {};
-  const { votes } = useVotes();
+  const { downvote, upvote, votes } = useVotes();
 
   const { state = {} } = useLocation();
   const [isLoaded, setLoaded] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
 
+  const [allEntries, updateEntries] = useState(null);
   const allEntriesRef = useRef(null);
+  const setEntries = (entries) => {
+    allEntriesRef.current = entries;
+    updateEntries(entries);
+  };
 
   const updateScroll = () => {
     setScroll({
@@ -163,13 +171,17 @@ function Contest() {
     }
 
     if (!votes) {
-      allEntriesRef.current = contest.entries;
+      setEntries(contest.entries);
     } else {
-      allEntriesRef.current = contest.entries.reduce((acc, cur) => {
-        const { likes } = votes.find((entry) => entry.id === cur.id);
-        acc.push({ ...cur, likes });
-        return acc;
-      }, []);
+      setEntries(
+        contest.entries.reduce((acc, cur) => {
+          const { likes } = votes.find((entry) => entry.id === cur.id);
+          acc.push({ ...cur, likes });
+          return acc;
+        }, []),
+      );
+      // eslint-disable-next-line no-console
+      console.log('Updating allEntriesRef');
     }
 
     const { entryId, y } = scroll;
@@ -421,62 +433,63 @@ function Contest() {
               <Subheader>All other entries</Subheader>
             </>
           )}
-          {allEntriesRef.current && (
+          {allEntries && (
             <Grid container spacing={spacing}>
-              {allEntriesRef.current.map(
-                ({
-                  height, id, imgurLink, likes, name: entryName, width,
-                }) => (
-                  <Grid key={id} item xs={xs} sm={sm} md={md} lg={lg}>
-                    <Card
-                      className={clsx({
-                        [classes.downvoted]: likes === false,
-                        [classes.upvoted]: likes,
-                      })}
+              {allEntries.map(({
+                height, id, imgurLink, likes, name: entryName, width,
+              }) => (
+                <Grid key={id} item xs={xs} sm={sm} md={md} lg={lg}>
+                  <Card id={id}>
+                    <CardImageLink
+                      displayWidth={gridDisplayWidth}
+                      height={height}
                       id={id}
-                      variant="outlined"
-                    >
-                      <CardImageLink
-                        displayWidth={gridDisplayWidth}
-                        height={height}
-                        id={id}
-                        image={imgurLink}
-                        onClick={updateScroll}
-                        width={width}
-                      />
-                      <Box display="flex">
-                        {shouldShowVoting && (
-                        <CardActions disableSpacing>
-                          <IconButton size="small">
-                            <img
+                      image={imgurLink}
+                      onClick={updateScroll}
+                      width={width}
+                    />
+                    <Box display="flex">
+                      {shouldShowVoting && (
+                      <CardActions disableSpacing>
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+              upvote(id, likes);
+            }}
+                        >
+                          <img
               className={classes.voteIcon}
               src={likes ? upvoteActive : upvoteInactive}
               alt="Upvote"
             />
-                          </IconButton>
-                          <IconButton size="small">
-                            <img
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+              downvote(id, likes);
+            }}
+                        >
+                          <img
               className={classes.voteIcon}
               src={likes === false ? downvoteActive : downvoteInactive}
               alt="Downvote"
             />
-                          </IconButton>
-                        </CardActions>
-                        )}
-                        {!isHideTitles && (
-                        <CardContent
-                          className={clsx({ [classes.voteControlsPresent]: shouldShowVoting })}
-                        >
-                          <Typography className={classes.entryName} variant="caption">
-                            {entryName}
-                          </Typography>
-                        </CardContent>
-                        )}
-                      </Box>
-                    </Card>
-                  </Grid>
-                ),
-              )}
+                        </IconButton>
+                      </CardActions>
+                      )}
+                      {!isHideTitles && (
+                      <CardContent
+                        className={clsx({ [classes.voteControlsPresent]: shouldShowVoting })}
+                      >
+                        <Typography className={classes.entryName} variant="caption">
+                          {entryName}
+                        </Typography>
+                      </CardContent>
+                      )}
+                    </Box>
+                  </Card>
+                </Grid>
+              ))}
             </Grid>
           )}
         </Container>

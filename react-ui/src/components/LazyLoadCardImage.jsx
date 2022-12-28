@@ -5,7 +5,7 @@ import LazyLoad from 'react-lazyload';
 function LazyLoadCardImage({
   displayWidth, height, width, image,
 }) {
-  const displayHeight = Math.floor((height * displayWidth) / width);
+  const displayHeight = Math.floor((height * (displayWidth - 2)) / width);
   return (
     <div style={{ height: displayHeight }}>
       <LazyLoad height={displayHeight} offset={1080} resize>
