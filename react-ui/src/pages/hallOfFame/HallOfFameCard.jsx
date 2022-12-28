@@ -40,6 +40,13 @@ const useStyles = makeStyles((theme) => {
         width: FLAIR_WIDTH - 5,
       },
     },
+    bestOfYear2022: {
+      '&::after': {
+        background: 'none',
+        content: '"2022"',
+        verticalAlign: 0,
+      },
+    },
     bestOfYearLabel: {
       marginRight: 4,
     },
