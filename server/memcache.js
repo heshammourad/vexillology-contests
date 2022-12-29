@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 const memjs = require('memjs');
 
 const { createLogger } = require('./logger');

@@ -27,6 +27,7 @@ import {
   useClientWidth, useScrollState, useSettingsState, useSwrData,
 } from '../../common';
 import {
+  AccountMenu,
   ArrowBackButton,
   CustomIconButton,
   CustomRadio,
@@ -269,6 +270,7 @@ function Contest() {
               onClick={toggleSettingsOpen}
               Icon={SettingsOutlinedIcon}
             />
+            <AccountMenu />
           </>
         ),
         children: <ArrowBackButton state={{ date }} to={backLink} />,

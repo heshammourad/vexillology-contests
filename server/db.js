@@ -2,28 +2,11 @@ const { parse } = require('pg-connection-string');
 const pgp = require('pg-promise')();
 
 const { createLogger } = require('./logger');
+const { camelizeObjectKeys } = require('./util');
 
 const { DATABASE_SCHEMA, DATABASE_URL } = process.env;
 
 const logger = createLogger('DB');
-
-const camelizeColumnNames = (data) => {
-  const tmp = data[0];
-  if (!tmp) {
-    logger.debug('No data returned, no columns to camelize.');
-    return;
-  }
-  Object.keys(tmp).forEach((prop) => {
-    const camel = pgp.utils.camelize(prop);
-    if (!(camel in tmp)) {
-      for (let i = 0; i < data.length; i += 1) {
-        const d = data[i];
-        d[camel] = d[prop];
-        delete d[prop];
-      }
-    }
-  });
-};
 
 const connection = parse(DATABASE_URL);
 const db = pgp({ ...connection, ssl: { rejectUnauthorized: false } });
@@ -38,7 +21,7 @@ db.$config.options.query = ({ query }) => {
 
 db.$config.options.receive = (data) => {
   logger.debug(`Camelizing column names of: ${JSON.stringify(data)}`);
-  camelizeColumnNames(data);
+  camelizeObjectKeys(data);
   logger.debug(`RECEIVE: ${JSON.stringify(data)}`);
 };
 
