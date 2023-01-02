@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import axios from 'axios';
 
 const instance = axios.create({
@@ -12,6 +10,15 @@ const generateConfig = (authToken) => {
     config.headers = { ...authToken };
   }
   return config;
+};
+
+export const deleteData = async (path, data, authToken) => {
+  try {
+    await instance.delete(path, { ...generateConfig(authToken), data });
+    return true;
+  } catch (err) {
+    return false;
+  }
 };
 
 export const getData = async ([path, authToken]) => {

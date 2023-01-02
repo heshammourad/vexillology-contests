@@ -54,6 +54,9 @@ const useStyles = makeStyles((theme) => ({
   heading: {
     margin: '24px auto',
   },
+  disabledVoting: {
+    cursor: 'wait',
+  },
   divider: {
     height: 2,
     marginBottom: 16,
@@ -130,7 +133,7 @@ function Contest() {
   const { state = {} } = useLocation();
   const [isLoaded, setLoaded] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
-  const setVotingComponentsState = useVotingComponentsState()[1];
+  const [{ votingDisabled }, setVotingComponentsState] = useVotingComponentsState();
 
   const updateScroll = () => {
     setScroll({
@@ -421,8 +424,12 @@ function Contest() {
                       </Typography>
                     </CardContent>
                     )}
-                    <CardActions disableSpacing>
+                    <CardActions
+                      className={clsx({ [classes.disabledVoting]: votingDisabled })}
+                      disableSpacing
+                    >
                       <VotingSlider
+                        disabled={votingDisabled}
                         entryId={imgurId}
                         rating={rating}
                         setVotingComponentsState={setVotingComponentsState}

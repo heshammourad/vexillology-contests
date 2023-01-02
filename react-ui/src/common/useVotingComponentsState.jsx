@@ -5,6 +5,7 @@ const usePersistedSettings = createPersistedState('votingComponents');
 const useVotingComponentsState = () => {
   const [state, setState] = usePersistedSettings({
     redditLogInDialogOpen: false,
+    votingDisabled: false,
     votingErrorSnackbarOpenTimestamp: null,
   });
 

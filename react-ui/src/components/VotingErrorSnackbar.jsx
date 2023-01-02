@@ -36,7 +36,7 @@ function VotingErrorSnackbar() {
       open={isOpen}
     >
       <Alert onClose={handleClose} severity="error">
-        Error occured submitting vote. Please try again later.
+        An error occurred. Please try again later.
       </Alert>
     </Snackbar>
   );

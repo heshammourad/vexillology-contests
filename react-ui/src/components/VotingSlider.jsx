@@ -3,16 +3,18 @@ import Slider from '@material-ui/core/Slider';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import useSWRMutation from 'swr/mutation';
 
-import { putData } from '../api';
+import { deleteData, putData } from '../api';
 import { useAuthState } from '../common';
 
 const ACTIVE_COLOR = '#ff4500';
 const INACTIVE_COLOR = '#707070';
 const MIN_SCORE = 0;
 const MAX_SCORE = 5;
+const URL = '/votes';
 
 const ThemedSlider = withStyles({
   root: {
@@ -44,7 +46,7 @@ const ThemedSlider = withStyles({
     top: -22,
     '& *': {
       background: 'transparent',
-      color: '#000',
+      color: '#212121',
     },
   },
 })(Slider);
@@ -54,6 +56,19 @@ const useStyles = makeStyles((theme) => ({
     flexShrink: 0,
     marginBottom: 16,
     marginLeft: theme.spacing(1),
+  },
+  disabled: {
+    color: INACTIVE_COLOR,
+    '& .MuiSlider-mark': {
+      color: INACTIVE_COLOR,
+    },
+    '& .MuiSlider-thumb': {
+      color: INACTIVE_COLOR,
+    },
+    '& .MuiSlider-valueLabel': {
+      color: INACTIVE_COLOR,
+      left: -12,
+    },
   },
   unrated: {
     color: INACTIVE_COLOR,
@@ -81,18 +96,48 @@ const updateEntries = (entries, { entryId, rating }) => entries.reduce((acc, cur
   return acc;
 }, []);
 
-function VotingSlider({ entryId, rating, setVotingComponentsState }) {
+function VotingSlider({
+  disabled, entryId, rating, setVotingComponentsState,
+}) {
   const { contestId } = useParams();
 
   const [{ accessToken, isLoggedIn, refreshToken }] = useAuthState();
   const authTokens = { accessToken, refreshToken };
 
-  const { trigger } = useSWRMutation([`/contests/${contestId}`, authTokens], (input, { arg }) => putData('/votes', arg, authTokens));
+  const key = [`/contests/${contestId}`, authTokens];
+  // eslint-disable-next-line max-len
+  const { isMutating: isMutatingPut, trigger: triggerPut } = useSWRMutation(key, (_, { arg }) => putData(URL, arg, authTokens));
+  const { isMutating: isMutatingDelete, trigger: triggerDelete } = useSWRMutation(
+    key,
+    (_, { arg }) => deleteData(URL, arg, authTokens),
+  );
+
   const classes = useStyles();
+
+  useEffect(() => {
+    setVotingComponentsState('votingDisabled', isMutatingDelete || isMutatingPut);
+  }, [isMutatingDelete, isMutatingPut]);
 
   const showError = () => {
     setVotingComponentsState('votingErrorSnackbarOpenTimestamp', Date.now());
   };
+
+  const triggerOptions = (input) => ({
+    optimisticData: (current) => ({ ...current, entries: updateEntries(current.entries, input) }),
+    revalidate: false,
+    populateCache: (response, contest) => {
+      if (!response) {
+        showError();
+        return contest;
+      }
+
+      const newEntries = updateEntries(contest.entries, input);
+      return { ...contest, entries: newEntries };
+    },
+    onError: () => {
+      showError();
+    },
+  });
 
   const handleSliderChange = async (event, newValue) => {
     if (!isLoggedIn) {
@@ -101,37 +146,22 @@ function VotingSlider({ entryId, rating, setVotingComponentsState }) {
     }
 
     const voteInput = { contestId, entryId, rating: newValue };
-    trigger(voteInput, {
-      optimisticData: (current) => ({
-        ...current,
-        entries: updateEntries(current.entries, voteInput),
-      }),
-      revalidate: false,
-      populateCache: (updatedData, contest) => {
-        if (!updatedData) {
-          showError();
-          return contest;
-        }
-        const newEntries = updateEntries(contest.entries, updatedData);
-        return { ...contest, entries: newEntries };
-      },
-      onError: () => {
-        showError();
-      },
-    });
+    triggerPut(voteInput, triggerOptions(voteInput));
   };
 
-  const isUnrated = () => !rating && rating !== 0;
+  const isUnrated = !rating && rating !== 0;
 
   const clearRating = () => {
-    // setRating(null);
+    const input = { contestId, entryId };
+    triggerDelete(input, triggerOptions(input));
   };
 
   return (
     <>
       <ThemedSlider
-        className={clsx({ [classes.unrated]: isUnrated() })}
+        className={clsx({ [classes.disabled]: disabled, [classes.unrated]: isUnrated })}
         aria-label="Vote on flag"
+        disabled={disabled}
         marks={marks}
         min={MIN_SCORE}
         max={MAX_SCORE}
@@ -142,7 +172,7 @@ function VotingSlider({ entryId, rating, setVotingComponentsState }) {
       />
       <Button
         className={classes.clearVoteButton}
-        disabled={isUnrated()}
+        disabled={disabled || isUnrated}
         size="small"
         onClick={clearRating}
       >
@@ -153,12 +183,14 @@ function VotingSlider({ entryId, rating, setVotingComponentsState }) {
 }
 
 VotingSlider.propTypes = {
+  disabled: PropTypes.bool,
   entryId: PropTypes.string.isRequired,
   rating: PropTypes.number,
   setVotingComponentsState: PropTypes.func.isRequired,
 };
 
 VotingSlider.defaultProps = {
+  disabled: false,
   rating: null,
 };
 
