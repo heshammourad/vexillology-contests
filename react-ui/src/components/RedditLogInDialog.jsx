@@ -24,12 +24,12 @@ function RedditLogInDialog() {
     <Dialog
       open={redditLogInDialogOpen}
       onClose={closeDialog}
-      aria-labelledby="dialog-title"
-      aria-describedby="dialog-description"
+      aria-labelledby="reddit-log-in-dialog-title"
+      aria-describedby="reddit-log-in-dialog-description"
     >
-      <DialogTitle id="dialog-title">Log in to Reddit?</DialogTitle>
+      <DialogTitle id="reddit-log-in-dialog-title">Log in to Reddit?</DialogTitle>
       <DialogContent>
-        <DialogContentText id="dialog-description">
+        <DialogContentText id="reddit-log-in-dialog-description">
           You need to be logged in to Reddit to vote on contests.
         </DialogContentText>
       </DialogContent>
