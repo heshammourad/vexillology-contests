@@ -26,6 +26,7 @@ import {
   HtmlWrapper,
   ListItemButton,
   PageWithDrawer,
+  VotingComponents,
   VotingSlider,
 } from '../../components';
 
@@ -278,112 +279,119 @@ function Entry() {
   const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${entry.imgurLink}`;
 
   return (
-    <PageWithDrawer
-      handleClose={handleDrawerClose}
-      isOpen={isInfoOpenRef.current}
-      className={classes.root}
-      appBar={{
-        position: 'fixed',
-        className: classes.appBar,
-        right: entry.id && (
-          <>
-            <CustomIconButton
-              innerRef={redditCommentButtonRef}
-              href={redditPermalink}
-              ariaLabel="Open Reddit comment"
-              Icon={RedditIcon}
+    <>
+      <PageWithDrawer
+        handleClose={handleDrawerClose}
+        isOpen={isInfoOpenRef.current}
+        className={classes.root}
+        appBar={{
+          position: 'fixed',
+          className: classes.appBar,
+          right: entry.id && (
+            <>
+              <CustomIconButton
+                innerRef={redditCommentButtonRef}
+                href={redditPermalink}
+                ariaLabel="Open Reddit comment"
+                Icon={RedditIcon}
+              />
+              <CustomIconButton
+                innerRef={flagWaverButtonRef}
+                href={flagWaverLink}
+                ariaLabel="Open FlagWaver"
+                Icon={FlagTwoToneIcon}
+              />
+              <CustomIconButton
+                ariaLabel="Open info"
+                onClick={toggleInfoDrawerOpen}
+                Icon={InfoOutlinedIcon}
+              />
+              <AccountMenu />
+            </>
+          ),
+          children: (
+            <ArrowBackButton
+              color="inherit"
+              onClick={() => {
+                setScroll({ ...scroll, entryId: entry.id });
+              }}
+              state={{ back: (state || {}).back, requestId }}
+              to={`/contests/${contestId}`}
             />
-            <CustomIconButton
-              innerRef={flagWaverButtonRef}
-              href={flagWaverLink}
-              ariaLabel="Open FlagWaver"
-              Icon={FlagTwoToneIcon}
-            />
-            <CustomIconButton
-              ariaLabel="Open info"
-              onClick={toggleInfoDrawerOpen}
-              Icon={InfoOutlinedIcon}
-            />
-            <AccountMenu />
-          </>
-        ),
-        children: (
-          <ArrowBackButton
-            color="inherit"
-            onClick={() => {
-              setScroll({ ...scroll, entryId: entry.id });
-            }}
-            state={{ back: (state || {}).back, requestId }}
-            to={`/contests/${contestId}`}
-          />
-        ),
-      }}
-      drawer={{
-        heading: 'Info',
-        children: (
-          <div className={classes.drawerContent}>
-            <div className={classes.entryName}>{entry.name}</div>
-            {entry.imgurId && (
-              <>
-                <DrawerSectionHeader>Vote</DrawerSectionHeader>
-                <Box className={classes.votingContainer} display="flex">
-                  <VotingSlider
-                    disabled={votingDisabled}
-                    entryId={entry.imgurId}
-                    rating={entry.rating}
-                    setVotingComponentsState={setVotingComponentsState}
-                  />
-                </Box>
-              </>
-            )}
-            <DrawerSectionHeader>Description</DrawerSectionHeader>
-            <HtmlWrapper html={entry.description} />
-            <DrawerSectionHeader>Links</DrawerSectionHeader>
-            <List>
-              <ListItemButton href={redditPermalink} Icon={RedditIcon} text="Open Reddit comment" />
-              <ListItemButton href={flagWaverLink} Icon={FlagTwoToneIcon} text="Open FlagWaver" />
-            </List>
-          </div>
-        ),
-      }}
-    >
-      <Box
-        ref={imageContainerRef}
-        className={clsx(classes.imageContainer, {
-          [classes.clickActive]: isNavigationVisible.before || isNavigationVisible.next,
-        })}
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        onMouseUp={handleMouseUp}
-        onMouseMove={handleMouseMoveThrottled}
-        onTouchEnd={handleTouchEnd}
+          ),
+        }}
+        drawer={{
+          heading: 'Info',
+          children: (
+            <div className={classes.drawerContent}>
+              <div className={classes.entryName}>{entry.name}</div>
+              {entry.imgurId && (
+                <>
+                  <DrawerSectionHeader>Vote</DrawerSectionHeader>
+                  <Box className={classes.votingContainer} display="flex">
+                    <VotingSlider
+                      disabled={votingDisabled}
+                      entryId={entry.imgurId}
+                      rating={entry.rating}
+                      setVotingComponentsState={setVotingComponentsState}
+                    />
+                  </Box>
+                </>
+              )}
+              <DrawerSectionHeader>Description</DrawerSectionHeader>
+              <HtmlWrapper html={entry.description} />
+              <DrawerSectionHeader>Links</DrawerSectionHeader>
+              <List>
+                <ListItemButton
+                  href={redditPermalink}
+                  Icon={RedditIcon}
+                  text="Open Reddit comment"
+                />
+                <ListItemButton href={flagWaverLink} Icon={FlagTwoToneIcon} text="Open FlagWaver" />
+              </List>
+            </div>
+          ),
+        }}
       >
-        {isNavigationAvailable.before && (
-          <NavigateIconButton
-            className={clsx(classes.navigateButton, classes.navigateBefore, {
-              [classes.navigateVisible]: isNavigationVisible.before,
-            })}
-            Icon={NavigateBeforeIcon}
-            onClick={() => {
-              handleNavigate(-1);
-            }}
-          />
-        )}
-        {entry.imgurLink && <img className={classes.image} src={entry.imgurLink} alt="" />}
-        {isNavigationAvailable.next && (
-          <NavigateIconButton
-            className={clsx(classes.navigateButton, classes.navigateNext, {
-              [classes.navigateVisible]: isNavigationVisible.next,
-            })}
-            Icon={NavigateNextIcon}
-            onClick={() => {
-              handleNavigate(1);
-            }}
-          />
-        )}
-      </Box>
-    </PageWithDrawer>
+        <Box
+          ref={imageContainerRef}
+          className={clsx(classes.imageContainer, {
+            [classes.clickActive]: isNavigationVisible.before || isNavigationVisible.next,
+          })}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMoveThrottled}
+          onTouchEnd={handleTouchEnd}
+        >
+          {isNavigationAvailable.before && (
+            <NavigateIconButton
+              className={clsx(classes.navigateButton, classes.navigateBefore, {
+                [classes.navigateVisible]: isNavigationVisible.before,
+              })}
+              Icon={NavigateBeforeIcon}
+              onClick={() => {
+                handleNavigate(-1);
+              }}
+            />
+          )}
+          {entry.imgurLink && <img className={classes.image} src={entry.imgurLink} alt="" />}
+          {isNavigationAvailable.next && (
+            <NavigateIconButton
+              className={clsx(classes.navigateButton, classes.navigateNext, {
+                [classes.navigateVisible]: isNavigationVisible.next,
+              })}
+              Icon={NavigateNextIcon}
+              onClick={() => {
+                handleNavigate(1);
+              }}
+            />
+          )}
+        </Box>
+      </PageWithDrawer>
+      <VotingComponents />
+    </>
   );
 }
 
