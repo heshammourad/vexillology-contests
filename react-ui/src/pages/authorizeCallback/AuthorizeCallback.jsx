@@ -5,7 +5,7 @@ import { getData } from '../../api';
 import { useAuthState } from '../../common';
 
 const retrieveAccessTokens = async (code) => {
-  const tokens = await getData(`/accessToken/${code}`);
+  const tokens = await getData([`/accessToken/${code}`]);
   return tokens;
 };
 
@@ -41,13 +41,13 @@ function AuthorizeCallback() {
 
         setAuthState({ ...tokens, isLoggedIn: true });
 
-        const { redirectPath } = stateValues;
+        const { redirectPath, ...scrollState } = stateValues;
         if (!redirectPath) {
           // TODO: Handle missing redirectPath
           return;
         }
 
-        navigate(redirectPath, { replace: true });
+        navigate(redirectPath, { replace: true, state: scrollState });
       });
     } catch (e) {
       // TODO: Handle error

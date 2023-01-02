@@ -43,7 +43,7 @@ const insert = async (table, values) => {
   await db.none(query);
 };
 
-const update = async (data, columns, table) => {
+const update = async (table, data, columns) => {
   const cs = new pgp.helpers.ColumnSet(columns, { table });
   const whereCondition = columns.reduce((acc, cur, idx) => {
     if (!cur.startsWith('?')) {

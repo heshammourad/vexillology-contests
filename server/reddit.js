@@ -78,7 +78,9 @@ const getContest = async (submissionId) => {
 };
 
 const getUser = async (auth) => {
+  logger.debug('Getting username');
   const { name } = await getSnoowrap(auth).getMe();
+  logger.debug(`Retrieved ${name} username`);
   return name;
 };
 

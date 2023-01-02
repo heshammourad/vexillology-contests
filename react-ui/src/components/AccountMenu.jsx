@@ -9,12 +9,10 @@ import { makeStyles } from '@material-ui/core/styles';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import AccountCircleOutlinedIcon from '@material-ui/icons/AccountCircleOutlined';
 import RedditIcon from '@material-ui/icons/Reddit';
-import { nanoid } from 'nanoid';
 import { useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 
 import { getData } from '../api';
-import { useAuthState, useSwrData } from '../common';
+import { useAuthState, useRedditLogIn } from '../common';
 
 const BUTTON_BACKGROUND_COLOR = '#ff4500';
 
@@ -42,9 +40,8 @@ function AccountMenu() {
   const anchorRef = useRef(null);
   const classes = useStyles();
 
-  const { pathname } = useLocation();
   const [{ isLoggedIn, refreshToken, username }, setAuthState] = useAuthState();
-  const { webAppClientId } = useSwrData('/init', false) || {};
+  const sendUserToAuthUrl = useRedditLogIn();
 
   const toggleMenu = () => {
     setMenuOpen((prevOpen) => !prevOpen);
@@ -62,26 +59,14 @@ function AccountMenu() {
     setMenuOpen(false);
     if (isLoggedIn) {
       try {
-        await getData(`/revokeToken/${refreshToken}`);
+        await getData([`/revokeToken/${refreshToken}`]);
       } catch (e) {
         // TODO: Handle error
       } finally {
         setAuthState({});
       }
     } else {
-      const nonce = nanoid();
-      setAuthState({ nonce });
-
-      const state = window.btoa(JSON.stringify({ [nonce]: { redirectPath: pathname } }));
-      let url = 'https://www.reddit.com/api/v1/authorize';
-      url += `?client_id=${webAppClientId}`;
-      url += '&response_type=code';
-      url += `&state=${state}`;
-      url += `&redirect_uri=${window.location.origin}/authorizeCallback`;
-      url += '&duration=permanent';
-      url += '&scope=identity';
-
-      window.location = url;
+      sendUserToAuthUrl();
     }
   };
 
