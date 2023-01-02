@@ -13,7 +13,12 @@ import {
 } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 
-import { useScrollState, useSettingsState, useSwrData } from '../../common';
+import {
+  useScrollState,
+  useSettingsState,
+  useSwrData,
+  useVotingComponentsState,
+} from '../../common';
 import {
   AccountMenu,
   ArrowBackButton,
@@ -21,8 +26,10 @@ import {
   HtmlWrapper,
   ListItemButton,
   PageWithDrawer,
+  VotingSlider,
 } from '../../components';
 
+import DrawerSectionHeader from './DrawerSectionHeader';
 import NavigateIconButton from './NavigateIconButton';
 
 const calculateImageContainerHeight = (offset) => `calc(100vh - ${offset}px)`;
@@ -71,14 +78,8 @@ const useStyles = makeStyles((theme) => ({
   navigateVisible: {
     opacity: 1,
   },
-  sectionHeader: {
-    color: '#5f6368',
-    fontSize: '.6875rem',
-    fontWeight: 500,
-    letterSpacing: '.07272727em',
-    lineHeight: '1rem',
-    padding: '14px 0',
-    textTransform: 'uppercase',
+  votingContainer: {
+    marginTop: 16,
   },
 }));
 
@@ -89,6 +90,8 @@ function Entry() {
   const { state = {} } = useLocation();
   const navigate = useNavigate();
   const classes = useStyles();
+
+  const [{ votingDisabled }, setVotingComponentsState] = useVotingComponentsState();
 
   const [scroll, setScroll] = useScrollState();
   const [{ isInfoOpen }, updateSettings] = useSettingsState();
@@ -320,8 +323,22 @@ function Entry() {
         children: (
           <div className={classes.drawerContent}>
             <div className={classes.entryName}>{entry.name}</div>
+            {entry.imgurId && (
+              <>
+                <DrawerSectionHeader>Vote</DrawerSectionHeader>
+                <Box className={classes.votingContainer} display="flex">
+                  <VotingSlider
+                    disabled={votingDisabled}
+                    entryId={entry.imgurId}
+                    rating={entry.rating}
+                    setVotingComponentsState={setVotingComponentsState}
+                  />
+                </Box>
+              </>
+            )}
+            <DrawerSectionHeader>Description</DrawerSectionHeader>
             <HtmlWrapper html={entry.description} />
-            <div className={classes.sectionHeader}>Links</div>
+            <DrawerSectionHeader>Links</DrawerSectionHeader>
             <List>
               <ListItemButton href={redditPermalink} Icon={RedditIcon} text="Open Reddit comment" />
               <ListItemButton href={flagWaverLink} Icon={FlagTwoToneIcon} text="Open FlagWaver" />
