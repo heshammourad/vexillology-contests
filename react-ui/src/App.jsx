@@ -6,7 +6,7 @@ import {
 import { SWRConfig } from 'swr';
 
 import { getData } from './api';
-import { AppHelmet } from './common';
+import { AppHelmet } from './components';
 import {
   AuthorizeCallback, Contest, Contests, Entry, HallOfFame, Home,
 } from './pages';

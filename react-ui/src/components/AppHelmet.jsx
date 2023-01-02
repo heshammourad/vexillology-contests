@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet';
 
-import useSwrData from './useSwrData';
+import { useSwrData } from '../common';
 
 function AppHelmet() {
   const { title = 'Vexillology Contests' } = useSwrData('/init') || {};

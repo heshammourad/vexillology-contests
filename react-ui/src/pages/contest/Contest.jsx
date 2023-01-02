@@ -30,7 +30,6 @@ import {
   useSettingsState,
   useSwrData,
   useVotingComponentsState,
-  VotingComponents,
 } from '../../common';
 import {
   AccountMenu,
@@ -40,6 +39,7 @@ import {
   CustomSwitch,
   PageWithDrawer,
   RedditUserAttribution,
+  VotingComponents,
   VotingSlider,
 } from '../../components';
 

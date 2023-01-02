@@ -1,4 +1,5 @@
-import { RedditLogInDialog, VotingErrorSnackbar } from '../components';
+import RedditLogInDialog from './RedditLogInDialog';
+import VotingErrorSnackbar from './VotingErrorSnackbar';
 
 function VotingComponents() {
   return (

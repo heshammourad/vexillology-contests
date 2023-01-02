@@ -1,5 +1,6 @@
 export { default as AccountMenu } from './AccountMenu';
 export { default as AppBarDivided } from './AppBarDivided';
+export { default as AppHelmet } from './AppHelmet';
 export { default as ArrowBackButton } from './ArrowBackButton';
 export { default as CustomIconButton } from './CustomIconButton';
 export { default as CustomRadio } from './CustomRadio';
@@ -15,5 +16,6 @@ export { default as ListItemLink } from './ListItemLink';
 export { default as PageWithDrawer } from './PageWithDrawer';
 export { default as RedditLogInDialog } from './RedditLogInDialog';
 export { default as RedditUserAttribution } from './RedditUserAttribution';
+export { default as VotingComponents } from './VotingComponents';
 export { default as VotingErrorSnackbar } from './VotingErrorSnackbar';
 export { default as VotingSlider } from './VotingSlider';
