@@ -60,8 +60,6 @@ function AccountMenu() {
     if (isLoggedIn) {
       try {
         await getData([`/revokeToken/${refreshToken}`]);
-      } catch (e) {
-        // TODO: Handle error
       } finally {
         setAuthState({});
       }

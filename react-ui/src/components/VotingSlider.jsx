@@ -3,7 +3,7 @@ import Slider from '@material-ui/core/Slider';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import useSWRMutation from 'swr/mutation';
 
@@ -104,6 +104,7 @@ function VotingSlider({
   const [{ accessToken, isLoggedIn, refreshToken }] = useAuthState();
   const authTokens = { accessToken, refreshToken };
 
+  const [isInteractive, setInteractive] = useState(false);
   const key = [`/contests/${contestId}`, authTokens];
   // eslint-disable-next-line max-len
   const { isMutating: isMutatingPut, trigger: triggerPut } = useSWRMutation(key, (_, { arg }) => putData(URL, arg, authTokens));
@@ -115,8 +116,10 @@ function VotingSlider({
   const classes = useStyles();
 
   useEffect(() => {
-    setVotingComponentsState('votingDisabled', isMutatingDelete || isMutatingPut);
-  }, [isMutatingDelete, isMutatingPut]);
+    if (isInteractive) {
+      setVotingComponentsState('votingDisabled', isMutatingDelete || isMutatingPut);
+    }
+  }, [isInteractive, isMutatingDelete, isMutatingPut]);
 
   const showError = () => {
     setVotingComponentsState('votingErrorSnackbarOpenTimestamp', Date.now());
@@ -145,6 +148,8 @@ function VotingSlider({
       return;
     }
 
+    setInteractive(true);
+
     const voteInput = { contestId, entryId, rating: newValue };
     triggerPut(voteInput, triggerOptions(voteInput));
   };
@@ -152,6 +157,8 @@ function VotingSlider({
   const isUnrated = !rating && rating !== 0;
 
   const clearRating = () => {
+    setInteractive(true);
+
     const input = { contestId, entryId };
     triggerDelete(input, triggerOptions(input));
   };
