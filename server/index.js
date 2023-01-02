@@ -391,17 +391,15 @@ if (!isDev && cluster.isMaster) {
 
   router
     .route('/votes')
-    .all(
-      (
-        { body: { contestId, entryId, rating }, headers: { accesstoken, refreshtoken } },
-        res,
-        next,
-      ) => {
-        if (!accesstoken || !refreshtoken) {
-          res.status(401).send('Missing authentication headers.');
-          return;
-        }
-
+    .all(({ headers: { accesstoken, refreshtoken } }, res, next) => {
+      if (!accesstoken || !refreshtoken) {
+        res.status(401).send('Missing authentication headers.');
+        return;
+      }
+      next();
+    })
+    .put(async ({ body: { contestId, entryId, rating }, headers }, res) => {
+      try {
         if (!contestId || !entryId || !rating) {
           const missingFields = [];
           if (!contestId) {
@@ -426,11 +424,6 @@ if (!isDev && cluster.isMaster) {
           return;
         }
 
-        next();
-      },
-    )
-    .put(async ({ body: { contestId, entryId, rating }, headers }, res) => {
-      try {
         const username = await reddit.getUser(headers);
         const voteData = {
           contest_id: contestId,
@@ -455,6 +448,29 @@ if (!isDev && cluster.isMaster) {
         res.status(status).send(voteData);
       } catch (err) {
         logger.error(`Error putting /vote: ${err}`);
+        res.status(500).send();
+      }
+    })
+    .delete(async ({ body: { contestId, entryId }, headers }, res) => {
+      try {
+        if (!contestId || !entryId) {
+          const missingFields = [];
+          if (!contestId) {
+            missingFields.push('contestId');
+          }
+          if (!entryId) {
+            missingFields.push('entryId');
+          }
+          res.status(400).send(`Missing required fields: ${missingFields.join(', ')}`);
+          return;
+        }
+
+        const username = await reddit.getUser(headers);
+        const voteData = { contest_id: contestId, entry_id: entryId, username };
+        await db.del('votes', voteData);
+        res.status(204).send();
+      } catch (err) {
+        logger.error(`Error deleting /vote: ${err}`);
         res.status(500).send();
       }
     });

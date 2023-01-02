@@ -27,6 +27,22 @@ db.$config.options.receive = (data) => {
 
 db.$config.options.schema = DATABASE_SCHEMA;
 
+const del = async (table, values) => {
+  const whereCondition = Object.keys(values)
+    .reduce((acc, cur, idx) => {
+      acc.push(`${cur}=$${idx + 1}`);
+      return acc;
+    }, [])
+    .join(' AND ');
+  await db.none(`DELETE FROM ${table} WHERE ${whereCondition}`, Object.values(values));
+};
+
+const insert = async (table, values) => {
+  const cs = new pgp.helpers.ColumnSet(Object.keys(values[0]), { table });
+  const query = pgp.helpers.insert(values, cs);
+  await db.none(query);
+};
+
 const select = async (queryStr, values) => {
   try {
     const data = await db.any(queryStr, values);
@@ -35,12 +51,6 @@ const select = async (queryStr, values) => {
     logger.error(`SELECT failed. ${err}`);
   }
   return null;
-};
-
-const insert = async (table, values) => {
-  const cs = new pgp.helpers.ColumnSet(Object.keys(values[0]), { table });
-  const query = pgp.helpers.insert(values, cs);
-  await db.none(query);
 };
 
 const update = async (table, data, columns) => {
@@ -63,4 +73,9 @@ const update = async (table, data, columns) => {
   await db.none(query);
 };
 
-module.exports = { insert, select, update };
+module.exports = {
+  del,
+  insert,
+  select,
+  update,
+};
