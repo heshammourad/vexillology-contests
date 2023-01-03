@@ -1,8 +1,21 @@
-import { useEffect } from 'react';
+import Button from '@material-ui/core/Button';
+import Container from '@material-ui/core/Container';
+import Typography from '@material-ui/core/Typography';
+import { makeStyles } from '@material-ui/core/styles';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { getData } from '../../api';
-import { useAuthState } from '../../common';
+import { useAuthState, useRedditLogIn } from '../../common';
+
+const ACCESS_DENIED = 'access_denied';
+const DATA_ERROR = 'auth_state_mismatch';
+
+const useStyles = makeStyles({
+  heading: {
+    lineHeight: '64px',
+  },
+});
 
 const retrieveAccessTokens = async (code) => {
   const tokens = await getData([`/accessToken/${code}`]);
@@ -11,50 +24,93 @@ const retrieveAccessTokens = async (code) => {
 
 function AuthorizeCallback() {
   const [searchParams] = useSearchParams();
+  const [errorMessage, setErrorMessage] = useState(null);
+  const sendUserToAuthUrl = useRedditLogIn();
   const [{ nonce }, setAuthState] = useAuthState(0);
   const navigate = useNavigate();
+  const classes = useStyles();
+
+  const { code, error, state } = Object.fromEntries(searchParams);
+  const getStateValues = () => {
+    try {
+      return JSON.parse(window.atob(state))[nonce];
+    } catch (e) {
+      return null;
+    }
+  };
+  const stateValues = getStateValues();
+  const { redirectPath = '/', ...scrollState } = stateValues || {};
+
+  const redirect = (routerState) => {
+    navigate(redirectPath, { replace: true, state: routerState });
+  };
+
+  const getErrorMessage = () => {
+    switch (errorMessage) {
+      case ACCESS_DENIED:
+        return 'You must log in to your Reddit account to vote in contests. You may resume browsing, or try to log in again.';
+      case DATA_ERROR:
+        return 'An error occurred reading data from Reddit. Please try again or resume browsing the error is fixed.';
+      default:
+        return '';
+    }
+  };
 
   useEffect(() => {
-    const { code, error, state } = Object.fromEntries(searchParams);
     if (error) {
-      // TODO: Handle error from redirect
+      if (error === ACCESS_DENIED) {
+        setErrorMessage(ACCESS_DENIED);
+      }
       return;
     }
 
     try {
-      const stateValues = JSON.parse(window.atob(state))[nonce];
-      if (!stateValues) {
-        // TODO: Handle auth state mismatch
-        return;
-      }
-
-      if (!code) {
-        // TODO: Handle missing code
+      if (!stateValues || !code) {
+        setErrorMessage(DATA_ERROR);
         return;
       }
 
       retrieveAccessTokens(code).then((tokens) => {
         if (!tokens.accessToken || !tokens.refreshToken) {
-          // TODO: Handle missing tokens
+          setErrorMessage(DATA_ERROR);
           return;
         }
 
         setAuthState({ ...tokens, isLoggedIn: true });
 
-        const { redirectPath, ...scrollState } = stateValues;
-        if (!redirectPath) {
-          // TODO: Handle missing redirectPath
-          return;
-        }
-
         navigate(redirectPath, { replace: true, state: scrollState });
       });
     } catch (e) {
-      // TODO: Handle error
+      setErrorMessage(DATA_ERROR);
     }
   }, []);
 
-  return null;
+  return (
+    errorMessage && (
+      <Container>
+        <Typography className={classes.heading} variant="h6" component="h1">
+          Sorry, something went wrong :(
+        </Typography>
+        <p>{getErrorMessage()}</p>
+        <Button
+          color="primary"
+          onClick={() => {
+            redirect();
+          }}
+        >
+          Resume Browsing
+        </Button>
+        <Button
+          color="primary"
+          onClick={() => {
+            sendUserToAuthUrl({ stateValues });
+          }}
+        >
+          Try Again
+        </Button>
+      </Container>
+    )
+  );
 }
 
 export default AuthorizeCallback;

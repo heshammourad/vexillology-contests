@@ -9,14 +9,21 @@ const useRedditLogIn = () => {
   const setAuthState = useAuthState()[1];
   const { webAppClientId } = useSwrData('/init', false) || {};
 
-  const sendUserToAuthUrl = () => {
+  const sendUserToAuthUrl = ({ stateValues = {} } = {}) => {
     const nonce = nanoid();
     setAuthState({ nonce });
 
     const { innerWidth, scrollY } = window;
 
     const state = window.btoa(
-      JSON.stringify({ [nonce]: { innerWidth, redirectPath: pathname, scrollY } }),
+      JSON.stringify({
+        [nonce]: {
+          innerWidth,
+          redirectPath: pathname,
+          scrollY,
+          ...stateValues,
+        },
+      }),
     );
     let url = 'https://www.reddit.com/api/v1/authorize';
     url += `?client_id=${webAppClientId}`;
