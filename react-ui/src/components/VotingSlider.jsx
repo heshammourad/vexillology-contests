@@ -154,14 +154,14 @@ function VotingSlider({
     triggerPut(voteInput, triggerOptions(voteInput));
   };
 
-  const isUnrated = !rating && rating !== 0;
-
   const clearRating = () => {
     setInteractive(true);
 
     const input = { contestId, entryId };
     triggerDelete(input, triggerOptions(input));
   };
+
+  const isUnrated = !rating && rating !== 0;
 
   return (
     <>
