@@ -4,6 +4,7 @@ const path = require('path');
 
 const express = require('express');
 const helmet = require('helmet');
+const { keyBy } = require('lodash');
 const partition = require('lodash/partition');
 const shuffle = require('lodash/shuffle');
 const { v4: uuidv4 } = require('uuid');
@@ -13,6 +14,7 @@ const imgur = require('./imgur');
 const { createLogger } = require('./logger');
 const memcache = require('./memcache');
 const reddit = require('./reddit');
+const { camelizeObjectKeys } = require('./util');
 
 const logger = createLogger('INDEX');
 
@@ -22,6 +24,7 @@ const {
   NODE_ENV,
   PORT: ENV_PORT,
   TITLE = 'Vexillology Contests',
+  WEB_APP_CLIENT_ID,
 } = process.env;
 
 const isDev = NODE_ENV !== 'production';
@@ -116,10 +119,11 @@ if (!isDev && cluster.isMaster) {
 
   router.use(express.json());
 
-  router.route('/init').get(async (req, res) => {
+  router.get('/init', async (req, res) => {
     try {
       res.send({
         title: TITLE,
+        webAppClientId: WEB_APP_CLIENT_ID,
       });
     } catch (err) {
       logger.error(`Error getting /init: ${err}`);
@@ -127,7 +131,44 @@ if (!isDev && cluster.isMaster) {
     }
   });
 
-  router.route('/contests').get(async (req, res) => {
+  router.get('/accessToken/:code', async ({ params: { code } }, res) => {
+    try {
+      const result = await reddit.retrieveAccessToken(code);
+      if (!result) {
+        throw new Error('Unable to retrieve access token');
+      }
+
+      const username = await reddit.getUser(result);
+
+      camelizeObjectKeys([result]);
+      const { accessToken, refreshToken } = result;
+      if (!accessToken || !refreshToken) {
+        throw new Error('Missing auth tokens');
+      }
+
+      const response = { accessToken, refreshToken, username };
+      res.send(response);
+    } catch (err) {
+      logger.error(`Error retrieving access token: ${err}`);
+      res.status(500).send();
+    }
+  });
+
+  router.get('/revokeToken/:refreshToken', async ({ params: { refreshToken } }, res) => {
+    try {
+      if (!refreshToken) {
+        logger.warn('Missing refresh token');
+        res.status(400).send();
+      }
+      await reddit.revokeRefreshToken(refreshToken);
+      res.status(204).send();
+    } catch (e) {
+      logger.error(`Error revoking token: ${e}`);
+      res.status(500).send();
+    }
+  });
+
+  router.get('/contests', async (req, res) => {
     try {
       const result = await db.select(
         'SELECT id, name, date, year_end FROM contests WHERE env_level >= $1 ORDER BY date DESC',
@@ -145,190 +186,292 @@ if (!isDev && cluster.isMaster) {
     }
   });
 
-  router.route('/contests/:id').get(async ({ params: { id } }, res) => {
-    try {
-      let winnersThreadId;
-      const response = await memcache.get(
-        `contest.${id}`,
-        async () => {
-          const contestResults = await db.select(
-            'SELECT name, date, valid_reddit_id, winners_thread_id FROM contests WHERE id = $1 AND env_level >= $2',
-            [id, ENV_LEVEL],
-          );
-          if (!contestResults.length) {
-            logger.warn(`Contest id: ${id} not found in database.`);
-            return null;
-          }
-          const contestResult = contestResults[0];
-
-          const contest = await reddit.getContest(id);
-          const imagesData = await db.select(
-            'SELECT * FROM entries e JOIN contest_entries ce ON e.id = ce.entry_id WHERE contest_id = $1',
-            [id],
-          );
-
-          winnersThreadId = contestResult.winnersThreadId;
-          const contestEntriesData = [];
-          if (winnersThreadId) {
-            const contestWinners = imagesData.filter(
-              (image) => image.rank && image.rank <= LAST_WINNER_RANK,
+  router.get(
+    '/contests/:id',
+    async ({ headers: { accesstoken, refreshtoken }, params: { id } }, res) => {
+      try {
+        let winnersThreadId;
+        const response = await memcache.get(
+          `contest.${id}`,
+          async () => {
+            const contestResults = await db.select(
+              'SELECT name, date, valid_reddit_id, winners_thread_id FROM contests WHERE id = $1 AND env_level >= $2',
+              [id, ENV_LEVEL],
             );
-            const winner = contestWinners.find(({ rank }) => rank === 1);
-            if (contestWinners.length < LAST_WINNER_RANK || !winner.description) {
-              const winners = await reddit.getWinners(winnersThreadId);
+            if (!contestResults.length) {
+              logger.warn(`Contest id: ${id} not found in database.`);
+              return null;
+            }
+            const contestResult = contestResults[0];
 
-              const entriesData = [];
-              winners.forEach(({ imgurId, rank, user }) => {
-                contestEntriesData.push({
-                  contest_id: id,
-                  entry_id: imgurId,
-                  rank,
+            const contest = await reddit.getContest(id);
+            const imagesData = await db.select(
+              'SELECT * FROM entries e JOIN contest_entries ce ON e.id = ce.entry_id WHERE contest_id = $1',
+              [id],
+            );
+
+            winnersThreadId = contestResult.winnersThreadId;
+            const contestEntriesData = [];
+            if (winnersThreadId) {
+              const contestWinners = imagesData.filter(
+                (image) => image.rank && image.rank <= LAST_WINNER_RANK,
+              );
+              const winner = contestWinners.find(({ rank }) => rank === 1);
+              if (contestWinners.length < LAST_WINNER_RANK || !winner.description) {
+                const winners = await reddit.getWinners(winnersThreadId);
+
+                const entriesData = [];
+                winners.forEach(({ imgurId, rank, user }) => {
+                  contestEntriesData.push({
+                    contest_id: id,
+                    entry_id: imgurId,
+                    rank,
+                  });
+
+                  const imageData = imagesData.find((image) => image.id === imgurId);
+                  if (imageData) {
+                    imageData.rank = rank;
+                    imageData.user = user;
+
+                    const { description, name } = contest.entries.find(
+                      (entry) => entry.imgurId === imgurId,
+                    );
+                    entriesData.push({
+                      description,
+                      id: imgurId,
+                      name,
+                      user,
+                    });
+                  }
                 });
 
-                const imageData = imagesData.find((image) => image.id === imgurId);
-                if (imageData) {
-                  imageData.rank = rank;
-                  imageData.user = user;
-
-                  const { description, name } = contest.entries.find(
-                    (entry) => entry.imgurId === imgurId,
-                  );
-                  entriesData.push({
-                    description,
-                    id: imgurId,
-                    name,
-                    user,
-                  });
+                if (entriesData.length) {
+                  await db.update('contest_entries', contestEntriesData, [
+                    '?contest_id',
+                    '?entry_id',
+                    'rank',
+                  ]);
+                  await db.update('entries', entriesData, ['?id', 'description', 'name', 'user']);
                 }
-              });
-
-              if (entriesData.length) {
-                await db.update(
-                  contestEntriesData,
-                  ['?contest_id', '?entry_id', 'rank'],
-                  'contest_entries',
-                );
-                await db.update(entriesData, ['?id', 'description', 'name', 'user'], 'entries');
               }
             }
-          }
 
-          const getEntryRank = (entryId) => {
-            const contestEntry = contestEntriesData.find((entry) => entry.entry_id === entryId);
-            if (contestEntry) {
-              return contestEntry.rank;
-            }
-            return null;
-          };
+            const getEntryRank = (entryId) => {
+              const contestEntry = contestEntriesData.find((entry) => entry.entry_id === entryId);
+              if (contestEntry) {
+                return contestEntry.rank;
+              }
+              return null;
+            };
 
-          const allImagesData = [...imagesData];
-          let missingEntries = findMissingEntries(contest, allImagesData);
-          if (missingEntries.length) {
-            const entriesData = await db.select('SELECT * FROM entries WHERE id = ANY ($1)', [
-              missingEntries.map((entry) => entry.imgurId),
-            ]);
-            const contestEntries = entriesData.map((entry) => ({
-              ...entry,
-              rank: getEntryRank(entry.id),
-            }));
-            if (entriesData.length) {
-              await addContestEntries(id, contestEntries);
-              allImagesData.push(...contestEntries);
-            }
-          }
-
-          missingEntries = findMissingEntries(contest, allImagesData);
-          if (missingEntries.length) {
-            const imgurData = (await imgur.getImagesData(missingEntries)).map(
-              ({ imgurId, height, width }) => ({
-                id: imgurId,
-                height,
-                width,
-              }),
-            );
-            if (imgurData.length) {
-              await addEntries(imgurData);
-              const contestEntries = imgurData.map((imageData) => ({
-                ...imageData,
-                rank: getEntryRank(imageData.id),
+            const allImagesData = [...imagesData];
+            let missingEntries = findMissingEntries(contest, allImagesData);
+            if (missingEntries.length) {
+              const entriesData = await db.select('SELECT * FROM entries WHERE id = ANY ($1)', [
+                missingEntries.map((entry) => entry.imgurId),
+              ]);
+              const contestEntries = entriesData.map((entry) => ({
+                ...entry,
+                rank: getEntryRank(entry.id),
               }));
-              await addContestEntries(id, contestEntries);
-              allImagesData.push(...contestEntries);
+              if (entriesData.length) {
+                await addContestEntries(id, contestEntries);
+                allImagesData.push(...contestEntries);
+              }
             }
-          }
 
-          missingEntries = findMissingEntries(contest, allImagesData);
-          if (missingEntries.length) {
-            logger.warn(
-              `Unable to retrieve image data for: [${missingEntries
-                .map(({ imgurId }) => imgurId)
-                .join(', ')}] in contest ${id}.`,
-            );
-          }
-
-          contest.entries = contest.entries.reduce((acc, cur) => {
-            const imageData = allImagesData.find((image) => cur.imgurId === image.id);
-            if (imageData) {
-              const {
-                id: imgurId, height, rank, width, user,
-              } = imageData;
-              acc.push({
-                ...cur,
-                imgurId,
-                imgurLink: `https://i.imgur.com/${imgurId}.png`,
-                height,
-                rank,
-                width,
-                user,
-              });
+            missingEntries = findMissingEntries(contest, allImagesData);
+            if (missingEntries.length) {
+              const imgurData = (await imgur.getImagesData(missingEntries)).map(
+                ({ imgurId, height, width }) => ({
+                  id: imgurId,
+                  height,
+                  width,
+                }),
+              );
+              if (imgurData.length) {
+                await addEntries(imgurData);
+                const contestEntries = imgurData.map((imageData) => ({
+                  ...imageData,
+                  rank: getEntryRank(imageData.id),
+                }));
+                await addContestEntries(id, contestEntries);
+                allImagesData.push(...contestEntries);
+              }
             }
-            return acc;
-          }, []);
-          if (!contest.entries.length) {
-            logger.warn(`Unable to retrieve entries for contest: '${id}'`);
-            return null;
+
+            missingEntries = findMissingEntries(contest, allImagesData);
+            if (missingEntries.length) {
+              logger.warn(
+                `Unable to retrieve image data for: [${missingEntries
+                  .map(({ imgurId }) => imgurId)
+                  .join(', ')}] in contest ${id}.`,
+              );
+            }
+
+            contest.entries = contest.entries.reduce((acc, cur) => {
+              const imageData = allImagesData.find((image) => cur.imgurId === image.id);
+              if (imageData) {
+                const {
+                  id: imgurId, height, rank, width, user,
+                } = imageData;
+                acc.push({
+                  ...cur,
+                  imgurId,
+                  imgurLink: `https://i.imgur.com/${imgurId}.png`,
+                  height,
+                  rank,
+                  width,
+                  user,
+                });
+              }
+              return acc;
+            }, []);
+            if (!contest.entries.length) {
+              logger.warn(`Unable to retrieve entries for contest: '${id}'`);
+              return null;
+            }
+
+            return {
+              date: contestResult.date.toJSON().substr(0, 10),
+              name: contestResult.name,
+              validRedditId: contestResult.validRedditId,
+              winnersThreadId,
+              ...contest,
+            };
+          },
+          CONTESTS_CACHE_TIMEOUT,
+        );
+
+        if (!response) {
+          logger.warn(`Unable to find contest: '${id}'`);
+          res.status(404).send();
+          return;
+        }
+
+        if (accesstoken && refreshtoken) {
+          const username = await reddit.getUser({ accesstoken, refreshtoken });
+          logger.debug(`Auth tokens present, retrieving votes of ${username} on ${id}`);
+          const votes = await db.select(
+            'SELECT entry_id, rating FROM votes WHERE contest_id = $1 AND username = $2',
+            [id, username],
+          );
+          logger.debug(`${username} votes on ${id}: '${JSON.stringify(votes)}'`);
+
+          const entriesObj = keyBy(response.entries, 'imgurId');
+          votes.forEach(({ entryId, rating }) => {
+            entriesObj[entryId].rating = rating;
+          });
+          response.entries = Object.values(entriesObj);
+          logger.debug(`Merged data: '${JSON.stringify(response.entries)}'`);
+        }
+
+        response.requestId = uuidv4();
+
+        if (response.isContestMode && !winnersThreadId) {
+          response.entries = shuffle(response.entries);
+        } else {
+          const [winners, entries] = partition(
+            response.entries,
+            ({ rank }) => rank && rank <= LAST_WINNER_RANK,
+          );
+          response.entries = entries;
+          if (winners.length) {
+            response.winners = winners.sort((a, b) => a.rank - b.rank);
           }
+        }
 
-          return {
-            date: contestResult.date.toJSON().substr(0, 10),
-            name: contestResult.name,
-            validRedditId: contestResult.validRedditId,
-            winnersThreadId,
-            ...contest,
-          };
-        },
-        CONTESTS_CACHE_TIMEOUT,
-      );
+        res.send(response);
+      } catch (err) {
+        logger.error(`Error getting /contest/${id}: ${err})}`);
+        res.status(500).send();
+      }
+    },
+  );
 
-      if (!response) {
-        logger.warn(`Unable to find contest: '${id}'`);
-        res.status(404).send();
+  router
+    .route('/votes')
+    .all(({ headers: { accesstoken, refreshtoken } }, res, next) => {
+      if (!accesstoken || !refreshtoken) {
+        res.status(401).send('Missing authentication headers.');
         return;
       }
-
-      response.requestId = uuidv4();
-
-      if (response.isContestMode && !winnersThreadId) {
-        response.entries = shuffle(response.entries);
-      } else {
-        const [winners, entries] = partition(
-          response.entries,
-          ({ rank }) => rank && rank <= LAST_WINNER_RANK,
-        );
-        response.entries = entries;
-        if (winners.length) {
-          response.winners = winners.sort((a, b) => a.rank - b.rank);
+      next();
+    })
+    .put(async ({ body: { contestId, entryId, rating }, headers }, res) => {
+      try {
+        if (!contestId || !entryId || !rating) {
+          const missingFields = [];
+          if (!contestId) {
+            missingFields.push('contestId');
+          }
+          if (!entryId) {
+            missingFields.push('entryId');
+          }
+          if (!rating && rating !== 0) {
+            missingFields.push('rating');
+          }
+          res.status(400).send(`Missing required fields: ${missingFields.join(', ')}`);
+          return;
         }
+
+        if (!Number.isInteger(rating) || rating < 0 || rating > 5) {
+          res.status(400).send('Expected rating to be an integer between 0 and 5 inclusive.');
+          return;
+        }
+
+        const username = await reddit.getUser(headers);
+        const voteData = {
+          contest_id: contestId,
+          entry_id: entryId,
+          username,
+          rating,
+        };
+
+        const currentValue = await db.select(
+          'SELECT * FROM votes WHERE contest_id = $1 AND entry_id = $2 AND username = $3',
+          [contestId, entryId, username],
+        );
+        let status;
+        if (!currentValue.length) {
+          await db.insert('votes', [voteData]);
+          status = 201;
+        } else {
+          await db.update('votes', [voteData], ['?contest_id', '?entry_id', '?username', 'rating']);
+          status = 200;
+        }
+        camelizeObjectKeys([voteData]);
+        res.status(status).send(voteData);
+      } catch (err) {
+        logger.error(`Error putting /vote: ${err}`);
+        res.status(500).send();
       }
+    })
+    .delete(async ({ body: { contestId, entryId }, headers }, res) => {
+      try {
+        if (!contestId || !entryId) {
+          const missingFields = [];
+          if (!contestId) {
+            missingFields.push('contestId');
+          }
+          if (!entryId) {
+            missingFields.push('entryId');
+          }
+          res.status(400).send(`Missing required fields: ${missingFields.join(', ')}`);
+          return;
+        }
 
-      res.send(response);
-    } catch (err) {
-      logger.error(`Error getting /contest/${id}: ${err})}`);
-      res.status(500).send();
-    }
-  });
+        const username = await reddit.getUser(headers);
+        const voteData = { contest_id: contestId, entry_id: entryId, username };
+        await db.del('votes', voteData);
+        res.status(204).send();
+      } catch (err) {
+        logger.error(`Error deleting /vote: ${err}`);
+        res.status(500).send();
+      }
+    });
 
-  router.route('/hallOfFame').get(async (req, res) => {
+  router.get('/hallOfFame', async (req, res) => {
     try {
       const result = await db.select('SELECT * FROM hall_of_fame');
 

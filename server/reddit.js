@@ -1,22 +1,51 @@
+const axios = require('axios');
 const Snoowrap = require('snoowrap');
 
 const { createLogger } = require('./logger');
 
 const logger = createLogger('REDDIT');
 
-const { REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_PASSWORD } = process.env;
+const {
+  REDDIT_CLIENT_ID,
+  REDDIT_CLIENT_SECRET,
+  REDDIT_PASSWORD,
+  WEB_APP_CLIENT_ID,
+  WEB_APP_CLIENT_SECRET,
+  WEB_APP_REDIRECT_URI,
+} = process.env;
 
-const r = new Snoowrap({
-  userAgent: 'node:com.herokuapp.vexillology-contests:v0.1.0',
+const redditApi = axios.create({
+  baseURL: 'https://www.reddit.com/api/v1',
+  headers: { 'content-type': 'application/x-www-form-urlencoded' },
+  auth: { username: WEB_APP_CLIENT_ID, password: WEB_APP_CLIENT_SECRET },
+});
+
+const userAgent = 'node:com.herokuapp.vexillology-contests:v0.1.0';
+
+const snoowrap = new Snoowrap({
+  userAgent,
   clientId: REDDIT_CLIENT_ID,
   clientSecret: REDDIT_CLIENT_SECRET,
   username: 'heshammourad',
   password: REDDIT_PASSWORD,
 });
 
+const getSnoowrap = (auth) => {
+  if (!auth || !auth.accesstoken || !auth.refreshtoken) {
+    return snoowrap;
+  }
+  return new Snoowrap({
+    userAgent,
+    clientId: WEB_APP_CLIENT_ID,
+    clientSecret: WEB_APP_CLIENT_SECRET,
+    refreshToken: auth.refreshtoken,
+    accessToken: auth.accesstoken,
+  });
+};
+
 const getContest = async (submissionId) => {
   logger.debug(`Getting contest submission: '${submissionId}`);
-  const submission = await r.getSubmission(submissionId);
+  const submission = await getSnoowrap().getSubmission(submissionId);
   const isContestMode = await submission.contest_mode;
   const entries = await submission.comments.reduce(
     (acc, {
@@ -48,17 +77,52 @@ const getContest = async (submissionId) => {
   return contest;
 };
 
+const getUser = async (auth) => {
+  logger.debug('Getting username');
+  const { name } = await getSnoowrap(auth).getMe();
+  logger.debug(`Retrieved ${name} username`);
+  return name;
+};
+
 const getWinners = async (winnersThreadId) => {
   logger.debug(`Getting winners submission: '${winnersThreadId}'`);
-  const submission = await r.getSubmission(winnersThreadId);
+  const submission = await getSnoowrap().getSubmission(winnersThreadId);
   const selftext = await submission.selftext;
-  const winners = Array.from(selftext.matchAll(/(\d*)\|(.*)\|.*imgur\.com\/(\w*)(\.|\))/g), (match) => ({
-    imgurId: match[3],
-    rank: parseInt(match[1], 10),
-    user: match[2],
-  }));
+  const winners = Array.from(
+    selftext.matchAll(/(\d*)\|(.*)\|.*imgur\.com\/(\w*)(\.|\))/g),
+    (match) => ({
+      imgurId: match[3],
+      rank: parseInt(match[1], 10),
+      user: match[2],
+    }),
+  );
   logger.debug(`Got winners: '${JSON.stringify(winners)}'`);
   return winners;
 };
 
-module.exports = { getContest, getWinners };
+const retrieveAccessToken = async (code) => {
+  try {
+    const { data } = await redditApi.post('/access_token', {
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: WEB_APP_REDIRECT_URI,
+    });
+    logger.debug('Successfully retrieved access token');
+    return data;
+  } catch (e) {
+    logger.error(`Error retrieving access token: ${e}`);
+  }
+  return null;
+};
+
+const revokeRefreshToken = async (token) => {
+  await redditApi.post('/revoke_token', { token, token_type_hint: 'refresh_token' });
+};
+
+module.exports = {
+  getContest,
+  getUser,
+  getWinners,
+  retrieveAccessToken,
+  revokeRefreshToken,
+};

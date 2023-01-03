@@ -4,11 +4,14 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import createPersistedState from 'use-persisted-state';
 
+import useAuthState from './useAuthState';
+
 const usePersistentState = createPersistedState('data');
 const useExpiresState = createPersistedState('expires');
 
 const useSwrData = (key, allowRefresh = true) => {
-  const { data, mutate } = useSWR(key);
+  const [{ accessToken, refreshToken }] = useAuthState();
+  const { data, mutate } = useSWR([key, { accessToken, refreshToken }]);
   const [isFetched, setFetched] = useState(!!data);
   const [cache, setCache] = usePersistentState({});
   const [expires, setExpires] = useExpiresState({});

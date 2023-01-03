@@ -1,4 +1,5 @@
 import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
@@ -24,23 +25,37 @@ import { useLocation, useParams } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
 
 import {
-  useClientWidth, useScrollState, useSettingsState, useSwrData,
+  useClientWidth,
+  useScrollState,
+  useSettingsState,
+  useSwrData,
+  useVotingComponentsState,
 } from '../../common';
 import {
+  AccountMenu,
   ArrowBackButton,
   CustomIconButton,
   CustomRadio,
   CustomSwitch,
   PageWithDrawer,
   RedditUserAttribution,
+  VotingComponents,
+  VotingSlider,
 } from '../../components';
 
 import CardImageLink from './CardImageLink';
 import Subheader from './Subheader';
 
+const scrollInstantlyTo = (scrollY) => {
+  animateScroll.scrollTo(scrollY, { duration: 0, delay: 0 });
+};
+
 const useStyles = makeStyles((theme) => ({
   heading: {
     margin: '24px auto',
+  },
+  disabledVoting: {
+    cursor: 'wait',
   },
   divider: {
     height: 2,
@@ -51,6 +66,9 @@ const useStyles = makeStyles((theme) => ({
   },
   entryName: {
     color: 'black',
+  },
+  hiddenTitle: {
+    marginTop: 16,
   },
   icon: {
     color: '#5f6368',
@@ -118,6 +136,7 @@ function Contest() {
   const { state = {} } = useLocation();
   const [isLoaded, setLoaded] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
+  const [{ votingDisabled }, setVotingComponentsState] = useVotingComponentsState();
 
   const updateScroll = () => {
     setScroll({
@@ -131,36 +150,44 @@ function Contest() {
     }
 
     const { entryId, y } = scroll;
-    if (!entryId) {
+    const { innerWidth, requestId, scrollY } = state || {};
+    if (!entryId && !scrollY) {
       setLoaded(true);
       return;
     }
 
-    if (!scrollingIntervalId) {
+    if (!isLoaded && !scrollingIntervalId) {
       scrollingIntervalId = setInterval(() => {
-        const entryEl = document.getElementById(entryId);
-        if (!entryEl) {
-          return;
+        if (scrollY) {
+          if (window.innerWidth === innerWidth) {
+            scrollInstantlyTo(scrollY);
+          }
+        } else {
+          const entryEl = document.getElementById(entryId);
+          if (!entryEl) {
+            return;
+          }
+
+          let scrollTop = y;
+
+          const headerHeight = document.getElementsByTagName('header')[0].offsetHeight;
+          const { bottom, top } = entryEl.getBoundingClientRect();
+          const windowTop = scrollTop + headerHeight;
+          const windowBottom = scrollTop + window.innerHeight;
+          if (
+            scrollTop === undefined
+            || (bottom < windowTop && top < windowTop)
+            || (bottom > windowBottom && top > windowBottom)
+            || requestId !== contest.requestId
+          ) {
+            scrollTop = top - headerHeight - 8;
+          }
+
+          scrollInstantlyTo(scrollTop);
         }
-
-        let scrollTop = y;
-
-        const headerHeight = document.getElementsByTagName('header')[0].offsetHeight;
-        const { bottom, top } = entryEl.getBoundingClientRect();
-        const windowTop = scrollTop + headerHeight;
-        const windowBottom = scrollTop + window.innerHeight;
-        if (
-          scrollTop === undefined
-          || (bottom < windowTop && top < windowTop)
-          || (bottom > windowBottom && top > windowBottom)
-          || (state || {}).requestId !== contest.requestId
-        ) {
-          scrollTop = top - headerHeight - 8;
-        }
-
-        animateScroll.scrollTo(scrollTop, { duration: 0, delay: 0 });
         setLoaded(true);
         setScroll({});
+        window.history.replaceState({}, document.title);
         clearInterval(scrollingIntervalId);
         scrollingIntervalId = null;
       }, 50);
@@ -269,6 +296,7 @@ function Contest() {
               onClick={toggleSettingsOpen}
               Icon={SettingsOutlinedIcon}
             />
+            <AccountMenu />
           </>
         ),
         children: <ArrowBackButton state={{ date }} to={backLink} />,
@@ -380,7 +408,7 @@ function Contest() {
           {entries && (
             <Grid container spacing={spacing}>
               {entries.map(({
-                id, imgurLink, height, name: entryName, width,
+                id, imgurId, imgurLink, height, name: entryName, rating, width,
               }) => (
                 <Grid key={id} item xs={xs} sm={sm} md={md} lg={lg}>
                   <Card id={id}>
@@ -391,15 +419,28 @@ function Contest() {
                       image={imgurLink}
                       onClick={updateScroll}
                       width={width}
+                    />
+                    {!isHideTitles && (
+                    <CardContent>
+                      <Typography className={classes.entryName} variant="caption">
+                        {entryName}
+                      </Typography>
+                    </CardContent>
+                    )}
+                    <CardActions
+                      className={clsx({
+                        [classes.disabledVoting]: votingDisabled,
+                        [classes.hiddenTitle]: isHideTitles,
+                      })}
+                      disableSpacing
                     >
-                      {!isHideTitles && (
-                      <CardContent>
-                        <Typography className={classes.entryName} variant="caption">
-                          {entryName}
-                        </Typography>
-                      </CardContent>
-                      )}
-                    </CardImageLink>
+                      <VotingSlider
+                        disabled={votingDisabled}
+                        entryId={imgurId}
+                        rating={rating}
+                        setVotingComponentsState={setVotingComponentsState}
+                      />
+                    </CardActions>
                   </Card>
                 </Grid>
               ))}
@@ -407,6 +448,7 @@ function Contest() {
           )}
         </Container>
       )}
+      <VotingComponents />
     </PageWithDrawer>
   );
 }
