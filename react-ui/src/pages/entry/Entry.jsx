@@ -60,7 +60,6 @@ const useStyles = makeStyles((theme) => ({
     fontSize: '16px',
     padding: '20px 24px',
     wordBreak: 'break-word',
-    zIndex: 1,
   },
   entryName: {
     fontWeight: 'bold',
