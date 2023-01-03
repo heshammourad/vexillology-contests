@@ -22,7 +22,7 @@ function App() {
       <ThemeProvider theme={theme}>
         <SWRConfig
           value={{
-            fetcher: getData,
+            fetcher: (arr) => getData(...arr),
             revalidateOnMount: false,
             revalidateOnFocus: false,
             revalidateOnReconnect: false,

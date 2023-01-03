@@ -21,7 +21,7 @@ export const deleteData = async (path, data, authToken) => {
   }
 };
 
-export const getData = async ([path, authToken]) => {
+export const getData = async (path, authToken) => {
   try {
     const { data } = await instance.get(path, generateConfig(authToken));
     return data;

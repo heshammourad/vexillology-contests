@@ -59,7 +59,7 @@ function AccountMenu() {
     setMenuOpen(false);
     if (isLoggedIn) {
       try {
-        await getData([`/revokeToken/${refreshToken}`]);
+        await getData(`/revokeToken/${refreshToken}`);
       } finally {
         setAuthState({});
       }

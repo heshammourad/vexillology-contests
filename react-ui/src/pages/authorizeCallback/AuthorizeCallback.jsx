@@ -18,7 +18,7 @@ const useStyles = makeStyles({
 });
 
 const retrieveAccessTokens = async (code) => {
-  const tokens = await getData([`/accessToken/${code}`]);
+  const tokens = await getData(`/accessToken/${code}`);
   return tokens;
 };
 
