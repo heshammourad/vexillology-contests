@@ -67,6 +67,9 @@ const useStyles = makeStyles((theme) => ({
   entryName: {
     color: 'black',
   },
+  hiddenTitle: {
+    marginTop: 16,
+  },
   icon: {
     color: '#5f6368',
   },
@@ -425,7 +428,10 @@ function Contest() {
                     </CardContent>
                     )}
                     <CardActions
-                      className={clsx({ [classes.disabledVoting]: votingDisabled })}
+                      className={clsx({
+                        [classes.disabledVoting]: votingDisabled,
+                        [classes.hiddenTitle]: isHideTitles,
+                      })}
                       disableSpacing
                     >
                       <VotingSlider
