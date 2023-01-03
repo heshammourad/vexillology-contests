@@ -416,11 +416,7 @@ if (!isDev && cluster.isMaster) {
         }
 
         if (!Number.isInteger(rating) || rating < 0 || rating > 5) {
-          res
-            .status(400)
-            .send(
-              `Expected rating to be an integer between 0 and 5 inclusive. Received: ${rating}`,
-            );
+          res.status(400).send('Expected rating to be an integer between 0 and 5 inclusive.');
           return;
         }
 
