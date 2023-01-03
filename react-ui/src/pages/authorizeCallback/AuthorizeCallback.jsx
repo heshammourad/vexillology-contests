@@ -9,7 +9,7 @@ import { getData } from '../../api';
 import { useAuthState, useRedditLogIn } from '../../common';
 
 const ACCESS_DENIED = 'access_denied';
-const DATA_ERROR = 'auth_state_mismatch';
+const DATA_ERROR = 'data_error';
 
 const useStyles = makeStyles({
   heading: {
