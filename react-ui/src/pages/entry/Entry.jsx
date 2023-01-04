@@ -330,7 +330,7 @@ function Entry() {
               {entry.imgurId && (
                 <>
                   <DrawerSectionHeader>Vote</DrawerSectionHeader>
-                  <Box className={classes.votingContainer} display="flex">
+                  <Box className={classes.votingContainer} alignItems="center" display="flex">
                     <VotingSlider
                       disabled={votingDisabled}
                       entryId={entry.imgurId}

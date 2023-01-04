@@ -19,7 +19,7 @@ const URL = '/votes';
 const ThemedSlider = withStyles({
   root: {
     color: ACTIVE_COLOR,
-    margin: '0 8px 16px',
+    margin: '0 8px',
   },
   active: {},
   mark: {
@@ -54,7 +54,6 @@ const ThemedSlider = withStyles({
 const useStyles = makeStyles((theme) => ({
   clearVoteButton: {
     flexShrink: 0,
-    marginBottom: 16,
     marginLeft: theme.spacing(1),
   },
   disabled: {
@@ -80,12 +79,6 @@ const useStyles = makeStyles((theme) => ({
     },
   },
 }));
-
-const marks = [];
-for (let i = 0; i <= MAX_SCORE; i += 1) {
-  const mark = { value: i, label: `${i}` };
-  marks.push(mark);
-}
 
 const updateEntries = (entries, { entryId, rating }) => entries.reduce((acc, cur) => {
   if (cur.imgurId !== entryId) {
@@ -169,7 +162,7 @@ function VotingSlider({
         className={clsx({ [classes.disabled]: disabled, [classes.unrated]: isUnrated })}
         aria-label="Vote on flag"
         disabled={disabled}
-        marks={marks}
+        marks
         min={MIN_SCORE}
         max={MAX_SCORE}
         step={1}
