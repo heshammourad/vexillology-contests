@@ -400,7 +400,8 @@ if (!isDev && cluster.isMaster) {
     })
     .put(async ({ body: { contestId, entryId, rating }, headers }, res) => {
       try {
-        if (!contestId || !entryId || !rating) {
+        const missingRating = !rating && rating !== 0;
+        if (!contestId || !entryId || missingRating) {
           const missingFields = [];
           if (!contestId) {
             missingFields.push('contestId');
@@ -408,7 +409,7 @@ if (!isDev && cluster.isMaster) {
           if (!entryId) {
             missingFields.push('entryId');
           }
-          if (!rating && rating !== 0) {
+          if (missingRating) {
             missingFields.push('rating');
           }
           res.status(400).send(`Missing required fields: ${missingFields.join(', ')}`);
