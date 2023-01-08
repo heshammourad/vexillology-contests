@@ -16,9 +16,9 @@ import './App.css';
 const theme = createTheme({
   palette: {
     vexyOrange: {
-      dark: '#e33400',
-      light: '#ff6835',
-      main: '#ff4500',
+      dark: '#c10000',
+      light: '#ff7c4c',
+      main: '#fc471e',
     },
   },
 });

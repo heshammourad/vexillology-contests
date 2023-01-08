@@ -476,7 +476,7 @@ function Contest() {
                         <Typography className={classes.entryName} variant="caption">
                           {entryName}
                         </Typography>
-                        {rating > -1 && <FiveStar rating={rating} />}
+                        {!allowVoting && rating > -1 && <FiveStar rating={rating} />}
                       </Box>
                     </CardContent>
                     )}
