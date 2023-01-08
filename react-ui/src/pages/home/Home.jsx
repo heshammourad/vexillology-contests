@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme) => ({
   footer: {
     backgroundColor: 'transparent',
     bottom: 0,
-    color: '#616161',
+    color: theme.palette.grey[700],
     position: 'fixed',
     width: '100%',
   },
@@ -39,7 +39,7 @@ const useStyles = makeStyles((theme) => ({
       flexGrow: 1,
     },
     '& a': {
-      color: '#616161',
+      color: theme.palette.grey[700],
       marginLeft: 50,
       '&:first-of-type': {
         [theme.breakpoints.down('sm')]: {

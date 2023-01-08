@@ -8,7 +8,7 @@ const DEFAULT_STATE = {
   votingErrorSnackbarOpenTimestamp: null,
 };
 
-const useVotingComponentsState = () => {
+const useComponentsState = () => {
   const [state, setState] = usePersistedSettings(DEFAULT_STATE);
 
   const updateState = (key, value) => {
@@ -23,4 +23,4 @@ const useVotingComponentsState = () => {
   return [state, updateState];
 };
 
-export default useVotingComponentsState;
+export default useComponentsState;

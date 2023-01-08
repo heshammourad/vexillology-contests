@@ -1,3 +1,4 @@
+import Box from '@material-ui/core/Box';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
@@ -5,7 +6,6 @@ import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
 import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormLabel from '@material-ui/core/FormLabel';
 import Grid from '@material-ui/core/Grid';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -20,6 +20,7 @@ import EmojiEventsOutlinedIcon from '@material-ui/icons/EmojiEventsOutlined';
 import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
 import ThumbsUpDownOutlinedIcon from '@material-ui/icons/ThumbsUpDownOutlined';
 import clsx from 'clsx';
+import isFuture from 'date-fns/isFuture';
 import React, { useState, useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
@@ -29,7 +30,7 @@ import {
   useScrollState,
   useSettingsState,
   useSwrData,
-  useVotingComponentsState,
+  useComponentsState,
 } from '../../common';
 import {
   AccountMenu,
@@ -37,9 +38,11 @@ import {
   CustomIconButton,
   CustomRadio,
   CustomSwitch,
+  FiveStar,
   PageWithDrawer,
   RedditUserAttribution,
   VotingComponents,
+  VotingCountdown,
   VotingSlider,
 } from '../../components';
 
@@ -66,24 +69,30 @@ const useStyles = makeStyles((theme) => ({
   },
   entryName: {
     color: 'black',
+    flexGrow: 1,
   },
   hiddenTitle: {
     marginTop: 16,
   },
   icon: {
-    color: '#5f6368',
+    color: theme.palette.grey[700],
   },
   listItemText: {
-    color: '#3c4043',
+    color: theme.palette.grey.A400,
   },
   listSubheader: {
-    color: '#202124',
+    color: theme.palette.grey[900],
     fontSize: '.6875rem',
     fontWeight: 500,
     letterSpacing: '.8px',
     lineHeight: 1,
     margin: '16px 0',
     textTransform: 'uppercase',
+  },
+  myRating: {
+    color: theme.palette.grey[600],
+    display: 'flex',
+    fontStyle: 'italic',
   },
   numberSymbol: {
     marginRight: 4,
@@ -94,14 +103,25 @@ const useStyles = makeStyles((theme) => ({
   subheader: {
     margin: '16px auto',
   },
-  switch: {
-    color: '#4285f4',
-  },
   winnerCard: {
     marginTop: 4,
     marginBottom: 16,
   },
   winnerContent: {
+    flexGrow: 1,
+    [theme.breakpoints.up('sm')]: {
+      paddingTop: 8,
+    },
+  },
+  winnerHeading: {
+    columnGap: 8,
+    display: 'flex',
+    [theme.breakpoints.up('sm')]: {
+      columnGap: 16,
+    },
+  },
+  winnerRatings: {
+    textAlign: 'end',
     [theme.breakpoints.up('sm')]: {
       paddingTop: 8,
     },
@@ -136,10 +156,10 @@ function Contest() {
   const { state = {} } = useLocation();
   const [isLoaded, setLoaded] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
-  const [{ votingDisabled }, setVotingComponentsState] = useVotingComponentsState();
+  const [{ votingDisabled }, setComponentsState] = useComponentsState();
 
   useEffect(() => {
-    setVotingComponentsState();
+    setComponentsState();
   }, []);
 
   const updateScroll = () => {
@@ -266,8 +286,10 @@ function Contest() {
 
   const headingVariant = isSmUp ? 'h3' : 'h5';
   const {
-    date, entries, name, validRedditId, winners, winnersThreadId,
+    date, entries, name, validRedditId, voteEnd, winners, winnersThreadId,
   } = contest;
+  const voteEndDate = new Date(voteEnd);
+  const allowVoting = voteEnd && isFuture(voteEndDate);
   return (
     <PageWithDrawer
       handleClose={() => {
@@ -303,7 +325,16 @@ function Contest() {
             <AccountMenu />
           </>
         ),
-        children: <ArrowBackButton state={{ date }} to={backLink} />,
+        children: (
+          <>
+            <ArrowBackButton state={{ date }} to={backLink} />
+            {allowVoting && (
+              <Box display="inline-flex" padding={1.5}>
+                <VotingCountdown voteEndDate={voteEndDate} />
+              </Box>
+            )}
+          </>
+        ),
       }}
       drawer={{
         heading: 'Settings',
@@ -328,15 +359,10 @@ function Contest() {
                 </ListItemSecondaryAction>
               </ListItem>
             </List>
-            <Divider />
             <FormControl component="fieldset">
               <List
                 dense
-                subheader={(
-                  <ListSubheader>
-                    <FormLabel className={classes.listSubheader}>Density</FormLabel>
-                  </ListSubheader>
-                )}
+                subheader={<ListSubheader className={classes.listSubheader}>Density</ListSubheader>}
               >
                 <RadioGroup
                   aria-label="density"
@@ -373,38 +399,58 @@ function Contest() {
           {winners && winners.length > 0 && (
             <>
               <Subheader>Top 20</Subheader>
-              {winners.map(({
-                height, id, imgurLink, name: entryName, rank, user, width,
-              }) => (
-                <React.Fragment key={id}>
-                  <Grid container id={id} spacing={2}>
-                    <Grid item>
+              {winners.map(
+                ({
+                  average,
+                  height,
+                  id,
+                  imgurLink,
+                  name: entryName,
+                  rank,
+                  rating,
+                  user,
+                  width,
+                }) => (
+                  <React.Fragment key={id}>
+                    <div id={id} className={classes.winnerHeading}>
                       <Typography variant={headingVariant}>
                         <span className={classes.numberSymbol}>#</span>
                         {rank}
                       </Typography>
-                    </Grid>
-                    <Grid item>
                       <div className={classes.winnerContent}>
                         <Typography variant="subtitle2">{entryName}</Typography>
                         <Typography variant="caption">
                           <RedditUserAttribution user={user} />
                         </Typography>
                       </div>
-                    </Grid>
-                  </Grid>
-                  <Card className={classes.winnerCard} elevation={2}>
-                    <CardImageLink
-                      displayWidth={winnerDisplayWidth}
-                      height={height}
-                      id={id}
-                      image={imgurLink}
-                      onClick={updateScroll}
-                      width={width}
-                    />
-                  </Card>
-                </React.Fragment>
-              ))}
+                      <div className={classes.winnerRatings}>
+                        {average > -1 && (
+                          <Typography variant="subtitle2">
+                            Average&nbsp;rating:&nbsp;
+                            {average}
+                          </Typography>
+                        )}
+                        {rating > -1 && (
+                          <Typography className={classes.myRating} variant="caption">
+                            My&nbsp;rating:&nbsp;
+                            <FiveStar rating={rating} />
+                          </Typography>
+                        )}
+                      </div>
+                    </div>
+                    <Card className={classes.winnerCard} elevation={2}>
+                      <CardImageLink
+                        displayWidth={winnerDisplayWidth}
+                        height={height}
+                        id={id}
+                        image={imgurLink}
+                        onClick={updateScroll}
+                        width={width}
+                      />
+                    </Card>
+                  </React.Fragment>
+                ),
+              )}
               <Divider className={classes.divider} />
               <Subheader>All other entries</Subheader>
             </>
@@ -426,11 +472,15 @@ function Contest() {
                     />
                     {!isHideTitles && (
                     <CardContent>
-                      <Typography className={classes.entryName} variant="caption">
-                        {entryName}
-                      </Typography>
+                      <Box display="flex" gridGap={8}>
+                        <Typography className={classes.entryName} variant="caption">
+                          {entryName}
+                        </Typography>
+                        {!allowVoting && rating > -1 && <FiveStar rating={rating} />}
+                      </Box>
                     </CardContent>
                     )}
+                    {allowVoting && (
                     <CardActions
                       className={clsx({
                         [classes.disabledVoting]: votingDisabled,
@@ -442,9 +492,10 @@ function Contest() {
                         disabled={votingDisabled}
                         entryId={imgurId}
                         rating={rating}
-                        setVotingComponentsState={setVotingComponentsState}
+                        setComponentsState={setComponentsState}
                       />
                     </CardActions>
+                    )}
                   </Card>
                 </Grid>
               ))}

@@ -14,8 +14,6 @@ import { useRef, useState } from 'react';
 import { getData } from '../api';
 import { useAuthState, useRedditLogIn } from '../common';
 
-const BUTTON_BACKGROUND_COLOR = '#ff4500';
-
 const useStyles = makeStyles((theme) => ({
   accountMenu: {
     display: 'flex',
@@ -24,10 +22,10 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
   },
   button: {
-    backgroundColor: BUTTON_BACKGROUND_COLOR,
-    color: '#fff',
+    backgroundColor: theme.palette.vexyOrange.main,
+    color: theme.palette.common.white,
     '&:hover': {
-      backgroundColor: BUTTON_BACKGROUND_COLOR,
+      backgroundColor: theme.palette.vexyOrange.main,
     },
   },
   username: {
@@ -83,6 +81,7 @@ function AccountMenu() {
         anchorEl={anchorRef.current}
         disablePortal
         open={isMenuOpen}
+        placement="bottom-end"
         role={undefined}
         transition
       >

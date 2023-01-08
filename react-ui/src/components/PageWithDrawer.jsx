@@ -49,9 +49,6 @@ const useStyles = makeStyles((theme) => ({
     width: drawerWidth,
     flexShrink: 0,
   },
-  drawerOpen: {
-    zIndex: 1200,
-  },
   drawerPaper: {
     width: '100%',
     [theme.breakpoints.up('sm')]: {
@@ -96,7 +93,7 @@ function PageWithDrawer({
         {children}
       </main>
       <Drawer
-        className={clsx(classes.drawer, { [classes.drawerOpen]: isOpen })}
+        className={classes.drawer}
         variant="persistent"
         anchor="right"
         open={isOpen}

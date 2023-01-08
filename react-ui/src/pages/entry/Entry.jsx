@@ -1,5 +1,6 @@
 import Box from '@material-ui/core/Box';
 import List from '@material-ui/core/List';
+import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
@@ -7,6 +8,8 @@ import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import RedditIcon from '@material-ui/icons/Reddit';
 import clsx from 'clsx';
+import differenceInDays from 'date-fns/differenceInDays';
+import isFuture from 'date-fns/isFuture';
 import throttle from 'lodash/throttle';
 import {
   useEffect, useMemo, useRef, useState,
@@ -14,19 +17,19 @@ import {
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 
 import {
-  useScrollState,
-  useSettingsState,
-  useSwrData,
-  useVotingComponentsState,
+  useScrollState, useSettingsState, useSwrData, useComponentsState,
 } from '../../common';
 import {
   AccountMenu,
   ArrowBackButton,
   CustomIconButton,
+  FiveStar,
   HtmlWrapper,
   ListItemButton,
   PageWithDrawer,
+  RedditUserAttribution,
   VotingComponents,
+  VotingCountdown,
   VotingSlider,
 } from '../../components';
 
@@ -37,10 +40,14 @@ const calculateImageContainerHeight = (offset) => `calc(100vh - ${offset}px)`;
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    backgroundColor: '#000',
+    backgroundColor: theme.palette.common.black,
   },
   appBar: {
     backgroundColor: 'inherit',
+  },
+  average: {
+    flexGrow: 1,
+    fontWeight: 'bold',
   },
   clickActive: {
     cursor: 'pointer',
@@ -64,6 +71,11 @@ const useStyles = makeStyles((theme) => ({
   entryName: {
     fontWeight: 'bold',
   },
+  myRating: {
+    display: 'flex',
+    fontStyle: 'italic',
+    textAlign: 'end',
+  },
   navigateBefore: {
     left: 28,
   },
@@ -79,6 +91,11 @@ const useStyles = makeStyles((theme) => ({
   navigateVisible: {
     opacity: 1,
   },
+  rank: {
+    flexShrink: 0,
+    fontWeight: 'bold',
+    paddingRight: 8,
+  },
   votingContainer: {
     marginTop: 16,
   },
@@ -86,13 +103,19 @@ const useStyles = makeStyles((theme) => ({
 
 function Entry() {
   const { contestId, entryId } = useParams();
-  const { entries = [], requestId, winners = [] } = useSwrData(`/contests/${contestId}`) || {};
+  const {
+    entries = [],
+    requestId,
+    validRedditId,
+    voteEnd,
+    winners = [],
+  } = useSwrData(`/contests/${contestId}`) || {};
 
   const { state = {} } = useLocation();
   const navigate = useNavigate();
   const classes = useStyles();
 
-  const [{ votingDisabled }, setVotingComponentsState] = useVotingComponentsState();
+  const [{ votingDisabled }, setComponentsState] = useComponentsState();
 
   const [scroll, setScroll] = useScrollState();
   const [{ isInfoOpen }, updateSettings] = useSettingsState();
@@ -179,7 +202,7 @@ function Entry() {
 
   const navigationVisibleTimeoutRef = useRef(null);
   useEffect(() => {
-    setVotingComponentsState();
+    setComponentsState();
 
     navigationVisibleTimeoutRef.current = setTimeout(() => {
       hideNavigation();
@@ -279,6 +302,8 @@ function Entry() {
 
   const redditPermalink = `https://www.reddit.com${entry.permalink}`;
   const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${entry.imgurLink}`;
+  const voteEndDate = new Date(voteEnd);
+  const isWinner = winners.some(({ id }) => id === entry.id);
 
   return (
     <>
@@ -291,12 +316,14 @@ function Entry() {
           className: classes.appBar,
           right: entry.id && (
             <>
-              <CustomIconButton
-                innerRef={redditCommentButtonRef}
-                href={redditPermalink}
-                ariaLabel="Open Reddit comment"
-                Icon={RedditIcon}
-              />
+              {validRedditId && (
+                <CustomIconButton
+                  innerRef={redditCommentButtonRef}
+                  href={redditPermalink}
+                  ariaLabel="Open Reddit comment"
+                  Icon={RedditIcon}
+                />
+              )}
               <CustomIconButton
                 innerRef={flagWaverButtonRef}
                 href={flagWaverLink}
@@ -326,29 +353,69 @@ function Entry() {
           heading: 'Info',
           children: (
             <div className={classes.drawerContent}>
-              <div className={classes.entryName}>{entry.name}</div>
-              {entry.imgurId && (
+              <Box display="flex">
                 <>
-                  <DrawerSectionHeader>Vote</DrawerSectionHeader>
-                  <Box className={classes.votingContainer} alignItems="center" display="flex">
-                    <VotingSlider
-                      disabled={votingDisabled}
-                      entryId={entry.imgurId}
-                      rating={entry.rating}
-                      setVotingComponentsState={setVotingComponentsState}
-                    />
+                  {isWinner && (
+                  <div className={classes.rank}>
+                    #
+                    {entry.rank}
+                  </div>
+                  )}
+                  <Box>
+                    <div className={classes.entryName}>{entry.name}</div>
+                    {isWinner && (
+                      <Typography variant="caption">
+                        <RedditUserAttribution user={entry.user} />
+                      </Typography>
+                    )}
                   </Box>
                 </>
-              )}
+              </Box>
+              {voteEnd
+                && entry.imgurId
+                && (isFuture(voteEndDate) ? (
+                  <>
+                    <DrawerSectionHeader>Submit Vote</DrawerSectionHeader>
+                    {!differenceInDays(voteEndDate, new Date()) && (
+                      <VotingCountdown fontSize="small" voteEndDate={voteEndDate} />
+                    )}
+                    <Box className={classes.votingContainer} alignItems="center" display="flex">
+                      <VotingSlider
+                        disabled={votingDisabled}
+                        entryId={entry.imgurId}
+                        rating={entry.rating}
+                        setComponentsState={setComponentsState}
+                      />
+                    </Box>
+                  </>
+                ) : (
+                  <Box display="flex" alignItems="baseline" paddingTop={1}>
+                    {entry.average && (
+                      <Typography className={classes.average} variant="subtitle2">
+                        Average rating:
+                        {' '}
+                        <span>{entry.average}</span>
+                      </Typography>
+                    )}
+                    {entry.rating && (
+                      <Typography className={classes.myRating} variant="caption">
+                        My rating:&nbsp;
+                        <FiveStar rating={entry.rating} />
+                      </Typography>
+                    )}
+                  </Box>
+                ))}
               <DrawerSectionHeader>Description</DrawerSectionHeader>
               <HtmlWrapper html={entry.description} />
               <DrawerSectionHeader>Links</DrawerSectionHeader>
               <List>
-                <ListItemButton
-                  href={redditPermalink}
-                  Icon={RedditIcon}
-                  text="Open Reddit comment"
-                />
+                {validRedditId && (
+                  <ListItemButton
+                    href={redditPermalink}
+                    Icon={RedditIcon}
+                    text="Open Reddit comment"
+                  />
+                )}
                 <ListItemButton href={flagWaverLink} Icon={FlagTwoToneIcon} text="Open FlagWaver" />
               </List>
             </div>

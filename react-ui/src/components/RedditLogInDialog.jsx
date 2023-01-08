@@ -5,14 +5,14 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
-import { useRedditLogIn, useVotingComponentsState } from '../common';
+import { useRedditLogIn, useComponentsState } from '../common';
 
 function RedditLogInDialog() {
   const sendUserToAuthUrl = useRedditLogIn();
-  const [{ redditLogInDialogOpen }, setVotingComponentsState] = useVotingComponentsState();
+  const [{ redditLogInDialogOpen }, setComponentsState] = useComponentsState();
 
   const closeDialog = () => {
-    setVotingComponentsState('redditLogInDialogOpen', false);
+    setComponentsState('redditLogInDialogOpen', false);
   };
 
   const handleLogIn = () => {

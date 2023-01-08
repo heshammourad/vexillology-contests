@@ -13,7 +13,20 @@ import {
 
 import './App.css';
 
-const theme = createTheme();
+const theme = createTheme({
+  palette: {
+    vexyBlue: {
+      dark: '#3868c8',
+      light: '#a8c5ff',
+      main: '#7295fc',
+    },
+    vexyOrange: {
+      dark: '#c10000',
+      light: '#ff7c4c',
+      main: '#fc471e',
+    },
+  },
+});
 
 function App() {
   return (
