@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 1000,
   },
   tabsIndicator: {
-    backgroundColor: '#fb7878',
+    backgroundColor: theme.palette.vexyOrange.main,
     height: 4,
   },
   tabsRoot: {

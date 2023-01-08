@@ -1,18 +1,18 @@
 import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core/styles';
 
-const CustomSwitch = withStyles({
+const CustomSwitch = withStyles((theme) => ({
   switchBase: {
-    color: '#fff',
+    color: theme.palette.common.white,
     '&$checked': {
-      color: '#1a73e8',
+      color: theme.palette.vexyOrange.main,
     },
     '&$checked + $track': {
-      backgroundColor: '#4285f4',
+      backgroundColor: theme.palette.vexyOrange.light,
     },
   },
   checked: {},
   track: {},
-})(Switch);
+}))(Switch);
 
 export default CustomSwitch;

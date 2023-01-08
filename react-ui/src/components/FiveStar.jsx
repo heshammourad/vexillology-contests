@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 
 const STAR_SIZE = 16;
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   border: {
     color: grey[600],
     fontSize: STAR_SIZE,
@@ -15,10 +15,10 @@ const useStyles = makeStyles({
     flexShrink: 0,
   },
   filled: {
-    color: '#ff4500',
+    color: theme.palette.vexyOrange.main,
     fontSize: STAR_SIZE,
   },
-});
+}));
 
 function FiveStar({ rating }) {
   const classes = useStyles();

@@ -1,9 +1,9 @@
 import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   sectionHeader: {
-    color: '#5f6368',
+    color: theme.palette.grey[700],
     fontSize: '.6875rem',
     fontWeight: 500,
     letterSpacing: '.07272727em',
@@ -11,7 +11,7 @@ const useStyles = makeStyles({
     padding: '14px 0',
     textTransform: 'uppercase',
   },
-});
+}));
 
 function DrawerSectionHeader({ children }) {
   const classes = useStyles();

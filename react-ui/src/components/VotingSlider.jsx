@@ -10,20 +10,18 @@ import useSWRMutation from 'swr/mutation';
 import { deleteData, putData } from '../api';
 import { useAuthState } from '../common';
 
-const ACTIVE_COLOR = '#ff4500';
-const INACTIVE_COLOR = '#707070';
 const MIN_SCORE = 0;
 const MAX_SCORE = 5;
 const URL = '/votes';
 
-const ThemedSlider = withStyles({
+const ThemedSlider = withStyles((theme) => ({
   root: {
-    color: ACTIVE_COLOR,
+    color: theme.palette.vexyOrange.main,
     margin: '0 8px',
   },
   active: {},
   mark: {
-    color: ACTIVE_COLOR,
+    color: theme.palette.vexyOrange.main,
     height: 8,
     marginTop: -3,
     width: 2,
@@ -33,10 +31,10 @@ const ThemedSlider = withStyles({
     backgroundColor: 'currentColor',
   },
   markLabel: {
-    color: '#9e9e9e',
+    color: theme.palette.grey[800],
   },
   thumb: {
-    color: ACTIVE_COLOR,
+    color: theme.palette.vexyOrange.main,
     '&:focus, &:hover, &$active': {
       boxShadow: '0px 0px 0px 8px rgba(255, 69, 0, 0.16)',
     },
@@ -46,10 +44,10 @@ const ThemedSlider = withStyles({
     top: -22,
     '& *': {
       background: 'transparent',
-      color: '#212121',
+      color: theme.palette.text.primary,
     },
   },
-})(Slider);
+}))(Slider);
 
 const useStyles = makeStyles((theme) => ({
   clearVoteButton: {
@@ -57,22 +55,22 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(1),
   },
   disabled: {
-    color: INACTIVE_COLOR,
+    color: theme.palette.grey[600],
     '& .MuiSlider-mark': {
-      color: INACTIVE_COLOR,
+      color: theme.palette.grey[600],
     },
     '& .MuiSlider-thumb': {
-      color: INACTIVE_COLOR,
+      color: theme.palette.grey[600],
     },
     '& .MuiSlider-valueLabel': {
-      color: INACTIVE_COLOR,
+      color: theme.palette.grey[600],
       left: -12,
     },
   },
   unrated: {
-    color: INACTIVE_COLOR,
+    color: theme.palette.grey[600],
     '& .MuiSlider-mark': {
-      color: INACTIVE_COLOR,
+      color: theme.palette.grey[600],
     },
     '& .MuiSlider-thumb': {
       visibility: 'hidden',

@@ -39,7 +39,7 @@ const calculateImageContainerHeight = (offset) => `calc(100vh - ${offset}px)`;
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    backgroundColor: '#000',
+    backgroundColor: theme.palette.common.black,
   },
   appBar: {
     backgroundColor: 'inherit',

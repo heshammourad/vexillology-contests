@@ -6,7 +6,6 @@ import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
 import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormLabel from '@material-ui/core/FormLabel';
 import Grid from '@material-ui/core/Grid';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -77,13 +76,13 @@ const useStyles = makeStyles((theme) => ({
     marginTop: 16,
   },
   icon: {
-    color: '#5f6368',
+    color: theme.palette.grey[700],
   },
   listItemText: {
-    color: '#3c4043',
+    color: theme.palette.grey.A400,
   },
   listSubheader: {
-    color: '#202124',
+    color: theme.palette.grey[900],
     fontSize: '.6875rem',
     fontWeight: 500,
     letterSpacing: '.8px',
@@ -104,9 +103,6 @@ const useStyles = makeStyles((theme) => ({
   },
   subheader: {
     margin: '16px auto',
-  },
-  switch: {
-    color: '#4285f4',
   },
   winnerCard: {
     marginTop: 4,
@@ -364,15 +360,10 @@ function Contest() {
                 </ListItemSecondaryAction>
               </ListItem>
             </List>
-            <Divider />
             <FormControl component="fieldset">
               <List
                 dense
-                subheader={(
-                  <ListSubheader>
-                    <FormLabel className={classes.listSubheader}>Density</FormLabel>
-                  </ListSubheader>
-                )}
+                subheader={<ListSubheader className={classes.listSubheader}>Density</ListSubheader>}
               >
                 <RadioGroup
                   aria-label="density"

@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   navigateButton: {
     background: 'rgba(66, 66, 66, .54)',
     borderRadius: 28,
@@ -15,9 +15,9 @@ const useStyles = makeStyles({
     width: 56,
   },
   navigateIcon: {
-    color: '#fff',
+    color: theme.palette.common.white,
   },
-});
+}));
 
 function NavigateIconButton({ className, Icon, onClick }) {
   const classes = useStyles();
