@@ -1,5 +1,6 @@
 import Box from '@material-ui/core/Box';
 import List from '@material-ui/core/List';
+import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
@@ -7,6 +8,7 @@ import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import RedditIcon from '@material-ui/icons/Reddit';
 import clsx from 'clsx';
+import isFuture from 'date-fns/isFuture';
 import throttle from 'lodash/throttle';
 import {
   useEffect, useMemo, useRef, useState,
@@ -23,6 +25,7 @@ import {
   AccountMenu,
   ArrowBackButton,
   CustomIconButton,
+  FiveStar,
   HtmlWrapper,
   ListItemButton,
   PageWithDrawer,
@@ -41,6 +44,10 @@ const useStyles = makeStyles((theme) => ({
   },
   appBar: {
     backgroundColor: 'inherit',
+  },
+  average: {
+    flexGrow: 1,
+    fontWeight: 'bold',
   },
   clickActive: {
     cursor: 'pointer',
@@ -64,6 +71,11 @@ const useStyles = makeStyles((theme) => ({
   entryName: {
     fontWeight: 'bold',
   },
+  myRating: {
+    display: 'flex',
+    fontStyle: 'italic',
+    textAlign: 'end',
+  },
   navigateBefore: {
     left: 28,
   },
@@ -79,6 +91,11 @@ const useStyles = makeStyles((theme) => ({
   navigateVisible: {
     opacity: 1,
   },
+  rank: {
+    flexShrink: 0,
+    fontWeight: 'bold',
+    paddingRight: 8,
+  },
   votingContainer: {
     marginTop: 16,
   },
@@ -86,7 +103,12 @@ const useStyles = makeStyles((theme) => ({
 
 function Entry() {
   const { contestId, entryId } = useParams();
-  const { entries = [], requestId, winners = [] } = useSwrData(`/contests/${contestId}`) || {};
+  const {
+    entries = [],
+    requestId,
+    voteEnd,
+    winners = [],
+  } = useSwrData(`/contests/${contestId}`) || {};
 
   const { state = {} } = useLocation();
   const navigate = useNavigate();
@@ -326,8 +348,16 @@ function Entry() {
           heading: 'Info',
           children: (
             <div className={classes.drawerContent}>
-              <div className={classes.entryName}>{entry.name}</div>
-              {entry.imgurId && (
+              <Box display="flex">
+                {entry.rank && (
+                <div className={classes.rank}>
+                  #
+                  {entry.rank}
+                </div>
+                )}
+                <div className={classes.entryName}>{entry.name}</div>
+              </Box>
+              {voteEnd && isFuture(voteEnd) ? (
                 <>
                   <DrawerSectionHeader>Vote</DrawerSectionHeader>
                   <Box className={classes.votingContainer} alignItems="center" display="flex">
@@ -339,6 +369,22 @@ function Entry() {
                     />
                   </Box>
                 </>
+              ) : (
+                <Box display="flex" alignItems="baseline" paddingTop={1}>
+                  {entry.average && (
+                    <Typography className={classes.average} variant="subtitle2">
+                      Average rating:
+                      {' '}
+                      <span>{entry.average}</span>
+                    </Typography>
+                  )}
+                  {entry.rating && (
+                    <Typography className={classes.myRating} variant="caption">
+                      My rating:&nbsp;
+                      <FiveStar rating={entry.rating} />
+                    </Typography>
+                  )}
+                </Box>
               )}
               <DrawerSectionHeader>Description</DrawerSectionHeader>
               <HtmlWrapper html={entry.description} />

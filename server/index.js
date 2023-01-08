@@ -2,11 +2,13 @@ const cluster = require('cluster');
 const numCPUs = require('os').cpus().length;
 const path = require('path');
 
+const { isAfter, isBefore } = require('date-fns');
 const express = require('express');
 const helmet = require('helmet');
-const { keyBy } = require('lodash');
+const keyBy = require('lodash/keyBy');
 const partition = require('lodash/partition');
 const shuffle = require('lodash/shuffle');
+const numeral = require('numeral');
 const { v4: uuidv4 } = require('uuid');
 
 const db = require('./db');
@@ -89,14 +91,6 @@ if (!isDev && cluster.isMaster) {
     return { filteredData, repeatedIds };
   };
 
-  const addEntries = async (entries) => {
-    const { filteredData, repeatedIds } = await filterRepeatedIds(entries, 'id');
-    if (repeatedIds.length) {
-      logger.warn(`Error adding entries. Repeated ids: ${repeatedIds.join(', ')}`);
-    }
-    await db.insert('entries', filteredData);
-  };
-
   const addContestEntries = async (contestId, entries) => {
     const { filteredData, repeatedIds } = await filterRepeatedIds(entries, 'id');
     if (repeatedIds.length) {
@@ -110,6 +104,22 @@ if (!isDev && cluster.isMaster) {
         rank: entry.rank,
       })),
     );
+  };
+
+  const addEntries = async (entries) => {
+    const { filteredData, repeatedIds } = await filterRepeatedIds(entries, 'id');
+    if (repeatedIds.length) {
+      logger.warn(`Error adding entries. Repeated ids: ${repeatedIds.join(', ')}`);
+    }
+    await db.insert('entries', filteredData);
+  };
+
+  const getVoteDates = async (contestId) => {
+    const voteDates = await db.select(
+      'SELECT vote_start, vote_end, now() FROM contests WHERE id = $1',
+      [contestId],
+    );
+    return voteDates;
   };
 
   // Priority serve any static files.
@@ -368,14 +378,42 @@ if (!isDev && cluster.isMaster) {
 
         response.requestId = uuidv4();
 
+        const [{ now, voteStart, voteEnd }] = await getVoteDates(id);
+        if (voteStart && voteEnd) {
+          if (isBefore(now, voteStart)) {
+            logger.error('Requesting contest before voting window opened');
+            res.status(404).send('Contest voting window is not open yet');
+            return;
+          }
+          response.isContestMode = isBefore(now, voteEnd);
+          response.voteEnd = voteEnd;
+        }
+
         if (response.isContestMode && !winnersThreadId) {
           response.entries = shuffle(response.entries);
         } else {
+          if (voteEnd) {
+            const voteData = await db.select(
+              'SELECT entry_id, rank, average FROM contests_summary WHERE contest_id = $1',
+              [id],
+            );
+            const map = new Map();
+            voteData.forEach(({ average, entryId, rank }) => {
+              map.set(entryId, { average: numeral(average).format('0.00'), rank });
+            });
+            response.entries.forEach((entry) => {
+              map.set(entry.imgurId, {
+                ...entry,
+                ...map.get(entry.imgurId),
+              });
+            });
+            response.entries = Array.from(map.values());
+          }
           const [winners, entries] = partition(
             response.entries,
             ({ rank }) => rank && rank <= LAST_WINNER_RANK,
           );
-          response.entries = entries;
+          response.entries = entries.map(({ average, rank, ...rest }) => rest);
           if (winners.length) {
             response.winners = winners.sort((a, b) => a.rank - b.rank);
           }
@@ -391,12 +429,49 @@ if (!isDev && cluster.isMaster) {
 
   router
     .route('/votes')
-    .all(({ headers: { accesstoken, refreshtoken } }, res, next) => {
-      if (!accesstoken || !refreshtoken) {
-        res.status(401).send('Missing authentication headers.');
-        return;
+    .all(async ({ body: { contestId }, headers: { accesstoken, refreshtoken } }, res, next) => {
+      try {
+        if (!accesstoken || !refreshtoken) {
+          res.status(401).send('Missing authentication headers.');
+          return;
+        }
+
+        if (contestId) {
+          logger.debug(`Vote change on ${contestId}`);
+          const voteDates = await getVoteDates(contestId);
+
+          if (!voteDates.length) {
+            const message = 'contestId not found';
+            logger.warn(message);
+            res.status(400).send(message);
+            return;
+          }
+
+          const [{ now, voteStart, voteEnd }] = voteDates;
+          if (!voteStart || !voteEnd) {
+            const message = `Unable to find voting dates for ${contestId}`;
+            logger.error(message);
+            res.status(500).send(message);
+            return;
+          }
+
+          if (isBefore(now, voteStart)) {
+            logger.error('Vote submitted before voting window opened');
+            res.status(403).send(`Voting window doesn't open until ${voteStart}`);
+            return;
+          }
+
+          if (isAfter(now, voteEnd)) {
+            logger.warn('Vote submitted after voting window closed');
+            res.status(403).send(`Voting window closed at ${voteEnd}`);
+            return;
+          }
+        }
+        next();
+      } catch (err) {
+        logger.error(`Error validating /vote request: ${err}`);
+        res.status(500).send();
       }
-      next();
     })
     .put(async ({ body: { contestId, entryId, rating }, headers }, res) => {
       try {
