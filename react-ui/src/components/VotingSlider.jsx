@@ -90,7 +90,7 @@ const updateEntries = (entries, { entryId, rating }) => entries.reduce((acc, cur
 }, []);
 
 function VotingSlider({
-  disabled, entryId, rating, setVotingComponentsState,
+  disabled, entryId, rating, setComponentsState,
 }) {
   const { contestId } = useParams();
 
@@ -110,12 +110,12 @@ function VotingSlider({
 
   useEffect(() => {
     if (isInteractive) {
-      setVotingComponentsState('votingDisabled', isMutatingDelete || isMutatingPut);
+      setComponentsState('votingDisabled', isMutatingDelete || isMutatingPut);
     }
   }, [isInteractive, isMutatingDelete, isMutatingPut]);
 
   const showError = () => {
-    setVotingComponentsState('votingErrorSnackbarOpenTimestamp', Date.now());
+    setComponentsState('votingErrorSnackbarOpenTimestamp', Date.now());
   };
 
   const triggerOptions = (input) => ({
@@ -137,7 +137,7 @@ function VotingSlider({
 
   const handleSliderChange = async (event, newValue) => {
     if (!isLoggedIn) {
-      setVotingComponentsState('redditLogInDialogOpen', true);
+      setComponentsState('redditLogInDialogOpen', true);
       return;
     }
 
@@ -186,7 +186,7 @@ VotingSlider.propTypes = {
   disabled: PropTypes.bool,
   entryId: PropTypes.string.isRequired,
   rating: PropTypes.number,
-  setVotingComponentsState: PropTypes.func.isRequired,
+  setComponentsState: PropTypes.func.isRequired,
 };
 
 VotingSlider.defaultProps = {

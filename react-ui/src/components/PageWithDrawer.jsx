@@ -6,6 +6,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 
+import { useComponentsState } from '../common';
 import types from '../common/types';
 
 import AppBarDivided from './AppBarDivided';
@@ -15,6 +16,10 @@ const drawerWidth = 360;
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
+  },
+  accountMenuOpen: {
+    filter: 'blur(5px)',
+    zIndex: 100,
   },
   appBar: {
     transition: theme.transitions.create(['margin', 'width'], {
@@ -49,9 +54,6 @@ const useStyles = makeStyles((theme) => ({
     width: drawerWidth,
     flexShrink: 0,
   },
-  drawerOpen: {
-    zIndex: 1200,
-  },
   drawerPaper: {
     width: '100%',
     [theme.breakpoints.up('sm')]: {
@@ -73,6 +75,7 @@ const useStyles = makeStyles((theme) => ({
 function PageWithDrawer({
   appBar, children, className, drawer, handleClose, isOpen,
 }) {
+  const [{ accountMenuOpen }] = useComponentsState();
   const classes = useStyles();
   return (
     <div className={clsx(classes.root, className)}>
@@ -96,7 +99,7 @@ function PageWithDrawer({
         {children}
       </main>
       <Drawer
-        className={clsx(classes.drawer, { [classes.drawerOpen]: isOpen })}
+        className={clsx(classes.drawer, { [classes.accountMenuOpen]: accountMenuOpen })}
         variant="persistent"
         anchor="right"
         open={isOpen}

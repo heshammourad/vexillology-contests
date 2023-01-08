@@ -3,12 +3,13 @@ import createPersistedState from 'use-persisted-state';
 const usePersistedSettings = createPersistedState('votingComponents');
 
 const DEFAULT_STATE = {
+  accountMenuOpen: false,
   redditLogInDialogOpen: false,
   votingDisabled: false,
   votingErrorSnackbarOpenTimestamp: null,
 };
 
-const useVotingComponentsState = () => {
+const useComponentsState = () => {
   const [state, setState] = usePersistedSettings(DEFAULT_STATE);
 
   const updateState = (key, value) => {
@@ -23,4 +24,4 @@ const useVotingComponentsState = () => {
   return [state, updateState];
 };
 
-export default useVotingComponentsState;
+export default useComponentsState;

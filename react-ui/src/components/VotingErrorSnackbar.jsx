@@ -2,11 +2,10 @@ import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
 import { useEffect, useState } from 'react';
 
-import { useVotingComponentsState } from '../common';
+import { useComponentsState } from '../common';
 
 function VotingErrorSnackbar() {
-  // eslint-disable-next-line max-len
-  const [{ votingErrorSnackbarOpenTimestamp }, setVotingComponentsState] = useVotingComponentsState(false);
+  const [{ votingErrorSnackbarOpenTimestamp }, setComponentsState] = useComponentsState(false);
   const [isOpen, setOpen] = useState(false);
 
   useEffect(() => {
@@ -24,7 +23,7 @@ function VotingErrorSnackbar() {
       return;
     }
 
-    setVotingComponentsState('votingErrorSnackbarOpenTimestamp', null);
+    setComponentsState('votingErrorSnackbarOpenTimestamp', null);
   };
 
   return (

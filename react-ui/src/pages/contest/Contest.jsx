@@ -19,11 +19,9 @@ import grey from '@material-ui/core/colors/grey';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import EmojiEventsOutlinedIcon from '@material-ui/icons/EmojiEventsOutlined';
-import ScheduleIcon from '@material-ui/icons/Schedule';
 import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
 import ThumbsUpDownOutlinedIcon from '@material-ui/icons/ThumbsUpDownOutlined';
 import clsx from 'clsx';
-import differenceInDays from 'date-fns/differenceInDays';
 import isFuture from 'date-fns/isFuture';
 import React, { useState, useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
@@ -34,12 +32,11 @@ import {
   useScrollState,
   useSettingsState,
   useSwrData,
-  useVotingComponentsState,
+  useComponentsState,
 } from '../../common';
 import {
   AccountMenu,
   ArrowBackButton,
-  CountdownTimer,
   CustomIconButton,
   CustomRadio,
   CustomSwitch,
@@ -47,6 +44,7 @@ import {
   PageWithDrawer,
   RedditUserAttribution,
   VotingComponents,
+  VotingCountdown,
   VotingSlider,
 } from '../../components';
 
@@ -110,18 +108,6 @@ const useStyles = makeStyles((theme) => ({
   switch: {
     color: '#4285f4',
   },
-  voteCountdown: {
-    alignItems: 'center',
-    display: 'inline-flex',
-    padding: 12,
-  },
-  voteCountdownLabel: {
-    lineHeight: '24px',
-    paddingLeft: 12,
-  },
-  voteCountdownWarning: {
-    color: theme.palette.error.main,
-  },
   winnerCard: {
     marginTop: 4,
     marginBottom: 16,
@@ -175,10 +161,10 @@ function Contest() {
   const { state = {} } = useLocation();
   const [isLoaded, setLoaded] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
-  const [{ votingDisabled }, setVotingComponentsState] = useVotingComponentsState();
+  const [{ votingDisabled }, setComponentsState] = useComponentsState();
 
   useEffect(() => {
-    setVotingComponentsState();
+    setComponentsState();
   }, []);
 
   const updateScroll = () => {
@@ -348,18 +334,9 @@ function Contest() {
           <>
             <ArrowBackButton state={{ date }} to={backLink} />
             {allowVoting && (
-              <div
-                className={clsx(classes.voteCountdown, {
-                  [classes.voteCountdownWarning]: !differenceInDays(voteEndDate, new Date()),
-                })}
-              >
-                <ScheduleIcon />
-                <Typography className={classes.voteCountdownLabel} variant="body2">
-                  <CountdownTimer end={voteEndDate} />
-                  {' '}
-                  left to vote!
-                </Typography>
-              </div>
+              <Box display="inline-flex" padding={1.5}>
+                <VotingCountdown voteEndDate={voteEndDate} />
+              </Box>
             )}
           </>
         ),
@@ -457,11 +434,13 @@ function Contest() {
                         </Typography>
                       </div>
                       <div className={classes.winnerRatings}>
-                        <Typography variant="subtitle2">
-                          Average&nbsp;rating:&nbsp;
-                          {average}
-                        </Typography>
-                        {rating && (
+                        {average > -1 && (
+                          <Typography variant="subtitle2">
+                            Average&nbsp;rating:&nbsp;
+                            {average}
+                          </Typography>
+                        )}
+                        {rating > -1 && (
                           <Typography className={classes.myRating} variant="caption">
                             My&nbsp;rating:&nbsp;
                             <FiveStar rating={rating} />
@@ -523,7 +502,7 @@ function Contest() {
                         disabled={votingDisabled}
                         entryId={imgurId}
                         rating={rating}
-                        setVotingComponentsState={setVotingComponentsState}
+                        setComponentsState={setComponentsState}
                       />
                     </CardActions>
                     )}

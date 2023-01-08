@@ -19,5 +19,6 @@ export { default as PageWithDrawer } from './PageWithDrawer';
 export { default as RedditLogInDialog } from './RedditLogInDialog';
 export { default as RedditUserAttribution } from './RedditUserAttribution';
 export { default as VotingComponents } from './VotingComponents';
+export { default as VotingCountdown } from './VotingCountdown';
 export { default as VotingErrorSnackbar } from './VotingErrorSnackbar';
 export { default as VotingSlider } from './VotingSlider';

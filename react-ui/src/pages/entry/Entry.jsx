@@ -8,6 +8,7 @@ import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import RedditIcon from '@material-ui/icons/Reddit';
 import clsx from 'clsx';
+import differenceInDays from 'date-fns/differenceInDays';
 import isFuture from 'date-fns/isFuture';
 import throttle from 'lodash/throttle';
 import {
@@ -16,10 +17,7 @@ import {
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 
 import {
-  useScrollState,
-  useSettingsState,
-  useSwrData,
-  useVotingComponentsState,
+  useScrollState, useSettingsState, useSwrData, useComponentsState,
 } from '../../common';
 import {
   AccountMenu,
@@ -30,6 +28,7 @@ import {
   ListItemButton,
   PageWithDrawer,
   VotingComponents,
+  VotingCountdown,
   VotingSlider,
 } from '../../components';
 
@@ -106,6 +105,7 @@ function Entry() {
   const {
     entries = [],
     requestId,
+    validRedditId,
     voteEnd,
     winners = [],
   } = useSwrData(`/contests/${contestId}`) || {};
@@ -114,7 +114,7 @@ function Entry() {
   const navigate = useNavigate();
   const classes = useStyles();
 
-  const [{ votingDisabled }, setVotingComponentsState] = useVotingComponentsState();
+  const [{ votingDisabled }, setComponentsState] = useComponentsState();
 
   const [scroll, setScroll] = useScrollState();
   const [{ isInfoOpen }, updateSettings] = useSettingsState();
@@ -201,7 +201,7 @@ function Entry() {
 
   const navigationVisibleTimeoutRef = useRef(null);
   useEffect(() => {
-    setVotingComponentsState();
+    setComponentsState();
 
     navigationVisibleTimeoutRef.current = setTimeout(() => {
       hideNavigation();
@@ -301,6 +301,7 @@ function Entry() {
 
   const redditPermalink = `https://www.reddit.com${entry.permalink}`;
   const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${entry.imgurLink}`;
+  const voteEndDate = new Date(voteEnd);
 
   return (
     <>
@@ -313,12 +314,14 @@ function Entry() {
           className: classes.appBar,
           right: entry.id && (
             <>
-              <CustomIconButton
-                innerRef={redditCommentButtonRef}
-                href={redditPermalink}
-                ariaLabel="Open Reddit comment"
-                Icon={RedditIcon}
-              />
+              {validRedditId && (
+                <CustomIconButton
+                  innerRef={redditCommentButtonRef}
+                  href={redditPermalink}
+                  ariaLabel="Open Reddit comment"
+                  Icon={RedditIcon}
+                />
+              )}
               <CustomIconButton
                 innerRef={flagWaverButtonRef}
                 href={flagWaverLink}
@@ -357,44 +360,51 @@ function Entry() {
                 )}
                 <div className={classes.entryName}>{entry.name}</div>
               </Box>
-              {voteEnd && isFuture(voteEnd) ? (
-                <>
-                  <DrawerSectionHeader>Vote</DrawerSectionHeader>
-                  <Box className={classes.votingContainer} alignItems="center" display="flex">
-                    <VotingSlider
-                      disabled={votingDisabled}
-                      entryId={entry.imgurId}
-                      rating={entry.rating}
-                      setVotingComponentsState={setVotingComponentsState}
-                    />
+              {voteEnd
+                && entry.imgurId
+                && (isFuture(voteEndDate) ? (
+                  <>
+                    <DrawerSectionHeader>Submit Vote</DrawerSectionHeader>
+                    {!differenceInDays(voteEndDate, new Date()) && (
+                      <VotingCountdown fontSize="small" voteEndDate={voteEndDate} />
+                    )}
+                    <Box className={classes.votingContainer} alignItems="center" display="flex">
+                      <VotingSlider
+                        disabled={votingDisabled}
+                        entryId={entry.imgurId}
+                        rating={entry.rating}
+                        setComponentsState={setComponentsState}
+                      />
+                    </Box>
+                  </>
+                ) : (
+                  <Box display="flex" alignItems="baseline" paddingTop={1}>
+                    {entry.average && (
+                      <Typography className={classes.average} variant="subtitle2">
+                        Average rating:
+                        {' '}
+                        <span>{entry.average}</span>
+                      </Typography>
+                    )}
+                    {entry.rating && (
+                      <Typography className={classes.myRating} variant="caption">
+                        My rating:&nbsp;
+                        <FiveStar rating={entry.rating} />
+                      </Typography>
+                    )}
                   </Box>
-                </>
-              ) : (
-                <Box display="flex" alignItems="baseline" paddingTop={1}>
-                  {entry.average && (
-                    <Typography className={classes.average} variant="subtitle2">
-                      Average rating:
-                      {' '}
-                      <span>{entry.average}</span>
-                    </Typography>
-                  )}
-                  {entry.rating && (
-                    <Typography className={classes.myRating} variant="caption">
-                      My rating:&nbsp;
-                      <FiveStar rating={entry.rating} />
-                    </Typography>
-                  )}
-                </Box>
-              )}
+                ))}
               <DrawerSectionHeader>Description</DrawerSectionHeader>
               <HtmlWrapper html={entry.description} />
               <DrawerSectionHeader>Links</DrawerSectionHeader>
               <List>
-                <ListItemButton
-                  href={redditPermalink}
-                  Icon={RedditIcon}
-                  text="Open Reddit comment"
-                />
+                {validRedditId && (
+                  <ListItemButton
+                    href={redditPermalink}
+                    Icon={RedditIcon}
+                    text="Open Reddit comment"
+                  />
+                )}
                 <ListItemButton href={flagWaverLink} Icon={FlagTwoToneIcon} text="Open FlagWaver" />
               </List>
             </div>
