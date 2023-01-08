@@ -1,4 +1,3 @@
-import grey from '@material-ui/core/colors/grey';
 import { makeStyles } from '@material-ui/core/styles';
 import StarIcon from '@material-ui/icons/Star';
 import StarBorderIcon from '@material-ui/icons/StarBorder';
@@ -8,7 +7,7 @@ const STAR_SIZE = 16;
 
 const useStyles = makeStyles((theme) => ({
   border: {
-    color: grey[600],
+    color: theme.palette.grey[600],
     fontSize: STAR_SIZE,
   },
   container: {

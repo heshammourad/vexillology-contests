@@ -14,7 +14,6 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import Typography from '@material-ui/core/Typography';
-import grey from '@material-ui/core/colors/grey';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import EmojiEventsOutlinedIcon from '@material-ui/icons/EmojiEventsOutlined';
@@ -91,7 +90,7 @@ const useStyles = makeStyles((theme) => ({
     textTransform: 'uppercase',
   },
   myRating: {
-    color: grey[600],
+    color: theme.palette.grey[600],
     display: 'flex',
     fontStyle: 'italic',
   },

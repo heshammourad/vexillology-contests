@@ -27,6 +27,7 @@ import {
   HtmlWrapper,
   ListItemButton,
   PageWithDrawer,
+  RedditUserAttribution,
   VotingComponents,
   VotingCountdown,
   VotingSlider,
@@ -302,6 +303,7 @@ function Entry() {
   const redditPermalink = `https://www.reddit.com${entry.permalink}`;
   const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${entry.imgurLink}`;
   const voteEndDate = new Date(voteEnd);
+  const isWinner = winners.some(({ id }) => id === entry.id);
 
   return (
     <>
@@ -352,13 +354,22 @@ function Entry() {
           children: (
             <div className={classes.drawerContent}>
               <Box display="flex">
-                {entry.rank && (
-                <div className={classes.rank}>
-                  #
-                  {entry.rank}
-                </div>
-                )}
-                <div className={classes.entryName}>{entry.name}</div>
+                <>
+                  {isWinner && (
+                  <div className={classes.rank}>
+                    #
+                    {entry.rank}
+                  </div>
+                  )}
+                  <Box>
+                    <div className={classes.entryName}>{entry.name}</div>
+                    {isWinner && (
+                      <Typography variant="caption">
+                        <RedditUserAttribution user={entry.user} />
+                      </Typography>
+                    )}
+                  </Box>
+                </>
               </Box>
               {voteEnd
                 && entry.imgurId

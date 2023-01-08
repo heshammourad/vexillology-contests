@@ -3,7 +3,6 @@ import createPersistedState from 'use-persisted-state';
 const usePersistedSettings = createPersistedState('votingComponents');
 
 const DEFAULT_STATE = {
-  accountMenuOpen: false,
   redditLogInDialogOpen: false,
   votingDisabled: false,
   votingErrorSnackbarOpenTimestamp: null,

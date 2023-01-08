@@ -9,10 +9,10 @@ import { makeStyles } from '@material-ui/core/styles';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import AccountCircleOutlinedIcon from '@material-ui/icons/AccountCircleOutlined';
 import RedditIcon from '@material-ui/icons/Reddit';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 import { getData } from '../api';
-import { useAuthState, useComponentsState, useRedditLogIn } from '../common';
+import { useAuthState, useRedditLogIn } from '../common';
 
 const useStyles = makeStyles((theme) => ({
   accountMenu: {
@@ -34,18 +34,15 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function AccountMenu() {
+  const [isMenuOpen, setMenuOpen] = useState(false);
   const anchorRef = useRef(null);
   const classes = useStyles();
 
-  const [{ accountMenuOpen }, setComponentsState] = useComponentsState();
-  const setMenuOpen = (menuOpen) => {
-    setComponentsState('accountMenuOpen', menuOpen);
-  };
   const [{ isLoggedIn, refreshToken, username }, setAuthState] = useAuthState();
   const sendUserToAuthUrl = useRedditLogIn();
 
   const toggleMenu = () => {
-    setMenuOpen(!accountMenuOpen);
+    setMenuOpen((prevOpen) => !prevOpen);
   };
 
   const closeMenu = (event) => {
@@ -72,7 +69,7 @@ function AccountMenu() {
   return (
     <>
       <IconButton
-        aria-controls={accountMenuOpen ? 'accountMenu' : undefined}
+        aria-controls={isMenuOpen ? 'accountMenu' : undefined}
         aria-haspopup="true"
         color="inherit"
         onClick={toggleMenu}
@@ -83,7 +80,8 @@ function AccountMenu() {
       <Popper
         anchorEl={anchorRef.current}
         disablePortal
-        open={accountMenuOpen}
+        open={isMenuOpen}
+        placement="bottom-end"
         role={undefined}
         transition
       >

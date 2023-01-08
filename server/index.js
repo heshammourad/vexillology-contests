@@ -449,8 +449,8 @@ if (!isDev && cluster.isMaster) {
 
           const [{ now, voteStart, voteEnd }] = voteDates;
           if (!voteStart || !voteEnd) {
-            const message = `Unable to find voting dates for ${contestId}`;
-            logger.error(message);
+            const message = 'Unable to find voting dates for contest';
+            logger.error(`${message}: ${contestId}`);
             res.status(500).send(message);
             return;
           }
