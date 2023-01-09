@@ -30,16 +30,20 @@ const snoowrap = new Snoowrap({
   password: REDDIT_PASSWORD,
 });
 
-const getSnoowrap = (auth) => {
-  if (!auth || !auth.accesstoken || !auth.refreshtoken) {
+const getSnoowrap = (auth = {}) => {
+  const accessToken = auth.accessToken || auth.accesstoken || auth.access_token;
+  const refreshToken = auth.refreshToken || auth.refreshtoken || auth.refresh_token;
+  if (!accessToken || !refreshToken) {
+    logger.debug('No auth tokens provided, returning default snoowrap');
     return snoowrap;
   }
+
   return new Snoowrap({
     userAgent,
     clientId: WEB_APP_CLIENT_ID,
     clientSecret: WEB_APP_CLIENT_SECRET,
-    refreshToken: auth.refreshtoken,
-    accessToken: auth.accesstoken,
+    refreshToken,
+    accessToken,
   });
 };
 
@@ -80,7 +84,7 @@ const getContest = async (submissionId) => {
 const getUser = async (auth) => {
   logger.debug('Getting username');
   const { name } = await getSnoowrap(auth).getMe();
-  logger.debug(`Retrieved ${name} username`);
+  logger.debug(`Retrieved username: ${name}`);
   return name;
 };
 

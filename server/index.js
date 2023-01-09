@@ -147,15 +147,13 @@ if (!isDev && cluster.isMaster) {
       if (!result) {
         throw new Error('Unable to retrieve access token');
       }
-
-      const username = await reddit.getUser(result);
-
       camelizeObjectKeys([result]);
       const { accessToken, refreshToken } = result;
       if (!accessToken || !refreshToken) {
         throw new Error('Missing auth tokens');
       }
 
+      const username = await reddit.getUser(result);
       const response = { accessToken, refreshToken, username };
       res.send(response);
     } catch (err) {
