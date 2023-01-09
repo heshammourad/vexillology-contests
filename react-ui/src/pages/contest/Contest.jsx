@@ -35,6 +35,7 @@ import {
 import {
   AccountMenu,
   ArrowBackButton,
+  Average,
   CustomIconButton,
   CustomRadio,
   CustomSwitch,
@@ -46,7 +47,6 @@ import {
   VotingSlider,
 } from '../../components';
 
-import Average from './Average';
 import CardImageLink from './CardImageLink';
 import Subheader from './Subheader';
 

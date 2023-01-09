@@ -22,6 +22,7 @@ import {
 import {
   AccountMenu,
   ArrowBackButton,
+  Average,
   CustomIconButton,
   FiveStar,
   HtmlWrapper,
@@ -390,14 +391,8 @@ function Entry() {
                   </>
                 ) : (
                   <Box display="flex" alignItems="baseline" paddingTop={1}>
-                    {entry.average && (
-                      <Typography className={classes.average} variant="subtitle2">
-                        Average rating:
-                        {' '}
-                        <span>{entry.average}</span>
-                      </Typography>
-                    )}
-                    {entry.rating && (
+                    <Average average={entry.average} className={classes.average} />
+                    {entry.rating > -1 && (
                       <Typography className={classes.myRating} variant="caption">
                         My rating:&nbsp;
                         <FiveStar rating={entry.rating} />
