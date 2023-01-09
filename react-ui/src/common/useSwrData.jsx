@@ -1,6 +1,6 @@
 import addMinutes from 'date-fns/addMinutes';
 import isFuture from 'date-fns/isFuture';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import createPersistedState from 'use-persisted-state';
 
@@ -10,11 +10,16 @@ const usePersistentState = createPersistedState('data');
 const useExpiresState = createPersistedState('expires');
 
 const useSwrData = (key, allowRefresh = true) => {
-  const [{ accessToken, refreshToken }] = useAuthState();
+  const [{ accessToken, isLoggedIn, refreshToken }] = useAuthState();
   const { data, mutate } = useSWR([key, { accessToken, refreshToken }]);
   const [isFetched, setFetched] = useState(!!data);
   const [cache, setCache] = usePersistentState({});
   const [expires, setExpires] = useExpiresState({});
+
+  useEffect(() => {
+    setCache({});
+    setExpires({});
+  }, [isLoggedIn]);
 
   if (data && !allowRefresh) {
     return data;
