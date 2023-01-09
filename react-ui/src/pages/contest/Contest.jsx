@@ -46,6 +46,7 @@ import {
   VotingSlider,
 } from '../../components';
 
+import Average from './Average';
 import CardImageLink from './CardImageLink';
 import Subheader from './Subheader';
 
@@ -428,12 +429,7 @@ function Contest() {
                         </Typography>
                       </div>
                       <div className={classes.winnerRatings}>
-                        {average > -1 && (
-                          <Typography variant="subtitle2">
-                            Average&nbsp;rating:&nbsp;
-                            {average}
-                          </Typography>
-                        )}
+                        <Average average={average} />
                         {rating > -1 && (
                           <Typography className={classes.myRating} variant="caption">
                             My&nbsp;rating:&nbsp;
@@ -483,10 +479,7 @@ function Contest() {
                           </Typography>
                           {!allowVoting && (
                           <div className={classes.votingResults}>
-            <Typography variant="subtitle2">
-              Avg:&nbsp;
-                                  {average}
-            </Typography>
+            <Average average={average} fullText={false} />
             {rating > -1 && <FiveStar rating={rating} />}
           </div>
                           )}
