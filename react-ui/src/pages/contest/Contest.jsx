@@ -103,6 +103,10 @@ const useStyles = makeStyles((theme) => ({
   subheader: {
     margin: '16px auto',
   },
+  votingResults: {
+    flexShrink: 0,
+    textAlign: 'end',
+  },
   winnerCard: {
     marginTop: 4,
     marginBottom: 16,
@@ -457,48 +461,58 @@ function Contest() {
           )}
           {entries && (
             <Grid container spacing={spacing}>
-              {entries.map(({
-                id, imgurId, imgurLink, height, name: entryName, rating, width,
-              }) => (
-                <Grid key={id} item xs={xs} sm={sm} md={md} lg={lg}>
-                  <Card id={id}>
-                    <CardImageLink
-                      displayWidth={gridDisplayWidth}
-                      height={height}
-                      id={id}
-                      image={imgurLink}
-                      onClick={updateScroll}
-                      width={width}
-                    />
-                    {!isHideTitles && (
-                    <CardContent>
-                      <Box display="flex" gridGap={8}>
-                        <Typography className={classes.entryName} variant="caption">
-                          {entryName}
-                        </Typography>
-                        {!allowVoting && rating > -1 && <FiveStar rating={rating} />}
-                      </Box>
-                    </CardContent>
-                    )}
-                    {allowVoting && (
-                    <CardActions
-                      className={clsx({
-                        [classes.disabledVoting]: votingDisabled,
-                        [classes.hiddenTitle]: isHideTitles,
-                      })}
-                      disableSpacing
-                    >
-                      <VotingSlider
-                        disabled={votingDisabled}
-                        entryId={imgurId}
-                        rating={rating}
-                        setComponentsState={setComponentsState}
+              {entries.map(
+                ({
+                  average, id, imgurId, imgurLink, height, name: entryName, rating, width,
+                }) => (
+                  <Grid key={id} item xs={xs} sm={sm} md={md} lg={lg}>
+                    <Card id={id}>
+                      <CardImageLink
+                        displayWidth={gridDisplayWidth}
+                        height={height}
+                        id={id}
+                        image={imgurLink}
+                        onClick={updateScroll}
+                        width={width}
                       />
-                    </CardActions>
-                    )}
-                  </Card>
-                </Grid>
-              ))}
+                      {!isHideTitles && (
+                      <CardContent>
+                        <Box display="flex" gridGap={8}>
+                          <Typography className={classes.entryName} variant="caption">
+                            {entryName}
+                          </Typography>
+                          {!allowVoting && (
+                          <div className={classes.votingResults}>
+            <Typography variant="subtitle2">
+              Avg:&nbsp;
+                                  {average}
+            </Typography>
+            {rating > -1 && <FiveStar rating={rating} />}
+          </div>
+                          )}
+                        </Box>
+                      </CardContent>
+                      )}
+                      {allowVoting && (
+                      <CardActions
+                        className={clsx({
+                          [classes.disabledVoting]: votingDisabled,
+                          [classes.hiddenTitle]: isHideTitles,
+                        })}
+                        disableSpacing
+                      >
+                        <VotingSlider
+                          disabled={votingDisabled}
+                          entryId={imgurId}
+                          rating={rating}
+                          setComponentsState={setComponentsState}
+                        />
+                      </CardActions>
+                      )}
+                    </Card>
+                  </Grid>
+                ),
+              )}
             </Grid>
           )}
         </Container>
