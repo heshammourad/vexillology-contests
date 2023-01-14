@@ -5,6 +5,9 @@
   "extends": [
     "airbnb"
   ],
+  "plugins": [
+    "mui-unused-classes"
+  ],
   "rules": {
     "strict": 0,
     "curly": [
@@ -21,6 +24,7 @@
         }
       }
     ],
+    "mui-unused-classes/unused-classes": 2,
     "no-alert": "error",
     "no-console": "error",
     "no-restricted-imports": [

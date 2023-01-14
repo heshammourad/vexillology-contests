@@ -101,9 +101,6 @@ const useStyles = makeStyles((theme) => ({
       marginRight: 8,
     },
   },
-  subheader: {
-    margin: '16px auto',
-  },
   votingResults: {
     flexShrink: 0,
     textAlign: 'end',
