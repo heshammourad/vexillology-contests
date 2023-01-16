@@ -74,7 +74,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Home() {
-  const contests = useSwrData('/contests');
+  const [contests] = useSwrData('/contests');
   const location = useLocation();
 
   const classes = useStyles();

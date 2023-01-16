@@ -12,17 +12,27 @@ const useExpiresState = createPersistedState('expires');
 const useSwrData = (key, allowRefresh = true) => {
   const [{ accessToken, isLoggedIn, refreshToken }] = useAuthState();
   const { data, mutate } = useSWR([key, { accessToken, refreshToken }]);
+  const [prevLoggedIn, setLoggedIn] = useState(isLoggedIn);
   const [isFetched, setFetched] = useState(!!data);
   const [cache, setCache] = usePersistentState({});
   const [expires, setExpires] = useExpiresState({});
 
   useEffect(() => {
+    if (isLoggedIn === prevLoggedIn) {
+      return;
+    }
     setCache({});
     setExpires({});
+    setLoggedIn(isLoggedIn);
   }, [isLoggedIn]);
 
+  const updateCache = (cacheData) => {
+    setCache({ ...cache, [key]: cacheData });
+    setExpires({ ...expires, [key]: addMinutes(new Date(), 10) });
+  };
+
   if (data && !allowRefresh) {
-    return data;
+    return [data, updateCache];
   }
 
   if (!isFetched) {
@@ -35,14 +45,13 @@ const useSwrData = (key, allowRefresh = true) => {
 
       const response = await mutate();
       if (response) {
-        setCache({ ...cache, [key]: response });
-        setExpires({ ...expires, [key]: addMinutes(new Date(), 15) });
+        updateCache(response);
       }
     }, 200);
     setFetched(true);
   }
 
-  return data;
+  return [data || {}, updateCache];
 };
 
 export default useSwrData;

@@ -8,7 +8,7 @@ import { useParams } from 'react-router-dom';
 import useSWRMutation from 'swr/mutation';
 
 import { deleteData, putData } from '../api';
-import { useAuthState } from '../common';
+import { useAuthState, useSwrData } from '../common';
 
 const MIN_SCORE = 0;
 const MAX_SCORE = 5;
@@ -96,7 +96,10 @@ function VotingSlider({
   const authTokens = { accessToken, refreshToken };
 
   const [isInteractive, setInteractive] = useState(false);
-  const key = [`/contests/${contestId}`, authTokens];
+
+  const url = `/contests/${contestId}`;
+  const updateCache = useSwrData(url)[1];
+  const key = [url, authTokens];
   // eslint-disable-next-line max-len
   const { isMutating: isMutatingPut, trigger: triggerPut } = useSWRMutation(key, (_, { arg }) => putData(URL, arg, authTokens));
   const { isMutating: isMutatingDelete, trigger: triggerDelete } = useSWRMutation(
@@ -126,7 +129,9 @@ function VotingSlider({
       }
 
       const newEntries = updateEntries(contest.entries, input);
-      return { ...contest, entries: newEntries };
+      const newData = { ...contest, entries: newEntries };
+      updateCache(newData);
+      return newData;
     },
     onError: () => {
       showError();

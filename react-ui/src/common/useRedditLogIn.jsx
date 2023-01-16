@@ -7,7 +7,7 @@ import useSwrData from './useSwrData';
 const useRedditLogIn = () => {
   const { pathname } = useLocation();
   const setAuthState = useAuthState()[1];
-  const { webAppClientId } = useSwrData('/init', false) || {};
+  const [{ webAppClientId }] = useSwrData('/init', false);
 
   const sendUserToAuthUrl = ({ stateValues = {} } = {}) => {
     const nonce = nanoid();

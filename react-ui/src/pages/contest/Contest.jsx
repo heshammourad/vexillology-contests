@@ -159,7 +159,7 @@ let scrollingIntervalId;
 function Contest() {
   const { contestId } = useParams();
   const [scroll, setScroll] = useScrollState();
-  const contest = useSwrData(`/contests/${contestId}`, !!scroll.entryId) || {};
+  const [contest] = useSwrData(`/contests/${contestId}`, !!scroll.entryId);
 
   const { state = {} } = useLocation();
   const [isLoaded, setLoaded] = useState(false);

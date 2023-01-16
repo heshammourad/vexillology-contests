@@ -25,12 +25,12 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Contests() {
-  const contests = useSwrData('/contests');
+  const [contests] = useSwrData('/contests');
   const { pathname, state = {} } = useLocation();
 
   const [openYear, setOpenYear] = useState(null);
   useEffect(() => {
-    if (contests) {
+    if (contests && contests.length) {
       const dateToOpen = (state || {}).date || contests[0].date;
       setOpenYear(getYear(parseISO(dateToOpen)).toString());
     }
