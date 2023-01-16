@@ -34,8 +34,10 @@ const useSwrData = (key, allowRefresh = true) => {
       }
 
       const response = await mutate();
-      setCache({ ...cache, [key]: response });
-      setExpires({ ...expires, [key]: addMinutes(new Date(), 15) });
+      if (response) {
+        setCache({ ...cache, [key]: response });
+        setExpires({ ...expires, [key]: addMinutes(new Date(), 15) });
+      }
     }, 200);
     setFetched(true);
   }

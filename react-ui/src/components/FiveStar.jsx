@@ -11,6 +11,8 @@ const useStyles = makeStyles((theme) => ({
     fontSize: STAR_SIZE,
   },
   container: {
+    alignSelf: 'end',
+    display: 'flex',
     flexShrink: 0,
   },
   filled: {

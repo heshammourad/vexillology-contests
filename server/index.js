@@ -388,7 +388,7 @@ if (!isDev && cluster.isMaster) {
         }
 
         if (response.isContestMode && !winnersThreadId) {
-          response.entries = shuffle(response.entries);
+          response.entries = shuffle(response.entries.map(({ rank, user, ...entry }) => entry));
         } else {
           if (voteEnd) {
             const voteData = await db.select(
@@ -438,7 +438,7 @@ if (!isDev && cluster.isMaster) {
           logger.debug(`Vote change on ${contestId}`);
           const voteDates = await getVoteDates(contestId);
 
-          if (!voteDates.length) {
+          if (!voteDates || !voteDates.length) {
             const message = 'contestId not found';
             logger.warn(message);
             res.status(400).send(message);

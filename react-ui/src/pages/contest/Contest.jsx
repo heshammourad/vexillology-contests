@@ -9,8 +9,6 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import Typography from '@material-ui/core/Typography';
@@ -38,7 +36,6 @@ import {
   Average,
   CustomIconButton,
   CustomRadio,
-  CustomSwitch,
   FiveStar,
   PageWithDrawer,
   RedditUserAttribution,
@@ -55,9 +52,6 @@ const scrollInstantlyTo = (scrollY) => {
 };
 
 const useStyles = makeStyles((theme) => ({
-  heading: {
-    margin: '24px auto',
-  },
   disabledVoting: {
     cursor: 'wait',
   },
@@ -68,18 +62,40 @@ const useStyles = makeStyles((theme) => ({
   entriesLoading: {
     visibility: 'hidden',
   },
-  entryName: {
-    color: 'black',
-    flexGrow: 1,
+  entry: {
+    backgroundColor: theme.palette.grey[100],
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
   },
-  hiddenTitle: {
-    marginTop: 16,
+  entryHeading: {
+    columnGap: 4,
+    display: 'flex',
+    minHeight: 60,
+    padding: 8,
+  },
+  entryImageContainer: {
+    alignItems: 'center',
+    display: 'flex',
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  entryInfo: {
+    display: 'flex',
+    flexGrow: 1,
+    paddingTop: 2,
+  },
+  entryRatings: {
+    display: 'flex',
+    flexDirection: 'column',
+    flexGrow: 1,
+    textAlign: 'end',
+  },
+  heading: {
+    margin: '24px auto',
   },
   icon: {
     color: theme.palette.grey[700],
-  },
-  listItemText: {
-    color: theme.palette.grey.A400,
   },
   listSubheader: {
     color: theme.palette.grey[900],
@@ -97,13 +113,9 @@ const useStyles = makeStyles((theme) => ({
   },
   numberSymbol: {
     marginRight: 4,
-    [theme.breakpoints.up('sm')]: {
-      marginRight: 8,
-    },
   },
-  votingResults: {
-    flexShrink: 0,
-    textAlign: 'end',
+  votingSlider: {
+    marginTop: 16,
   },
   winnerCard: {
     marginTop: 4,
@@ -111,22 +123,16 @@ const useStyles = makeStyles((theme) => ({
   },
   winnerContent: {
     flexGrow: 1,
-    [theme.breakpoints.up('sm')]: {
-      paddingTop: 8,
-    },
+    paddingTop: 4,
   },
   winnerHeading: {
     columnGap: 8,
     display: 'flex',
-    [theme.breakpoints.up('sm')]: {
-      columnGap: 16,
-    },
   },
   winnerRatings: {
+    flexShrink: 0,
+    paddingTop: 4,
     textAlign: 'end',
-    [theme.breakpoints.up('sm')]: {
-      paddingTop: 8,
-    },
   },
 }));
 
@@ -220,11 +226,7 @@ function Contest() {
     }
   }, [state, contest]);
 
-  const [{ density = 'default', isHideTitles }, updateSettings] = useSettingsState();
-
-  const toggleHideTitles = () => {
-    updateSettings('isHideTitles', !isHideTitles);
-  };
+  const [{ density = 'default' }, updateSettings] = useSettingsState();
 
   const handleDensityChange = (event) => {
     updateSettings('density', event.target.value);
@@ -341,55 +343,34 @@ function Contest() {
       drawer={{
         heading: 'Settings',
         children: (
-          <>
+          <FormControl component="fieldset">
             <List
-              subheader={<ListSubheader className={classes.listSubheader}>Display</ListSubheader>}
+              dense
+              subheader={<ListSubheader className={classes.listSubheader}>Density</ListSubheader>}
             >
-              <ListItem>
-                <ListItemText
-                  className={classes.listItemText}
-                  id="switch-list-label-hide-titles"
-                  primary="Hide Titles"
-                />
-                <ListItemSecondaryAction>
-                  <CustomSwitch
-                    edge="end"
-                    onChange={toggleHideTitles}
-                    checked={isHideTitles}
-                    inputProps={{ 'aria-labelledby': 'switch-list-label-hide-titles' }}
-                  />
-                </ListItemSecondaryAction>
-              </ListItem>
-            </List>
-            <FormControl component="fieldset">
-              <List
-                dense
-                subheader={<ListSubheader className={classes.listSubheader}>Density</ListSubheader>}
+              <RadioGroup
+                aria-label="density"
+                name="density"
+                value={density}
+                onChange={handleDensityChange}
               >
-                <RadioGroup
-                  aria-label="density"
-                  name="density"
-                  value={density}
-                  onChange={handleDensityChange}
-                >
-                  <ListItem>
-                    <FormControlLabel
-                      value="default"
-                      control={<CustomRadio color="primary" />}
-                      label="Default"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <FormControlLabel
-                      value="compact"
-                      control={<CustomRadio color="primary" />}
-                      label="Compact"
-                    />
-                  </ListItem>
-                </RadioGroup>
-              </List>
-            </FormControl>
-          </>
+                <ListItem>
+                  <FormControlLabel
+                    value="default"
+                    control={<CustomRadio color="primary" />}
+                    label="Default"
+                  />
+                </ListItem>
+                <ListItem>
+                  <FormControlLabel
+                    value="compact"
+                    control={<CustomRadio color="primary" />}
+                    label="Compact"
+                  />
+                </ListItem>
+              </RadioGroup>
+            </List>
+          </FormControl>
         ),
       }}
     >
@@ -456,48 +437,68 @@ function Contest() {
             <Grid container spacing={spacing}>
               {entries.map(
                 ({
-                  average, id, imgurId, imgurLink, height, name: entryName, rating, width,
+                  average,
+                  id,
+                  imgurId,
+                  imgurLink,
+                  height,
+                  name: entryName,
+                  rank,
+                  rating,
+                  user,
+                  width,
                 }) => (
                   <Grid key={id} item xs={xs} sm={sm} md={md} lg={lg}>
-                    <Card id={id}>
-                      <CardImageLink
-                        displayWidth={gridDisplayWidth}
-                        height={height}
-                        id={id}
-                        image={imgurLink}
-                        onClick={updateScroll}
-                        width={width}
-                      />
-                      {!isHideTitles && (
-                      <CardContent>
-                        <Box display="flex" gridGap={8}>
-                          <Typography className={classes.entryName} variant="caption">
-                            {entryName}
+                    <Card id={id} className={classes.entry}>
+                      <CardContent className={classes.entryHeading}>
+                        {rank && (
+                          <Typography component="div" variant="h6">
+                            <span className={classes.numberSymbol}>#</span>
+                            {rank}
                           </Typography>
+                        )}
+                        <div className={clsx({ [classes.entryInfo]: !!rank })}>
+                          <div>
+                            <Typography component="div" variant="subtitle2">
+                              {entryName}
+                            </Typography>
+                            {user && (
+                              <Typography variant="caption">
+                                <RedditUserAttribution user={user} />
+                              </Typography>
+                            )}
+                          </div>
                           {!allowVoting && (
-                          <div className={classes.votingResults}>
-            <Average average={average} fullText={false} />
-            {rating > -1 && <FiveStar rating={rating} />}
-          </div>
+                            <div className={classes.entryRatings}>
+                              <Average average={average} fullText={false} />
+                              {rating > -1 && <FiveStar rating={rating} />}
+                            </div>
                           )}
-                        </Box>
+                        </div>
                       </CardContent>
-                      )}
-                      {allowVoting && (
-                      <CardActions
-                        className={clsx({
-                          [classes.disabledVoting]: votingDisabled,
-                          [classes.hiddenTitle]: isHideTitles,
-                        })}
-                        disableSpacing
-                      >
-                        <VotingSlider
-                          disabled={votingDisabled}
-                          entryId={imgurId}
-                          rating={rating}
-                          setComponentsState={setComponentsState}
+                      <div className={classes.entryImageContainer}>
+                        <CardImageLink
+                          displayWidth={gridDisplayWidth}
+                          height={height}
+                          id={id}
+                          image={imgurLink}
+                          onClick={updateScroll}
+                          width={width}
                         />
-                      </CardActions>
+                      </div>
+                      {allowVoting && (
+                        <CardActions
+                          className={clsx(classes.votingSlider, {
+                            [classes.disabledVoting]: votingDisabled,
+                          })}
+                        >
+                          <VotingSlider
+                            disabled={votingDisabled}
+                            entryId={imgurId}
+                            rating={rating}
+                            setComponentsState={setComponentsState}
+                          />
+                        </CardActions>
                       )}
                     </Card>
                   </Grid>
