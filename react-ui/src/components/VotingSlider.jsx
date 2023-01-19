@@ -1,6 +1,8 @@
 import Button from '@material-ui/core/Button';
 import Slider from '@material-ui/core/Slider';
+import Tooltip from '@material-ui/core/Tooltip';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
+import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
@@ -66,6 +68,10 @@ const useStyles = makeStyles((theme) => ({
       color: theme.palette.grey[600],
       left: -12,
     },
+  },
+  tooltip: {
+    color: theme.palette.grey[700],
+    marginRight: 8,
   },
   unrated: {
     color: theme.palette.grey[600],
@@ -161,6 +167,12 @@ function VotingSlider({
 
   return (
     <>
+      <Tooltip
+        className={classes.tooltip}
+        title="Use the slider to rate the flag between 0-5, with 5 being the best."
+      >
+        <InfoOutlinedIcon fontSize="small" />
+      </Tooltip>
       <ThemedSlider
         className={clsx({ [classes.disabled]: disabled, [classes.unrated]: isUnrated })}
         aria-label="Vote on flag"

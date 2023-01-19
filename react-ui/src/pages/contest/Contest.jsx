@@ -45,6 +45,7 @@ import {
 } from '../../components';
 
 import CardImageLink from './CardImageLink';
+import DescriptionTooltip from './DescriptionTooltip';
 import Subheader from './Subheader';
 
 const scrollInstantlyTo = (scrollY) => {
@@ -83,6 +84,8 @@ const useStyles = makeStyles((theme) => ({
   entryInfo: {
     display: 'flex',
     flexGrow: 1,
+  },
+  entryInfoResults: {
     paddingTop: 2,
   },
   entryRatings: {
@@ -438,6 +441,7 @@ function Contest() {
               {entries.map(
                 ({
                   average,
+                  description,
                   id,
                   imgurId,
                   imgurLink,
@@ -457,7 +461,11 @@ function Contest() {
                             {rank}
                           </Typography>
                         )}
-                        <div className={clsx({ [classes.entryInfo]: !!rank })}>
+                        <div
+                          className={clsx(classes.entryInfo, {
+                            [classes.entryInfoResults]: !!rank,
+                          })}
+                        >
                           <div>
                             <Typography component="div" variant="subtitle2">
                               {entryName}
@@ -475,6 +483,9 @@ function Contest() {
                             </div>
                           )}
                         </div>
+                        <Box alignSelf="flex-start">
+                          <DescriptionTooltip description={description} />
+                        </Box>
                       </CardContent>
                       <div className={classes.entryImageContainer}>
                         <CardImageLink

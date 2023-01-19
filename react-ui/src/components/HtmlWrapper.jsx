@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 const useStyles = makeStyles({
   description: {
     '& p': {
-      marginTop: 0,
+      margin: 0,
     },
   },
 });
