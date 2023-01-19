@@ -52,7 +52,7 @@ function VotingCountdown({ fontSize, voteEndDate }) {
 
       if (fontSize !== 'small') {
         const daysLeft = differenceInDays(voteEndDate, start);
-        setFontSize(0.875 + (Math.max(7 - daysLeft, 0) / 7) * 0.25);
+        setFontSize(0.875 + (Math.max(8 - daysLeft, 0) / 8) * 0.25);
       }
 
       const newTimeLeft = isSmUp
