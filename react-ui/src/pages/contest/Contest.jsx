@@ -44,6 +44,7 @@ import {
   VotingCountdown,
   VotingSlider,
 } from '../../components';
+import { ReactComponent as FmpLogo } from '../../images/FMP.svg';
 
 import CardImageLink from './CardImageLink';
 import Subheader from './Subheader';
@@ -114,6 +115,17 @@ const useStyles = makeStyles((theme) => ({
   },
   numberSymbol: {
     marginRight: 4,
+  },
+  sponsorBanner: {
+    alignItems: 'center',
+    backgroundColor: theme.palette.flagMakerPrint.main,
+    color: theme.palette.common.white,
+    columnGap: 8,
+    display: 'flex',
+    justifyContent: 'center',
+  },
+  sponsorIcon: {
+    width: 24,
   },
   votingSlider: {
     marginTop: 16,
@@ -375,6 +387,12 @@ function Contest() {
         ),
       }}
     >
+      <Box className={classes.sponsorBanner} padding={1}>
+        <FmpLogo className={classes.sponsorIcon} />
+        <Typography component="span" variant="subtitle2">
+          Powered by Flagmaker & Print ~ Design and Print your own flags!
+        </Typography>
+      </Box>
       {name && (
         <Container className={clsx({ [classes.entriesLoading]: !isLoaded })} fixed>
           <Typography className={classes.heading} variant={headingVariant} component="h1">

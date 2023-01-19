@@ -15,6 +15,9 @@ import './App.css';
 
 const theme = createTheme({
   palette: {
+    flagMakerPrint: {
+      main: '#ea433e',
+    },
     vexyBlue: {
       dark: '#3868c8',
       light: '#a8c5ff',
