@@ -12,6 +12,7 @@ import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 
 const DELIMITER = ', ';
+const VOTING_DAYS = 8;
 
 const useStyles = makeStyles((theme) => ({
   voteCountdown: {
@@ -52,7 +53,7 @@ function VotingCountdown({ fontSize, voteEndDate }) {
 
       if (fontSize !== 'small') {
         const daysLeft = differenceInDays(voteEndDate, start);
-        setFontSize(0.875 + (Math.max(8 - daysLeft, 0) / 8) * 0.25);
+        setFontSize(0.875 + (Math.max(VOTING_DAYS - daysLeft, 0) / VOTING_DAYS) * 0.25);
       }
 
       const newTimeLeft = isSmUp
