@@ -45,7 +45,7 @@ import {
   VotingCountdown,
   VotingSlider,
 } from '../../components';
-import { ReactComponent as FmpLogo } from '../../images/FMP.svg';
+import { ReactComponent as FmpLogo } from '../../images/FMP_white.svg';
 
 import CardImageLink from './CardImageLink';
 import Subheader from './Subheader';
@@ -395,7 +395,7 @@ function Contest() {
       <ExternalLink
         className={classes.sponsorBanner}
         href="https://flagmaker-print.com/"
-        padding={1}
+        target="_blank"
       >
         <FmpLogo className={classes.sponsorIcon} />
         <Typography component="span" variant="subtitle2">

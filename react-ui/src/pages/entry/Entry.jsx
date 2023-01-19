@@ -35,6 +35,7 @@ import {
 } from '../../components';
 
 import DrawerSectionHeader from './DrawerSectionHeader';
+import FmpIcon from './FmpIcon';
 import NavigateIconButton from './NavigateIconButton';
 
 const calculateImageContainerHeight = (offset) => `calc(100vh - ${offset}px)`;
@@ -410,6 +411,12 @@ function Entry() {
                   />
                 )}
                 <ListItemButton href={flagWaverLink} Icon={FlagTwoToneIcon} text="Open FlagWaver" />
+                <ListItemButton
+                  href="https://flagmaker-print.com/"
+                  Icon={FmpIcon}
+                  target="_blank"
+                  text="Design & Print your own flag with FMP"
+                />
               </List>
             </div>
           ),

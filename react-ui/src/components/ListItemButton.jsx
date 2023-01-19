@@ -3,9 +3,11 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import PropTypes from 'prop-types';
 
-function ListItemButton({ href, Icon, text }) {
+function ListItemButton({
+  href, Icon, target, text,
+}) {
   return (
-    <ListItem button component="a" href={href} target="vexillology-contests" disableGutters>
+    <ListItem button component="a" href={href} target={target} disableGutters>
       <ListItemIcon>
         <Icon />
       </ListItemIcon>
@@ -17,7 +19,12 @@ function ListItemButton({ href, Icon, text }) {
 ListItemButton.propTypes = {
   href: PropTypes.string.isRequired,
   Icon: PropTypes.elementType.isRequired,
+  target: PropTypes.string,
   text: PropTypes.string.isRequired,
+};
+
+ListItemButton.defaultProps = {
+  target: 'vexillology-contests',
 };
 
 export default ListItemButton;
