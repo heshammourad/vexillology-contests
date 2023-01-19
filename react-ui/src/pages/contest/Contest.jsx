@@ -380,7 +380,7 @@ function Contest() {
           <Typography className={classes.heading} variant={headingVariant} component="h1">
             {name}
           </Typography>
-          {subtext && (
+          {allowVoting && subtext && (
             <Box marginBottom={3}>
               <Typography component="div" variant="subtitle1">
                 <HtmlWrapper html={subtext} />
