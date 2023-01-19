@@ -37,6 +37,7 @@ import {
   CustomIconButton,
   CustomRadio,
   FiveStar,
+  HtmlWrapper,
   PageWithDrawer,
   RedditUserAttribution,
   VotingComponents,
@@ -290,7 +291,7 @@ function Contest() {
 
   const headingVariant = isSmUp ? 'h3' : 'h5';
   const {
-    date, entries, name, validRedditId, voteEnd, winners, winnersThreadId,
+    date, entries, name, subtext, validRedditId, voteEnd, winners, winnersThreadId,
   } = contest;
   const voteEndDate = new Date(voteEnd);
   const allowVoting = voteEnd && isFuture(voteEndDate);
@@ -379,6 +380,13 @@ function Contest() {
           <Typography className={classes.heading} variant={headingVariant} component="h1">
             {name}
           </Typography>
+          {subtext && (
+            <Box marginBottom={3}>
+              <Typography component="div" variant="subtitle1">
+                <HtmlWrapper html={subtext} />
+              </Typography>
+            </Box>
+          )}
           {winners && winners.length > 0 && (
             <>
               <Subheader>Top 20</Subheader>

@@ -203,7 +203,7 @@ if (!isDev && cluster.isMaster) {
           `contest.${id}`,
           async () => {
             const contestResults = await db.select(
-              'SELECT name, date, valid_reddit_id, winners_thread_id FROM contests WHERE id = $1 AND env_level >= $2',
+              'SELECT name, date, valid_reddit_id, winners_thread_id, subtext FROM contests WHERE id = $1 AND env_level >= $2',
               [id, ENV_LEVEL],
             );
             if (!contestResults.length) {
@@ -343,6 +343,7 @@ if (!isDev && cluster.isMaster) {
             return {
               date: contestResult.date.toJSON().substr(0, 10),
               name: contestResult.name,
+              subtext: contestResult.subtext,
               validRedditId: contestResult.validRedditId,
               winnersThreadId,
               ...contest,
