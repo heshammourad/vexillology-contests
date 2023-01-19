@@ -36,6 +36,7 @@ import {
   Average,
   CustomIconButton,
   CustomRadio,
+  ExternalLink,
   FiveStar,
   HtmlWrapper,
   PageWithDrawer,
@@ -123,6 +124,10 @@ const useStyles = makeStyles((theme) => ({
     columnGap: 8,
     display: 'flex',
     justifyContent: 'center',
+    padding: 8,
+    '&:hover': {
+      textDecoration: 'none',
+    },
   },
   sponsorIcon: {
     width: 24,
@@ -387,12 +392,16 @@ function Contest() {
         ),
       }}
     >
-      <Box className={classes.sponsorBanner} padding={1}>
+      <ExternalLink
+        className={classes.sponsorBanner}
+        href="https://flagmaker-print.com/"
+        padding={1}
+      >
         <FmpLogo className={classes.sponsorIcon} />
         <Typography component="span" variant="subtitle2">
           Powered by Flagmaker & Print ~ Design and Print your own flags!
         </Typography>
-      </Box>
+      </ExternalLink>
       {name && (
         <Container className={clsx({ [classes.entriesLoading]: !isLoaded })} fixed>
           <Typography className={classes.heading} variant={headingVariant} component="h1">

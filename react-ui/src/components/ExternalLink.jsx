@@ -1,9 +1,11 @@
 import Link from '@material-ui/core/Link';
 import PropTypes from 'prop-types';
 
-function ExternalLink({ children, href }) {
+function ExternalLink({
+  children, className, href, target,
+}) {
   return (
-    <Link href={href} rel="noopener noreferrer" target="vexillology-contests">
+    <Link className={className} href={href} rel="noopener noreferrer" target={target}>
       {children}
     </Link>
   );
@@ -11,7 +13,14 @@ function ExternalLink({ children, href }) {
 
 ExternalLink.propTypes = {
   children: PropTypes.node.isRequired,
+  className: PropTypes.string,
   href: PropTypes.string.isRequired,
+  target: PropTypes.string,
+};
+
+ExternalLink.defaultProps = {
+  className: undefined,
+  target: 'vexillology-contests',
 };
 
 export default ExternalLink;
