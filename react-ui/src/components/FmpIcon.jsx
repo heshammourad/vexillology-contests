@@ -1,6 +1,6 @@
 import SvgIcon from '@material-ui/core/SvgIcon';
 
-import { ReactComponent as FmpLogo } from '../../images/FMP_grey.svg';
+import { ReactComponent as FmpLogo } from '../images/FMP.svg';
 
 function FmpIcon(props) {
   return (

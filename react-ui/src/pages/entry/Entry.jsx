@@ -25,6 +25,7 @@ import {
   Average,
   CustomIconButton,
   FiveStar,
+  FmpIcon,
   HtmlWrapper,
   ListItemButton,
   PageWithDrawer,
@@ -35,7 +36,6 @@ import {
 } from '../../components';
 
 import DrawerSectionHeader from './DrawerSectionHeader';
-import FmpIcon from './FmpIcon';
 import NavigateIconButton from './NavigateIconButton';
 
 const calculateImageContainerHeight = (offset) => `calc(100vh - ${offset}px)`;

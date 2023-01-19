@@ -38,6 +38,7 @@ import {
   CustomRadio,
   ExternalLink,
   FiveStar,
+  FmpIcon,
   HtmlWrapper,
   PageWithDrawer,
   RedditUserAttribution,
@@ -45,7 +46,6 @@ import {
   VotingCountdown,
   VotingSlider,
 } from '../../components';
-import { ReactComponent as FmpLogo } from '../../images/FMP_white.svg';
 
 import CardImageLink from './CardImageLink';
 import Subheader from './Subheader';
@@ -130,6 +130,7 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   sponsorIcon: {
+    fill: theme.palette.common.white,
     width: 24,
   },
   votingSlider: {
@@ -397,7 +398,7 @@ function Contest() {
         href="https://flagmaker-print.com/"
         target="_blank"
       >
-        <FmpLogo className={classes.sponsorIcon} />
+        <FmpIcon className={classes.sponsorIcon} />
         <Typography component="span" variant="subtitle2">
           Powered by Flagmaker & Print ~ Design and Print your own flags!
         </Typography>

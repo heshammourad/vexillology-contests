@@ -9,6 +9,7 @@ export { default as CustomSwitch } from './CustomSwitch';
 export { default as ElevationScroll } from './ElevationScroll';
 export { default as ExternalLink } from './ExternalLink';
 export { default as FiveStar } from './FiveStar';
+export { default as FmpIcon } from './FmpIcon';
 export { default as Header } from './Header';
 export { default as HtmlWrapper } from './HtmlWrapper';
 export { default as InternalLink } from './InternalLink';
