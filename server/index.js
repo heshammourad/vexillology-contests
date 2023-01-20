@@ -389,7 +389,20 @@ if (!isDev && cluster.isMaster) {
         }
 
         if (response.isContestMode && !winnersThreadId) {
-          response.entries = shuffle(response.entries.map(({ rank, user, ...entry }) => entry));
+          response.entries = shuffle(
+            response.entries.map(({ rank, user, ...entry }) => entry),
+          ).sort((a, b) => {
+            if (a.rating > -1 && b.rating === undefined) {
+              return 1;
+            }
+            if (b.rating > -1 && a.rating === undefined) {
+              return -1;
+            }
+            if (a.rating === undefined && b.rating === undefined) {
+              return 0;
+            }
+            return b.rating - a.rating;
+          });
         } else {
           if (voteEnd) {
             const voteData = await db.select(
