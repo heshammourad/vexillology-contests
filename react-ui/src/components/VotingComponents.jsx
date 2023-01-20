@@ -1,11 +1,11 @@
 import RedditLogInDialog from './RedditLogInDialog';
-import VotingErrorSnackbar from './VotingErrorSnackbar';
+import VotingSnackbar from './VotingSnackbar';
 
 function VotingComponents() {
   return (
     <>
       <RedditLogInDialog />
-      <VotingErrorSnackbar />
+      <VotingSnackbar />
     </>
   );
 }

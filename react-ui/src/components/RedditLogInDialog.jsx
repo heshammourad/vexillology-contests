@@ -12,7 +12,7 @@ function RedditLogInDialog() {
   const [{ redditLogInDialogOpen }, setComponentsState] = useComponentsState();
 
   const closeDialog = () => {
-    setComponentsState('redditLogInDialogOpen', false);
+    setComponentsState({ redditLogInDialogOpen: false });
   };
 
   const handleLogIn = () => {

@@ -111,12 +111,19 @@ function VotingSlider({
 
   useEffect(() => {
     if (isInteractive) {
-      setComponentsState('votingDisabled', isMutatingDelete || isMutatingPut);
+      setComponentsState({ votingDisabled: isMutatingDelete || isMutatingPut });
     }
   }, [isInteractive, isMutatingDelete, isMutatingPut]);
 
+  const showSnackbar = (severity) => {
+    setComponentsState({
+      votingSnackbarOpenTimestamp: Date.now(),
+      votingSnackbarSeverity: severity,
+    });
+  };
+
   const showError = () => {
-    setComponentsState('votingErrorSnackbarOpenTimestamp', Date.now());
+    showSnackbar('error');
   };
 
   const triggerOptions = (input) => ({
@@ -131,6 +138,7 @@ function VotingSlider({
       const newEntries = updateEntries(contest.entries, input);
       const newData = { ...contest, entries: newEntries };
       updateCache(newData);
+      showSnackbar('success');
       return newData;
     },
     onError: () => {
@@ -140,7 +148,7 @@ function VotingSlider({
 
   const handleSliderChange = async (event, newValue) => {
     if (!isLoggedIn) {
-      setComponentsState('redditLogInDialogOpen', true);
+      setComponentsState({ redditLogInDialogOpen: true });
       return;
     }
 

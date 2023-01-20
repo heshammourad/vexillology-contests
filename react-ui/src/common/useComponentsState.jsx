@@ -5,19 +5,20 @@ const usePersistedSettings = createPersistedState('votingComponents');
 const DEFAULT_STATE = {
   redditLogInDialogOpen: false,
   votingDisabled: false,
-  votingErrorSnackbarOpenTimestamp: null,
+  votingSnackbarOpenTimestamp: null,
+  votingSnackbarSeverity: null,
 };
 
 const useComponentsState = () => {
   const [state, setState] = usePersistedSettings(DEFAULT_STATE);
 
-  const updateState = (key, value) => {
-    if (!key) {
+  const updateState = (newStates) => {
+    if (!newStates) {
       setState(DEFAULT_STATE);
       return;
     }
 
-    setState({ ...state, [key]: value });
+    setState({ ...state, ...newStates });
   };
 
   return [state, updateState];
