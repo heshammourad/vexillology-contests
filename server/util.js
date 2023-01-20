@@ -8,7 +8,7 @@ const camelizeObjectKeys = (obj) => {
   logger.debug(`Camelizing ${JSON.stringify(obj)}`);
   const tmp = obj[0];
   if (!tmp) {
-    logger.warn('No object keys to camilize.');
+    logger.debug('No object keys to camilize.');
     return;
   }
 
