@@ -86,7 +86,7 @@ const useStyles = makeStyles((theme) => ({
   entryInfo: {
     display: 'flex',
     flexGrow: 1,
-    paddingTop: 2,
+    paddingTop: 4,
   },
   entryRatings: {
     display: 'flex',
@@ -283,33 +283,40 @@ function Contest() {
 
   const classes = useStyles();
 
-  const getGridVariables = () => {
-    let spacing = 2;
+  const getGridVariables = (fullWidth) => {
     const xs = 12;
     let sm = 12;
     let md = 6;
     let lg = 4;
-    if (density === 'compact') {
-      spacing = 1;
+
+    if (fullWidth) {
+      md = 12;
+      lg = 12;
+    } else if (density === 'compact') {
       sm = 6;
       md = 4;
       lg = 3;
     }
+
     return {
-      spacing,
       xs,
       sm,
       md,
       lg,
     };
   };
-  const {
-    spacing, xs, sm, md, lg,
-  } = getGridVariables();
 
   const headingVariant = isSmUp ? 'h3' : 'h5';
   const {
-    date, entries, name, subtext, validRedditId, voteEnd, winners, winnersThreadId,
+    date,
+    entries,
+    localVoting,
+    name,
+    subtext,
+    validRedditId,
+    voteEnd,
+    winners,
+    winnersThreadId,
   } = contest;
   const voteEndDate = new Date(voteEnd);
   const allowVoting = voteEnd && isFuture(voteEndDate);
@@ -324,21 +331,19 @@ function Contest() {
         color: 'default',
         right: (
           <>
-            {validRedditId && (
-              <>
-                <CustomIconButton
-                  href={`https://redd.it/${contestId}`}
-                  ariaLabel="Open voting thread"
-                  Icon={ThumbsUpDownOutlinedIcon}
-                />
-                {winnersThreadId && (
-                  <CustomIconButton
-                    href={`https://redd.it/${winnersThreadId}`}
-                    ariaLabel="Open winners thread"
-                    Icon={EmojiEventsOutlinedIcon}
-                  />
-                )}
-              </>
+            {!localVoting && validRedditId && (
+              <CustomIconButton
+                href={`https://redd.it/${contestId}`}
+                ariaLabel="Open voting thread"
+                Icon={ThumbsUpDownOutlinedIcon}
+              />
+            )}
+            {winnersThreadId && (
+              <CustomIconButton
+                href={`https://redd.it/${winnersThreadId}`}
+                ariaLabel="Open winners thread"
+                Icon={EmojiEventsOutlinedIcon}
+              />
             )}
             <CustomIconButton
               ariaLabel="View settings"
@@ -470,7 +475,7 @@ function Contest() {
             </>
           )}
           {entries && (
-            <Grid container spacing={spacing}>
+            <Grid container spacing={density === 'compact' ? 1 : 2}>
               {entries.map(
                 ({
                   average,
@@ -484,7 +489,8 @@ function Contest() {
                   user,
                   width,
                 }) => (
-                  <Grid key={id} item xs={xs} sm={sm} md={md} lg={lg}>
+                  // eslint-disable-next-line react/jsx-props-no-spreading
+                  <Grid key={id} item {...getGridVariables(rank === '1')}>
                     <Card id={id} className={classes.entry}>
                       <CardContent className={classes.entryHeading}>
                         {rank && (
@@ -514,7 +520,7 @@ function Contest() {
                       </CardContent>
                       <div className={classes.entryImageContainer}>
                         <CardImageLink
-                          displayWidth={gridDisplayWidth}
+                          displayWidth={rank === '1' ? winnerDisplayWidth : gridDisplayWidth}
                           height={height}
                           id={id}
                           image={imgurLink}

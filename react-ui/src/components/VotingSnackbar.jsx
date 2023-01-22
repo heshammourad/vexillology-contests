@@ -44,11 +44,13 @@ function VotingSnackbar() {
       anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       autoHideDuration={6000}
       onClose={handleClose}
-      open={isOpen}
+      open={isOpen && votingSnackbarSeverity}
     >
-      <Alert onClose={handleClose} severity={votingSnackbarSeverity}>
-        {getMessage()}
-      </Alert>
+      {votingSnackbarSeverity && (
+        <Alert onClose={handleClose} severity={votingSnackbarSeverity}>
+          {getMessage()}
+        </Alert>
+      )}
     </Snackbar>
   );
 }

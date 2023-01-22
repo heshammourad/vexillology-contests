@@ -12,7 +12,6 @@ function CardImageLink({
     <RouterLink
       onClick={onClick}
       state={{ back: (state || {}).back, isFromContest: true }}
-      style={{ textDecoration: 'none' }}
       to={`entry/${id}`}
     >
       <CardActionArea>
