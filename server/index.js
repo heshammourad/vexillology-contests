@@ -436,7 +436,7 @@ if (!isDev && cluster.isMaster) {
             response.entries,
             ({ rank }) => rank && rank <= LAST_WINNER_RANK,
           );
-          response.entries = entries;
+          response.entries = entries.map(({ rank, user, ...entry }) => entry);
           if (winners.length) {
             response.winners = winners.sort((a, b) => a.rank - b.rank);
           }
