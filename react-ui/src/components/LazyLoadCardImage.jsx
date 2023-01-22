@@ -7,10 +7,10 @@ function LazyLoadCardImage({
 }) {
   const displayHeight = Math.floor((height * displayWidth) / width);
   const maxHeight = displayWidth * 0.75;
-  const actualHeght = Math.min(displayHeight, maxHeight);
+  const actualHeight = Math.min(displayHeight, maxHeight);
   return (
-    <div style={{ height: actualHeght }}>
-      <LazyLoad height={actualHeght} offset={1080} resize>
+    <div style={{ height: actualHeight }}>
+      <LazyLoad height={actualHeight} offset={1080} resize>
         <CardMedia
           component="img"
           image={image}
