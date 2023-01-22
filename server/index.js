@@ -443,6 +443,17 @@ if (!isDev && cluster.isMaster) {
         }
 
         res.send(response);
+
+        try {
+          const updateData = response.entries.map(({ description, imgurId, name: entryName }) => ({
+            description,
+            id: imgurId,
+            name: entryName,
+          }));
+          await db.update('entries', updateData, ['?id', 'description', 'name']);
+        } catch (err) {
+          logger.error(`Unable to update db: ${err}`);
+        }
       } catch (err) {
         logger.error(`Error getting /contest/${id}: ${err})}`);
         res.status(500).send();
