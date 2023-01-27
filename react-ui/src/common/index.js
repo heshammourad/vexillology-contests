@@ -1,3 +1,4 @@
+export { uploadFile } from './firebase';
 export { default as useAuthState } from './useAuthState';
 export { default as useClientWidth } from './useClientWidth';
 export { default as useComponentsState } from './useComponentsState';
