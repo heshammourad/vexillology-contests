@@ -23,7 +23,6 @@ import EmojiEventsOutlinedIcon from '@material-ui/icons/EmojiEventsOutlined';
 import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
 import ThumbsUpDownOutlinedIcon from '@material-ui/icons/ThumbsUpDownOutlined';
 import clsx from 'clsx';
-import isFuture from 'date-fns/isFuture';
 import React, { useState, useEffect } from 'react';
 import { forceCheck } from 'react-lazyload';
 import { useLocation, useParams } from 'react-router-dom';
@@ -290,11 +289,6 @@ const useStyles = makeStyles((theme) => {
       columnGap: 8,
       display: 'flex',
     },
-    winnerRatings: {
-      flexShrink: 0,
-      paddingTop: 4,
-      textAlign: 'end',
-    },
   };
   LABEL_COLORS.forEach((label, index) => {
     styles[`label${index}`] = label;
@@ -325,12 +319,13 @@ let scrollingIntervalId;
 function Contest() {
   const { contestId } = useParams();
   const [scroll, setScroll] = useScrollState();
-  const [contest] = useSwrData(`/contests/${contestId}`, !!scroll.entryId);
+  const [contest, updateCache] = useSwrData(`/contests/${contestId}`, !!scroll.entryId);
 
   const { state = {} } = useLocation();
   const [isLoaded, setLoaded] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState(state?.selectedCategories ?? []);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
+  const [votingExpired, setVotingExpired] = useState(false);
   const [{ votingDisabled }, setComponentsState] = useComponentsState();
 
   const updateScroll = () => {
@@ -418,6 +413,17 @@ function Contest() {
 
   const backLink = (state || {}).back || '/contests';
 
+  const handleVotingExpired = () => {
+    updateCache(null);
+    setVotingExpired(true);
+  };
+
+  const handleReload = () => {
+    setLoaded(false);
+    scrollInstantlyTo(0);
+    window.location.reload();
+  };
+
   const theme = useTheme();
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
@@ -468,10 +474,14 @@ function Contest() {
   };
 
   const headingVariant = isSmUp ? 'h3' : 'h5';
+
+  const votingUnavailable = votingDisabled || votingExpired;
+
   const {
     categories,
     date,
     entries,
+    isContestMode,
     localVoting,
     name,
     subtext,
@@ -481,7 +491,6 @@ function Contest() {
     winnersThreadId,
   } = contest;
   const voteEndDate = new Date(voteEnd);
-  const allowVoting = voteEnd && isFuture(voteEndDate);
 
   const getLabelStyle = (category) => classes[`label${categories.indexOf(category) % LABEL_COLORS.length}`];
   return (
@@ -519,9 +528,13 @@ function Contest() {
         children: (
           <>
             <ArrowBackButton state={{ date }} to={backLink} />
-            {allowVoting && (
-              <Box display="inline-flex" padding={1.5}>
-                <VotingCountdown voteEndDate={voteEndDate} />
+            {isContestMode && (
+              <Box display="inline-flex" paddingLeft={1.5}>
+                <VotingCountdown
+                  handleExpiry={handleVotingExpired}
+                  handleReload={handleReload}
+                  voteEndDate={voteEndDate}
+                />
               </Box>
             )}
           </>
@@ -576,7 +589,7 @@ function Contest() {
           <Typography className={classes.heading} variant={headingVariant} component="h1">
             {name}
           </Typography>
-          {allowVoting && subtext && (
+          {isContestMode && subtext && (
             <Box marginBottom={3}>
               <Typography component="div" variant="subtitle1">
                 <HtmlWrapper html={subtext} />
@@ -638,162 +651,115 @@ function Contest() {
           {winners && winners.length > 0 && (
             <>
               <Subheader>Top 20</Subheader>
-              {winners.map(
-                ({
-                  average,
-                  height,
-                  id,
-                  imgurLink,
-                  name: entryName,
-                  rank,
-                  rating,
-                  user,
-                  width,
-                }) => (
-                  <React.Fragment key={id}>
-                    <div id={id} className={classes.winnerHeading}>
-                      <Typography variant={headingVariant}>
-                        <span className={classes.numberSymbol}>#</span>
-                        {rank}
+              {winners.map(({
+                height, id, imgurLink, name: entryName, rank, user, width,
+              }) => (
+                <React.Fragment key={id}>
+                  <div id={id} className={classes.winnerHeading}>
+                    <Typography variant={headingVariant}>
+                      <span className={classes.numberSymbol}>#</span>
+                      {rank}
+                    </Typography>
+                    <div className={classes.winnerContent}>
+                      <Typography variant="subtitle2">{entryName}</Typography>
+                      <Typography variant="caption">
+                        <RedditUserAttribution user={user} />
                       </Typography>
-                      <div className={classes.winnerContent}>
-                        <Typography variant="subtitle2">{entryName}</Typography>
-                        <Typography variant="caption">
-                          <RedditUserAttribution user={user} />
-                        </Typography>
-                      </div>
-                      <div className={classes.winnerRatings}>
-                        <Average average={average} />
-                        {rating > -1 && (
-                          <Typography className={classes.myRating} variant="caption">
-                            My&nbsp;rating:&nbsp;
-                            <FiveStar rating={rating} />
-                          </Typography>
-                        )}
-                      </div>
                     </div>
-                    <Card className={classes.winnerCard} elevation={2}>
-                      <CardImageLink
-                        displayWidth={winnerDisplayWidth}
-                        height={height}
-                        id={id}
-                        image={imgurLink}
-                        onClick={updateScroll}
-                        width={width}
-                      />
-                    </Card>
-                  </React.Fragment>
-                ),
-              )}
+                  </div>
+                  <Card className={classes.winnerCard} elevation={2}>
+                    <CardImageLink
+                      displayWidth={winnerDisplayWidth}
+                      height={height}
+                      id={id}
+                      image={imgurLink}
+                      onClick={updateScroll}
+                      width={width}
+                    />
+                  </Card>
+                </React.Fragment>
+              ))}
               <Divider className={classes.divider} />
               <Subheader>All other entries</Subheader>
             </>
           )}
           {entries && (
             <Grid container spacing={density === 'compact' ? 1 : 2}>
-              {entries
-                .filter(
-                  // eslint-disable-next-line max-len
-                  ({ category }) => !selectedCategories.length || selectedCategories.includes(category),
-                )
-                .map(
-                  ({
-                    average,
-                    category,
-                    categoryRank,
-                    id,
-                    imgurId,
-                    imgurLink,
-                    height,
-                    name: entryName,
-                    rank,
-                    rating,
-                    user,
-                    width,
-                  }) => (
-                    // eslint-disable-next-line react/jsx-props-no-spreading
-                    <Grid key={id} item {...getGridVariables(rank === '1')}>
-                      <Card id={id} className={classes.entry}>
-                        <CardContent className={classes.entryHeading}>
-                          {rank && (
-                            <Typography component="div" variant="h6">
-                              <span className={classes.numberSymbol}>#</span>
-                              {rank}
+              {entries.map(
+                ({
+                  average,
+                  id,
+                  imgurId,
+                  imgurLink,
+                  height,
+                  name: entryName,
+                  rank,
+                  rating,
+                  user,
+                  width,
+                }) => (
+                  // eslint-disable-next-line react/jsx-props-no-spreading
+                  <Grid key={id} item {...getGridVariables(rank === '1')}>
+                    <Card id={id} className={classes.entry}>
+                      <CardContent className={classes.entryHeading}>
+                        {rank && (
+                          <Typography component="div" variant="h6">
+                            <span className={classes.numberSymbol}>#</span>
+                            {rank}
+                          </Typography>
+                        )}
+                        <div className={clsx({ [classes.entryInfo]: !!rank })}>
+                          <div>
+                            <Typography component="div" variant="subtitle2">
+                              {entryName}
                             </Typography>
-                          )}
-                          <div className={classes.entryInfo}>
-                            <div>
-                              <Typography component="div" variant="subtitle2">
-                                {entryName}
+                            {user && (
+                              <Typography variant="caption">
+                                <RedditUserAttribution user={user} />
                               </Typography>
-                              {user && (
-                                <Typography variant="caption">
-                                  <RedditUserAttribution user={user} />
+                            )}
+                          </div>
+                          {!isContestMode && (
+                            <div className={classes.entryRatings}>
+                              <Average average={average} fullText={rank === '1'} />
+                              {rating > -1 && (
+                                <Typography className={classes.myRating} variant="caption">
+                                  {rank === '1' && <span>My&nbsp;rating:&nbsp;</span>}
+                                  <FiveStar rating={rating} />
                                 </Typography>
                               )}
                             </div>
-                            {(!allowVoting || category) && (
-                              <div className={classes.entryRatings}>
-                                {category && (
-                                  <div>
-                                    <div
-                                      className={clsx(
-                                        classes.categoryLabel,
-                                        getLabelStyle(category),
-                                      )}
-                                    >
-                                      <Typography variant="caption">
-                                        {categoryRank && (
-                                          <span>
-                                            #
-                                            {categoryRank}
-                                            &nbsp;
-                                          </span>
-                                        )}
-                                        {category}
-                                      </Typography>
-                                    </div>
-                                  </div>
-                                )}
-                                {!allowVoting && (
-                                  <>
-                                    <Average average={average} fullText={false} />
-                                    {rating > -1 && <FiveStar rating={rating} />}
-                                  </>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </CardContent>
-                        <div className={classes.entryImageContainer}>
-                          <CardImageLink
-                            displayWidth={rank === '1' ? winnerDisplayWidth : gridDisplayWidth}
-                            height={height}
-                            id={id}
-                            image={imgurLink}
-                            nextState={{ selectedCategories }}
-                            onClick={updateScroll}
-                            width={width}
-                          />
+                          )}
                         </div>
-                        {allowVoting && (
-                          <CardActions
-                            className={clsx(classes.votingSlider, {
-                              [classes.disabledVoting]: votingDisabled,
-                            })}
-                          >
-                            <VotingSlider
-                              disabled={votingDisabled}
-                              entryId={imgurId}
-                              rating={rating}
-                              setComponentsState={setComponentsState}
-                            />
-                          </CardActions>
-                        )}
-                      </Card>
-                    </Grid>
-                  ),
-                )}
+                      </CardContent>
+                      <div className={classes.entryImageContainer}>
+                        <CardImageLink
+                          displayWidth={rank === '1' ? winnerDisplayWidth : gridDisplayWidth}
+                          height={height}
+                          id={id}
+                          image={imgurLink}
+                          onClick={updateScroll}
+                          width={width}
+                        />
+                      </div>
+                      {isContestMode && (
+                        <CardActions
+                          className={clsx(classes.votingSlider, {
+                            [classes.disabledVoting]: votingDisabled,
+                          })}
+                        >
+                          <VotingSlider
+                            disabled={votingUnavailable}
+                            entryId={imgurId}
+                            rating={rating}
+                            setComponentsState={setComponentsState}
+                          />
+                        </CardActions>
+                      )}
+                    </Card>
+                  </Grid>
+                ),
+              )}
             </Grid>
           )}
         </Container>
