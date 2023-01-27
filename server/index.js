@@ -21,6 +21,7 @@ const { camelizeObjectKeys } = require('./util');
 const logger = createLogger('INDEX');
 
 const {
+  CONTESTS_AVERAGE_FORMAT = '0.000',
   CONTESTS_CACHE_TIMEOUT = 3600,
   ENV_LEVEL,
   NODE_ENV,
@@ -422,7 +423,7 @@ if (!isDev && cluster.isMaster) {
           );
           const map = new Map();
           voteData.forEach(({ average, entryId, rank }) => {
-            map.set(entryId, { average: numeral(average).format('0.00'), rank });
+            map.set(entryId, { average: numeral(average).format(CONTESTS_AVERAGE_FORMAT), rank });
           });
           response.entries.forEach((entry) => {
             map.set(entry.imgurId, {
