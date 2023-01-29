@@ -106,7 +106,7 @@ const useStyles = makeStyles((theme) => ({
 function Entry() {
   const { contestId, entryId } = useParams();
   const [{
-    entries = [], requestId, validRedditId, voteEnd, winners = [],
+    entries = [], localVoting, requestId, voteEnd, winners = [],
   }] = useSwrData(
     `/contests/${contestId}`,
   );
@@ -316,7 +316,7 @@ function Entry() {
           className: classes.appBar,
           right: entry.id && (
             <>
-              {validRedditId && (
+              {!localVoting && (
                 <CustomIconButton
                   innerRef={redditCommentButtonRef}
                   href={redditPermalink}
@@ -403,7 +403,7 @@ function Entry() {
               <HtmlWrapper html={entry.description} />
               <DrawerSectionHeader>Links</DrawerSectionHeader>
               <List>
-                {validRedditId && (
+                {!localVoting && (
                   <ListItemButton
                     href={redditPermalink}
                     Icon={RedditIcon}
