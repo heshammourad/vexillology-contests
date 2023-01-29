@@ -2,20 +2,22 @@ import CardMedia from '@material-ui/core/CardMedia';
 import PropTypes from 'prop-types';
 import LazyLoad from 'react-lazyload';
 
+const MAX_RATIO = 4 / 3;
+
 function LazyLoadCardImage({
   displayWidth, height, width, image,
 }) {
   const actualWidth = Math.min(displayWidth, width);
-  const displayHeight = Math.floor((height * actualWidth) / width);
+  const maxHeight = Math.min(actualWidth / MAX_RATIO, Math.ceil((height * actualWidth) / width));
   return (
-    <div style={{ height: displayHeight }}>
-      <LazyLoad height={displayHeight} offset={1080} resize>
+    <div style={{ maxHeight }}>
+      <LazyLoad height={maxHeight} offset={1080} resize>
         <CardMedia
           component="img"
           image={image}
           style={{
             height: '100%',
-            maxHeight: displayHeight,
+            maxHeight,
             maxWidth: displayWidth,
             width: '100%',
           }}
