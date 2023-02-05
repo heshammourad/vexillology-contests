@@ -13,6 +13,7 @@ import { useRef, useState } from 'react';
 
 import { getData } from '../api';
 import { useAuthState, useRedditLogIn } from '../common';
+import types from '../common/types';
 
 const useStyles = makeStyles((theme) => ({
   accountMenu: {
@@ -33,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function AccountMenu() {
+function AccountMenu({ color }) {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const anchorRef = useRef(null);
   const classes = useStyles();
@@ -71,7 +72,7 @@ function AccountMenu() {
       <IconButton
         aria-controls={isMenuOpen ? 'accountMenu' : undefined}
         aria-haspopup="true"
-        color="inherit"
+        color={color}
         onClick={toggleMenu}
         ref={anchorRef}
       >
@@ -122,5 +123,13 @@ function AccountMenu() {
     </>
   );
 }
+
+AccountMenu.propTypes = {
+  color: types.color,
+};
+
+AccountMenu.defaultProps = {
+  color: 'default',
+};
 
 export default AccountMenu;

@@ -74,6 +74,7 @@ function PageWithDrawer({
   return (
     <div className={clsx(classes.root, className)}>
       <AppBarDivided
+        accountMenuColor={appBar.accountMenuColor}
         className={clsx(classes.appBar, appBar.className, {
           [classes.appBarShift]: isOpen,
         })}

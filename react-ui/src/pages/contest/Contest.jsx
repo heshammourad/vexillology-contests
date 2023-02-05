@@ -31,7 +31,6 @@ import {
   useComponentsState,
 } from '../../common';
 import {
-  AccountMenu,
   ArrowBackButton,
   Average,
   CustomIconButton,
@@ -350,7 +349,6 @@ function Contest() {
               onClick={toggleSettingsOpen}
               Icon={SettingsOutlinedIcon}
             />
-            <AccountMenu />
           </>
         ),
         children: (

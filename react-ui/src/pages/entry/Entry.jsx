@@ -20,7 +20,6 @@ import {
   useScrollState, useSettingsState, useSwrData, useComponentsState,
 } from '../../common';
 import {
-  AccountMenu,
   ArrowBackButton,
   Average,
   CustomIconButton,
@@ -313,6 +312,7 @@ function Entry() {
         className={classes.root}
         appBar={{
           position: 'fixed',
+          accountMenuColor: 'inherit',
           className: classes.appBar,
           right: entry.id && (
             <>
@@ -335,7 +335,6 @@ function Entry() {
                 onClick={toggleInfoDrawerOpen}
                 Icon={InfoOutlinedIcon}
               />
-              <AccountMenu />
             </>
           ),
           children: (

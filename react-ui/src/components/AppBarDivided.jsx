@@ -4,24 +4,26 @@ import Toolbar from '@material-ui/core/Toolbar';
 
 import { defaultProps, objects } from '../common/types';
 
+import AccountMenu from './AccountMenu';
 import ElevationScroll from './ElevationScroll';
 
 function AppBarDivided({
+  accountMenuColor,
   children,
   className,
   color,
-  disableGutters,
   isElevationScroll,
   position,
   right,
 }) {
   const appBar = (
     <AppBar className={className} color={color} position={position}>
-      <Toolbar disableGutters={disableGutters}>
-        <Box display="flex" flexGrow={1}>
+      <Toolbar>
+        <Box display="flex" alignItems="center" flexGrow={1}>
           {children}
         </Box>
         {right}
+        <AccountMenu color={accountMenuColor} />
       </Toolbar>
     </AppBar>
   );
