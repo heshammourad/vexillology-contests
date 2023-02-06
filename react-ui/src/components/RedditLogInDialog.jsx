@@ -30,7 +30,7 @@ function RedditLogInDialog() {
       <DialogTitle id="reddit-log-in-dialog-title">Log in to Reddit?</DialogTitle>
       <DialogContent>
         <DialogContentText id="reddit-log-in-dialog-description">
-          You must be logged in to Reddit to vote on contests.
+          You must be logged in to Reddit to vote on contests
         </DialogContentText>
       </DialogContent>
       <DialogActions>

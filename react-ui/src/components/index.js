@@ -17,6 +17,7 @@ export { default as LazyLoadCardImage } from './LazyLoadCardImage';
 export { default as ListItemButton } from './ListItemButton';
 export { default as ListItemLink } from './ListItemLink';
 export { default as PageWithDrawer } from './PageWithDrawer';
+export { default as ProtectedRoute } from './ProtectedRoute';
 export { default as RedditLogInDialog } from './RedditLogInDialog';
 export { default as RedditUserAttribution } from './RedditUserAttribution';
 export { default as VotingComponents } from './VotingComponents';
