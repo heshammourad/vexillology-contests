@@ -184,10 +184,6 @@ function Contest() {
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [{ votingDisabled }, setComponentsState] = useComponentsState();
 
-  useEffect(() => {
-    setComponentsState();
-  }, []);
-
   const updateScroll = () => {
     setScroll({
       y: window.scrollY,

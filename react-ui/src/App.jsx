@@ -45,8 +45,8 @@ function App() {
           }}
         >
           <div className="app">
-            <AppHelmet />
             <BrowserRouter>
+              <AppHelmet />
               <Routes>
                 <Route exact path="/" element={<Navigate replace to="home" />} />
                 <Route exact path="/authorizeCallback" element={<AuthorizeCallback />} />

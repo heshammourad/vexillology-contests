@@ -82,6 +82,8 @@ function Settings() {
     });
   };
 
+  const { contestReminders = false } = data;
+
   const classes = useStyles();
   return (
     <>
@@ -102,7 +104,7 @@ function Settings() {
               </div>
               <div className={classes.control}>
                 <CustomSwitch
-                  checked={data.contestReminders}
+                  checked={contestReminders}
                   disabled={isMutating}
                   name="contestReminders"
                   onChange={handleSwitchChange}

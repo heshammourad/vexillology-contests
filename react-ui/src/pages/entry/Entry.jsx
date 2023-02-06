@@ -201,8 +201,6 @@ function Entry() {
 
   const navigationVisibleTimeoutRef = useRef(null);
   useEffect(() => {
-    setComponentsState();
-
     navigationVisibleTimeoutRef.current = setTimeout(() => {
       hideNavigation();
     }, 3000);
