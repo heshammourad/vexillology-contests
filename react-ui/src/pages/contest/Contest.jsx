@@ -40,8 +40,8 @@ import {
   FmpIcon,
   HtmlWrapper,
   PageWithDrawer,
+  RedditLogInDialog,
   RedditUserAttribution,
-  VotingComponents,
   VotingCountdown,
   VotingSlider,
 } from '../../components';
@@ -548,7 +548,7 @@ function Contest() {
           )}
         </Container>
       )}
-      <VotingComponents />
+      <RedditLogInDialog />
     </PageWithDrawer>
   );
 }

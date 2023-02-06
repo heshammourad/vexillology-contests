@@ -8,7 +8,8 @@ import { useParams } from 'react-router-dom';
 import useSWRMutation from 'swr/mutation';
 
 import { deleteData, putData } from '../api';
-import { useAuthState, useSwrData } from '../common';
+import { useAuthState, useSnackbarState, useSwrData } from '../common';
+import snackbarTypes from '../common/snackbarTypes';
 
 const MIN_SCORE = 0;
 const MAX_SCORE = 5;
@@ -107,6 +108,8 @@ function VotingSlider({
     (_, { arg }) => deleteData(URL, arg, authTokens),
   );
 
+  const updateSnackbarState = useSnackbarState();
+
   const classes = useStyles();
 
   useEffect(() => {
@@ -115,15 +118,8 @@ function VotingSlider({
     }
   }, [isInteractive, isMutatingDelete, isMutatingPut]);
 
-  const showSnackbar = (severity) => {
-    setComponentsState({
-      votingSnackbarOpenTimestamp: Date.now(),
-      votingSnackbarSeverity: severity,
-    });
-  };
-
   const showError = () => {
-    showSnackbar('error');
+    updateSnackbarState(snackbarTypes.VOTING_ERROR);
   };
 
   const triggerOptions = (input) => ({
@@ -138,7 +134,7 @@ function VotingSlider({
       const newEntries = updateEntries(contest.entries, input);
       const newData = { ...contest, entries: newEntries };
       updateCache(newData);
-      showSnackbar('success');
+      updateSnackbarState(snackbarTypes.VOTING_SUCCESS);
       return newData;
     },
     onError: () => {

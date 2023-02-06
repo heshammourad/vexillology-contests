@@ -4,9 +4,8 @@ const usePersistedSettings = createPersistedState('votingComponents');
 
 const DEFAULT_STATE = {
   redditLogInDialogOpen: false,
+  snackbar: {},
   votingDisabled: false,
-  votingSnackbarOpenTimestamp: null,
-  votingSnackbarSeverity: null,
 };
 
 const useComponentsState = () => {

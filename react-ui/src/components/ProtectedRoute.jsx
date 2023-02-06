@@ -1,27 +1,39 @@
 import Button from '@material-ui/core/Button';
+import Typography from '@material-ui/core/Typography';
+import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
 
 import { useAuthState, useRedditLogIn } from '../common';
 
+import InternalLink from './InternalLink';
+
+const useStyles = makeStyles({
+  link: {
+    '&:hover': {
+      textDecoration: 'none',
+    },
+  },
+  message: {
+    marginBottom: 16,
+  },
+});
+
 function ProtectedRoute({ children }) {
   const [{ isLoggedIn }] = useAuthState();
-  const navigate = useNavigate();
   const sendUserToAuthUrl = useRedditLogIn();
+
+  const classes = useStyles();
 
   if (!isLoggedIn) {
     return (
       <>
-        <div>You must be logged in to access this page</div>
-        <Button
-          onClick={() => {
-            navigate('/');
-          }}
-          color="primary"
-        >
-          Return home
+        <Typography className={classes.message}>You must be signed in to view this page</Typography>
+        <Button color="primary">
+          <InternalLink className={classes.link} to="/home">
+            Cancel
+          </InternalLink>
         </Button>
-        <Button onClick={sendUserToAuthUrl} color="primary" autoFocus>
+        <Button color="primary" onClick={sendUserToAuthUrl}>
           Log In
         </Button>
       </>

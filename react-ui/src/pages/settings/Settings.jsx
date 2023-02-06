@@ -4,7 +4,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import useSWRMutation from 'swr/mutation';
 
 import { putData } from '../../api';
-import { useAuthState, useSwrData } from '../../common';
+import { useAuthState, useSnackbarState, useSwrData } from '../../common';
+import snackbarTypes from '../../common/snackbarTypes';
 import { CustomSwitch, Header, ProtectedRoute } from '../../components';
 
 const URL = '/settings';
@@ -53,6 +54,12 @@ function Settings() {
   // eslint-disable-next-line max-len
   const { isMutating, trigger } = useSWRMutation([URL, authTokens], (_, { arg }) => putData(URL, arg, authTokens));
 
+  const updateSnackbarState = useSnackbarState();
+
+  const showError = () => {
+    updateSnackbarState(snackbarTypes.SETTINGS_ERROR);
+  };
+
   const handleSwitchChange = (event) => {
     const settings = { [event.target.name]: event.target.checked };
     trigger(settings, {
@@ -60,17 +67,17 @@ function Settings() {
       revalidate: false,
       populateCache: (response, current) => {
         if (!response) {
-          // TODO: Show error
+          showError();
           return current;
         }
 
         const newData = { ...data, ...settings };
         updateCache(newData);
-        // TODO: Show success snackbar
+        updateSnackbarState(snackbarTypes.SETTINGS_SUCCESS);
         return newData;
       },
       onError: () => {
-        // TODO: Show error
+        showError();
       },
     });
   };

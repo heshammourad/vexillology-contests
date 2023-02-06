@@ -6,7 +6,7 @@ import {
 import { SWRConfig } from 'swr';
 
 import { getData } from './api';
-import { AppHelmet } from './components';
+import { AppHelmet, CustomSnackbar } from './components';
 import {
   AuthorizeCallback, Contest, Contests, Entry, HallOfFame, Home, Settings,
 } from './pages';
@@ -58,6 +58,7 @@ function App() {
                 <Route exact path="/profile/settings" element={<Settings />} />
               </Routes>
             </BrowserRouter>
+            <CustomSnackbar />
           </div>
         </SWRConfig>
       </ThemeProvider>

@@ -50,6 +50,7 @@
         ],
         "patterns": [
           "**/common/*",
+          "!**/common/snackbarTypes",
           "!**/common/types",
           "**/components/*",
           "**/pages/*"

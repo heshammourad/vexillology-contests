@@ -4,4 +4,5 @@ export { default as useComponentsState } from './useComponentsState';
 export { default as useRedditLogIn } from './useRedditLogIn';
 export { default as useScrollState } from './useScrollState';
 export { default as useSettingsState } from './useSettingsState';
+export { default as useSnackbarState } from './useSnackbarState';
 export { default as useSwrData } from './useSwrData';

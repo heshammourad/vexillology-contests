@@ -28,8 +28,8 @@ import {
   HtmlWrapper,
   ListItemButton,
   PageWithDrawer,
+  RedditLogInDialog,
   RedditUserAttribution,
-  VotingComponents,
   VotingCountdown,
   VotingSlider,
 } from '../../components';
@@ -458,7 +458,7 @@ function Entry() {
           )}
         </Box>
       </PageWithDrawer>
-      <VotingComponents />
+      <RedditLogInDialog />
     </>
   );
 }
