@@ -1,8 +1,13 @@
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
+import useSWRMutation from 'swr/mutation';
 
+import { putData } from '../../api';
+import { useAuthState, useSwrData } from '../../common';
 import { CustomSwitch, Header, ProtectedRoute } from '../../components';
+
+const URL = '/settings';
 
 const useStyles = makeStyles((theme) => {
   const border = `1px solid ${theme.palette.grey.A100}`;
@@ -41,6 +46,35 @@ const useStyles = makeStyles((theme) => {
 });
 
 function Settings() {
+  const [{ accessToken, isLoggedIn, refreshToken }] = useAuthState();
+  const authTokens = { accessToken, refreshToken };
+
+  const [data, updateCache] = useSwrData(isLoggedIn ? URL : null);
+  // eslint-disable-next-line max-len
+  const { isMutating, trigger } = useSWRMutation([URL, authTokens], (_, { arg }) => putData(URL, arg, authTokens));
+
+  const handleSwitchChange = (event) => {
+    const settings = { [event.target.name]: event.target.checked };
+    trigger(settings, {
+      optimisticData: (current) => ({ ...current, ...settings }),
+      revalidate: false,
+      populateCache: (response, current) => {
+        if (!response) {
+          // TODO: Show error
+          return current;
+        }
+
+        const newData = { ...data, ...settings };
+        updateCache(newData);
+        // TODO: Show success snackbar
+        return newData;
+      },
+      onError: () => {
+        // TODO: Show error
+      },
+    });
+  };
+
   const classes = useStyles();
   return (
     <>
@@ -60,7 +94,12 @@ function Settings() {
                 </Typography>
               </div>
               <div className={classes.control}>
-                <CustomSwitch />
+                <CustomSwitch
+                  checked={data.contestReminders}
+                  disabled={isMutating}
+                  name="contestReminders"
+                  onChange={handleSwitchChange}
+                />
               </div>
             </div>
           </div>

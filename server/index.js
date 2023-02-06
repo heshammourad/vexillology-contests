@@ -542,7 +542,7 @@ if (!isDev && cluster.isMaster) {
     })
     .put(async ({ body: { contestReminders }, headers }, res) => {
       try {
-        if (!contestReminders) {
+        if (typeof contestReminders !== 'boolean') {
           res.status(400).send('contestReminders must be populated');
           return;
         }
