@@ -20,7 +20,6 @@ import {
   useScrollState, useSettingsState, useSwrData, useComponentsState,
 } from '../../common';
 import {
-  AccountMenu,
   ArrowBackButton,
   Average,
   CustomIconButton,
@@ -29,8 +28,8 @@ import {
   HtmlWrapper,
   ListItemButton,
   PageWithDrawer,
+  RedditLogInDialog,
   RedditUserAttribution,
-  VotingComponents,
   VotingCountdown,
   VotingSlider,
 } from '../../components';
@@ -202,8 +201,6 @@ function Entry() {
 
   const navigationVisibleTimeoutRef = useRef(null);
   useEffect(() => {
-    setComponentsState();
-
     navigationVisibleTimeoutRef.current = setTimeout(() => {
       hideNavigation();
     }, 3000);
@@ -313,6 +310,7 @@ function Entry() {
         className={classes.root}
         appBar={{
           position: 'fixed',
+          accountMenuColor: 'inherit',
           className: classes.appBar,
           right: entry.id && (
             <>
@@ -335,7 +333,6 @@ function Entry() {
                 onClick={toggleInfoDrawerOpen}
                 Icon={InfoOutlinedIcon}
               />
-              <AccountMenu />
             </>
           ),
           children: (
@@ -459,7 +456,7 @@ function Entry() {
           )}
         </Box>
       </PageWithDrawer>
-      <VotingComponents />
+      <RedditLogInDialog />
     </>
   );
 }

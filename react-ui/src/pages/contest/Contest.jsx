@@ -31,7 +31,6 @@ import {
   useComponentsState,
 } from '../../common';
 import {
-  AccountMenu,
   ArrowBackButton,
   Average,
   CustomIconButton,
@@ -41,8 +40,8 @@ import {
   FmpIcon,
   HtmlWrapper,
   PageWithDrawer,
+  RedditLogInDialog,
   RedditUserAttribution,
-  VotingComponents,
   VotingCountdown,
   VotingSlider,
 } from '../../components';
@@ -184,10 +183,6 @@ function Contest() {
   const [isLoaded, setLoaded] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [{ votingDisabled }, setComponentsState] = useComponentsState();
-
-  useEffect(() => {
-    setComponentsState();
-  }, []);
 
   const updateScroll = () => {
     setScroll({
@@ -350,7 +345,6 @@ function Contest() {
               onClick={toggleSettingsOpen}
               Icon={SettingsOutlinedIcon}
             />
-            <AccountMenu />
           </>
         ),
         children: (
@@ -550,7 +544,7 @@ function Contest() {
           )}
         </Container>
       )}
-      <VotingComponents />
+      <RedditLogInDialog />
     </PageWithDrawer>
   );
 }

@@ -2,12 +2,14 @@ import {
   bool, node, oneOf, oneOfType, shape, string,
 } from 'prop-types';
 
+const color = oneOf(['default', 'inherit', 'primary', 'secondary', 'transparent']);
+
 export const objects = {
   AppBar: {
+    accountMenuColor: color,
     children: node.isRequired,
     className: string,
-    color: oneOf(['default', 'inherit', 'primary', 'secondary', 'transparent']),
-    disableGutters: bool,
+    color,
     isElevationScroll: bool,
     position: oneOf(['absolute', 'fixed', 'relative', 'static', 'sticky']),
     right: node,
@@ -16,9 +18,9 @@ export const objects = {
 
 export const defaultProps = {
   AppBar: {
+    accountMenuColor: 'default',
     className: undefined,
     color: 'primary',
-    disableGutters: false,
     isElevationScroll: false,
     position: 'fixed',
     right: null,
@@ -27,6 +29,7 @@ export const defaultProps = {
 
 const types = {
   AppBar: shape({ ...objects.AppBar }),
+  color,
   to: oneOfType([
     shape({
       pathname: string,
