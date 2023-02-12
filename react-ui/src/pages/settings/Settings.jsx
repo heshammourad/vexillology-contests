@@ -1,6 +1,7 @@
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
+import { useLocation } from 'react-router-dom';
 import useSWRMutation from 'swr/mutation';
 
 import { putData } from '../../api';
@@ -47,6 +48,7 @@ const useStyles = makeStyles((theme) => {
 });
 
 function Settings() {
+  const { state } = useLocation();
   const [{ accessToken, isLoggedIn, refreshToken }] = useAuthState();
   const authTokens = { accessToken, refreshToken };
 
@@ -87,7 +89,7 @@ function Settings() {
   const classes = useStyles();
   return (
     <>
-      <Header position="static" to="/home">
+      <Header position="static" to={state?.back ?? '/home'}>
         Settings
       </Header>
       <Container className={classes.container}>

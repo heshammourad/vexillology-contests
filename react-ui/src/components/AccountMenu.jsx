@@ -1,19 +1,25 @@
-import Button from '@material-ui/core/Button';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import Divider from '@material-ui/core/Divider';
 import Grow from '@material-ui/core/Grow';
 import IconButton from '@material-ui/core/IconButton';
+import ListItemText from '@material-ui/core/ListItemText';
+import MenuList from '@material-ui/core/MenuList';
 import Paper from '@material-ui/core/Paper';
 import Popper from '@material-ui/core/Popper';
-import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import AccountCircleOutlinedIcon from '@material-ui/icons/AccountCircleOutlined';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import RedditIcon from '@material-ui/icons/Reddit';
+import SettingsIcon from '@material-ui/icons/Settings';
 import { useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 import { getData } from '../api';
 import { useAuthState, useRedditLogIn } from '../common';
 import types from '../common/types';
+
+import MenuItemLink from './MenuItemLink';
 
 const useStyles = makeStyles((theme) => ({
   accountMenu: {
@@ -21,13 +27,7 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: 'column',
     rowGap: theme.spacing(1),
     padding: theme.spacing(2),
-  },
-  button: {
-    backgroundColor: theme.palette.vexyOrange.main,
-    color: theme.palette.common.white,
-    '&:hover': {
-      backgroundColor: theme.palette.vexyOrange.main,
-    },
+    width: 256,
   },
   username: {
     fontWeight: 'bold',
@@ -37,6 +37,7 @@ const useStyles = makeStyles((theme) => ({
 function AccountMenu({ color }) {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const anchorRef = useRef(null);
+  const { pathname } = useLocation();
   const classes = useStyles();
 
   const [{ isLoggedIn, refreshToken, username }, setAuthState] = useAuthState();
@@ -54,7 +55,14 @@ function AccountMenu({ color }) {
     setMenuOpen(false);
   };
 
-  const handleButtonClick = async () => {
+  const handleListKeyDown = (event) => {
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      setMenuOpen(false);
+    }
+  };
+
+  const handleAuthenticationAction = async () => {
     setMenuOpen(false);
     if (isLoggedIn) {
       try {
@@ -91,30 +99,44 @@ function AccountMenu({ color }) {
           <Grow {...TransitionProps}>
             <Paper>
               <ClickAwayListener onClickAway={closeMenu}>
-                <div className={classes.accountMenu} id="accountMenu">
-                  <Typography component="div" variant="subtitle1">
-                    {isLoggedIn ? (
-                      <>
-                        Logged in as
-                        {' '}
-                        <span className={classes.username}>{username}</span>
-                        .
-                      </>
-                    ) : (
-                      'Log in to vote on this contest.'
-                    )}
-                  </Typography>
-                  <Button
-                    className={classes.button}
-                    startIcon={<RedditIcon />}
-                    variant="contained"
-                    onClick={handleButtonClick}
-                  >
-                    Log
-                    {' '}
-                    {isLoggedIn ? 'Out' : 'In'}
-                  </Button>
-                </div>
+                <MenuList
+                  className={classes.accountMenu}
+                  autoFocusItem={isMenuOpen}
+                  id="accountMenu"
+                  onKeyDown={handleListKeyDown}
+                >
+                  {isLoggedIn ? (
+                    <>
+                      <ListItemText
+                        primary={(
+                          <>
+                            Logged in as
+                            {' '}
+                            <span className={classes.username}>{username}</span>
+                          </>
+                        )}
+                      />
+                      <Divider />
+                      <MenuItemLink
+                        Icon={SettingsIcon}
+                        state={{ back: pathname }}
+                        text="Settings"
+                        to="/profile/settings"
+                      />
+                      <MenuItemLink
+                        Icon={ExitToAppIcon}
+                        onClick={handleAuthenticationAction}
+                        text="Log Out"
+                      />
+                    </>
+                  ) : (
+                    <MenuItemLink
+                      Icon={RedditIcon}
+                      onClick={handleAuthenticationAction}
+                      text="Log In"
+                    />
+                  )}
+                </MenuList>
               </ClickAwayListener>
             </Paper>
           </Grow>
