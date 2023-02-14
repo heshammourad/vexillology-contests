@@ -81,6 +81,13 @@ const getContest = async (submissionId) => {
   return contest;
 };
 
+const getModerators = async () => {
+  logger.debug('Getting /r/vexillology moderators');
+  const moderators = await getSnoowrap().getSubreddit('vexillology').getModerators();
+  logger.debug(`Got moderators: '${JSON.stringify(moderators)}'`);
+  return moderators;
+};
+
 const getUser = async (auth) => {
   logger.debug('Getting username');
   const { name } = await getSnoowrap(auth).getMe();
@@ -125,6 +132,7 @@ const revokeRefreshToken = async (token) => {
 
 module.exports = {
   getContest,
+  getModerators,
   getUser,
   getWinners,
   retrieveAccessToken,

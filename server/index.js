@@ -445,6 +445,28 @@ if (!isDev && cluster.isMaster) {
     },
   );
 
+  router.get('/dataclips', async ({ headers }, res) => {
+    try {
+      const { accesstoken, refreshtoken } = headers;
+      if (!accesstoken || !refreshtoken) {
+        res.status(401).send('Missing authentication headers.');
+        return;
+      }
+
+      const username = await reddit.getUser(headers);
+      const moderators = await reddit.getModerators();
+      if (!moderators.some(({ name }) => name === username)) {
+        res.status(403).send('Must be a moderator to access resource.');
+        return;
+      }
+
+      res.status(200).send();
+    } catch (e) {
+      logger.error(`Error validating /dataclips request: ${e}`);
+      res.status(500).send();
+    }
+  });
+
   router.get('/hallOfFame', async (req, res) => {
     try {
       const result = await db.select('SELECT * FROM hall_of_fame');
@@ -522,7 +544,7 @@ if (!isDev && cluster.isMaster) {
         }
         next();
       } catch (e) {
-        logger.error(`Error validing /settings request: ${e}`);
+        logger.error(`Error validating /settings request: ${e}`);
         res.status(500).send();
       }
     })
