@@ -7,7 +7,7 @@ const color = oneOf(['default', 'inherit', 'primary', 'secondary', 'transparent'
 export const objects = {
   AppBar: {
     accountMenuColor: color,
-    children: node.isRequired,
+    children: node,
     className: string,
     color,
     isElevationScroll: bool,
@@ -19,6 +19,7 @@ export const objects = {
 export const defaultProps = {
   AppBar: {
     accountMenuColor: 'default',
+    children: null,
     className: undefined,
     color: 'primary',
     isElevationScroll: false,
