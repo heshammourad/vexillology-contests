@@ -345,7 +345,26 @@ if (!isDev && cluster.isMaster) {
           return;
         }
 
+        let categories = await db.select(
+          'SELECT category FROM contest_categories WHERE contest_id = $1 ORDER BY category',
+          [id],
+        );
+        if (categories.length) {
+          categories = categories.map(({ category }) => category);
+
+          const entryCategories = await db.select('SELECT entry_id, category FROM contest_entries WHERE contest_id = $1', [id]);
+          const map = new Map();
+          contest.entries.forEach((entry) => {
+            map.set(entry.imgurId, entry);
+          });
+          entryCategories.forEach(({ category, entryId }) => {
+            map.set(entryId, { ...map.get(entryId), category });
+          });
+          contest.entries = Array.from(map.values());
+        }
+
         const response = {
+          categories,
           date: date.toJSON().substr(0, 10),
           localVoting,
           name,
