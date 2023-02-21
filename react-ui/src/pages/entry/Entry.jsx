@@ -172,7 +172,7 @@ function Entry() {
     setEntry({});
 
     const { id } = allEntriesRef.current[entryIndexRef.current + indexChange];
-    navigate(`../${id}`, { relative: 'path', replace: true });
+    navigate(`../${id}`, { relative: 'path', replace: true, state });
   };
 
   const handleKeyUp = ({ key }) => {
@@ -212,7 +212,10 @@ function Entry() {
   }, []);
 
   useEffect(() => {
-    const allEntries = [...winners, ...entries];
+    const allEntries = [...winners, ...entries].filter(
+      // eslint-disable-next-line max-len
+      ({ category }) => !state?.selectedCategories?.length || state?.selectedCategories?.includes(category),
+    );
     if (!entryId || !allEntries.length) {
       return;
     }
@@ -341,7 +344,11 @@ function Entry() {
               onClick={() => {
                 setScroll({ ...scroll, entryId: entry.id });
               }}
-              state={{ back: (state || {}).back, requestId }}
+              state={{
+                back: state?.back,
+                requestId,
+                selectedCategories: state?.selectedCategories ?? [],
+              }}
               to={`/contests/${contestId}`}
             />
           ),
