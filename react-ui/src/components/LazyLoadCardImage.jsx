@@ -11,7 +11,7 @@ function LazyLoadCardImage({
   const maxHeight = Math.min(actualWidth / MAX_RATIO, Math.ceil((height * actualWidth) / width));
   return (
     <div style={{ maxHeight }}>
-      <LazyLoad height={maxHeight} offset={1080} resize>
+      <LazyLoad height={maxHeight} offset={100} resize scroll>
         <CardMedia
           component="img"
           image={image}

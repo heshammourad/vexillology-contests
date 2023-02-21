@@ -25,6 +25,7 @@ import ThumbsUpDownOutlinedIcon from '@material-ui/icons/ThumbsUpDownOutlined';
 import clsx from 'clsx';
 import isFuture from 'date-fns/isFuture';
 import React, { useState, useEffect } from 'react';
+import { forceCheck } from 'react-lazyload';
 import { useLocation, useParams } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
 
@@ -267,6 +268,10 @@ function Contest() {
       }, 50);
     }
   }, [state, contest]);
+
+  useEffect(() => {
+    forceCheck();
+  }, [selectedCategories]);
 
   const handleCategoryChange = (event) => {
     setSelectedCategories(event.target.value.sort());
