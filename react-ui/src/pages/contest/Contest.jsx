@@ -209,7 +209,7 @@ function Contest() {
 
   const { state = {} } = useLocation();
   const [isLoaded, setLoaded] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState(state?.selectedCategories ?? []);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [{ votingDisabled }, setComponentsState] = useComponentsState();
 
@@ -263,6 +263,7 @@ function Contest() {
         setLoaded(true);
         setScroll({});
         window.history.replaceState({}, document.title);
+        window.history.pushState({ usr: { selectedCategories } }, document.title);
         clearInterval(scrollingIntervalId);
         scrollingIntervalId = null;
       }, 50);
@@ -271,6 +272,10 @@ function Contest() {
 
   useEffect(() => {
     forceCheck();
+    window.history.pushState(
+      { usr: { ...window.history.state.usr, selectedCategories } },
+      document.title,
+    );
   }, [selectedCategories]);
 
   const handleCategoryChange = (event) => {
@@ -606,6 +611,7 @@ function Contest() {
                             height={height}
                             id={id}
                             image={imgurLink}
+                            nextState={{ selectedCategories }}
                             onClick={updateScroll}
                             width={width}
                           />
