@@ -539,7 +539,14 @@ function Contest() {
                     key={category}
                     value={category}
                   >
-                    <div className={classes[`label${index % LABEL_COLORS.length}`]}>{category}</div>
+                    <div
+                      className={clsx(
+                        classes.categoryLabel,
+                        classes[`label${index % LABEL_COLORS.length}`],
+                      )}
+                    >
+                      {category}
+                    </div>
                   </MenuItem>
                 ))}
               </Select>
