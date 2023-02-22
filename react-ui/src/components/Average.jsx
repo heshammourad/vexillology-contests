@@ -7,7 +7,7 @@ function Average({ average, className, fullText }) {
   }
 
   return (
-    <Typography className={className} variant="subtitle2">
+    <Typography className={className} component="div" variant="subtitle2">
       {fullText ? 'Average rating' : 'Avg'}
       :&nbsp;
       {average}

@@ -624,6 +624,7 @@ function Contest() {
                   ({
                     average,
                     category,
+                    categoryRank,
                     id,
                     imgurId,
                     imgurLink,
@@ -665,7 +666,16 @@ function Contest() {
                                         getLabelStyle(category),
                                       )}
                                     >
-                                      <Typography variant="caption">{category}</Typography>
+                                      <Typography variant="caption">
+                                        {categoryRank && (
+                                          <span>
+                                            #
+                                            {categoryRank}
+                                            &nbsp;
+                                          </span>
+                                        )}
+                                        {category}
+                                      </Typography>
                                     </div>
                                   </div>
                                 )}
