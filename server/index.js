@@ -352,7 +352,10 @@ if (!isDev && cluster.isMaster) {
         if (categories.length) {
           categories = categories.map(({ category }) => category);
 
-          const entryCategories = await db.select('SELECT entry_id, category FROM contest_entries WHERE contest_id = $1', [id]);
+          const entryCategories = await db.select(
+            'SELECT entry_id, category FROM contest_entries WHERE contest_id = $1',
+            [id],
+          );
           const map = new Map();
           contest.entries.forEach((entry) => {
             map.set(entry.imgurId, entry);
@@ -420,12 +423,18 @@ if (!isDev && cluster.isMaster) {
           });
         } else if (localVoting) {
           const voteData = await db.select(
-            'SELECT entry_id, rank, average FROM contests_summary WHERE contest_id = $1',
+            'SELECT entry_id, rank, category_rank, average FROM contests_summary WHERE contest_id = $1',
             [id],
           );
           const map = new Map();
-          voteData.forEach(({ average, entryId, rank }) => {
-            map.set(entryId, { average: numeral(average).format(CONTESTS_AVERAGE_FORMAT), rank });
+          voteData.forEach(({
+            average, categoryRank, entryId, rank,
+          }) => {
+            map.set(entryId, {
+              average: numeral(average).format(CONTESTS_AVERAGE_FORMAT),
+              categoryRank,
+              rank,
+            });
           });
           response.entries.forEach((entry) => {
             map.set(entry.imgurId, {
