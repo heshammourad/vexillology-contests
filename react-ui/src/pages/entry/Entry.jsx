@@ -9,7 +9,6 @@ import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import RedditIcon from '@material-ui/icons/Reddit';
 import clsx from 'clsx';
 import differenceInDays from 'date-fns/differenceInDays';
-import isFuture from 'date-fns/isFuture';
 import throttle from 'lodash/throttle';
 import {
   useEffect, useMemo, useRef, useState,
@@ -104,17 +103,19 @@ const useStyles = makeStyles((theme) => ({
 
 function Entry() {
   const { contestId, entryId } = useParams();
-  const [{
-    entries = [], localVoting, requestId, voteEnd, winners = [],
-  }] = useSwrData(
-    `/contests/${contestId}`,
-  );
+  const [
+    {
+      entries = [], isContestMode, localVoting, requestId, voteEnd, winners = [],
+    },
+    updateCache,
+  ] = useSwrData(`/contests/${contestId}`);
 
   const { state = {} } = useLocation();
   const navigate = useNavigate();
   const classes = useStyles();
 
   const [{ votingDisabled }, setComponentsState] = useComponentsState();
+  const [votingExpired, setVotingExpired] = useState(false);
 
   const [scroll, setScroll] = useScrollState();
   const [{ isInfoOpen }, updateSettings] = useSettingsState();
@@ -296,6 +297,13 @@ function Entry() {
     handleNavigate(indexChange);
   };
 
+  const handleVotingExpired = () => {
+    updateCache(null);
+    setVotingExpired(true);
+  };
+
+  const votingUnavailable = votingDisabled || votingExpired;
+
   if (!entry) {
     return null;
   }
@@ -303,7 +311,7 @@ function Entry() {
   const redditPermalink = `https://www.reddit.com${entry.permalink}`;
   const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${entry.imgurLink}`;
   const voteEndDate = new Date(voteEnd);
-  const isWinner = winners.some(({ id }) => id === entry.id);
+  const showRank = winners.some(({ id }) => id === entry.id) || (localVoting && !!entry.rank);
 
   return (
     <>
@@ -359,7 +367,7 @@ function Entry() {
             <div className={classes.drawerContent}>
               <Box display="flex">
                 <>
-                  {isWinner && (
+                  {showRank && (
                   <div className={classes.rank}>
                     #
                     {entry.rank}
@@ -367,7 +375,7 @@ function Entry() {
                   )}
                   <Box>
                     <div className={classes.entryName}>{entry.name}</div>
-                    {isWinner && (
+                    {showRank && (
                       <Typography variant="caption">
                         <RedditUserAttribution user={entry.user} />
                       </Typography>
@@ -375,17 +383,23 @@ function Entry() {
                   </Box>
                 </>
               </Box>
-              {voteEnd
-                && entry.imgurId
-                && (isFuture(voteEndDate) ? (
+              {entry.imgurId
+                && (isContestMode ? (
                   <>
                     <DrawerSectionHeader>Submit Vote</DrawerSectionHeader>
                     {!differenceInDays(voteEndDate, new Date()) && (
-                      <VotingCountdown fontSize="small" voteEndDate={voteEndDate} />
+                      <VotingCountdown
+                        fontSize="small"
+                        handleExpiry={handleVotingExpired}
+                        handleReload={() => {
+                          window.location.reload();
+                        }}
+                        voteEndDate={voteEndDate}
+                      />
                     )}
                     <Box className={classes.votingContainer} alignItems="center" display="flex">
                       <VotingSlider
-                        disabled={votingDisabled}
+                        disabled={votingUnavailable}
                         entryId={entry.imgurId}
                         rating={entry.rating}
                         setComponentsState={setComponentsState}
