@@ -251,6 +251,7 @@ const useStyles = makeStyles((theme) => {
       color: theme.palette.grey[600],
       display: 'flex',
       fontStyle: 'italic',
+      justifyContent: 'right',
     },
     numberSymbol: {
       marginRight: 4,
@@ -685,81 +686,113 @@ function Contest() {
           )}
           {entries && (
             <Grid container spacing={density === 'compact' ? 1 : 2}>
-              {entries.map(
-                ({
-                  average,
-                  id,
-                  imgurId,
-                  imgurLink,
-                  height,
-                  name: entryName,
-                  rank,
-                  rating,
-                  user,
-                  width,
-                }) => (
-                  // eslint-disable-next-line react/jsx-props-no-spreading
-                  <Grid key={id} item {...getGridVariables(rank === '1')}>
-                    <Card id={id} className={classes.entry}>
-                      <CardContent className={classes.entryHeading}>
-                        {rank && (
-                          <Typography component="div" variant="h6">
-                            <span className={classes.numberSymbol}>#</span>
-                            {rank}
-                          </Typography>
-                        )}
-                        <div className={clsx({ [classes.entryInfo]: !!rank })}>
-                          <div>
-                            <Typography component="div" variant="subtitle2">
-                              {entryName}
+              {entries
+                .filter(
+                  // eslint-disable-next-line max-len
+                  ({ category }) => !selectedCategories.length || selectedCategories.includes(category),
+                )
+                .map(
+                  ({
+                    average,
+                    category,
+                    categoryRank,
+                    id,
+                    imgurId,
+                    imgurLink,
+                    height,
+                    name: entryName,
+                    rank,
+                    rating,
+                    user,
+                    width,
+                  }) => (
+                    // eslint-disable-next-line react/jsx-props-no-spreading
+                    <Grid key={id} item {...getGridVariables(rank === '1')}>
+                      <Card id={id} className={classes.entry}>
+                        <CardContent className={classes.entryHeading}>
+                          {rank && (
+                            <Typography component="div" variant="h6">
+                              <span className={classes.numberSymbol}>#</span>
+                              {rank}
                             </Typography>
-                            {user && (
-                              <Typography variant="caption">
-                                <RedditUserAttribution user={user} />
+                          )}
+                          <div className={classes.entryInfo}>
+                            <div>
+                              <Typography component="div" variant="subtitle2">
+                                {entryName}
                               </Typography>
-                            )}
-                          </div>
-                          {!isContestMode && (
-                            <div className={classes.entryRatings}>
-                              <Average average={average} fullText={rank === '1'} />
-                              {rating > -1 && (
-                                <Typography className={classes.myRating} variant="caption">
-                                  {rank === '1' && <span>My&nbsp;rating:&nbsp;</span>}
-                                  <FiveStar rating={rating} />
+                              {user && (
+                                <Typography variant="caption">
+                                  <RedditUserAttribution user={user} />
                                 </Typography>
                               )}
                             </div>
-                          )}
-                        </div>
-                      </CardContent>
-                      <div className={classes.entryImageContainer}>
-                        <CardImageLink
-                          displayWidth={rank === '1' ? winnerDisplayWidth : gridDisplayWidth}
-                          height={height}
-                          id={id}
-                          image={imgurLink}
-                          onClick={updateScroll}
-                          width={width}
-                        />
-                      </div>
-                      {isContestMode && (
-                        <CardActions
-                          className={clsx(classes.votingSlider, {
-                            [classes.disabledVoting]: votingDisabled,
-                          })}
-                        >
-                          <VotingSlider
-                            disabled={votingUnavailable}
-                            entryId={imgurId}
-                            rating={rating}
-                            setComponentsState={setComponentsState}
+                            {(!isContestMode || category) && (
+                              <div className={classes.entryRatings}>
+                                {category && (
+                                  <div>
+                                    <div
+                                      className={clsx(
+                                        classes.categoryLabel,
+                                        getLabelStyle(category),
+                                      )}
+                                    >
+                                      <Typography variant="caption">
+                                        {categoryRank && (
+                                          <span>
+                                            #
+                                            {categoryRank}
+                                            &nbsp;
+                                          </span>
+                                        )}
+                                        {category}
+                                      </Typography>
+                                    </div>
+                                  </div>
+                                )}
+                                {!isContestMode && (
+                                  <>
+                                    <Average average={average} fullText={rank === '1'} />
+                                    {rating > -1 && (
+                                      <Typography className={classes.myRating} variant="caption">
+                                        {rank === '1' && <span>My&nbsp;rating:&nbsp;</span>}
+                                        <FiveStar rating={rating} />
+                                      </Typography>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                        <div className={classes.entryImageContainer}>
+                          <CardImageLink
+                            displayWidth={rank === '1' ? winnerDisplayWidth : gridDisplayWidth}
+                            height={height}
+                            id={id}
+                            image={imgurLink}
+                            onClick={updateScroll}
+                            width={width}
                           />
-                        </CardActions>
-                      )}
-                    </Card>
-                  </Grid>
-                ),
-              )}
+                        </div>
+                        {isContestMode && (
+                          <CardActions
+                            className={clsx(classes.votingSlider, {
+                              [classes.disabledVoting]: votingDisabled,
+                            })}
+                          >
+                            <VotingSlider
+                              disabled={votingUnavailable}
+                              entryId={imgurId}
+                              rating={rating}
+                              setComponentsState={setComponentsState}
+                            />
+                          </CardActions>
+                        )}
+                      </Card>
+                    </Grid>
+                  ),
+                )}
             </Grid>
           )}
         </Container>
