@@ -29,15 +29,18 @@ import { useLocation, useParams } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
 
 import {
+  useCategoryLabelStyles,
   useClientWidth,
+  useComponentsState,
   useScrollState,
   useSettingsState,
   useSwrData,
-  useComponentsState,
 } from '../../common';
+import { LABEL_COLORS } from '../../common/styles';
 import {
   ArrowBackButton,
   Average,
+  CategoryLabel,
   CustomIconButton,
   CustomRadio,
   ExternalLink,
@@ -61,241 +64,126 @@ const CATEGORY_MENU_PROPS = {
 };
 const FILTER_CATEGORIES_LABEL_ID = 'filter-categories-label';
 
-const LABEL_COLORS = [
-  { backgroundColor: 'rgb(231, 231, 231)', color: 'rgb(70, 70, 70)' },
-  { backgroundColor: 'rgb(182, 207, 245)', color: 'rgb(13, 52, 114)' },
-  { backgroundColor: 'rgb(152, 215, 228)', color: 'rgb(13, 59, 68)' },
-  { backgroundColor: 'rgb(227, 215, 255)', color: 'rgb(61, 24, 142)' },
-  { backgroundColor: 'rgb(251, 211, 224)', color: 'rgb(113, 26, 54)' },
-  { backgroundColor: 'rgb(242, 178, 168)', color: 'rgb(138, 28, 10)' },
-
-  { backgroundColor: 'rgb(194, 194, 194)', color: 'rgb(255, 255, 255)' },
-  { backgroundColor: 'rgb(73, 134, 231)', color: 'rgb(255, 255, 255)' },
-  { backgroundColor: 'rgb(45, 162, 187)', color: 'rgb(255, 255, 255)' },
-  { backgroundColor: 'rgb(185, 154, 255)', color: 'rgb(255, 255, 255)' },
-  { backgroundColor: 'rgb(246, 145, 178)', color: 'rgb(153, 74, 100)' },
-  { backgroundColor: 'rgb(251, 76, 47)', color: 'rgb(255, 255, 255)' },
-
-  { backgroundColor: 'rgb(255, 200, 175)', color: 'rgb(122, 46, 11)' },
-  { backgroundColor: 'rgb(255, 222, 181)', color: 'rgb(122, 71, 6)' },
-  { backgroundColor: 'rgb(251, 233, 131)', color: 'rgb(89, 76, 5)' },
-  { backgroundColor: 'rgb(253, 237, 193)', color: 'rgb(104, 78, 7)' },
-  { backgroundColor: 'rgb(179, 239, 211)', color: 'rgb(11, 79, 48)' },
-  { backgroundColor: 'rgb(162, 220, 193)', color: 'rgb(4, 80, 46)' },
-
-  { backgroundColor: 'rgb(255, 117, 55)', color: 'rgb(255, 255, 255)' },
-  { backgroundColor: 'rgb(255, 173, 70)', color: 'rgb(255, 255, 255)' },
-  { backgroundColor: 'rgb(235, 219, 222)', color: 'rgb(102, 46, 55)' },
-  { backgroundColor: 'rgb(204, 166, 172)', color: 'rgb(255, 255, 255)' },
-  { backgroundColor: 'rgb(66, 214, 146)', color: 'rgb(9, 66, 40)' },
-  { backgroundColor: 'rgb(22, 167, 101)', color: 'rgb(255, 255, 255)' },
-
-  { backgroundColor: 'rgb(7, 130, 197)', color: 'rgb(255, 255, 255)' },
-  { backgroundColor: 'rgb(7, 130, 197)', color: 'rgb(247, 151, 28)' },
-  { backgroundColor: 'rgb(25, 25, 112)', color: 'rgb(255, 255, 255)' },
-  { backgroundColor: 'rgb(17, 44, 62)', color: 'rgb(255, 255, 255)' },
-  { backgroundColor: 'rgb(13, 17, 23)', color: 'rgb(201, 209, 217)' },
-  { backgroundColor: 'rgb(34, 99, 190)', color: 'rgb(255, 255, 255)' },
-
-  { backgroundColor: 'rgb(0, 0, 0)', color: 'rgb(255, 255, 255)' },
-  { backgroundColor: 'rgb(67, 67, 67)', color: 'rgb(255, 255, 255)' },
-  { backgroundColor: 'rgb(102, 102, 102)', color: 'rgb(255, 255, 255)' },
-  { backgroundColor: 'rgb(153, 153, 153)', color: 'rgb(255, 255, 255)' },
-  { backgroundColor: 'rgb(204, 204, 204)', color: 'rgb(0, 0, 0)' },
-  { backgroundColor: 'rgb(239, 239, 239)', color: 'rgb(0, 0, 0)' },
-  { backgroundColor: 'rgb(243, 243, 243)', color: 'rgb(0, 0, 0)' },
-  { backgroundColor: 'rgb(255, 255, 255)', color: 'rgb(0, 0, 0)' },
-
-  { backgroundColor: 'rgb(251, 76, 47)', color: 'rgb(130, 33, 17)' },
-  { backgroundColor: 'rgb(255, 173, 71)', color: 'rgb(164, 106, 33)' },
-  { backgroundColor: 'rgb(250, 209, 101)', color: 'rgb(170, 136, 49)' },
-  { backgroundColor: 'rgb(22, 167, 102)', color: 'rgb(7, 98, 57)' },
-  { backgroundColor: 'rgb(67, 214, 146)', color: 'rgb(26, 118, 77)' },
-  { backgroundColor: 'rgb(74, 134, 232)', color: 'rgb(28, 69, 135)' },
-  { backgroundColor: 'rgb(164, 121, 226)', color: 'rgb(65, 35, 109)' },
-  { backgroundColor: 'rgb(246, 145, 179)', color: 'rgb(131, 51, 76)' },
-
-  { backgroundColor: 'rgb(246, 197, 190)', color: 'rgb(130, 33, 17)' },
-  { backgroundColor: 'rgb(255, 230, 199)', color: 'rgb(164, 106, 33)' },
-  { backgroundColor: 'rgb(254, 241, 209)', color: 'rgb(170, 136, 49)' },
-  { backgroundColor: 'rgb(185, 228, 208)', color: 'rgb(7, 98, 57)' },
-  { backgroundColor: 'rgb(198, 243, 222)', color: 'rgb(26, 118, 77)' },
-  { backgroundColor: 'rgb(201, 218, 248)', color: 'rgb(28, 69, 135)' },
-  { backgroundColor: 'rgb(228, 215, 245)', color: 'rgb(65, 35, 109)' },
-  { backgroundColor: 'rgb(252, 222, 232)', color: 'rgb(131, 51, 76)' },
-
-  { backgroundColor: 'rgb(239, 160, 147)', color: 'rgb(130, 33, 17)' },
-  { backgroundColor: 'rgb(255, 214, 162)', color: 'rgb(164, 106, 33)' },
-  { backgroundColor: 'rgb(252, 232, 179)', color: 'rgb(170, 136, 49)' },
-  { backgroundColor: 'rgb(137, 211, 178)', color: 'rgb(7, 98, 57)' },
-  { backgroundColor: 'rgb(160, 234, 201)', color: 'rgb(26, 118, 77)' },
-  { backgroundColor: 'rgb(164, 194, 244)', color: 'rgb(28, 69, 135)' },
-  { backgroundColor: 'rgb(208, 188, 241)', color: 'rgb(65, 35, 109)' },
-  { backgroundColor: 'rgb(251, 200, 217)', color: 'rgb(131, 51, 76)' },
-
-  { backgroundColor: 'rgb(230, 101, 80)', color: 'rgb(130, 33, 17)' },
-  { backgroundColor: 'rgb(255, 188, 107)', color: 'rgb(164, 106, 33)' },
-  { backgroundColor: 'rgb(252, 218, 131)', color: 'rgb(170, 136, 49)' },
-  { backgroundColor: 'rgb(68, 185, 132)', color: 'rgb(7, 98, 57)' },
-  { backgroundColor: 'rgb(104, 223, 169)', color: 'rgb(26, 118, 77)' },
-  { backgroundColor: 'rgb(109, 158, 235)', color: 'rgb(28, 69, 135)' },
-  { backgroundColor: 'rgb(182, 148, 232)', color: 'rgb(65, 35, 109)' },
-  { backgroundColor: 'rgb(247, 167, 192)', color: 'rgb(131, 51, 76)' },
-
-  { backgroundColor: 'rgb(204, 58, 33)', color: 'rgb(246, 197, 190)' },
-  { backgroundColor: 'rgb(234, 160, 65)', color: 'rgb(255, 230, 199)' },
-  { backgroundColor: 'rgb(242, 201, 96)', color: 'rgb(254, 241, 209)' },
-  { backgroundColor: 'rgb(20, 158, 96)', color: 'rgb(185, 228, 208)' },
-  { backgroundColor: 'rgb(61, 199, 137)', color: 'rgb(198, 243, 222)' },
-  { backgroundColor: 'rgb(60, 120, 216)', color: 'rgb(201, 218, 248)' },
-  { backgroundColor: 'rgb(142, 99, 206)', color: 'rgb(228, 215, 245)' },
-  { backgroundColor: 'rgb(224, 119, 152)', color: 'rgb(252, 222, 232)' },
-
-  { backgroundColor: 'rgb(172, 43, 22)', color: 'rgb(246, 197, 190)' },
-  { backgroundColor: 'rgb(207, 137, 51)', color: 'rgb(255, 230, 199)' },
-  { backgroundColor: 'rgb(213, 174, 73)', color: 'rgb(254, 241, 209)' },
-  { backgroundColor: 'rgb(11, 128, 75)', color: 'rgb(185, 228, 208)' },
-  { backgroundColor: 'rgb(42, 156, 104)', color: 'rgb(198, 243, 222)' },
-  { backgroundColor: 'rgb(40, 91, 172)', color: 'rgb(201, 218, 248)' },
-  { backgroundColor: 'rgb(101, 62, 155)', color: 'rgb(228, 215, 245)' },
-  { backgroundColor: 'rgb(182, 87, 117)', color: 'rgb(252, 222, 232)' },
-
-  { backgroundColor: 'rgb(130, 33, 17)', color: 'rgb(246, 197, 190)' },
-  { backgroundColor: 'rgb(164, 106, 33)', color: 'rgb(255, 230, 199)' },
-  { backgroundColor: 'rgb(170, 136, 49)', color: 'rgb(254, 241, 209)' },
-  { backgroundColor: 'rgb(7, 98, 57)', color: 'rgb(185, 228, 208)' },
-  { backgroundColor: 'rgb(26, 118, 77)', color: 'rgb(198, 243, 222)' },
-  { backgroundColor: 'rgb(28, 69, 135)', color: 'rgb(201, 218, 248)' },
-  { backgroundColor: 'rgb(65, 35, 109)', color: 'rgb(228, 215, 245)' },
-  { backgroundColor: 'rgb(131, 51, 76)', color: 'rgb(252, 222, 232)' },
-];
-
 const scrollInstantlyTo = (scrollY) => {
   animateScroll.scrollTo(scrollY, { duration: 0, delay: 0 });
 };
 
-const useStyles = makeStyles((theme) => {
-  const styles = {
-    categories: {
-      alignItems: 'center',
-      columnGap: 8,
-      display: 'flex',
-      marginBottom: 16,
-      maxWidth: 600,
-      minHeight: 50,
-      minWidth: 120,
+const useStyles = makeStyles((theme) => ({
+  categories: {
+    alignItems: 'center',
+    columnGap: 8,
+    display: 'flex',
+    marginBottom: 16,
+    maxWidth: 600,
+    minHeight: 50,
+    minWidth: 120,
+  },
+  categoryChip: {
+    margin: 2,
+  },
+  categoryLabel: {
+    borderRadius: 4,
+    display: 'inline',
+    padding: '0 4px',
+  },
+  disabledVoting: {
+    cursor: 'wait',
+  },
+  divider: {
+    height: 2,
+    marginBottom: 16,
+  },
+  entriesLoading: {
+    visibility: 'hidden',
+  },
+  entry: {
+    backgroundColor: theme.palette.grey[100],
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+  },
+  entryHeading: {
+    columnGap: 4,
+    display: 'flex',
+    minHeight: 60,
+    padding: 8,
+  },
+  entryImageContainer: {
+    alignItems: 'center',
+    display: 'flex',
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  entryInfo: {
+    display: 'flex',
+    flexGrow: 1,
+    paddingTop: 4,
+  },
+  entryRatings: {
+    display: 'flex',
+    flexDirection: 'column',
+    flexGrow: 1,
+    textAlign: 'end',
+  },
+  heading: {
+    margin: '24px auto',
+  },
+  icon: {
+    color: theme.palette.grey[700],
+  },
+  listSubheader: {
+    color: theme.palette.grey[900],
+    fontSize: '.6875rem',
+    fontWeight: 500,
+    letterSpacing: '.8px',
+    lineHeight: 1,
+    margin: '16px 0',
+    textTransform: 'uppercase',
+  },
+  myRating: {
+    color: theme.palette.grey[600],
+    display: 'flex',
+    fontStyle: 'italic',
+    justifyContent: 'right',
+  },
+  numberSymbol: {
+    marginRight: 4,
+  },
+  selectedCategory: {
+    fontWeight: theme.typography.fontWeightMedium,
+  },
+  sponsorBanner: {
+    alignItems: 'center',
+    backgroundColor: theme.palette.flagMakerPrint.main,
+    color: theme.palette.common.white,
+    columnGap: 8,
+    display: 'flex',
+    justifyContent: 'center',
+    padding: 8,
+    '&:hover': {
+      textDecoration: 'none',
     },
-    categoryChip: {
-      margin: 2,
-    },
-    categoryLabel: {
-      borderRadius: 4,
-      display: 'inline',
-      padding: '0 4px',
-    },
-    disabledVoting: {
-      cursor: 'wait',
-    },
-    divider: {
-      height: 2,
-      marginBottom: 16,
-    },
-    entriesLoading: {
-      visibility: 'hidden',
-    },
-    entry: {
-      backgroundColor: theme.palette.grey[100],
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-    },
-    entryHeading: {
-      columnGap: 4,
-      display: 'flex',
-      minHeight: 60,
-      padding: 8,
-    },
-    entryImageContainer: {
-      alignItems: 'center',
-      display: 'flex',
-      flexGrow: 1,
-      justifyContent: 'center',
-    },
-    entryInfo: {
-      display: 'flex',
-      flexGrow: 1,
-      paddingTop: 4,
-    },
-    entryRatings: {
-      display: 'flex',
-      flexDirection: 'column',
-      flexGrow: 1,
-      textAlign: 'end',
-    },
-    heading: {
-      margin: '24px auto',
-    },
-    icon: {
-      color: theme.palette.grey[700],
-    },
-    listSubheader: {
-      color: theme.palette.grey[900],
-      fontSize: '.6875rem',
-      fontWeight: 500,
-      letterSpacing: '.8px',
-      lineHeight: 1,
-      margin: '16px 0',
-      textTransform: 'uppercase',
-    },
-    myRating: {
-      color: theme.palette.grey[600],
-      display: 'flex',
-      fontStyle: 'italic',
-      justifyContent: 'right',
-    },
-    numberSymbol: {
-      marginRight: 4,
-    },
-    selectedCategory: {
-      fontWeight: theme.typography.fontWeightMedium,
-    },
-    sponsorBanner: {
-      alignItems: 'center',
-      backgroundColor: theme.palette.flagMakerPrint.main,
-      color: theme.palette.common.white,
-      columnGap: 8,
-      display: 'flex',
-      justifyContent: 'center',
-      padding: 8,
-      '&:hover': {
-        textDecoration: 'none',
-      },
-    },
-    sponsorIcon: {
-      fill: theme.palette.common.white,
-      width: 24,
-    },
-    votingSlider: {
-      marginTop: 16,
-    },
-    winnerCard: {
-      marginTop: 4,
-      marginBottom: 16,
-    },
-    winnerContent: {
-      flexGrow: 1,
-      paddingTop: 4,
-    },
-    winnerHeading: {
-      columnGap: 8,
-      display: 'flex',
-    },
-  };
-  LABEL_COLORS.forEach((label, index) => {
-    styles[`label${index}`] = label;
-  });
-  return styles;
-});
+  },
+  sponsorIcon: {
+    fill: theme.palette.common.white,
+    width: 24,
+  },
+  votingSlider: {
+    marginTop: 16,
+  },
+  winnerCard: {
+    marginTop: 4,
+    marginBottom: 16,
+  },
+  winnerContent: {
+    flexGrow: 1,
+    paddingTop: 4,
+  },
+  winnerHeading: {
+    columnGap: 8,
+    display: 'flex',
+  },
+}));
 
 const imageWidths = {
   default: {
@@ -450,6 +338,7 @@ function Contest() {
   }
 
   const classes = useStyles();
+  const categoryLabelClasses = useCategoryLabelStyles();
 
   const getGridVariables = (fullWidth) => {
     const xs = 12;
@@ -492,8 +381,6 @@ function Contest() {
     winnersThreadId,
   } = contest;
   const voteEndDate = new Date(voteEnd);
-
-  const getLabelStyle = (category) => classes[`label${categories.indexOf(category) % LABEL_COLORS.length}`];
   return (
     <PageWithDrawer
       handleClose={() => {
@@ -612,7 +499,12 @@ function Contest() {
                   <Box display="flex" flexWrap="wrap">
                     {selected.map((value) => (
                       <Chip
-                        className={clsx(classes.categoryChip, getLabelStyle(value))}
+                        className={clsx(
+                          classes.categoryChip,
+                          categoryLabelClasses[
+                            `label${categories.indexOf(value) % LABEL_COLORS.length}`
+                          ],
+                        )}
                         key={value}
                         label={value}
                       />
@@ -632,7 +524,7 @@ function Contest() {
                     <div
                       className={clsx(
                         classes.categoryLabel,
-                        classes[`label${index % LABEL_COLORS.length}`],
+                        categoryLabelClasses[`label${index % LABEL_COLORS.length}`],
                       )}
                     >
                       {category}
@@ -730,25 +622,11 @@ function Contest() {
                             {(!isContestMode || category) && (
                               <div className={classes.entryRatings}>
                                 {category && (
-                                  <div>
-                                    <div
-                                      className={clsx(
-                                        classes.categoryLabel,
-                                        getLabelStyle(category),
-                                      )}
-                                    >
-                                      <Typography variant="caption">
-                                        {categoryRank && (
-                                          <span>
-                                            #
-                                            {categoryRank}
-                                            &nbsp;
-                                          </span>
-                                        )}
-                                        {category}
-                                      </Typography>
-                                    </div>
-                                  </div>
+                                  <CategoryLabel
+                                    categories={categories}
+                                    category={category}
+                                    categoryRank={categoryRank}
+                                  />
                                 )}
                                 {!isContestMode && (
                                   <>

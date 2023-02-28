@@ -21,6 +21,7 @@ import {
 import {
   ArrowBackButton,
   Average,
+  CategoryLabel,
   CustomIconButton,
   FiveStar,
   FmpIcon,
@@ -105,7 +106,7 @@ function Entry() {
   const { contestId, entryId } = useParams();
   const [
     {
-      entries = [], isContestMode, localVoting, requestId, voteEnd, winners = [],
+      categories, entries = [], isContestMode, localVoting, requestId, voteEnd, winners = [],
     },
     updateCache,
   ] = useSwrData(`/contests/${contestId}`);
@@ -383,6 +384,15 @@ function Entry() {
                   </Box>
                 </>
               </Box>
+              {entry.category && (
+                <Box paddingTop={1}>
+                  <CategoryLabel
+                    categories={categories}
+                    category={entry.category}
+                    categoryRank={entry.categoryRank}
+                  />
+                </Box>
+              )}
               {entry.imgurId
                 && (isContestMode ? (
                   <>

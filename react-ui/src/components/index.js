@@ -3,6 +3,7 @@ export { default as AppBarDivided } from './AppBarDivided';
 export { default as AppHelmet } from './AppHelmet';
 export { default as ArrowBackButton } from './ArrowBackButton';
 export { default as Average } from './Average';
+export { default as CategoryLabel } from './CategoryLabel';
 export { default as CustomIconButton } from './CustomIconButton';
 export { default as CustomRadio } from './CustomRadio';
 export { default as CustomSnackbar } from './CustomSnackbar';
