@@ -26,7 +26,12 @@ function CategoryLabel({ categories, category, categoryRank }) {
         )}
       >
         <Typography variant="caption">
-          {categoryRank && <span>{`#${categoryRank} `}</span>}
+          {categoryRank && (
+            <span>
+              {`#${categoryRank}`}
+              &nbsp;
+            </span>
+          )}
           {category}
         </Typography>
       </div>
