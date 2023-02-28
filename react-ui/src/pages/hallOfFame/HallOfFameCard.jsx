@@ -40,13 +40,6 @@ const useStyles = makeStyles((theme) => {
         width: FLAIR_WIDTH - 5,
       },
     },
-    bestOfYear2022: {
-      '&::after': {
-        background: 'none',
-        content: '"2022"',
-        verticalAlign: 0,
-      },
-    },
     bestOfYearLabel: {
       marginRight: 4,
     },
@@ -73,7 +66,7 @@ const useStyles = makeStyles((theme) => {
       transform: 'rotate(180deg)',
     },
   };
-  for (let i = FLAIR_START_YEAR; i <= 2021; i += 1) {
+  for (let i = FLAIR_START_YEAR; i <= 2022; i += 1) {
     const offset = (i - FLAIR_START_YEAR) * FLAIR_WIDTH;
     styles[`bestOfYear${i}`] = { '&::after': { backgroundPosition: `-${offset}px 0` } };
   }
