@@ -224,6 +224,10 @@ function Contest() {
   };
 
   useEffect(() => {
+    forceCheck();
+  }, [isLoaded]);
+
+  useEffect(() => {
     if (!contest.name) {
       return;
     }
@@ -649,6 +653,7 @@ function Contest() {
                             height={height}
                             id={id}
                             image={imgurLink}
+                            nextState={{ selectedCategories }}
                             onClick={updateScroll}
                             width={width}
                           />
