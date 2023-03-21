@@ -19,6 +19,7 @@ import Select from '@material-ui/core/Select';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import DescriptionIcon from '@material-ui/icons/Description';
 import EmojiEventsOutlinedIcon from '@material-ui/icons/EmojiEventsOutlined';
 import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
 import ThumbsUpDownOutlinedIcon from '@material-ui/icons/ThumbsUpDownOutlined';
@@ -43,6 +44,7 @@ import {
   CategoryLabel,
   CustomIconButton,
   CustomRadio,
+  EntryDescriptionDrawer,
   ExternalLink,
   FiveStar,
   FmpIcon,
@@ -86,6 +88,10 @@ const useStyles = makeStyles((theme) => ({
     display: 'inline',
     padding: '0 4px',
   },
+  descriptionIcon: {
+    paddingLeft: 4,
+    top: -4,
+  },
   disabledVoting: {
     cursor: 'wait',
   },
@@ -122,7 +128,7 @@ const useStyles = makeStyles((theme) => ({
   entryRatings: {
     display: 'flex',
     flexDirection: 'column',
-    flexGrow: 1,
+    flexShrink: 0,
     textAlign: 'end',
   },
   heading: {
@@ -213,6 +219,7 @@ function Contest() {
   const { state = {} } = useLocation();
   const [isLoaded, setLoaded] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState(state?.selectedCategories ?? []);
+  const [descriptionEntryId, setDescriptionEntryId] = useState(null);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [votingExpired, setVotingExpired] = useState(false);
   const [{ votingDisabled }, setComponentsState] = useComponentsState();
@@ -292,6 +299,11 @@ function Contest() {
 
   const resetSelectedCategories = () => {
     setSelectedCategories([]);
+  };
+
+  const viewDescription = (entryId) => {
+    setDescriptionEntryId(entryId);
+    setSettingsOpen(true);
   };
 
   const [{ density = 'default' }, updateSettings] = useSettingsState();
@@ -389,6 +401,9 @@ function Contest() {
     <PageWithDrawer
       handleClose={() => {
         setSettingsOpen(false);
+        setTimeout(() => {
+          setDescriptionEntryId(null);
+        }, 200);
       }}
       isOpen={isSettingsOpen}
       appBar={{
@@ -432,39 +447,45 @@ function Contest() {
           </>
         ),
       }}
-      drawer={{
-        heading: 'Settings',
-        children: (
-          <FormControl component="fieldset">
-            <List
-              dense
-              subheader={<ListSubheader className={classes.listSubheader}>Density</ListSubheader>}
-            >
-              <RadioGroup
-                aria-label="density"
-                name="density"
-                value={density}
-                onChange={handleDensityChange}
-              >
-                <ListItem>
-                  <FormControlLabel
-                    value="default"
-                    control={<CustomRadio color="primary" />}
-                    label="Default"
-                  />
-                </ListItem>
-                <ListItem>
-                  <FormControlLabel
-                    value="compact"
-                    control={<CustomRadio color="primary" />}
-                    label="Compact"
-                  />
-                </ListItem>
-              </RadioGroup>
-            </List>
-          </FormControl>
-        ),
-      }}
+      drawer={
+        descriptionEntryId
+          ? { heading: 'Info', children: <EntryDescriptionDrawer entryId={descriptionEntryId} /> }
+          : {
+            heading: 'Settings',
+            children: (
+              <FormControl component="fieldset">
+                <List
+                  dense
+                  subheader={
+                    <ListSubheader className={classes.listSubheader}>Density</ListSubheader>
+                    }
+                >
+                  <RadioGroup
+                    aria-label="density"
+                    name="density"
+                    value={density}
+                    onChange={handleDensityChange}
+                  >
+                    <ListItem>
+                      <FormControlLabel
+                        value="default"
+                        control={<CustomRadio color="primary" />}
+                        label="Default"
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <FormControlLabel
+                        value="compact"
+                        control={<CustomRadio color="primary" />}
+                        label="Compact"
+                      />
+                    </ListItem>
+                  </RadioGroup>
+                </List>
+              </FormControl>
+            ),
+          }
+      }
     >
       <ExternalLink
         className={classes.sponsorBanner}
@@ -613,16 +634,27 @@ function Contest() {
                             </Typography>
                           )}
                           <div className={classes.entryInfo}>
-                            <div>
-                              <Typography component="div" variant="subtitle2">
-                                {entryName}
-                              </Typography>
-                              {user && (
-                                <Typography variant="caption">
-                                  <RedditUserAttribution user={user} />
+                            <Box alignItems="flex-start" display="flex" flexGrow={1}>
+                              <Box flexGrow={1}>
+                                <Typography component="div" variant="subtitle2">
+                                  {entryName}
                                 </Typography>
-                              )}
-                            </div>
+                                {user && (
+                                  <Typography variant="caption">
+                                    <RedditUserAttribution user={user} />
+                                  </Typography>
+                                )}
+                              </Box>
+                              <CustomIconButton
+                                ariaLabel="View description"
+                                className={classes.descriptionIcon}
+                                Icon={DescriptionIcon}
+                                onClick={() => {
+                                  viewDescription(id);
+                                }}
+                                size="small"
+                              />
+                            </Box>
                             {(!isContestMode || category) && (
                               <div className={classes.entryRatings}>
                                 {category && (
