@@ -16,15 +16,15 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-window.self.FIREBASE_APPCHECK_DEBUG_TOKEN = '9dbc94c4-785c-4142-8027-5e0af32338b6';
 initializeAppCheck(app, {
-  provider: new ReCaptchaV3Provider('6Le30RgkAAAAAIWgugIqeVv1VR7ObEzZi_BPpkaA'),
+  provider: new ReCaptchaV3Provider('6LdVdzMlAAAAACClyDjipqu8966AvQBm_Eb5gNuE'),
   isTokenAutoRefreshEnabled: true,
 });
 
 const storage = getStorage(app);
 
-export const uploadFile = async (fileExt, file) => {
+export const uploadFile = async (file) => {
+  const fileExt = file.name.split('.').pop();
   const storageRef = ref(storage, `images/${nanoid()}.${fileExt}`);
   const snapshot = await uploadBytes(storageRef, file);
   return snapshot;

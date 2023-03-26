@@ -8,7 +8,7 @@ import { SWRConfig } from 'swr';
 import { getData } from './api';
 import { AppHelmet } from './components';
 import {
-  AuthorizeCallback, Contest, Contests, Entry, HallOfFame, Home,
+  AuthorizeCallback, Contest, Contests, Entry, HallOfFame, Home, Submission,
 } from './pages';
 
 import './App.css';
@@ -53,6 +53,7 @@ function App() {
                 <Route exact path="/contests" element={<Contests />} />
                 <Route exact path="/contests/:contestId" element={<Contest />} />
                 <Route exact path="/contests/:contestId/entry/:entryId" element={<Entry />} />
+                <Route exact path="/submission" element={<Submission />} />
                 <Route exact path="/hallOfFame" element={<HallOfFame />} />
                 <Route exact path="/authorizeCallback" element={<AuthorizeCallback />} />
               </Routes>

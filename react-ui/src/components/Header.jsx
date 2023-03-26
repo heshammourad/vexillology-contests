@@ -12,7 +12,9 @@ function Header({ children, position, to }) {
     <AppBarDivided color="default" disableGutters position={position}>
       <Toolbar>
         <ArrowBackButton to={to} />
-        <Typography variant="h6">{children}</Typography>
+        <Typography component="div" variant="h6">
+          {children}
+        </Typography>
       </Toolbar>
     </AppBarDivided>
   );
