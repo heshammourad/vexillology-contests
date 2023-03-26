@@ -45,6 +45,7 @@ import {
   CustomIconButton,
   CustomRadio,
   EntryDescriptionDrawer,
+  Experiment,
   ExternalLink,
   FiveStar,
   FmpIcon,
@@ -645,15 +646,17 @@ function Contest() {
                                   </Typography>
                                 )}
                               </Box>
-                              <CustomIconButton
-                                ariaLabel="View description"
-                                className={classes.descriptionIcon}
-                                Icon={DescriptionIcon}
-                                onClick={() => {
-                                  viewDescription(id);
-                                }}
-                                size="small"
-                              />
+                              <Experiment name="contest_card_description">
+                                <CustomIconButton
+                                  ariaLabel="View description"
+                                  className={classes.descriptionIcon}
+                                  Icon={DescriptionIcon}
+                                  onClick={() => {
+                                    viewDescription(id);
+                                  }}
+                                  size="small"
+                                />
+                              </Experiment>
                             </Box>
                             {(!isContestMode || category) && (
                               <div className={classes.entryRatings}>
