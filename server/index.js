@@ -516,7 +516,13 @@ if (!isDev && cluster.isMaster) {
 
   router.get('/init', async (req, res) => {
     try {
+      const experimentsData = await db.select('SELECT * FROM experiments');
+      const experiments = experimentsData.reduce((acc, { active, name }) => {
+        acc[name] = active;
+        return acc;
+      }, {});
       res.send({
+        experiments,
         title: TITLE,
         webAppClientId: WEB_APP_CLIENT_ID,
       });

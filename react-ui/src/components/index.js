@@ -11,6 +11,7 @@ export { default as CustomSwitch } from './CustomSwitch';
 export { default as DrawerSectionHeader } from './DrawerSectionHeader';
 export { default as ElevationScroll } from './ElevationScroll';
 export { default as EntryDescriptionDrawer } from './EntryDescriptionDrawer';
+export { default as Experiment } from './Experiment';
 export { default as ExternalLink } from './ExternalLink';
 export { default as FiveStar } from './FiveStar';
 export { default as FmpIcon } from './FmpIcon';
