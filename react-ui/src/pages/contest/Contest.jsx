@@ -1,48 +1,58 @@
 import Box from '@material-ui/core/Box';
+import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
+import Chip from '@material-ui/core/Chip';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
 import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
+import Input from '@material-ui/core/Input';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListSubheader from '@material-ui/core/ListSubheader';
+import MenuItem from '@material-ui/core/MenuItem';
 import RadioGroup from '@material-ui/core/RadioGroup';
+import Select from '@material-ui/core/Select';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import DescriptionIcon from '@material-ui/icons/Description';
 import EmojiEventsOutlinedIcon from '@material-ui/icons/EmojiEventsOutlined';
 import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
 import ThumbsUpDownOutlinedIcon from '@material-ui/icons/ThumbsUpDownOutlined';
 import clsx from 'clsx';
-import isFuture from 'date-fns/isFuture';
 import React, { useState, useEffect } from 'react';
+import { forceCheck } from 'react-lazyload';
 import { useLocation, useParams } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
 
 import {
+  useCategoryLabelStyles,
   useClientWidth,
+  useComponentsState,
   useScrollState,
   useSettingsState,
   useSwrData,
-  useComponentsState,
 } from '../../common';
+import { LABEL_COLORS } from '../../common/styles';
 import {
-  AccountMenu,
   ArrowBackButton,
   Average,
+  CategoryLabel,
   CustomIconButton,
   CustomRadio,
+  EntryDescriptionDrawer,
+  Experiment,
   ExternalLink,
   FiveStar,
   FmpIcon,
   HtmlWrapper,
   PageWithDrawer,
+  RedditLogInDialog,
   RedditUserAttribution,
-  VotingComponents,
   VotingCountdown,
   VotingSlider,
 } from '../../components';
@@ -50,11 +60,39 @@ import {
 import CardImageLink from './CardImageLink';
 import Subheader from './Subheader';
 
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const CATEGORY_MENU_PROPS = {
+  PaperProps: { style: { maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP, width: 250 } },
+};
+const FILTER_CATEGORIES_LABEL_ID = 'filter-categories-label';
+
 const scrollInstantlyTo = (scrollY) => {
   animateScroll.scrollTo(scrollY, { duration: 0, delay: 0 });
 };
 
 const useStyles = makeStyles((theme) => ({
+  categories: {
+    alignItems: 'center',
+    columnGap: 8,
+    display: 'flex',
+    marginBottom: 16,
+    maxWidth: 600,
+    minHeight: 50,
+    minWidth: 120,
+  },
+  categoryChip: {
+    margin: 2,
+  },
+  categoryLabel: {
+    borderRadius: 4,
+    display: 'inline',
+    padding: '0 4px',
+  },
+  descriptionIcon: {
+    paddingLeft: 4,
+    top: -4,
+  },
   disabledVoting: {
     cursor: 'wait',
   },
@@ -91,7 +129,7 @@ const useStyles = makeStyles((theme) => ({
   entryRatings: {
     display: 'flex',
     flexDirection: 'column',
-    flexGrow: 1,
+    flexShrink: 0,
     textAlign: 'end',
   },
   heading: {
@@ -113,9 +151,13 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.grey[600],
     display: 'flex',
     fontStyle: 'italic',
+    justifyContent: 'right',
   },
   numberSymbol: {
     marginRight: 4,
+  },
+  selectedCategory: {
+    fontWeight: theme.typography.fontWeightMedium,
   },
   sponsorBanner: {
     alignItems: 'center',
@@ -148,11 +190,6 @@ const useStyles = makeStyles((theme) => ({
     columnGap: 8,
     display: 'flex',
   },
-  winnerRatings: {
-    flexShrink: 0,
-    paddingTop: 4,
-    textAlign: 'end',
-  },
 }));
 
 const imageWidths = {
@@ -178,22 +215,25 @@ let scrollingIntervalId;
 function Contest() {
   const { contestId } = useParams();
   const [scroll, setScroll] = useScrollState();
-  const [contest] = useSwrData(`/contests/${contestId}`, !!scroll.entryId);
+  const [contest, updateCache] = useSwrData(`/contests/${contestId}`, !!scroll.entryId);
 
   const { state = {} } = useLocation();
   const [isLoaded, setLoaded] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState(state?.selectedCategories ?? []);
+  const [descriptionEntryId, setDescriptionEntryId] = useState(null);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
+  const [votingExpired, setVotingExpired] = useState(false);
   const [{ votingDisabled }, setComponentsState] = useComponentsState();
-
-  useEffect(() => {
-    setComponentsState();
-  }, []);
 
   const updateScroll = () => {
     setScroll({
       y: window.scrollY,
     });
   };
+
+  useEffect(() => {
+    forceCheck();
+  }, [isLoaded]);
 
   useEffect(() => {
     if (!contest.name) {
@@ -239,11 +279,33 @@ function Contest() {
         setLoaded(true);
         setScroll({});
         window.history.replaceState({}, document.title);
+        window.history.pushState({ usr: { selectedCategories } }, document.title);
         clearInterval(scrollingIntervalId);
         scrollingIntervalId = null;
       }, 50);
     }
   }, [state, contest]);
+
+  useEffect(() => {
+    forceCheck();
+    window.history.pushState(
+      { usr: { ...window.history.state.usr, selectedCategories } },
+      document.title,
+    );
+  }, [selectedCategories]);
+
+  const handleCategoryChange = (event) => {
+    setSelectedCategories(event.target.value.sort());
+  };
+
+  const resetSelectedCategories = () => {
+    setSelectedCategories([]);
+  };
+
+  const viewDescription = (entryId) => {
+    setDescriptionEntryId(entryId);
+    setSettingsOpen(true);
+  };
 
   const [{ density = 'default' }, updateSettings] = useSettingsState();
 
@@ -256,6 +318,17 @@ function Contest() {
   };
 
   const backLink = (state || {}).back || '/contests';
+
+  const handleVotingExpired = () => {
+    updateCache(null);
+    setVotingExpired(true);
+  };
+
+  const handleReload = () => {
+    setLoaded(false);
+    scrollInstantlyTo(0);
+    window.location.reload();
+  };
 
   const theme = useTheme();
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
@@ -282,6 +355,7 @@ function Contest() {
   }
 
   const classes = useStyles();
+  const categoryLabelClasses = useCategoryLabelStyles();
 
   const getGridVariables = (fullWidth) => {
     const xs = 12;
@@ -307,9 +381,14 @@ function Contest() {
   };
 
   const headingVariant = isSmUp ? 'h3' : 'h5';
+
+  const votingUnavailable = votingDisabled || votingExpired;
+
   const {
+    categories,
     date,
     entries,
+    isContestMode,
     localVoting,
     name,
     subtext,
@@ -319,11 +398,13 @@ function Contest() {
     winnersThreadId,
   } = contest;
   const voteEndDate = new Date(voteEnd);
-  const allowVoting = voteEnd && isFuture(voteEndDate);
   return (
     <PageWithDrawer
       handleClose={() => {
         setSettingsOpen(false);
+        setTimeout(() => {
+          setDescriptionEntryId(null);
+        }, 200);
       }}
       isOpen={isSettingsOpen}
       appBar={{
@@ -350,53 +431,62 @@ function Contest() {
               onClick={toggleSettingsOpen}
               Icon={SettingsOutlinedIcon}
             />
-            <AccountMenu />
           </>
         ),
         children: (
           <>
             <ArrowBackButton state={{ date }} to={backLink} />
-            {allowVoting && (
-              <Box display="inline-flex" padding={1.5}>
-                <VotingCountdown voteEndDate={voteEndDate} />
+            {isContestMode && (
+              <Box display="inline-flex" paddingLeft={1.5}>
+                <VotingCountdown
+                  handleExpiry={handleVotingExpired}
+                  handleReload={handleReload}
+                  voteEndDate={voteEndDate}
+                />
               </Box>
             )}
           </>
         ),
       }}
-      drawer={{
-        heading: 'Settings',
-        children: (
-          <FormControl component="fieldset">
-            <List
-              dense
-              subheader={<ListSubheader className={classes.listSubheader}>Density</ListSubheader>}
-            >
-              <RadioGroup
-                aria-label="density"
-                name="density"
-                value={density}
-                onChange={handleDensityChange}
-              >
-                <ListItem>
-                  <FormControlLabel
-                    value="default"
-                    control={<CustomRadio color="primary" />}
-                    label="Default"
-                  />
-                </ListItem>
-                <ListItem>
-                  <FormControlLabel
-                    value="compact"
-                    control={<CustomRadio color="primary" />}
-                    label="Compact"
-                  />
-                </ListItem>
-              </RadioGroup>
-            </List>
-          </FormControl>
-        ),
-      }}
+      drawer={
+        descriptionEntryId
+          ? { heading: 'Info', children: <EntryDescriptionDrawer entryId={descriptionEntryId} /> }
+          : {
+            heading: 'Settings',
+            children: (
+              <FormControl component="fieldset">
+                <List
+                  dense
+                  subheader={
+                    <ListSubheader className={classes.listSubheader}>Density</ListSubheader>
+                    }
+                >
+                  <RadioGroup
+                    aria-label="density"
+                    name="density"
+                    value={density}
+                    onChange={handleDensityChange}
+                  >
+                    <ListItem>
+                      <FormControlLabel
+                        value="default"
+                        control={<CustomRadio color="primary" />}
+                        label="Default"
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <FormControlLabel
+                        value="compact"
+                        control={<CustomRadio color="primary" />}
+                        label="Compact"
+                      />
+                    </ListItem>
+                  </RadioGroup>
+                </List>
+              </FormControl>
+            ),
+          }
+      }
     >
       <ExternalLink
         className={classes.sponsorBanner}
@@ -413,144 +503,219 @@ function Contest() {
           <Typography className={classes.heading} variant={headingVariant} component="h1">
             {name}
           </Typography>
-          {allowVoting && subtext && (
+          {isContestMode && subtext && (
             <Box marginBottom={3}>
               <Typography component="div" variant="subtitle1">
                 <HtmlWrapper html={subtext} />
               </Typography>
             </Box>
           )}
+          {categories?.length > 0 && (
+            <div className={classes.categories}>
+              <Typography id={FILTER_CATEGORIES_LABEL_ID} variant="caption">
+                Filter categories:
+              </Typography>
+              <Select
+                input={<Input />}
+                labelId={FILTER_CATEGORIES_LABEL_ID}
+                MenuProps={CATEGORY_MENU_PROPS}
+                multiple
+                onChange={handleCategoryChange}
+                renderValue={(selected) => (
+                  <Box display="flex" flexWrap="wrap">
+                    {selected.map((value) => (
+                      <Chip
+                        className={clsx(
+                          classes.categoryChip,
+                          categoryLabelClasses[
+                            `label${categories.indexOf(value) % LABEL_COLORS.length}`
+                          ],
+                        )}
+                        key={value}
+                        label={value}
+                      />
+                    ))}
+                  </Box>
+                )}
+                value={selectedCategories}
+              >
+                {categories.map((category, index) => (
+                  <MenuItem
+                    className={clsx({
+                      [classes.selectedCategory]: selectedCategories.includes(category),
+                    })}
+                    key={category}
+                    value={category}
+                  >
+                    <div
+                      className={clsx(
+                        classes.categoryLabel,
+                        categoryLabelClasses[`label${index % LABEL_COLORS.length}`],
+                      )}
+                    >
+                      {category}
+                    </div>
+                  </MenuItem>
+                ))}
+              </Select>
+              <Button
+                disabled={!selectedCategories.length}
+                size="small"
+                onClick={resetSelectedCategories}
+              >
+                Reset
+              </Button>
+            </div>
+          )}
           {winners && winners.length > 0 && (
             <>
               <Subheader>Top 20</Subheader>
-              {winners.map(
-                ({
-                  average,
-                  height,
-                  id,
-                  imgurLink,
-                  name: entryName,
-                  rank,
-                  rating,
-                  user,
-                  width,
-                }) => (
-                  <React.Fragment key={id}>
-                    <div id={id} className={classes.winnerHeading}>
-                      <Typography variant={headingVariant}>
-                        <span className={classes.numberSymbol}>#</span>
-                        {rank}
+              {winners.map(({
+                height, id, imgurLink, name: entryName, rank, user, width,
+              }) => (
+                <React.Fragment key={id}>
+                  <div id={id} className={classes.winnerHeading}>
+                    <Typography variant={headingVariant}>
+                      <span className={classes.numberSymbol}>#</span>
+                      {rank}
+                    </Typography>
+                    <div className={classes.winnerContent}>
+                      <Typography variant="subtitle2">{entryName}</Typography>
+                      <Typography variant="caption">
+                        <RedditUserAttribution user={user} />
                       </Typography>
-                      <div className={classes.winnerContent}>
-                        <Typography variant="subtitle2">{entryName}</Typography>
-                        <Typography variant="caption">
-                          <RedditUserAttribution user={user} />
-                        </Typography>
-                      </div>
-                      <div className={classes.winnerRatings}>
-                        <Average average={average} />
-                        {rating > -1 && (
-                          <Typography className={classes.myRating} variant="caption">
-                            My&nbsp;rating:&nbsp;
-                            <FiveStar rating={rating} />
-                          </Typography>
-                        )}
-                      </div>
                     </div>
-                    <Card className={classes.winnerCard} elevation={2}>
-                      <CardImageLink
-                        displayWidth={winnerDisplayWidth}
-                        height={height}
-                        id={id}
-                        image={imgurLink}
-                        onClick={updateScroll}
-                        width={width}
-                      />
-                    </Card>
-                  </React.Fragment>
-                ),
-              )}
+                  </div>
+                  <Card className={classes.winnerCard} elevation={2}>
+                    <CardImageLink
+                      displayWidth={winnerDisplayWidth}
+                      height={height}
+                      id={id}
+                      image={imgurLink}
+                      onClick={updateScroll}
+                      width={width}
+                    />
+                  </Card>
+                </React.Fragment>
+              ))}
               <Divider className={classes.divider} />
               <Subheader>All other entries</Subheader>
             </>
           )}
           {entries && (
             <Grid container spacing={density === 'compact' ? 1 : 2}>
-              {entries.map(
-                ({
-                  average,
-                  id,
-                  imgurId,
-                  imgurLink,
-                  height,
-                  name: entryName,
-                  rank,
-                  rating,
-                  user,
-                  width,
-                }) => (
-                  // eslint-disable-next-line react/jsx-props-no-spreading
-                  <Grid key={id} item {...getGridVariables(rank === '1')}>
-                    <Card id={id} className={classes.entry}>
-                      <CardContent className={classes.entryHeading}>
-                        {rank && (
-                          <Typography component="div" variant="h6">
-                            <span className={classes.numberSymbol}>#</span>
-                            {rank}
-                          </Typography>
-                        )}
-                        <div className={clsx({ [classes.entryInfo]: !!rank })}>
-                          <div>
-                            <Typography component="div" variant="subtitle2">
-                              {entryName}
+              {entries
+                .filter(
+                  // eslint-disable-next-line max-len
+                  ({ category }) => !selectedCategories.length || selectedCategories.includes(category),
+                )
+                .map(
+                  ({
+                    average,
+                    category,
+                    categoryRank,
+                    id,
+                    imgurId,
+                    imgurLink,
+                    height,
+                    name: entryName,
+                    rank,
+                    rating,
+                    user,
+                    width,
+                  }) => (
+                    // eslint-disable-next-line react/jsx-props-no-spreading
+                    <Grid key={id} item {...getGridVariables(rank === '1')}>
+                      <Card id={id} className={classes.entry}>
+                        <CardContent className={classes.entryHeading}>
+                          {rank && (
+                            <Typography component="div" variant="h6">
+                              <span className={classes.numberSymbol}>#</span>
+                              {rank}
                             </Typography>
-                            {user && (
-                              <Typography variant="caption">
-                                <RedditUserAttribution user={user} />
-                              </Typography>
+                          )}
+                          <div className={classes.entryInfo}>
+                            <Box alignItems="flex-start" display="flex" flexGrow={1}>
+                              <Box flexGrow={1}>
+                                <Typography component="div" variant="subtitle2">
+                                  {entryName}
+                                </Typography>
+                                {user && (
+                                  <Typography variant="caption">
+                                    <RedditUserAttribution user={user} />
+                                  </Typography>
+                                )}
+                              </Box>
+                              <Experiment name="contest_card_description">
+                                <CustomIconButton
+                                  ariaLabel="View description"
+                                  className={classes.descriptionIcon}
+                                  Icon={DescriptionIcon}
+                                  onClick={() => {
+                                    viewDescription(id);
+                                  }}
+                                  size="small"
+                                />
+                              </Experiment>
+                            </Box>
+                            {(!isContestMode || category) && (
+                              <div className={classes.entryRatings}>
+                                {category && (
+                                  <CategoryLabel
+                                    categories={categories}
+                                    category={category}
+                                    categoryRank={categoryRank}
+                                  />
+                                )}
+                                {!isContestMode && (
+                                  <>
+                                    <Average average={average} fullText={rank === '1'} />
+                                    {rating > -1 && (
+                                      <Typography className={classes.myRating} variant="caption">
+                                        {rank === '1' && <span>My&nbsp;rating:&nbsp;</span>}
+                                        <FiveStar rating={rating} />
+                                      </Typography>
+                                    )}
+                                  </>
+                                )}
+                              </div>
                             )}
                           </div>
-                          {!allowVoting && (
-                            <div className={classes.entryRatings}>
-                              <Average average={average} fullText={false} />
-                              {rating > -1 && <FiveStar rating={rating} />}
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                      <div className={classes.entryImageContainer}>
-                        <CardImageLink
-                          displayWidth={rank === '1' ? winnerDisplayWidth : gridDisplayWidth}
-                          height={height}
-                          id={id}
-                          image={imgurLink}
-                          onClick={updateScroll}
-                          width={width}
-                        />
-                      </div>
-                      {allowVoting && (
-                        <CardActions
-                          className={clsx(classes.votingSlider, {
-                            [classes.disabledVoting]: votingDisabled,
-                          })}
-                        >
-                          <VotingSlider
-                            disabled={votingDisabled}
-                            entryId={imgurId}
-                            rating={rating}
-                            setComponentsState={setComponentsState}
+                        </CardContent>
+                        <div className={classes.entryImageContainer}>
+                          <CardImageLink
+                            displayWidth={rank === '1' ? winnerDisplayWidth : gridDisplayWidth}
+                            height={height}
+                            id={id}
+                            image={imgurLink}
+                            nextState={{ selectedCategories }}
+                            onClick={updateScroll}
+                            width={width}
                           />
-                        </CardActions>
-                      )}
-                    </Card>
-                  </Grid>
-                ),
-              )}
+                        </div>
+                        {isContestMode && (
+                          <CardActions
+                            className={clsx(classes.votingSlider, {
+                              [classes.disabledVoting]: votingDisabled,
+                            })}
+                          >
+                            <VotingSlider
+                              disabled={votingUnavailable}
+                              entryId={imgurId}
+                              rating={rating}
+                              setComponentsState={setComponentsState}
+                            />
+                          </CardActions>
+                        )}
+                      </Card>
+                    </Grid>
+                  ),
+                )}
             </Grid>
           )}
         </Container>
       )}
-      <VotingComponents />
+      <RedditLogInDialog />
     </PageWithDrawer>
   );
 }

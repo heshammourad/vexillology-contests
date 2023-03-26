@@ -1,0 +1,8 @@
+const snackbarTypes = {
+  SETTINGS_ERROR: 'SETTINGS_ERROR',
+  SETTINGS_SUCCESS: 'SETTINGS_SUCCESS',
+  VOTING_ERROR: 'VOTING_ERROR',
+  VOTING_SUCCESS: 'VOTING_SUCCESS',
+};
+
+export default snackbarTypes;

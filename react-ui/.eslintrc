@@ -5,6 +5,17 @@
   "extends": [
     "airbnb"
   ],
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "babelOptions": {
+      "presets": [
+        "@babel/preset-react"
+      ]
+    },
+    "ecmaVersion": 2023,
+    "requireConfigFile": false,
+    "sourceType": "module"
+  },
   "plugins": [
     "mui-unused-classes"
   ],
@@ -50,6 +61,8 @@
         ],
         "patterns": [
           "**/common/*",
+          "!**/common/snackbarTypes",
+          "!**/common/styles",
           "!**/common/types",
           "**/components/*",
           "**/pages/*"

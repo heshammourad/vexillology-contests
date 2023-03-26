@@ -9,7 +9,9 @@ import TwitterIcon from '@material-ui/icons/Twitter';
 import { useLocation } from 'react-router-dom';
 
 import { useSwrData } from '../../common';
-import { CustomIconButton, ExternalLink, InternalLink } from '../../components';
+import {
+  AppBarDivided, CustomIconButton, ExternalLink, InternalLink,
+} from '../../components';
 import logo from '../../images/logo.png';
 
 const useStyles = makeStyles((theme) => ({
@@ -80,6 +82,7 @@ function Home() {
   const classes = useStyles();
   return (
     <>
+      <AppBarDivided color="default" position="sticky" />
       <Container>
         <Typography className={classes.heading} component="h1" variant="h6">
           Welcome to Vexillology Contests!

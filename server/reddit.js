@@ -53,9 +53,9 @@ const getContest = async (submissionId) => {
   const isContestMode = await submission.contest_mode;
   const entries = await submission.comments.reduce(
     (acc, {
-      author, body, body_html: bodyHtml, id, permalink,
+      author, body, body_html: bodyHtml, id, permalink, removed,
     }) => {
-      if (author.name !== 'Vexy') {
+      if (author.name !== 'Vexy' || removed) {
         return acc;
       }
 

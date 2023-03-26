@@ -27,6 +27,14 @@ db.$config.options.receive = (data) => {
 
 db.$config.options.schema = DATABASE_SCHEMA;
 
+const addReturningFields = (query, returning = []) => {
+  let newQuery = query;
+  if (returning.length) {
+    newQuery += ` RETURNING ${returning.join(', ')}`;
+  }
+  return newQuery;
+};
+
 const del = async (table, values) => {
   const whereCondition = Object.keys(values)
     .reduce((acc, cur, idx) => {
@@ -37,10 +45,11 @@ const del = async (table, values) => {
   await db.none(`DELETE FROM ${table} WHERE ${whereCondition}`, Object.values(values));
 };
 
-const insert = async (table, values) => {
+const insert = async (table, values, returning = []) => {
   const cs = new pgp.helpers.ColumnSet(Object.keys(values[0]), { table });
-  const query = pgp.helpers.insert(values, cs);
-  await db.none(query);
+  const query = addReturningFields(pgp.helpers.insert(values, cs), returning);
+  const result = await db.manyOrNone(query);
+  return result;
 };
 
 const select = async (queryStr, values) => {
@@ -53,7 +62,7 @@ const select = async (queryStr, values) => {
   return null;
 };
 
-const update = async (table, data, columns) => {
+const update = async (table, data, columns, returning = []) => {
   const cs = new pgp.helpers.ColumnSet(columns, { table });
   const whereCondition = columns.reduce((acc, cur, idx) => {
     if (!cur.startsWith('?')) {
@@ -69,8 +78,12 @@ const update = async (table, data, columns) => {
     return `${result} v.${column} = t.${column}`;
   }, ' WHERE');
 
-  const query = pgp.helpers.update(data, cs) + whereCondition;
-  await db.none(query);
+  const query = addReturningFields(
+    pgp.helpers.update(data, cs) + whereCondition,
+    returning.map((field) => `t.${field}`),
+  );
+  const result = await db.manyOrNone(query);
+  return result;
 };
 
 module.exports = {

@@ -1,6 +1,9 @@
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import RefreshIcon from '@material-ui/icons/Refresh';
 import ScheduleIcon from '@material-ui/icons/Schedule';
 import clsx from 'clsx';
 import differenceInDays from 'date-fns/differenceInDays';
@@ -15,20 +18,28 @@ const DELIMITER = ', ';
 const VOTING_DAYS = 8;
 
 const useStyles = makeStyles((theme) => ({
+  icon: {
+    [theme.breakpoints.down('xs')]: {
+      display: 'none',
+    },
+  },
   voteCountdown: {
     alignItems: 'center',
+    columnGap: 12,
     display: 'inline-flex',
   },
   voteCountdownLabel: {
     lineHeight: '24px',
-    paddingLeft: 12,
   },
   voteCountdownWarning: {
     color: theme.palette.error.main,
   },
 }));
 
-function VotingCountdown({ fontSize, voteEndDate }) {
+function VotingCountdown({
+  fontSize, handleExpiry, handleReload, voteEndDate,
+}) {
+  const [initialized, setInitialized] = useState(false);
   const [textFontSize, setFontSize] = useState();
   const [timeLeft, setTimeLeft] = useState();
 
@@ -37,14 +48,16 @@ function VotingCountdown({ fontSize, voteEndDate }) {
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
 
   let labelVariant = 'body2';
-  if (fontSize === 'small') {
+  if (fontSize === 'small' || !isSmUp) {
     labelVariant = 'caption';
   }
 
   useEffect(() => {
     const interval = setInterval(() => {
       if (!isFuture(voteEndDate)) {
+        setFontSize();
         setTimeLeft();
+        handleExpiry();
         clearInterval(interval);
         return;
       }
@@ -73,6 +86,7 @@ function VotingCountdown({ fontSize, voteEndDate }) {
           .join(DELIMITER)
         : formatDistanceStrict(start, voteEndDate);
       setTimeLeft(newTimeLeft);
+      setInitialized(true);
     }, 500);
 
     return () => {
@@ -82,32 +96,48 @@ function VotingCountdown({ fontSize, voteEndDate }) {
     };
   }, [voteEndDate]);
 
-  if (!timeLeft) {
+  if (!initialized) {
     return null;
   }
 
   return (
     <div
       className={clsx(classes.voteCountdown, {
-        [classes.voteCountdownWarning]: !differenceInDays(voteEndDate, new Date()),
+        [classes.voteCountdownWarning]: timeLeft && !differenceInDays(voteEndDate, new Date()),
       })}
     >
-      <ScheduleIcon fontSize={fontSize} />
+      <ScheduleIcon className={classes.icon} fontSize={fontSize} />
       <Typography
         className={classes.voteCountdownLabel}
-        style={textFontSize ? { fontSize: `${textFontSize}rem` } : null}
+        style={isSmUp && timeLeft && textFontSize ? { fontSize: `${textFontSize}rem` } : null}
         variant={labelVariant}
       >
-        <span>{timeLeft}</span>
-        {' '}
-        left to vote!
+        {timeLeft ? (
+          <>
+            <span>{timeLeft}</span>
+            {' '}
+            left to vote!
+          </>
+        ) : (
+          <>Voting has ended</>
+        )}
       </Typography>
+      {!timeLeft
+        && (isSmUp ? (
+          <Button onClick={handleReload}>Load Results</Button>
+        ) : (
+          <IconButton onClick={handleReload}>
+            <RefreshIcon />
+          </IconButton>
+        ))}
     </div>
   );
 }
 
 VotingCountdown.propTypes = {
   fontSize: PropTypes.oneOf(['medium', 'small']),
+  handleExpiry: PropTypes.func.isRequired,
+  handleReload: PropTypes.func.isRequired,
   voteEndDate: PropTypes.instanceOf(Date).isRequired,
 };
 

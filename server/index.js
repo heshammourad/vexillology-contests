@@ -21,6 +21,7 @@ const { camelizeObjectKeys } = require('./util');
 const logger = createLogger('INDEX');
 
 const {
+  CONTESTS_AVERAGE_FORMAT = '0.000',
   CONTESTS_CACHE_TIMEOUT = 3600,
   ENV_LEVEL,
   NODE_ENV,
@@ -33,6 +34,7 @@ const isDev = NODE_ENV !== 'production';
 const PORT = ENV_PORT || 5000;
 
 const LAST_WINNER_RANK = 20;
+const SETTINGS_FIELDS = ['contest_reminders'];
 
 // Multi-process to utilize all CPU cores.
 if (!isDev && cluster.isMaster) {
@@ -114,6 +116,14 @@ if (!isDev && cluster.isMaster) {
     await db.insert('entries', filteredData);
   };
 
+  const getSettings = async (username) => {
+    const [settings] = await db.select(
+      `SELECT ${SETTINGS_FIELDS.join(', ')} FROM users WHERE username = $1`,
+      [username],
+    );
+    return settings;
+  };
+
   const getVoteDates = async (contestId) => {
     const voteDates = await db.select(
       'SELECT vote_start, vote_end, now() FROM contests WHERE id = $1',
@@ -128,18 +138,6 @@ if (!isDev && cluster.isMaster) {
   const router = express.Router();
 
   router.use(express.json());
-
-  router.get('/init', async (req, res) => {
-    try {
-      res.send({
-        title: TITLE,
-        webAppClientId: WEB_APP_CLIENT_ID,
-      });
-    } catch (err) {
-      logger.error(`Error getting /init: ${err}`);
-      res.status(500).send();
-    }
-  });
 
   router.get('/accessToken/:code', async ({ params: { code } }, res) => {
     try {
@@ -158,20 +156,6 @@ if (!isDev && cluster.isMaster) {
       res.send(response);
     } catch (err) {
       logger.error(`Error retrieving access token: ${err}`);
-      res.status(500).send();
-    }
-  });
-
-  router.get('/revokeToken/:refreshToken', async ({ params: { refreshToken } }, res) => {
-    try {
-      if (!refreshToken) {
-        logger.warn('Missing refresh token');
-        res.status(400).send();
-      }
-      await reddit.revokeRefreshToken(refreshToken);
-      res.status(204).send();
-    } catch (e) {
-      logger.error(`Error revoking token: ${e}`);
       res.status(500).send();
     }
   });
@@ -361,7 +345,29 @@ if (!isDev && cluster.isMaster) {
           return;
         }
 
+        let categories = await db.select(
+          'SELECT category FROM contest_categories WHERE contest_id = $1 ORDER BY category',
+          [id],
+        );
+        if (categories.length) {
+          categories = categories.map(({ category }) => category);
+
+          const entryCategories = await db.select(
+            'SELECT entry_id, category FROM contest_entries WHERE contest_id = $1',
+            [id],
+          );
+          const map = new Map();
+          contest.entries.forEach((entry) => {
+            map.set(entry.imgurId, entry);
+          });
+          entryCategories.forEach(({ category, entryId }) => {
+            map.set(entryId, { ...map.get(entryId), category });
+          });
+          contest.entries = Array.from(map.values());
+        }
+
         const response = {
+          categories,
           date: date.toJSON().substr(0, 10),
           localVoting,
           name,
@@ -417,12 +423,18 @@ if (!isDev && cluster.isMaster) {
           });
         } else if (localVoting) {
           const voteData = await db.select(
-            'SELECT entry_id, rank, average FROM contests_summary WHERE contest_id = $1',
+            'SELECT entry_id, rank, category_rank, average FROM contests_summary WHERE contest_id = $1',
             [id],
           );
           const map = new Map();
-          voteData.forEach(({ average, entryId, rank }) => {
-            map.set(entryId, { average: numeral(average).format('0.00'), rank });
+          voteData.forEach(({
+            average, categoryRank, entryId, rank,
+          }) => {
+            map.set(entryId, {
+              average: numeral(average).format(CONTESTS_AVERAGE_FORMAT),
+              categoryRank,
+              rank,
+            });
           });
           response.entries.forEach((entry) => {
             map.set(entry.imgurId, {
@@ -460,6 +472,138 @@ if (!isDev && cluster.isMaster) {
       }
     },
   );
+
+  router.get('/hallOfFame', async (req, res) => {
+    try {
+      const result = await db.select('SELECT * FROM hall_of_fame');
+
+      const removedYearEndWinners = [];
+      const response = result.reduce(
+        (acc, {
+          contestId, date, entryId, validRedditId, winnersThreadId, yearEnd, ...rest
+        }) => {
+          if (yearEnd && result.filter((entry) => entry.entryId === entryId).length > 1) {
+            removedYearEndWinners.push(entryId);
+            return acc;
+          }
+
+          let redditThreadId = winnersThreadId;
+          if (!redditThreadId && validRedditId) {
+            redditThreadId = contestId;
+          }
+
+          return [
+            ...acc,
+            {
+              date: date.toJSON().substr(0, 7),
+              entryId,
+              redditThreadId,
+              yearEndContest: yearEnd,
+              yearEndWinner: yearEnd || removedYearEndWinners.includes(entryId),
+              ...rest,
+            },
+          ];
+        },
+        [],
+      );
+      logger.debug(`Got '${JSON.stringify(response)}' for /hallOfFame`);
+      res.send(response);
+    } catch (err) {
+      logger.error(`Error getting /hallOfFame: ${err}`);
+      res.status(500).send();
+    }
+  });
+
+  router.get('/init', async (req, res) => {
+    try {
+      const experimentsData = await db.select('SELECT * FROM experiments');
+      const experiments = experimentsData.reduce((acc, { active, name }) => {
+        acc[name] = active;
+        return acc;
+      }, {});
+      res.send({
+        experiments,
+        title: TITLE,
+        webAppClientId: WEB_APP_CLIENT_ID,
+      });
+    } catch (err) {
+      logger.error(`Error getting /init: ${err}`);
+      res.status(500).send();
+    }
+  });
+
+  router.get('/revokeToken/:refreshToken', async ({ params: { refreshToken } }, res) => {
+    try {
+      if (!refreshToken) {
+        logger.warn('Missing refresh token');
+        res.status(400).send();
+      }
+      await reddit.revokeRefreshToken(refreshToken);
+      res.status(204).send();
+    } catch (e) {
+      logger.error(`Error revoking token: ${e}`);
+      res.status(500).send();
+    }
+  });
+
+  router
+    .route('/settings')
+    .all(({ headers: { accesstoken, refreshtoken } }, res, next) => {
+      try {
+        if (!accesstoken || !refreshtoken) {
+          res.status(401).send('Missing authentication headers.');
+          return;
+        }
+        next();
+      } catch (e) {
+        logger.error(`Error validing /settings request: ${e}`);
+        res.status(500).send();
+      }
+    })
+    .get(async ({ headers }, res) => {
+      try {
+        const username = await reddit.getUser(headers);
+        const settings = await getSettings(username);
+        if (!settings) {
+          res.status(404).send();
+          return;
+        }
+        res.status(200).send(settings);
+      } catch (e) {
+        logger.error(`Error getting settings: ${e}`);
+        res.status(500).send();
+      }
+    })
+    .put(async ({ body: { contestReminders }, headers }, res) => {
+      try {
+        if (typeof contestReminders !== 'boolean') {
+          res.status(400).send('contestReminders must be populated');
+          return;
+        }
+
+        const username = await reddit.getUser(headers);
+        const currentSettings = await getSettings(username);
+        const settingsData = [{ contest_reminders: contestReminders, username }];
+        let response;
+        let status;
+        if (!currentSettings) {
+          [response] = await db.insert('users', settingsData, SETTINGS_FIELDS);
+          status = 201;
+        } else {
+          [response] = await db.update(
+            'users',
+            settingsData,
+            ['?username', 'contest_reminders'],
+            SETTINGS_FIELDS,
+          );
+          status = 200;
+        }
+        res.status(status).send(response);
+      } catch (e) {
+        logger.error(`Error putting settings: ${e}`);
+        res.status(500).send();
+      }
+    });
 
   router
     .route('/votes')
@@ -580,47 +724,6 @@ if (!isDev && cluster.isMaster) {
         res.status(500).send();
       }
     });
-
-  router.get('/hallOfFame', async (req, res) => {
-    try {
-      const result = await db.select('SELECT * FROM hall_of_fame');
-
-      const removedYearEndWinners = [];
-      const response = result.reduce(
-        (acc, {
-          contestId, date, entryId, validRedditId, winnersThreadId, yearEnd, ...rest
-        }) => {
-          if (yearEnd && result.filter((entry) => entry.entryId === entryId).length > 1) {
-            removedYearEndWinners.push(entryId);
-            return acc;
-          }
-
-          let redditThreadId = winnersThreadId;
-          if (!redditThreadId && validRedditId) {
-            redditThreadId = contestId;
-          }
-
-          return [
-            ...acc,
-            {
-              date: date.toJSON().substr(0, 7),
-              entryId,
-              redditThreadId,
-              yearEndContest: yearEnd,
-              yearEndWinner: yearEnd || removedYearEndWinners.includes(entryId),
-              ...rest,
-            },
-          ];
-        },
-        [],
-      );
-      logger.debug(`Got '${JSON.stringify(response)}' for /hallOfFame`);
-      res.send(response);
-    } catch (err) {
-      logger.error(`Error getting /hallOfFame: ${err}`);
-      res.status(500).send();
-    }
-  });
 
   app.use('/api', router);
 

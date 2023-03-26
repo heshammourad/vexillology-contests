@@ -1,6 +1,4 @@
 import Box from '@material-ui/core/Box';
-import List from '@material-ui/core/List';
-import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
@@ -8,34 +6,21 @@ import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import RedditIcon from '@material-ui/icons/Reddit';
 import clsx from 'clsx';
-import differenceInDays from 'date-fns/differenceInDays';
-import isFuture from 'date-fns/isFuture';
 import throttle from 'lodash/throttle';
 import {
   useEffect, useMemo, useRef, useState,
 } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 
+import { useScrollState, useSettingsState, useSwrData } from '../../common';
 import {
-  useScrollState, useSettingsState, useSwrData, useComponentsState,
-} from '../../common';
-import {
-  AccountMenu,
   ArrowBackButton,
-  Average,
   CustomIconButton,
-  FiveStar,
-  FmpIcon,
-  HtmlWrapper,
-  ListItemButton,
+  EntryDescriptionDrawer,
   PageWithDrawer,
-  RedditUserAttribution,
-  VotingComponents,
-  VotingCountdown,
-  VotingSlider,
+  RedditLogInDialog,
 } from '../../components';
 
-import DrawerSectionHeader from './DrawerSectionHeader';
 import NavigateIconButton from './NavigateIconButton';
 
 const calculateImageContainerHeight = (offset) => `calc(100vh - ${offset}px)`;
@@ -46,10 +31,6 @@ const useStyles = makeStyles((theme) => ({
   },
   appBar: {
     backgroundColor: 'inherit',
-  },
-  average: {
-    flexGrow: 1,
-    fontWeight: 'bold',
   },
   clickActive: {
     cursor: 'pointer',
@@ -64,19 +45,6 @@ const useStyles = makeStyles((theme) => ({
   image: {
     maxHeight: '100%',
     maxWidth: '100%',
-  },
-  drawerContent: {
-    fontSize: '16px',
-    padding: '20px 24px',
-    wordBreak: 'break-word',
-  },
-  entryName: {
-    fontWeight: 'bold',
-  },
-  myRating: {
-    display: 'flex',
-    fontStyle: 'italic',
-    textAlign: 'end',
   },
   navigateBefore: {
     left: 28,
@@ -93,20 +61,12 @@ const useStyles = makeStyles((theme) => ({
   navigateVisible: {
     opacity: 1,
   },
-  rank: {
-    flexShrink: 0,
-    fontWeight: 'bold',
-    paddingRight: 8,
-  },
-  votingContainer: {
-    marginTop: 16,
-  },
 }));
 
 function Entry() {
   const { contestId, entryId } = useParams();
   const [{
-    entries = [], requestId, validRedditId, voteEnd, winners = [],
+    entries = [], localVoting, requestId, winners = [],
   }] = useSwrData(
     `/contests/${contestId}`,
   );
@@ -114,8 +74,6 @@ function Entry() {
   const { state = {} } = useLocation();
   const navigate = useNavigate();
   const classes = useStyles();
-
-  const [{ votingDisabled }, setComponentsState] = useComponentsState();
 
   const [scroll, setScroll] = useScrollState();
   const [{ isInfoOpen }, updateSettings] = useSettingsState();
@@ -173,7 +131,7 @@ function Entry() {
     setEntry({});
 
     const { id } = allEntriesRef.current[entryIndexRef.current + indexChange];
-    navigate(`../${id}`, { relative: 'path', replace: true });
+    navigate(`../${id}`, { relative: 'path', replace: true, state });
   };
 
   const handleKeyUp = ({ key }) => {
@@ -202,8 +160,6 @@ function Entry() {
 
   const navigationVisibleTimeoutRef = useRef(null);
   useEffect(() => {
-    setComponentsState();
-
     navigationVisibleTimeoutRef.current = setTimeout(() => {
       hideNavigation();
     }, 3000);
@@ -215,7 +171,10 @@ function Entry() {
   }, []);
 
   useEffect(() => {
-    const allEntries = [...winners, ...entries];
+    const allEntries = [...winners, ...entries].filter(
+      // eslint-disable-next-line max-len
+      ({ category }) => !state?.selectedCategories?.length || state?.selectedCategories?.includes(category),
+    );
     if (!entryId || !allEntries.length) {
       return;
     }
@@ -302,8 +261,6 @@ function Entry() {
 
   const redditPermalink = `https://www.reddit.com${entry.permalink}`;
   const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${entry.imgurLink}`;
-  const voteEndDate = new Date(voteEnd);
-  const isWinner = winners.some(({ id }) => id === entry.id);
 
   return (
     <>
@@ -313,10 +270,11 @@ function Entry() {
         className={classes.root}
         appBar={{
           position: 'fixed',
+          accountMenuColor: 'inherit',
           className: classes.appBar,
           right: entry.id && (
             <>
-              {validRedditId && (
+              {!localVoting && (
                 <CustomIconButton
                   innerRef={redditCommentButtonRef}
                   href={redditPermalink}
@@ -335,7 +293,6 @@ function Entry() {
                 onClick={toggleInfoDrawerOpen}
                 Icon={InfoOutlinedIcon}
               />
-              <AccountMenu />
             </>
           ),
           children: (
@@ -344,83 +301,16 @@ function Entry() {
               onClick={() => {
                 setScroll({ ...scroll, entryId: entry.id });
               }}
-              state={{ back: (state || {}).back, requestId }}
+              state={{
+                back: state?.back,
+                requestId,
+                selectedCategories: state?.selectedCategories ?? [],
+              }}
               to={`/contests/${contestId}`}
             />
           ),
         }}
-        drawer={{
-          heading: 'Info',
-          children: (
-            <div className={classes.drawerContent}>
-              <Box display="flex">
-                <>
-                  {isWinner && (
-                  <div className={classes.rank}>
-                    #
-                    {entry.rank}
-                  </div>
-                  )}
-                  <Box>
-                    <div className={classes.entryName}>{entry.name}</div>
-                    {isWinner && (
-                      <Typography variant="caption">
-                        <RedditUserAttribution user={entry.user} />
-                      </Typography>
-                    )}
-                  </Box>
-                </>
-              </Box>
-              {voteEnd
-                && entry.imgurId
-                && (isFuture(voteEndDate) ? (
-                  <>
-                    <DrawerSectionHeader>Submit Vote</DrawerSectionHeader>
-                    {!differenceInDays(voteEndDate, new Date()) && (
-                      <VotingCountdown fontSize="small" voteEndDate={voteEndDate} />
-                    )}
-                    <Box className={classes.votingContainer} alignItems="center" display="flex">
-                      <VotingSlider
-                        disabled={votingDisabled}
-                        entryId={entry.imgurId}
-                        rating={entry.rating}
-                        setComponentsState={setComponentsState}
-                      />
-                    </Box>
-                  </>
-                ) : (
-                  <Box display="flex" alignItems="baseline" paddingTop={1}>
-                    <Average average={entry.average} className={classes.average} />
-                    {entry.rating > -1 && (
-                      <Typography className={classes.myRating} variant="caption">
-                        My rating:&nbsp;
-                        <FiveStar rating={entry.rating} />
-                      </Typography>
-                    )}
-                  </Box>
-                ))}
-              <DrawerSectionHeader>Description</DrawerSectionHeader>
-              <HtmlWrapper html={entry.description} />
-              <DrawerSectionHeader>Links</DrawerSectionHeader>
-              <List>
-                {validRedditId && (
-                  <ListItemButton
-                    href={redditPermalink}
-                    Icon={RedditIcon}
-                    text="Open Reddit comment"
-                  />
-                )}
-                <ListItemButton href={flagWaverLink} Icon={FlagTwoToneIcon} text="Open FlagWaver" />
-                <ListItemButton
-                  href="https://flagmaker-print.com/"
-                  Icon={FmpIcon}
-                  target="_blank"
-                  text="Design & Print your own flag with FMP"
-                />
-              </List>
-            </div>
-          ),
-        }}
+        drawer={{ heading: 'Info', children: <EntryDescriptionDrawer entryId={entry.id} /> }}
       >
         <Box
           ref={imageContainerRef}
@@ -459,7 +349,7 @@ function Entry() {
           )}
         </Box>
       </PageWithDrawer>
-      <VotingComponents />
+      <RedditLogInDialog />
     </>
   );
 }
