@@ -18,7 +18,7 @@ const useStyles = makeStyles({
   },
 });
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, message, showCancel }) {
   const [{ isLoggedIn }] = useAuthState();
   const sendUserToAuthUrl = useRedditLogIn();
 
@@ -27,12 +27,14 @@ function ProtectedRoute({ children }) {
   if (!isLoggedIn) {
     return (
       <>
-        <Typography className={classes.message}>You must be signed in to view this page</Typography>
-        <Button color="primary">
-          <InternalLink className={classes.link} to="/home">
-            Cancel
-          </InternalLink>
-        </Button>
+        <Typography className={classes.message}>{message}</Typography>
+        {showCancel && (
+          <Button color="primary">
+            <InternalLink className={classes.link} to="/home">
+              Cancel
+            </InternalLink>
+          </Button>
+        )}
         <Button color="primary" onClick={sendUserToAuthUrl}>
           Log In
         </Button>
@@ -45,6 +47,13 @@ function ProtectedRoute({ children }) {
 
 ProtectedRoute.propTypes = {
   children: PropTypes.node.isRequired,
+  message: PropTypes.string,
+  showCancel: PropTypes.bool,
+};
+
+ProtectedRoute.defaultProps = {
+  message: 'You must be logged in to view this page',
+  showCancel: true,
 };
 
 export default ProtectedRoute;
