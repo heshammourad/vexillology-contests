@@ -183,7 +183,9 @@ if (!isDev && cluster.isMaster) {
     async ({ headers: { accesstoken, refreshtoken }, params: { id } }, res) => {
       try {
         const contestResults = await db.select(
-          'SELECT name, date, local_voting, subtext, valid_reddit_id, winners_thread_id FROM contests WHERE id = $1 AND env_level >= $2',
+          `SELECT name, date, local_voting, subtext, valid_reddit_id, winners_thread_id
+          FROM contests
+          WHERE id = $1 AND env_level >= $2`,
           [id, ENV_LEVEL],
         );
         if (!contestResults.length) {
@@ -211,7 +213,11 @@ if (!isDev && cluster.isMaster) {
         );
 
         const imagesData = await db.select(
-          'SELECT * FROM entries e JOIN contest_entries ce ON e.id = ce.entry_id WHERE contest_id = $1',
+          `SELECT *
+          FROM entries e
+          JOIN contest_entries ce
+            ON e.id = ce.entry_id
+          WHERE contest_id = $1`,
           [id],
         );
 
@@ -423,7 +429,9 @@ if (!isDev && cluster.isMaster) {
           });
         } else if (localVoting) {
           const voteData = await db.select(
-            'SELECT entry_id, rank, category_rank, average FROM contests_summary WHERE contest_id = $1',
+            `SELECT entry_id, rank, category_rank, average
+            FROM contests_summary
+            WHERE contest_id = $1`,
             [id],
           );
           const map = new Map();
@@ -604,6 +612,24 @@ if (!isDev && cluster.isMaster) {
         res.status(500).send();
       }
     });
+
+  router.route('/submission').get(async (req, res) => {
+    try {
+      const result = await db.select(
+        `SELECT id, name, submission_start, submission_end, prompt
+        FROM contests
+        WHERE submission_start < now()
+        LIMIT 1`,
+      );
+      if (!result.length) {
+        res.status(404).send();
+      }
+      res.status(200).send(result[0]);
+    } catch (err) {
+      logger.error(`Error getting /submission: ${err}`);
+      res.status(500).send();
+    }
+  });
 
   router
     .route('/votes')
