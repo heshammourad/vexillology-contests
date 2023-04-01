@@ -6,7 +6,7 @@ const numeral = require('numeral');
 const { v4: uuidv4 } = require('uuid');
 
 const db = require('../db');
-const { getVoteDates } = require('../db/queries');
+const { getCategories, getVoteDates } = require('../db/queries');
 const imgur = require('../imgur');
 const { createLogger } = require('../logger');
 const memcache = require('../memcache');
@@ -231,13 +231,8 @@ exports.get = async ({ headers: { accesstoken, refreshtoken }, params: { id } },
       return;
     }
 
-    let categories = await db.select(
-      'SELECT category FROM contest_categories WHERE contest_id = $1 ORDER BY category',
-      [id],
-    );
+    const categories = await getCategories(id);
     if (categories.length) {
-      categories = categories.map(({ category }) => category);
-
       const entryCategories = await db.select(
         'SELECT entry_id, category FROM contest_entries WHERE contest_id = $1',
         [id],
