@@ -1,8 +1,8 @@
 const { parse } = require('pg-connection-string');
 const pgp = require('pg-promise')();
 
-const { createLogger } = require('./logger');
-const { camelizeObjectKeys } = require('./util');
+const { createLogger } = require('../logger');
+const { camelizeObjectKeys } = require('../util');
 
 const { DATABASE_SCHEMA, DATABASE_URL } = process.env;
 

@@ -16,6 +16,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
+window.self.FIREBASE_APPCHECK_DEBUG_TOKEN = 'a3f42198-97f1-49fe-9fec-2c5974bb1bf1';
 initializeAppCheck(app, {
   provider: new ReCaptchaV3Provider('6LdVdzMlAAAAACClyDjipqu8966AvQBm_Eb5gNuE'),
   isTokenAutoRefreshEnabled: true,
