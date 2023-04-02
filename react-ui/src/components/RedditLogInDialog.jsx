@@ -37,7 +37,7 @@ function RedditLogInDialog() {
         <Button onClick={closeDialog} color="primary">
           Cancel
         </Button>
-        <Button onClick={handleLogIn} color="primary" autoFocus>
+        <Button onClick={handleLogIn} color="primary" variant="contained">
           Log In
         </Button>
       </DialogActions>

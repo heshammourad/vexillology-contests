@@ -25,15 +25,15 @@ const theme = createTheme({
     flagMakerPrint: {
       main: '#ea433e',
     },
+    primary: {
+      dark: '#c10000',
+      light: '#ff7c4c',
+      main: '#fc471e',
+    },
     vexyBlue: {
       dark: '#3868c8',
       light: '#a8c5ff',
       main: '#7295fc',
-    },
-    vexyOrange: {
-      dark: '#c10000',
-      light: '#ff7c4c',
-      main: '#fc471e',
     },
   },
 });

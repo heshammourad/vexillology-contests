@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme) => ({
     flexShrink: 0,
   },
   filled: {
-    color: theme.palette.vexyOrange.main,
+    color: theme.palette.primary.main,
     fontSize: STAR_SIZE,
   },
 }));

@@ -3,6 +3,7 @@ export { default as useAuthState } from './useAuthState';
 export { default as useCategoryLabelStyles } from './useCategoryLabelStyles';
 export { default as useClientWidth } from './useClientWidth';
 export { default as useComponentsState } from './useComponentsState';
+export { default as useFormState } from './useFormState';
 export { default as useRedditLogIn } from './useRedditLogIn';
 export { default as useScrollState } from './useScrollState';
 export { default as useSettingsState } from './useSettingsState';

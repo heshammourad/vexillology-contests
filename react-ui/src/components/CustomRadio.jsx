@@ -5,7 +5,7 @@ const CustomRadio = withStyles((theme) => ({
   root: {
     color: theme.palette.grey[600],
     '&$checked': {
-      color: theme.palette.vexyOrange.main,
+      color: theme.palette.primary.main,
     },
   },
   checked: {},

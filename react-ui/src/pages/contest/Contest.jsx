@@ -559,6 +559,7 @@ function Contest() {
                 ))}
               </Select>
               <Button
+                color="primary"
                 disabled={!selectedCategories.length}
                 size="small"
                 onClick={resetSelectedCategories}

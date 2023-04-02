@@ -7,7 +7,10 @@ import { useAuthState, useRedditLogIn } from '../common';
 
 import InternalLink from './InternalLink';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
+  cancelButton: {
+    marginRight: theme.spacing(2),
+  },
   link: {
     '&:hover': {
       textDecoration: 'none',
@@ -16,7 +19,7 @@ const useStyles = makeStyles({
   message: {
     marginBottom: 16,
   },
-});
+}));
 
 function ProtectedRoute({ children, message, showCancel }) {
   const [{ isLoggedIn }] = useAuthState();
@@ -29,13 +32,13 @@ function ProtectedRoute({ children, message, showCancel }) {
       <>
         <Typography className={classes.message}>{message}</Typography>
         {showCancel && (
-          <Button color="primary">
+          <Button className={classes.cancelButton} color="primary">
             <InternalLink className={classes.link} to="/home">
               Cancel
             </InternalLink>
           </Button>
         )}
-        <Button color="primary" onClick={sendUserToAuthUrl}>
+        <Button color="primary" variant="contained" onClick={sendUserToAuthUrl}>
           Log In
         </Button>
       </>
