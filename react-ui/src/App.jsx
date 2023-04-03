@@ -30,7 +30,7 @@ const theme = createTheme({
       light: '#ff7c4c',
       main: '#fc471e',
     },
-    vexyBlue: {
+    secondary: {
       dark: '#3868c8',
       light: '#a8c5ff',
       main: '#7295fc',

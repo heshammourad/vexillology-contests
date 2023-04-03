@@ -1,10 +1,10 @@
 import Button from '@material-ui/core/Button';
 import Container from '@material-ui/core/Container';
-import Divider from '@material-ui/core/Divider';
 import FormControl from '@material-ui/core/FormControl';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import FormLabel from '@material-ui/core/FormLabel';
+import Grid from '@material-ui/core/Grid';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
@@ -14,7 +14,7 @@ import clsx from 'clsx';
 import isFuture from 'date-fns/isFuture';
 import parseISO from 'date-fns/parseISO';
 import debounce from 'lodash/debounce';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { markdown } from 'snudown-js';
 
 import { useAuthState, useFormState, useSwrData } from '../../common';
@@ -24,7 +24,13 @@ import {
 
 import ComplianceCheckbox from './ComplianceCheckbox';
 
+const MAX_FILE_SIZE = 1024 * 1024; // 1MB
+
 const useStyles = makeStyles((theme) => ({
+  chooseFileButton: {
+    flexShrink: 1,
+    height: 56,
+  },
   complianceCheckboxes: {
     rowGap: theme.spacing(1),
   },
@@ -34,11 +40,8 @@ const useStyles = makeStyles((theme) => ({
   container: {
     marginBottom: theme.spacing(3),
   },
-  divider: {
-    margin: '12px 0',
-  },
   file: {
-    columnGap: theme.spacing(1),
+    columnGap: theme.spacing(2),
     display: 'flex',
   },
   fileInput: {
@@ -58,7 +61,7 @@ const useStyles = makeStyles((theme) => ({
   flagPreviewActive: {
     display: 'block',
     maxHeight: 300,
-    maxWidth: 400,
+    maxWidth: '100%',
     objectFit: 'scale-down',
   },
   flagPreviewEmpty: {
@@ -70,10 +73,12 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: 'column',
     marginTop: 8,
     rowGap: 16,
-    width: 400,
   },
   header: {
     lineHeight: '64px',
+  },
+  subheader: {
+    marginBottom: theme.spacing(1),
   },
 }));
 
@@ -83,8 +88,18 @@ function Submission() {
   const [{
     categories, id: contestId, name: contestName, prompt, submissionEnd,
   }] = useSwrData('/submission');
-  const [formState, updateFormState] = useFormState(['category', 'description', 'name']);
-  const [file, setFile] = useState(null);
+  const [formState, updateFormState] = useFormState([
+    'name',
+    'category',
+    'file',
+    'description',
+    'complianceOriginalDesign',
+    'complianceAuthorshipAnonymous',
+    'complianceEffort',
+    'complianceOriginalArt',
+    'complianceNsfwFree',
+    'complianceFlagDimensions',
+  ]);
   const [{ username }] = useAuthState();
   const fileInputRef = useRef(null);
 
@@ -92,14 +107,20 @@ function Submission() {
     updateFormState(field, 'error', value);
   };
 
-  const validateForm = () => {
-    let validForm = true;
+  const validateForm = (submit = false) => {
+    let errorField = null;
 
-    const fieldsToValidate = Object.keys(formState).filter((field) => formState[field].touch);
+    const fieldsToValidate = Object.keys(formState).filter(
+      (field) => submit || formState[field].touch,
+    );
     fieldsToValidate.forEach((field) => {
       let errorValue = null;
       switch (field) {
         case 'category':
+          if (!categories.length) {
+            break;
+          }
+        // Fall through
         case 'description':
         case 'name':
           errorValue = formState[field].value ? null : 'This is a required question';
@@ -109,10 +130,16 @@ function Submission() {
           break;
       }
       updateError(field, errorValue);
-      validForm = validForm && !!errorValue;
+      if (!errorField && errorValue) {
+        errorField = field;
+      }
     });
 
-    return validForm;
+    if (submit && errorField) {
+      document.getElementById(errorField).focus();
+    }
+
+    return !errorField;
   };
 
   const validateFormDebounced = debounce(
@@ -136,40 +163,68 @@ function Submission() {
       files: [inputFile],
     },
   }) => {
-    if (!inputFile.type.startsWith('image/')) {
-      // Handle error
+    updateFormState('file', 'value', null);
+    document.getElementById('flag-preview').setAttribute('src', null);
+
+    const [type, subtype] = inputFile.type.split('/');
+    if (type !== 'image' || !['jpeg', 'png'].includes(subtype)) {
+      updateFormState('file', 'error', 'Must select an a JPEG or PNG image');
+      return;
+    }
+
+    if (inputFile.size > MAX_FILE_SIZE) {
+      updateFormState('file', 'error', 'File size cannot exceed 1MB');
       return;
     }
 
     fileReader.readAsDataURL(inputFile);
-    setFile(inputFile);
+    updateFormState('file', 'error', null);
+    updateFormState('file', 'value', inputFile);
   };
 
   const handleFieldBlur = ({ target: { id, name } }) => {
-    updateFormState(id ?? name, 'focus', false);
-    validateFormDebounced();
-  };
-
-  const handleFieldChange = ({ target: { id, name, value } }) => {
-    updateFormState(id ?? name, 'value', value);
-    validateFormDebounced();
-  };
-
-  const handleFieldFocus = ({ target: { id, name } }) => {
     const field = id ?? name;
-    updateFormState(field, 'focus', true);
+    updateFormState(field, 'focus', false);
     updateFormState(field, 'touch', true);
+    validateFormDebounced();
   };
 
-  const submitForm = () => {};
+  const handleFieldChange = ({
+    target: {
+      checked, id, name, value,
+    },
+  }) => {
+    const field = id ?? name;
+    updateFormState(field, 'value', field.startsWith('compliance') ? checked : value);
+    validateFormDebounced();
+  };
+
+  const getComplianceError = () => {
+    const complianceFields = Object.keys(formState).filter((field) => field.startsWith('compliance'));
+    return complianceFields.some((field) => {
+      const { touch, value } = formState[field];
+      return touch && !value;
+    });
+  };
+
+  const submitForm = async () => {
+    Object.keys(formState).forEach((field) => {
+      updateFormState(field, 'touch', true);
+    });
+
+    const validForm = validateForm(true);
+
+    const filePresent = !!formState.file.value;
+    if (!filePresent) {
+      updateFormState('file', 'error', 'Must choose file');
+      if (validForm) {
+        document.getElementById('fileName').scrollIntoView();
+      }
+    }
+  };
 
   const submissionEndDate = parseISO(submissionEnd);
   const submissionAllowed = isFuture(submissionEndDate);
-
-  const isErrorState = (field) => {
-    const { error, focus } = formState[field];
-    return !!error && !focus;
-  };
 
   const classes = useStyles();
 
@@ -183,175 +238,209 @@ function Submission() {
         Contest Submission
       </Header>
       <Container className={classes.container}>
-        <Typography className={classes.header} component="h1" variant="h5">
+        <Typography className={classes.header} component="h1" variant="h6">
           {contestName}
         </Typography>
-        <div>
-          {submissionAllowed ? (
-            <HtmlWrapper html={markdown(prompt)} />
-          ) : (
-            <div>
-              The submission window for this contest is over. Click&nbsp;
-              <InternalLink to={`/contests/${contestId}`}>here</InternalLink>
-              &nbsp;to view entries.
-            </div>
-          )}
-        </div>
-        {submissionAllowed && (
-          <>
-            <Divider className={classes.divider} />
-            <ProtectedRoute
-              message="You must log in with Reddit to submit a flag"
-              showCancel={false}
-            >
-              <div>
+        {submissionAllowed ? (
+          <Grid container spacing={4}>
+            <Grid item xs={12} sm={6}>
+              <Typography className={classes.subheader} component="h2" variant="subtitle1">
+                Contest prompt
+              </Typography>
+              <HtmlWrapper html={markdown(prompt)} />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <ProtectedRoute
+                message="You must log in with Reddit to submit a flag"
+                showCancel={false}
+              >
                 <div>
-                  <input
-                    ref={fileInputRef}
-                    className={classes.fileInput}
-                    type="file"
-                    accept="image/*"
-                    onChange={updateFile}
-                  />
-                </div>
-                <form id="submission-form" className={classes.form}>
-                  <TextField
-                    id="username"
-                    variant="filled"
-                    label="Username"
-                    disabled
-                    value={username}
-                  />
-                  <TextField
-                    id="name"
-                    name="name"
-                    variant="filled"
-                    helperText={
-                      isErrorState('name') ? formState.name.error : 'A concise name for your flag'
-                    }
-                    label="Flag Name"
-                    required
-                    error={isErrorState('name')}
-                    value={formState.name.value}
-                    onBlur={handleFieldBlur}
-                    onChange={handleFieldChange}
-                    onFocus={handleFieldFocus}
-                  />
-                  <div className={classes.file}>
-                    <TextField
-                      id="fileName"
-                      className={classes.fileName}
-                      variant="filled"
-                      disabled
-                      label="Upload File"
-                      required
-                      InputProps={{ readOnly: true }}
-                      value={file?.name ?? ''}
-                    />
-                    <Button color="primary" onClick={openFilePicker}>
-                      Choose file
-                    </Button>
-                  </div>
                   <div>
-                    <Typography variant="caption">Preview</Typography>
-                    <Paper
-                      className={clsx(classes.flagPreview, { [classes.flagPreviewEmpty]: !file })}
-                      elevation={0}
-                      variant="outlined"
-                    >
-                      <img
-                        id="flag-preview"
-                        alt=""
-                        className={clsx({ [classes.flagPreviewActive]: !!file })}
-                      />
-                    </Paper>
+                    <input
+                      ref={fileInputRef}
+                      className={classes.fileInput}
+                      type="file"
+                      accept="image/*"
+                      onChange={updateFile}
+                    />
                   </div>
-                  {!!categories.length && (
+                  <form id="submission-form" className={classes.form}>
                     <TextField
-                      id="category"
-                      name="category"
-                      select
+                      id="username"
                       variant="filled"
-                      label="Category"
+                      label="Username"
+                      disabled
+                      value={username}
+                    />
+                    <TextField
+                      id="name"
+                      name="name"
+                      color="secondary"
+                      variant="filled"
+                      helperText={formState.name.error || 'A concise name for your flag'}
+                      label="Flag Name"
                       required
-                      helperText={isErrorState('category') ? formState.category.error : null}
-                      error={isErrorState('category')}
-                      value={formState.category.value}
+                      error={!!formState.name.error}
+                      value={formState.name.value}
                       onBlur={handleFieldBlur}
                       onChange={handleFieldChange}
-                      onFocus={handleFieldFocus}
+                    />
+                    <div className={classes.file}>
+                      <TextField
+                        id="fileName"
+                        className={classes.fileName}
+                        variant="filled"
+                        disabled
+                        label="Upload File"
+                        required
+                        InputProps={{ readOnly: true }}
+                        value={formState.file.value?.name ?? ''}
+                        error={!!formState.file.error}
+                        helperText={
+                          formState.file.error || 'Upload a JPEG or PNG image (1MB max filesize)'
+                        }
+                      />
+                      <Button
+                        className={classes.chooseFileButton}
+                        color="secondary"
+                        onClick={openFilePicker}
+                      >
+                        Choose file
+                      </Button>
+                    </div>
+                    <div>
+                      <Typography variant="caption">Preview</Typography>
+                      <Paper
+                        className={clsx(classes.flagPreview, {
+                          [classes.flagPreviewEmpty]: !formState.file.value,
+                        })}
+                        elevation={0}
+                        variant="outlined"
+                      >
+                        <img
+                          id="flag-preview"
+                          alt=""
+                          className={clsx({ [classes.flagPreviewActive]: !!formState.file.value })}
+                        />
+                      </Paper>
+                    </div>
+                    {!!categories.length && (
+                      <TextField
+                        id="category"
+                        name="category"
+                        select
+                        color="secondary"
+                        variant="filled"
+                        label="Category"
+                        required
+                        helperText={formState.category.error}
+                        error={!!formState.category.error}
+                        value={formState.category.value}
+                        onBlur={handleFieldBlur}
+                        onChange={handleFieldChange}
+                      >
+                        <MenuItem value="">&nbsp;</MenuItem>
+                        {categories.map((category) => (
+                          <MenuItem key={category} value={category}>
+                            {category}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    )}
+                    <TextField
+                      id="description"
+                      name="description"
+                      color="secondary"
+                      variant="filled"
+                      multiline
+                      maxRows={6}
+                      minRows={6}
+                      label="Description"
+                      required
+                      helperText={
+                        formState.description.error
+                        || `This should be a 1-4 sentence description of your flag that explains
+                            any design choices you made`
+                      }
+                      error={!!formState.description.error}
+                      value={formState.description.value}
+                      onBlur={handleFieldBlur}
+                      onChange={handleFieldChange}
+                    />
+                    <FormControl
+                      required
+                      component="fieldset"
+                      color="secondary"
+                      error={getComplianceError()}
                     >
-                      <MenuItem value="">&nbsp;</MenuItem>
-                      {categories.map((category) => (
-                        <MenuItem key={category} value={category}>
-                          {category}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  )}
-                  <TextField
-                    id="description"
-                    name="description"
-                    variant="filled"
-                    multiline
-                    maxRows={6}
-                    minRows={6}
-                    label="Description"
-                    required
-                    helperText={
-                      isErrorState('description')
-                        ? formState.description.error
-                        : `This should be a 1-4 sentence description of your flag that explains any
-                           design choices you made`
-                    }
-                    error={isErrorState('description')}
-                    value={formState.description.value}
-                    onBlur={handleFieldBlur}
-                    onChange={handleFieldChange}
-                    onFocus={handleFieldFocus}
-                  />
-                  <FormControl required component="fieldset">
-                    <FormLabel className={classes.complianceLegend} component="legend">
-                      Contest Compliance
-                    </FormLabel>
-                    <FormGroup className={classes.complianceCheckboxes}>
-                      <ComplianceCheckbox
-                        name="original-design"
-                        label="Is your flag an original design for this contest?"
-                      />
-                      <ComplianceCheckbox
-                        name="authorship-anonymous"
-                        label="Have you kept your authorship anonymous?"
-                      />
-                      <ComplianceCheckbox
-                        name="effort"
-                        label="Have you put effort into your design and it is not designed to troll?"
-                      />
-                      <ComplianceCheckbox
-                        name="original-art"
-                        label="Is all the art used either original, or any components taken from public domain attributed in the description?"
-                      />
-                      <ComplianceCheckbox
-                        name="nsfw-free"
-                        label="Is your flag free of NSFW content? This includes nudity, gore and banned symbols."
-                      />
-                      <ComplianceCheckbox
-                        name="flag-dimensions"
-                        label="Is your flag at most 3000 pixels wide, and flat and not textured?"
-                      />
-                    </FormGroup>
-                    <FormHelperText>
-                      These 6 questions should all be answered with yes. If an answer is no, fix
-                      your submission until it complies with contest rules.
-                    </FormHelperText>
-                  </FormControl>
-                  <Button variant="contained" color="primary" onClick={submitForm}>
-                    Submit
-                  </Button>
-                </form>
-              </div>
-            </ProtectedRoute>
-          </>
+                      <FormLabel className={classes.complianceLegend} component="legend">
+                        Contest Compliance
+                      </FormLabel>
+                      <FormGroup className={classes.complianceCheckboxes}>
+                        <ComplianceCheckbox
+                          checked={formState.complianceOriginalDesign.value || false}
+                          label="Is your flag an original design for this contest?"
+                          name="complianceOriginalDesign"
+                          onBlur={handleFieldBlur}
+                          onChange={handleFieldChange}
+                        />
+                        <ComplianceCheckbox
+                          checked={formState.complianceAuthorshipAnonymous.value || false}
+                          label="Have you kept your authorship anonymous?"
+                          name="complianceAuthorshipAnonymous"
+                          onBlur={handleFieldBlur}
+                          onChange={handleFieldChange}
+                        />
+                        <ComplianceCheckbox
+                          checked={formState.complianceEffort.value || false}
+                          label="Have you put effort into your design and it is not designed to troll?"
+                          name="complianceEffort"
+                          onBlur={handleFieldBlur}
+                          onChange={handleFieldChange}
+                        />
+                        <ComplianceCheckbox
+                          checked={formState.complianceOriginalArt.value || false}
+                          label={`Is all the art used either original, or any components taken from
+                              public domain attributed in the description?`}
+                          name="complianceOriginalArt"
+                          onBlur={handleFieldBlur}
+                          onChange={handleFieldChange}
+                        />
+                        <ComplianceCheckbox
+                          checked={formState.complianceNsfwFree.value || false}
+                          label={`Is your flag free of NSFW content? This includes nudity, gore
+                              and banned symbols.`}
+                          name="complianceNsfwFree"
+                          onBlur={handleFieldBlur}
+                          onChange={handleFieldChange}
+                        />
+                        <ComplianceCheckbox
+                          checked={formState.complianceFlagDimensions.value || false}
+                          label="Is your flag at most 3000 pixels wide, and flat and not textured?"
+                          name="complianceFlagDimensions"
+                          onBlur={handleFieldBlur}
+                          onChange={handleFieldChange}
+                        />
+                      </FormGroup>
+                      <FormHelperText>
+                        These 6 questions should all be answered with yes. If an answer is no, fix
+                        your submission until it complies with contest rules.
+                      </FormHelperText>
+                    </FormControl>
+                    <Button variant="contained" color="primary" onClick={submitForm}>
+                      Submit
+                    </Button>
+                  </form>
+                </div>
+              </ProtectedRoute>
+            </Grid>
+          </Grid>
+        ) : (
+          <div>
+            The submission window for this contest is over. Click&nbsp;
+            <InternalLink to={`/contests/${contestId}`}>here</InternalLink>
+            &nbsp;to view entries.
+          </div>
         )}
       </Container>
     </>
