@@ -14,10 +14,12 @@ import clsx from 'clsx';
 import isFuture from 'date-fns/isFuture';
 import parseISO from 'date-fns/parseISO';
 import debounce from 'lodash/debounce';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { markdown } from 'snudown-js';
 
-import { useAuthState, useFormState, useSwrData } from '../../common';
+import {
+  uploadFile, useAuthState, useFormState, useSwrData,
+} from '../../common';
 import {
   Header, HtmlWrapper, InternalLink, ProtectedRoute,
 } from '../../components';
@@ -55,16 +57,20 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
   },
   flagPreview: {
-    maxHeight: 300,
-    width: 'fit-content',
+    visibility: 'hidden',
   },
   flagPreviewActive: {
     display: 'block',
     maxHeight: 300,
     maxWidth: '100%',
     objectFit: 'scale-down',
+    visibility: 'visible',
   },
-  flagPreviewEmpty: {
+  flagPreviewContainer: {
+    maxHeight: 300,
+    width: 'fit-content',
+  },
+  flagPreviewContainerEmpty: {
     height: 300,
     width: '100%',
   },
@@ -86,7 +92,7 @@ const fileReader = new FileReader();
 
 function Submission() {
   const [{
-    categories, id: contestId, name: contestName, prompt, submissionEnd,
+    categories, firebaseToken, id: contestId, name: contestName, prompt, submissionEnd,
   }] = useSwrData('/submission');
   const [formState, updateFormState] = useFormState([
     'name',
@@ -98,10 +104,13 @@ function Submission() {
     'complianceEffort',
     'complianceOriginalArt',
     'complianceNsfwFree',
-    'complianceFlagDimensions',
+    'complianceFlatFlag',
   ]);
+  const [fileDimensions, setFileDimensions] = useState(null);
   const [{ username }] = useAuthState();
   const fileInputRef = useRef(null);
+  const fileNameRef = useRef(null);
+  const flagPreviewRef = useRef(null);
 
   const updateError = (field, value) => {
     updateFormState(field, 'error', value);
@@ -151,11 +160,17 @@ function Submission() {
   );
 
   fileReader.onload = ({ target: { result } }) => {
-    document.getElementById('flag-preview').setAttribute('src', result);
+    flagPreviewRef.current.setAttribute('src', result);
   };
 
   const openFilePicker = () => {
     fileInputRef.current.click();
+  };
+
+  const clearFile = () => {
+    updateFormState('file', 'value', null);
+    flagPreviewRef.current.setAttribute('src', null);
+    setFileDimensions(null);
   };
 
   const updateFile = ({
@@ -163,8 +178,7 @@ function Submission() {
       files: [inputFile],
     },
   }) => {
-    updateFormState('file', 'value', null);
-    document.getElementById('flag-preview').setAttribute('src', null);
+    clearFile();
 
     const [type, subtype] = inputFile.type.split('/');
     if (type !== 'image' || !['jpeg', 'png'].includes(subtype)) {
@@ -199,6 +213,15 @@ function Submission() {
     validateFormDebounced();
   };
 
+  const handleImageLoad = ({ target: { naturalHeight, naturalWidth } }) => {
+    if (naturalHeight > 3000 || naturalWidth > 3000) {
+      clearFile();
+      updateFormState('file', 'error', 'Image dimensions cannot be more than 3000px');
+      return;
+    }
+    setFileDimensions({ height: naturalHeight, width: naturalWidth });
+  };
+
   const getComplianceError = () => {
     const complianceFields = Object.keys(formState).filter((field) => field.startsWith('compliance'));
     return complianceFields.some((field) => {
@@ -208,6 +231,7 @@ function Submission() {
   };
 
   const submitForm = async () => {
+    // TODO: Disable button and add spinner
     Object.keys(formState).forEach((field) => {
       updateFormState(field, 'touch', true);
     });
@@ -218,9 +242,17 @@ function Submission() {
     if (!filePresent) {
       updateFormState('file', 'error', 'Must choose file');
       if (validForm) {
-        document.getElementById('fileName').scrollIntoView();
+        fileNameRef.current.scrollIntoView();
       }
     }
+
+    if (!validForm || !filePresent) {
+      return;
+    }
+
+    // eslint-disable-next-line no-unused-vars
+    const downloadUrl = await uploadFile(firebaseToken, formState.file.value);
+    // TODO: Send data to server
   };
 
   const submissionEndDate = parseISO(submissionEnd);
@@ -288,6 +320,7 @@ function Submission() {
                     <div className={classes.file}>
                       <TextField
                         id="fileName"
+                        ref={fileNameRef}
                         className={classes.fileName}
                         variant="filled"
                         disabled
@@ -311,16 +344,21 @@ function Submission() {
                     <div>
                       <Typography variant="caption">Preview</Typography>
                       <Paper
-                        className={clsx(classes.flagPreview, {
-                          [classes.flagPreviewEmpty]: !formState.file.value,
+                        className={clsx(classes.flagPreviewContainer, {
+                          [classes.flagPreviewContainerEmpty]: !formState.file.value,
                         })}
                         elevation={0}
                         variant="outlined"
                       >
                         <img
                           id="flag-preview"
+                          ref={flagPreviewRef}
                           alt=""
-                          className={clsx({ [classes.flagPreviewActive]: !!formState.file.value })}
+                          className={clsx(classes.flagPreview, {
+                            [classes.flagPreviewActive]:
+                              !!formState.file.value && !!fileDimensions?.width,
+                          })}
+                          onLoad={handleImageLoad}
                         />
                       </Paper>
                     </div>
@@ -415,9 +453,9 @@ function Submission() {
                           onChange={handleFieldChange}
                         />
                         <ComplianceCheckbox
-                          checked={formState.complianceFlagDimensions.value || false}
-                          label="Is your flag at most 3000 pixels wide, and flat and not textured?"
-                          name="complianceFlagDimensions"
+                          checked={formState.complianceFlatFlag.value || false}
+                          label="Is your flag flat and not textured?"
+                          name="complianceFlatFlag"
                           onBlur={handleFieldBlur}
                           onChange={handleFieldChange}
                         />

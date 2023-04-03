@@ -75,7 +75,7 @@ if (!isDev && cluster.isMaster) {
   router.get('/init', init.get);
   router.get('/revokeToken/:refreshToken', revokeToken.get);
   router.route('/settings').all(settings.all).get(settings.get).put(settings.put);
-  router.route('/submission').get(submission.get);
+  router.route('/submission').get(submission.get).post(submission.post);
   router.route('/votes').all(votes.all).put(votes.put).delete(votes.delete);
 
   app.use('/api', router);

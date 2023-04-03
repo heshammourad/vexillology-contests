@@ -1,8 +1,11 @@
 /* eslint-disable import/prefer-default-export */
 import { initializeApp } from 'firebase/app';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
-import { getStorage, ref, uploadBytes } from 'firebase/storage';
-import { nanoid } from 'nanoid';
+import { getAuth, signInWithCustomToken } from 'firebase/auth';
+import {
+  getDownloadURL, getStorage, ref, uploadBytes,
+} from 'firebase/storage';
+import { customAlphabet, urlAlphabet } from 'nanoid';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyAV96xMFqykyH9HULiAG4qkx9bB53Gdogw',
@@ -16,17 +19,41 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-window.self.FIREBASE_APPCHECK_DEBUG_TOKEN = 'a3f42198-97f1-49fe-9fec-2c5974bb1bf1';
 initializeAppCheck(app, {
   provider: new ReCaptchaV3Provider('6LdVdzMlAAAAACClyDjipqu8966AvQBm_Eb5gNuE'),
   isTokenAutoRefreshEnabled: true,
 });
 
+const auth = getAuth();
 const storage = getStorage(app);
 
-export const uploadFile = async (file) => {
-  const fileExt = file.name.split('.').pop();
-  const storageRef = ref(storage, `images/${nanoid()}.${fileExt}`);
-  const snapshot = await uploadBytes(storageRef, file);
-  return snapshot;
+const nanoid = customAlphabet(urlAlphabet.replace(/[-_]/, ''), 8);
+
+const signIn = async (token) => {
+  try {
+    await signInWithCustomToken(auth, token);
+  } catch (error) {
+    // TODO: Handle error
+    return false;
+  }
+  return true;
+};
+
+export const uploadFile = async (token, file) => {
+  try {
+    const signedIn = await signIn(token);
+    if (!signedIn) {
+      return null;
+    }
+
+    const fileExt = file.name.split('.').pop();
+    const storageRef = ref(storage, `images/${nanoid()}.${fileExt}`);
+    await uploadBytes(storageRef, file);
+
+    const url = await getDownloadURL(storageRef);
+    return url;
+  } catch (error) {
+    // TODO: Handle error
+  }
+  return null;
 };
