@@ -58,7 +58,7 @@ if (!isDev && cluster.isMaster) {
   app.use(
     helmet.contentSecurityPolicy({
       directives: {
-        defaultSrc: [...defaultDirectives['default-src'], '*.googleapis.com'],
+        defaultSrc: [...defaultDirectives['default-src'], '*.google.com', '*.googleapis.com'],
         imgSrc: [...defaultDirectives['img-src'], '*.imgur.com'],
         scriptSrc: [...defaultDirectives['script-src'], '*.google.com', '*.gstatic.com'],
       },
