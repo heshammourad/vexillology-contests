@@ -54,10 +54,13 @@ if (!isDev && cluster.isMaster) {
     next();
   });
 
-  const defaultDirectives = helmet.contentSecurityPolicy.getDefaultDirectives();
   app.use(
     helmet.contentSecurityPolicy({
-      directives: { imgSrc: [...defaultDirectives['img-src'], '*.imgur.com'] },
+      directives: {
+        defaultSrc: ['*.googleapis.com'],
+        imgSrc: ['*.imgur.com'],
+        scriptSrc: ['*.google.com'],
+      },
     }),
   );
 
