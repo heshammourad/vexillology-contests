@@ -27,7 +27,7 @@ initializeAppCheck(app, {
 const auth = getAuth();
 const storage = getStorage(app);
 
-const nanoid = customAlphabet(urlAlphabet.replace(/[-_]/, ''), 8);
+const nanoid = customAlphabet(urlAlphabet.replace(/[-_]/g, ''), 8);
 
 const signIn = async (token) => {
   try {
