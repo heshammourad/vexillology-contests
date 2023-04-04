@@ -60,7 +60,7 @@ if (!isDev && cluster.isMaster) {
       directives: {
         defaultSrc: [...defaultDirectives['default-src'], '*.googleapis.com'],
         imgSrc: [...defaultDirectives['img-src'], '*.imgur.com'],
-        scriptSrc: [...defaultDirectives['script-src'], '*.google.com'],
+        scriptSrc: [...defaultDirectives['script-src'], '*.google.com', '*.gstatic.com'],
       },
     }),
   );
