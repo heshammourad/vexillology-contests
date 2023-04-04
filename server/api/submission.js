@@ -77,6 +77,8 @@ exports.post = async (
       return;
     }
 
+    // TODO: Validate submission window open
+
     const user = await reddit.getUser({ accesstoken, refreshtoken });
     if (!user) {
       res.status(401).send('Unable to find Reddit username');
@@ -133,6 +135,7 @@ exports.post = async (
     await db.insert('entries', [submissionData]);
 
     const contestEntryData = { category, contest_id: contestId, entry_id: id };
+    // TODO: Roll back previous insert if this fails?
     await db.insert('contest_entries', [contestEntryData]);
 
     const submissions = await getSubmissions(contestId, user);
