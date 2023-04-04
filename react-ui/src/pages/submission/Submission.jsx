@@ -1,3 +1,4 @@
+import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Container from '@material-ui/core/Container';
 import FormControl from '@material-ui/core/FormControl';
@@ -17,6 +18,7 @@ import debounce from 'lodash/debounce';
 import { useRef, useState } from 'react';
 import { markdown } from 'snudown-js';
 
+import { postData } from '../../api';
 import {
   uploadFile, useAuthState, useFormState, useSwrData,
 } from '../../common';
@@ -86,6 +88,9 @@ const useStyles = makeStyles((theme) => ({
   subheader: {
     marginBottom: theme.spacing(1),
   },
+  submitAnotherEntryButton: {
+    marginTop: theme.spacing(2),
+  },
 }));
 
 const fileReader = new FileReader();
@@ -94,7 +99,7 @@ function Submission() {
   const [{
     categories, firebaseToken, id: contestId, name: contestName, prompt, submissionEnd,
   }] = useSwrData('/submission');
-  const [formState, updateFormState] = useFormState([
+  const [formState, updateFormState, resetFormState] = useFormState([
     'name',
     'category',
     'file',
@@ -107,7 +112,8 @@ function Submission() {
     'complianceFlatFlag',
   ]);
   const [fileDimensions, setFileDimensions] = useState(null);
-  const [{ username }] = useAuthState();
+  const [showForm, setShowForm] = useState(true);
+  const [{ accessToken, refreshToken, username }] = useAuthState();
   const fileInputRef = useRef(null);
   const fileNameRef = useRef(null);
   const flagPreviewRef = useRef(null);
@@ -250,9 +256,28 @@ function Submission() {
       return;
     }
 
-    // eslint-disable-next-line no-unused-vars
     const downloadUrl = await uploadFile(firebaseToken, formState.file.value);
-    // TODO: Send data to server
+
+    const response = postData(
+      '/submission',
+      {
+        category: formState.category.value,
+        contestId,
+        description: formState.description.value,
+        height: fileDimensions.height,
+        name: formState.name.value,
+        url: downloadUrl,
+        width: fileDimensions.width,
+      },
+      { accessToken, refreshToken },
+    );
+    if (!response) {
+      // TODO: Handle error
+      return;
+    }
+
+    resetFormState();
+    setShowForm(false);
   };
 
   const submissionEndDate = parseISO(submissionEnd);
@@ -286,16 +311,7 @@ function Submission() {
                 message="You must log in with Reddit to submit a flag"
                 showCancel={false}
               >
-                <div>
-                  <div>
-                    <input
-                      ref={fileInputRef}
-                      className={classes.fileInput}
-                      type="file"
-                      accept="image/*"
-                      onChange={updateFile}
-                    />
-                  </div>
+                {showForm ? (
                   <form id="submission-form" className={classes.form}>
                     <TextField
                       id="username"
@@ -318,6 +334,13 @@ function Submission() {
                       onChange={handleFieldChange}
                     />
                     <div className={classes.file}>
+                      <input
+                        ref={fileInputRef}
+                        className={classes.fileInput}
+                        type="file"
+                        accept="image/*"
+                        onChange={updateFile}
+                      />
                       <TextField
                         id="fileName"
                         ref={fileNameRef}
@@ -469,7 +492,23 @@ function Submission() {
                       Submit
                     </Button>
                   </form>
-                </div>
+                ) : (
+                  <Box display="flex" flexDirection="column" alignItems="center">
+                    <Typography component="div" variant="subtitle2">
+                      Your entry has been submitted.
+                    </Typography>
+                    <Button
+                      color="primary"
+                      variant="contained"
+                      className={classes.submitAnotherEntryButton}
+                      onClick={() => {
+                        setShowForm(true);
+                      }}
+                    >
+                      Submit Another Entry
+                    </Button>
+                  </Box>
+                )}
               </ProtectedRoute>
             </Grid>
           </Grid>

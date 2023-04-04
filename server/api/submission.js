@@ -6,6 +6,16 @@ const reddit = require('../reddit');
 
 const logger = createLogger('API/SUBMISSION');
 
+const getSubmissions = async (contestId, username) => {
+  const submissions = await db.select(
+    `SELECT ce.category, e.description, ce.entry_id, e.name, e.submission_status, e.url
+        FROM entries e, contest_entries ce
+        WHERE e.id = ce.entry_id AND ce.contest_id = $1 AND e.user = $2`,
+    [contestId, username],
+  );
+  return submissions;
+};
+
 exports.get = async ({ headers: { accesstoken, refreshtoken } }, res) => {
   try {
     const [result] = await db.select(
@@ -22,6 +32,7 @@ exports.get = async ({ headers: { accesstoken, refreshtoken } }, res) => {
     const categories = await getCategories(result.id);
 
     let firebaseToken;
+    let submissions;
     if (accesstoken && refreshtoken) {
       const username = await reddit.getUser({ accesstoken, refreshtoken });
       logger.debug(`Auth tokens present, creating token for ${username}`);
@@ -31,11 +42,14 @@ exports.get = async ({ headers: { accesstoken, refreshtoken } }, res) => {
       }
 
       firebaseToken = await getToken(username);
+
+      submissions = await getSubmissions(result.id, username);
     }
 
     const response = { ...result, categories };
     if (firebaseToken) {
       response.firebaseToken = firebaseToken;
+      response.submissions = submissions;
     }
 
     res.status(200).send(response);
@@ -108,15 +122,21 @@ exports.post = async (
 
     const id = url.match(/%2F(\w*)/)[1];
     const submissionData = {
-      description, height, id, name, width, url, user,
+      description,
+      height,
+      id,
+      name,
+      width,
+      url,
+      user,
     };
     await db.insert('entries', [submissionData]);
 
     const contestEntryData = { category, contest_id: contestId, entry_id: id };
     await db.insert('contest_entries', [contestEntryData]);
 
-    // TODO: Check number of remaining entries
-    res.status(200).send();
+    const submissions = await getSubmissions(contestId, user);
+    res.status(200).send(submissions);
   } catch (err) {
     logger.error(`Error posting /submission: ${err}`);
     res.status(500).send();
