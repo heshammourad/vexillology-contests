@@ -19,6 +19,12 @@ const redditApi = axios.create({
   headers: { 'content-type': 'application/x-www-form-urlencoded' },
   auth: { username: WEB_APP_CLIENT_ID, password: WEB_APP_CLIENT_SECRET },
 });
+redditApi.interceptors.request.use((request) => {
+  logger.debug(request);
+});
+redditApi.interceptors.response.use((response) => {
+  logger.debug(response);
+});
 
 const userAgent = 'node:com.herokuapp.vexillology-contests:v0.1.0';
 
