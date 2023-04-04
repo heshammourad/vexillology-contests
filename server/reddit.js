@@ -21,9 +21,11 @@ const redditApi = axios.create({
 });
 redditApi.interceptors.request.use((request) => {
   logger.debug(request);
+  return request;
 });
 redditApi.interceptors.response.use((response) => {
   logger.debug(response);
+  return response;
 });
 
 const userAgent = 'node:com.herokuapp.vexillology-contests:v0.1.0';
