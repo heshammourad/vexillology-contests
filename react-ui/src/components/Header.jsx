@@ -18,7 +18,7 @@ function Header({ children, position, to }) {
   return (
     <AppBarDivided color="default" disableGutters position={position}>
       <ArrowBackButton to={to} />
-      <Typography className={classes.title} variant="h6">
+      <Typography className={classes.title} component="div" variant="h6">
         {children}
       </Typography>
     </AppBarDivided>

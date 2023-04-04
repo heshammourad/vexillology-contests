@@ -124,7 +124,9 @@ function VotingCountdown({
       </Typography>
       {!timeLeft
         && (isSmUp ? (
-          <Button onClick={handleReload}>Load Results</Button>
+          <Button color="primary" onClick={handleReload}>
+            Load Results
+          </Button>
         ) : (
           <IconButton onClick={handleReload}>
             <RefreshIcon />

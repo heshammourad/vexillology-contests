@@ -6,6 +6,14 @@
     "airbnb-base"
   ],
   "rules": {
+    "import/no-unresolved": [
+      "error",
+      {
+        "ignore": [
+          "firebase-admin/*"
+        ]
+      }
+    ],
     "import/order": [
       "error",
       {

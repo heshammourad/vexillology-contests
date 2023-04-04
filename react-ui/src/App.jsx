@@ -8,7 +8,14 @@ import { SWRConfig } from 'swr';
 import { getData } from './api';
 import { AppHelmet, CustomSnackbar } from './components';
 import {
-  AuthorizeCallback, Contest, Contests, Entry, HallOfFame, Home, Settings,
+  AuthorizeCallback,
+  Contest,
+  Contests,
+  Entry,
+  HallOfFame,
+  Home,
+  Settings,
+  Submission,
 } from './pages';
 
 import './App.css';
@@ -18,15 +25,15 @@ const theme = createTheme({
     flagMakerPrint: {
       main: '#ea433e',
     },
-    vexyBlue: {
-      dark: '#3868c8',
-      light: '#a8c5ff',
-      main: '#7295fc',
-    },
-    vexyOrange: {
+    primary: {
       dark: '#c10000',
       light: '#ff7c4c',
       main: '#fc471e',
+    },
+    secondary: {
+      dark: '#3868c8',
+      light: '#a8c5ff',
+      main: '#7295fc',
     },
   },
 });
@@ -54,6 +61,7 @@ function App() {
                 <Route exact path="/contests" element={<Contests />} />
                 <Route exact path="/contests/:contestId" element={<Contest />} />
                 <Route exact path="/contests/:contestId/entry/:entryId" element={<Entry />} />
+                <Route exact path="/submission" element={<Submission />} />
                 <Route exact path="/hallOfFame" element={<HallOfFame />} />
                 <Route exact path="/profile/settings" element={<Settings />} />
               </Routes>

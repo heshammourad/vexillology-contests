@@ -102,6 +102,7 @@ function AuthorizeCallback() {
         </Button>
         <Button
           color="primary"
+          variant="contained"
           onClick={() => {
             sendUserToAuthUrl({ stateValues });
           }}

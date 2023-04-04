@@ -17,12 +17,12 @@ const URL = '/votes';
 
 const ThemedSlider = withStyles((theme) => ({
   root: {
-    color: theme.palette.vexyOrange.main,
+    color: theme.palette.primary.main,
     margin: '0 8px',
   },
   active: {},
   mark: {
-    color: theme.palette.vexyOrange.main,
+    color: theme.palette.primary.main,
     height: 8,
     marginTop: -3,
     width: 2,
@@ -35,7 +35,7 @@ const ThemedSlider = withStyles((theme) => ({
     color: theme.palette.grey[800],
   },
   thumb: {
-    color: theme.palette.vexyOrange.main,
+    color: theme.palette.primary.main,
     '&:focus, &:hover, &$active': {
       boxShadow: '0px 0px 0px 8px rgba(255, 69, 0, 0.16)',
     },
@@ -179,6 +179,7 @@ function VotingSlider({
       />
       <Button
         className={classes.clearVoteButton}
+        color="primary"
         disabled={disabled || isUnrated}
         size="small"
         onClick={clearRating}

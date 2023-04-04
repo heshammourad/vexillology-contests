@@ -5,10 +5,10 @@ const CustomSwitch = withStyles((theme) => ({
   switchBase: {
     color: theme.palette.common.white,
     '&$checked': {
-      color: theme.palette.vexyOrange.main,
+      color: theme.palette.primary.main,
     },
     '&$checked + $track': {
-      backgroundColor: theme.palette.vexyOrange.light,
+      backgroundColor: theme.palette.primary.light,
     },
   },
   checked: {},

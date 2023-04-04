@@ -5,3 +5,4 @@ export { default as Entry } from './entry/Entry';
 export { default as HallOfFame } from './hallOfFame/HallOfFame';
 export { default as Home } from './home/Home';
 export { default as Settings } from './settings/Settings';
+export { default as Submission } from './submission/Submission';
