@@ -14,6 +14,10 @@ const TYPES = {
     message: 'Setting saved',
     severity: 'success',
   },
+  [snackbarTypes.SUBMISSION_ERROR]: {
+    message: 'Error submitting entry. Please try again later.',
+    severity: 'error',
+  },
   [snackbarTypes.VOTING_ERROR]: {
     message: 'Error submitting vote. Please try again later.',
     severity: 'error',

@@ -33,7 +33,6 @@ const signIn = async (token) => {
   try {
     await signInWithCustomToken(auth, token);
   } catch (error) {
-    // TODO: Handle error
     return false;
   }
   return true;
@@ -52,8 +51,7 @@ export const uploadFile = async (token, file) => {
 
     const url = await getDownloadURL(storageRef);
     return url;
-  } catch (error) {
-    // TODO: Handle error
+  } catch {
+    return null;
   }
-  return null;
 };
