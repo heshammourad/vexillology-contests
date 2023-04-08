@@ -1,3 +1,5 @@
+const { isAfter } = require('date-fns');
+
 const db = require('../db');
 const { getCategories } = require('../db/queries');
 const { getToken } = require('../firebase');
@@ -5,6 +7,17 @@ const { createLogger } = require('../logger');
 const reddit = require('../reddit');
 
 const logger = createLogger('API/SUBMISSION');
+
+const getCurrentContest = async () => {
+  const [result] = await db.select(
+    `SELECT id, name, prompt, submission_start, submission_end, now()
+    FROM contests
+    WHERE submission_start < now()
+    ORDER BY submission_start DESC
+    LIMIT 1`,
+  );
+  return result;
+};
 
 const getSubmissions = async (contestId, username) => {
   const submissions = await db.select(
@@ -18,12 +31,7 @@ const getSubmissions = async (contestId, username) => {
 
 exports.get = async ({ headers: { accesstoken, refreshtoken } }, res) => {
   try {
-    const [result] = await db.select(
-      `SELECT id, name, prompt, submission_start, submission_end
-      FROM contests
-      WHERE submission_start < now()
-      LIMIT 1`,
-    );
+    const { now, ...result } = await getCurrentContest();
     if (!result) {
       res.status(404).send();
       return;
@@ -77,7 +85,12 @@ exports.post = async (
       return;
     }
 
-    // TODO: Validate submission window open
+    const { now, submissionEnd } = await getCurrentContest();
+    if (isAfter(now, submissionEnd)) {
+      logger.warn('Entry submitted after submission window closed');
+      res.status(403).send(`Submission window closed at ${submissionEnd}`);
+      return;
+    }
 
     const user = await reddit.getUser({ accesstoken, refreshtoken });
     if (!user) {
