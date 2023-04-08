@@ -1,4 +1,5 @@
-const { default: isAfter } = require('date-fns/isAfter');
+const { isAfter } = require('date-fns');
+
 const db = require('../db');
 const { getCategories } = require('../db/queries');
 const { getToken } = require('../firebase');
