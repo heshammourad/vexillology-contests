@@ -7,7 +7,7 @@ import {
 } from 'firebase/storage';
 import { customAlphabet, urlAlphabet } from 'nanoid';
 
-const firebaseConfig = {
+const app = initializeApp({
   apiKey: 'AIzaSyAV96xMFqykyH9HULiAG4qkx9bB53Gdogw',
   authDomain: 'vexillology-contests.firebaseapp.com',
   projectId: 'vexillology-contests',
@@ -15,9 +15,7 @@ const firebaseConfig = {
   messagingSenderId: '917790372061',
   appId: '1:917790372061:web:27bdbeffebe44caf4d2b34',
   measurementId: 'G-DD6MTL11SP',
-};
-
-const app = initializeApp(firebaseConfig);
+});
 
 initializeAppCheck(app, {
   provider: new ReCaptchaV3Provider('6LdVdzMlAAAAACClyDjipqu8966AvQBm_Eb5gNuE'),
