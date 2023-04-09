@@ -48,7 +48,7 @@ exports.requireAuthentication = async (req, res, next) => {
 
 exports.requireModerator = async (req, res, next) => {
   try {
-    await this.requireAuthentication(req, res, next);
+    await this.requireAuthentication(req, res, () => {});
 
     const moderator = await reddit.isModerator(req.username);
     if (!moderator) {

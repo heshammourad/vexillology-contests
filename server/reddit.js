@@ -113,8 +113,7 @@ exports.getWinners = async (winnersThreadId) => {
   return winners;
 };
 
-exports.isModerator = async (auth) => {
-  const user = await this.getUser(auth);
+exports.isModerator = async (user) => {
   logger.debug(`Checking if ${user} is moderator`);
   const moderators = await getSnoowrap().getSubreddit('vexillology').getModerators();
 

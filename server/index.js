@@ -11,6 +11,7 @@ const contest = require('./api/contest');
 const contests = require('./api/contests');
 const hallOfFame = require('./api/hallOfFame');
 const init = require('./api/init');
+const reviewSubmissions = require('./api/reviewSubmissions');
 const revokeToken = require('./api/revokeToken');
 const settings = require('./api/settings');
 const submission = require('./api/submission');
@@ -69,25 +70,34 @@ if (!isDev && cluster.isMaster) {
   // Priority serve any static files.
   app.use(express.static(path.resolve(__dirname, '../react-ui/build')));
 
-  const router = express.Router();
+  const modRouter = express.Router();
+  modRouter.use(express.json());
 
-  router.use(express.json());
+  modRouter.all('*', requireModerator);
+  modRouter.route('/reviewSubmissions').get(reviewSubmissions.get);
 
-  router.get('/accessToken/:code', accessToken.get);
-  router.get('/contests', processUser(false), contests.get);
-  router.get('/contests/:id', contest.get);
-  router.get('/hallOfFame', hallOfFame.get);
-  router.get('/init', processUser(true), init.get);
-  router.all('/mod/*', requireModerator);
-  router.get('/revokeToken/:refreshToken', revokeToken.get);
-  router.route('/settings').all(requireAuthentication).get(settings.get).put(settings.put);
-  router
+  const apiRouter = express.Router();
+  apiRouter.use(express.json());
+
+  apiRouter.get('/accessToken/:code', accessToken.get);
+  apiRouter.get('/contests', processUser(false), contests.get);
+  apiRouter.get('/contests/:id', contest.get);
+  apiRouter.get('/hallOfFame', hallOfFame.get);
+  apiRouter.get('/init', processUser(true), init.get);
+  apiRouter.get('/revokeToken/:refreshToken', revokeToken.get);
+  apiRouter.route('/settings').all(requireAuthentication).get(settings.get).put(settings.put);
+  apiRouter
     .route('/submission')
     .get(processUser(false), submission.get)
     .post(requireAuthentication, submission.post);
-  router.route('/votes').all(requireAuthentication, votes.all).put(votes.put).delete(votes.delete);
+  apiRouter
+    .route('/votes')
+    .all(requireAuthentication, votes.all)
+    .put(votes.put)
+    .delete(votes.delete);
+  apiRouter.use('/mod', modRouter);
 
-  app.use('/api', router);
+  app.use('/api', apiRouter);
 
   // All remaining requests return the React app, so it can handle routing.
   app.get('*', (request, response) => {
