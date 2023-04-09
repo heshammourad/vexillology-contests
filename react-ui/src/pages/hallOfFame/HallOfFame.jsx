@@ -32,7 +32,6 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 1000,
   },
   tabsIndicator: {
-    backgroundColor: theme.palette.primary.main,
     height: 4,
   },
   tabsRoot: {
@@ -131,6 +130,8 @@ function HallOfFame() {
                 root: classes.tabsRoot,
                 scroller: classes.tabsScroller,
               }}
+              indicatorColor="primary"
+              textColor="primary"
               onChange={handleTabsChange}
               value={selectedYear}
               variant="scrollable"
