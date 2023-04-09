@@ -19,6 +19,7 @@ const redditApi = axios.create({
   headers: { 'content-type': 'application/x-www-form-urlencoded' },
   auth: { username: WEB_APP_CLIENT_ID, password: WEB_APP_CLIENT_SECRET },
 });
+
 redditApi.interceptors.request.use((request) => {
   logger.debug(request);
   return request;
@@ -28,7 +29,7 @@ redditApi.interceptors.response.use((response) => {
   return response;
 });
 
-const userAgent = 'node:com.herokuapp.vexillology-contests:v0.1.0';
+const userAgent = 'node:com.vexillologycontests:v0.1.0';
 
 const snoowrap = new Snoowrap({
   userAgent,
@@ -55,7 +56,7 @@ const getSnoowrap = (auth = {}) => {
   });
 };
 
-const getContest = async (submissionId) => {
+exports.getContest = async (submissionId) => {
   logger.debug(`Getting contest submission: '${submissionId}`);
   const submission = await getSnoowrap().getSubmission(submissionId);
   const isContestMode = await submission.contest_mode;
@@ -89,14 +90,14 @@ const getContest = async (submissionId) => {
   return contest;
 };
 
-const getUser = async (auth) => {
+exports.getUser = async (auth) => {
   logger.debug('Getting username');
   const { name } = await getSnoowrap(auth).getMe();
   logger.debug(`Retrieved username: ${name}`);
   return name;
 };
 
-const getWinners = async (winnersThreadId) => {
+exports.getWinners = async (winnersThreadId) => {
   logger.debug(`Getting winners submission: '${winnersThreadId}'`);
   const submission = await getSnoowrap().getSubmission(winnersThreadId);
   const selftext = await submission.selftext;
@@ -112,7 +113,17 @@ const getWinners = async (winnersThreadId) => {
   return winners;
 };
 
-const retrieveAccessToken = async (code) => {
+exports.isModerator = async (auth) => {
+  const user = await this.getUser(auth);
+  logger.debug(`Checking if ${user} is moderator`);
+  const moderators = await getSnoowrap().getSubreddit('vexillology').getModerators();
+
+  const moderator = moderators.some(({ name }) => name === user);
+  logger.debug(`${user} is moderator: ${moderator}`);
+  return moderator;
+};
+
+exports.retrieveAccessToken = async (code) => {
   try {
     const { data } = await redditApi.post('/access_token', {
       grant_type: 'authorization_code',
@@ -127,14 +138,6 @@ const retrieveAccessToken = async (code) => {
   return null;
 };
 
-const revokeRefreshToken = async (token) => {
+exports.revokeRefreshToken = async (token) => {
   await redditApi.post('/revoke_token', { token, token_type_hint: 'refresh_token' });
-};
-
-module.exports = {
-  getContest,
-  getUser,
-  getWinners,
-  retrieveAccessToken,
-  revokeRefreshToken,
 };

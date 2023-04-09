@@ -1,23 +1,12 @@
 const { isAfter } = require('date-fns');
 
 const db = require('../db');
-const { getCategories } = require('../db/queries');
+const { getCategories, getCurrentContest } = require('../db/queries');
 const { getToken } = require('../firebase');
 const { createLogger } = require('../logger');
 const reddit = require('../reddit');
 
 const logger = createLogger('API/SUBMISSION');
-
-const getCurrentContest = async () => {
-  const [result] = await db.select(
-    `SELECT id, name, prompt, submission_start, submission_end, now()
-    FROM contests
-    WHERE submission_start < now()
-    ORDER BY submission_start DESC
-    LIMIT 1`,
-  );
-  return result;
-};
 
 const getSubmissions = async (contestId, username) => {
   const submissions = await db.select(

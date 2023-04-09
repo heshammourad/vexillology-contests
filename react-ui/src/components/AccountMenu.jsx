@@ -1,3 +1,4 @@
+import Badge from '@material-ui/core/Badge';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import Divider from '@material-ui/core/Divider';
 import Grow from '@material-ui/core/Grow';
@@ -16,7 +17,7 @@ import { useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { getData } from '../api';
-import { useAuthState, useRedditLogIn } from '../common';
+import { useAuthState, useRedditLogIn, useSwrData } from '../common';
 import types from '../common/types';
 
 import MenuItemLink from './MenuItemLink';
@@ -42,6 +43,8 @@ function AccountMenu({ color }) {
 
   const [{ isLoggedIn, refreshToken, username }, setAuthState] = useAuthState();
   const sendUserToAuthUrl = useRedditLogIn();
+
+  const [{ submissionsToReview }] = useSwrData('/init');
 
   const toggleMenu = () => {
     setMenuOpen((prevOpen) => !prevOpen);
@@ -84,7 +87,9 @@ function AccountMenu({ color }) {
         onClick={toggleMenu}
         ref={anchorRef}
       >
-        {isLoggedIn ? <AccountCircleIcon /> : <AccountCircleOutlinedIcon />}
+        <Badge color="primary" invisible={!submissionsToReview} variant="dot">
+          {isLoggedIn ? <AccountCircleIcon /> : <AccountCircleOutlinedIcon />}
+        </Badge>
       </IconButton>
       <Popper
         anchorEl={anchorRef.current}
