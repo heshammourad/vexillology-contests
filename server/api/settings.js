@@ -1,6 +1,5 @@
 const db = require('../db');
 const { createLogger } = require('../logger');
-const reddit = require('../reddit');
 
 const logger = createLogger('API/SETTINGS');
 
@@ -14,22 +13,8 @@ const getSettings = async (username) => {
   return settings;
 };
 
-exports.all = ({ headers: { accesstoken, refreshtoken } }, res, next) => {
+exports.get = async ({ username }, res) => {
   try {
-    if (!accesstoken || !refreshtoken) {
-      res.status(401).send('Missing authentication headers.');
-      return;
-    }
-    next();
-  } catch (e) {
-    logger.error(`Error validing /settings request: ${e}`);
-    res.status(500).send();
-  }
-};
-
-exports.get = async ({ headers }, res) => {
-  try {
-    const username = await reddit.getUser(headers);
     const settings = await getSettings(username);
     if (!settings) {
       res.status(404).send();
@@ -42,14 +27,13 @@ exports.get = async ({ headers }, res) => {
   }
 };
 
-exports.put = async ({ body: { contestReminders }, headers }, res) => {
+exports.put = async ({ body: { contestReminders }, username }, res) => {
   try {
     if (typeof contestReminders !== 'boolean') {
       res.status(400).send('contestReminders must be populated');
       return;
     }
 
-    const username = await reddit.getUser(headers);
     const currentSettings = await getSettings(username);
     const settingsData = [{ contest_reminders: contestReminders, username }];
     let response;

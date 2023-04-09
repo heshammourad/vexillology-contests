@@ -6,6 +6,7 @@ const express = require('express');
 const helmet = require('helmet');
 
 const accessToken = require('./api/accessToken');
+const { requireAuthentication, requireModerator, processUser } = require('./api/authentication');
 const contest = require('./api/contest');
 const contests = require('./api/contests');
 const hallOfFame = require('./api/hallOfFame');
@@ -73,14 +74,18 @@ if (!isDev && cluster.isMaster) {
   router.use(express.json());
 
   router.get('/accessToken/:code', accessToken.get);
-  router.get('/contests', contests.get);
+  router.get('/contests', processUser(false), contests.get);
   router.get('/contests/:id', contest.get);
   router.get('/hallOfFame', hallOfFame.get);
-  router.get('/init', init.get);
+  router.get('/init', processUser(true), init.get);
+  router.all('/mod/*', requireModerator);
   router.get('/revokeToken/:refreshToken', revokeToken.get);
-  router.route('/settings').all(settings.all).get(settings.get).put(settings.put);
-  router.route('/submission').get(submission.get).post(submission.post);
-  router.route('/votes').all(votes.all).put(votes.put).delete(votes.delete);
+  router.route('/settings').all(requireAuthentication).get(settings.get).put(settings.put);
+  router
+    .route('/submission')
+    .get(processUser(false), submission.get)
+    .post(requireAuthentication, submission.post);
+  router.route('/votes').all(requireAuthentication, votes.all).put(votes.put).delete(votes.delete);
 
   app.use('/api', router);
 

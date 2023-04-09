@@ -60,7 +60,7 @@ const addEntries = async (entries) => {
 // eslint-disable-next-line max-len
 const findMissingEntries = (contest, imagesData) => contest.entries.filter((entry) => !imagesData.find((image) => image.id === entry.imgurId));
 
-exports.get = async ({ headers: { accesstoken, refreshtoken }, params: { id } }, res) => {
+exports.get = async ({ params: { id }, username }, res) => {
   try {
     const contestResults = await db.select(
       `SELECT name, date, local_voting, subtext, valid_reddit_id, winners_thread_id
@@ -259,8 +259,7 @@ exports.get = async ({ headers: { accesstoken, refreshtoken }, params: { id } },
       ...contest,
     };
 
-    if (accesstoken && refreshtoken) {
-      const username = await reddit.getUser({ accesstoken, refreshtoken });
+    if (username) {
       logger.debug(`Auth tokens present, retrieving votes of ${username} on ${id}`);
       const votes = await db.select(
         'SELECT entry_id, rating FROM votes WHERE contest_id = $1 AND username = $2',

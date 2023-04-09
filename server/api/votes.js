@@ -3,22 +3,12 @@ const { isAfter, isBefore } = require('date-fns');
 const db = require('../db');
 const { getVoteDates } = require('../db/queries');
 const { createLogger } = require('../logger');
-const reddit = require('../reddit');
 const { camelizeObjectKeys } = require('../util');
 
 const logger = createLogger('API/CONTEST');
 
-exports.all = async (
-  { body: { contestId }, headers: { accesstoken, refreshtoken } },
-  res,
-  next,
-) => {
+exports.all = async ({ body: { contestId } }, res, next) => {
   try {
-    if (!accesstoken || !refreshtoken) {
-      res.status(401).send('Missing authentication headers.');
-      return;
-    }
-
     if (contestId) {
       logger.debug(`Vote change on ${contestId}`);
       const voteDates = await getVoteDates(contestId);
@@ -57,7 +47,7 @@ exports.all = async (
   }
 };
 
-exports.put = async ({ body: { contestId, entryId, rating }, headers }, res) => {
+exports.put = async ({ body: { contestId, entryId, rating }, username }, res) => {
   try {
     const missingRating = !rating && rating !== 0;
     if (!contestId || !entryId || missingRating) {
@@ -80,7 +70,6 @@ exports.put = async ({ body: { contestId, entryId, rating }, headers }, res) => 
       return;
     }
 
-    const username = await reddit.getUser(headers);
     const voteData = {
       contest_id: contestId,
       entry_id: entryId,
@@ -108,7 +97,7 @@ exports.put = async ({ body: { contestId, entryId, rating }, headers }, res) => 
   }
 };
 
-exports.delete = async ({ body: { contestId, entryId }, headers }, res) => {
+exports.delete = async ({ body: { contestId, entryId }, username }, res) => {
   try {
     if (!contestId || !entryId) {
       const missingFields = [];
@@ -122,7 +111,6 @@ exports.delete = async ({ body: { contestId, entryId }, headers }, res) => {
       return;
     }
 
-    const username = await reddit.getUser(headers);
     const voteData = { contest_id: contestId, entry_id: entryId, username };
     await db.del('votes', voteData);
     res.status(204).send();
