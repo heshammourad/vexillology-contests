@@ -124,6 +124,7 @@ function Submission() {
   const fileInputRef = useRef(null);
   const fileNameRef = useRef(null);
   const flagPreviewRef = useRef(null);
+  const submissionSectionRef = useRef(null);
 
   const updateError = (field, value) => {
     updateFormState(field, 'error', value);
@@ -235,11 +236,13 @@ function Submission() {
     setFileDimensions({ height: naturalHeight, width: naturalWidth });
   };
 
-  const getComplianceError = () => {
-    const complianceFields = Object.keys(formState).filter((field) => field.startsWith('compliance'));
+  const getComplianceError = (submit = false) => {
+    const complianceFields = Object.keys(formState).filter(
+      (field) => field.startsWith('compliance') && (submit || formState[field].touch),
+    );
     return complianceFields.some((field) => {
-      const { touch, value } = formState[field];
-      return touch && !value;
+      const { value } = formState[field];
+      return !value;
     });
   };
 
@@ -252,7 +255,7 @@ function Submission() {
         updateFormState(field, 'touch', true);
       });
 
-      const validForm = validateForm(true) && !getComplianceError();
+      const validForm = validateForm(true) && !getComplianceError(true);
 
       const filePresent = !!formState.file.value;
       if (!filePresent) {
@@ -292,6 +295,7 @@ function Submission() {
 
       resetFormState();
       setShowForm(false);
+      submissionSectionRef.current.scrollIntoView();
     } catch {
       errorSubmitting = true;
     } finally {
@@ -325,7 +329,7 @@ function Submission() {
                 </Typography>
                 <HtmlWrapper html={markdown(prompt)} />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid ref={submissionSectionRef} item xs={12} sm={6}>
                 <Paper>
                   <Box padding={2}>
                     <ProtectedRoute
