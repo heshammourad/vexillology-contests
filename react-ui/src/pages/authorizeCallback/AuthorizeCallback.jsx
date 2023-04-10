@@ -1,5 +1,4 @@
 import Button from '@material-ui/core/Button';
-import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { useEffect, useState } from 'react';
@@ -7,6 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { getData } from '../../api';
 import { useAuthState, useRedditLogIn } from '../../common';
+import { PageContainer } from '../../components';
 
 const ACCESS_DENIED = 'access_denied';
 const DATA_ERROR = 'data_error';
@@ -87,7 +87,7 @@ function AuthorizeCallback() {
 
   return (
     errorMessage && (
-      <Container>
+      <PageContainer>
         <Typography className={classes.heading} variant="h6" component="h1">
           Sorry, something went wrong :(
         </Typography>
@@ -109,7 +109,7 @@ function AuthorizeCallback() {
         >
           Try Again
         </Button>
-      </Container>
+      </PageContainer>
     )
   );
 }

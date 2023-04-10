@@ -1,7 +1,6 @@
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Container from '@material-ui/core/Container';
 import FormControl from '@material-ui/core/FormControl';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormHelperText from '@material-ui/core/FormHelperText';
@@ -25,7 +24,7 @@ import {
 } from '../../common';
 import snackbarTypes from '../../common/snackbarTypes';
 import {
-  Header, HtmlWrapper, InternalLink, ProtectedRoute,
+  Header, HtmlWrapper, InternalLink, PageContainer, ProtectedRoute,
 } from '../../components';
 
 import ComplianceCheckbox from './ComplianceCheckbox';
@@ -42,9 +41,6 @@ const useStyles = makeStyles((theme) => ({
   },
   complianceLegend: {
     color: theme.palette.text.primary,
-  },
-  container: {
-    marginBottom: theme.spacing(3),
   },
   file: {
     columnGap: theme.spacing(2),
@@ -101,9 +97,13 @@ const useStyles = makeStyles((theme) => ({
 const fileReader = new FileReader();
 
 function Submission() {
-  const [{
-    categories, firebaseToken, id: contestId, name: contestName, prompt, submissionEnd,
-  }] = useSwrData('/submission');
+  const [
+    {
+      data: {
+        categories, firebaseToken, id: contestId, name: contestName, prompt, submissionEnd,
+      },
+    },
+  ] = useSwrData('/submission');
   const [formState, updateFormState, resetFormState] = useFormState([
     'name',
     'category',
@@ -313,7 +313,7 @@ function Submission() {
         Contest Submission
       </Header>
       {contestId && (
-        <Container className={classes.container}>
+        <PageContainer>
           <Typography className={classes.header} component="h1" variant="h6">
             {contestName}
           </Typography>
@@ -558,7 +558,7 @@ function Submission() {
               &nbsp;to view entries.
             </div>
           )}
-        </Container>
+        </PageContainer>
       )}
     </>
   );
