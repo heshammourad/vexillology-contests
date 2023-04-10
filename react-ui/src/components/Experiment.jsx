@@ -3,7 +3,11 @@ import PropTypes from 'prop-types';
 import { useSwrData } from '../common';
 
 function Experiment({ children, name }) {
-  const [{ experiments = {} }] = useSwrData('/init', false);
+  const [
+    {
+      data: { experiments = {} },
+    },
+  ] = useSwrData('/init', false);
   return experiments[name] ? children : null;
 }
 

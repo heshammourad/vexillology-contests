@@ -1,4 +1,3 @@
-import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { useLocation } from 'react-router-dom';
@@ -7,7 +6,9 @@ import useSWRMutation from 'swr/mutation';
 import { putData } from '../../api';
 import { useAuthState, useSnackbarState, useSwrData } from '../../common';
 import snackbarTypes from '../../common/snackbarTypes';
-import { CustomSwitch, Header, ProtectedRoute } from '../../components';
+import {
+  CustomSwitch, Header, PageContainer, ProtectedRoute,
+} from '../../components';
 
 const URL = '/settings';
 
@@ -52,7 +53,7 @@ function Settings() {
   const [{ accessToken, isLoggedIn, refreshToken }] = useAuthState();
   const authTokens = { accessToken, refreshToken };
 
-  const [data, updateCache] = useSwrData(isLoggedIn ? URL : null);
+  const [{ data }, updateCache] = useSwrData(isLoggedIn ? URL : null);
   // eslint-disable-next-line max-len
   const { isMutating, trigger } = useSWRMutation([URL, authTokens], (_, { arg }) => putData(URL, arg, authTokens));
 
@@ -92,7 +93,7 @@ function Settings() {
       <Header position="static" to={state?.back ?? '/home'}>
         Settings
       </Header>
-      <Container className={classes.container}>
+      <PageContainer className={classes.container}>
         <ProtectedRoute>
           <div className={classes.content}>
             <div className={classes.row}>
@@ -115,7 +116,7 @@ function Settings() {
             </div>
           </div>
         </ProtectedRoute>
-      </Container>
+      </PageContainer>
     </>
   );
 }

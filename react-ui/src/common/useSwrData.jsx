@@ -11,7 +11,7 @@ const useExpiresState = createPersistedState('expires');
 
 const useSwrData = (key, allowRefresh = true) => {
   const [{ accessToken, isLoggedIn, refreshToken }] = useAuthState();
-  const { data, mutate } = useSWR([key, { accessToken, refreshToken }]);
+  const { data, error, mutate } = useSWR([key, { accessToken, refreshToken }]);
   const [prevLoggedIn, setLoggedIn] = useState(isLoggedIn);
   const [isFetched, setFetched] = useState(!!data);
   const [cache, setCache] = usePersistentState({});
@@ -32,7 +32,7 @@ const useSwrData = (key, allowRefresh = true) => {
   };
 
   if (data && !allowRefresh) {
-    return [data, updateCache];
+    return [{ data }, updateCache];
   }
 
   if (!isFetched) {
@@ -51,7 +51,7 @@ const useSwrData = (key, allowRefresh = true) => {
     setFetched(true);
   }
 
-  return [data || {}, updateCache];
+  return [{ data: data || {}, error }, updateCache];
 };
 
 export default useSwrData;

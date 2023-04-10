@@ -4,7 +4,6 @@ import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Chip from '@material-ui/core/Chip';
-import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
 import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -50,6 +49,7 @@ import {
   FiveStar,
   FmpIcon,
   HtmlWrapper,
+  PageContainer,
   PageWithDrawer,
   RedditLogInDialog,
   RedditUserAttribution,
@@ -215,7 +215,7 @@ let scrollingIntervalId;
 function Contest() {
   const { contestId } = useParams();
   const [scroll, setScroll] = useScrollState();
-  const [contest, updateCache] = useSwrData(`/contests/${contestId}`, !!scroll.entryId);
+  const [{ data: contest }, updateCache] = useSwrData(`/contests/${contestId}`, !!scroll.entryId);
 
   const { state = {} } = useLocation();
   const [isLoaded, setLoaded] = useState(false);
@@ -499,7 +499,7 @@ function Contest() {
         </Typography>
       </ExternalLink>
       {name && (
-        <Container className={clsx({ [classes.entriesLoading]: !isLoaded })} fixed>
+        <PageContainer className={clsx({ [classes.entriesLoading]: !isLoaded })} fixed>
           <Typography className={classes.heading} variant={headingVariant} component="h1">
             {name}
           </Typography>
@@ -714,7 +714,7 @@ function Contest() {
                 )}
             </Grid>
           )}
-        </Container>
+        </PageContainer>
       )}
       <RedditLogInDialog />
     </PageWithDrawer>

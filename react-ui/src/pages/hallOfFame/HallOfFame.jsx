@@ -1,4 +1,3 @@
-import Container from '@material-ui/core/Container';
 import Paper from '@material-ui/core/Paper';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
@@ -13,7 +12,7 @@ import { useState, useEffect } from 'react';
 import { Events, animateScroll } from 'react-scroll';
 
 import { useClientWidth, useSwrData } from '../../common';
-import { Header } from '../../components';
+import { Header, PageContainer } from '../../components';
 
 import HallOfFameCard from './HallOfFameCard';
 
@@ -21,7 +20,6 @@ const tabsHeight = 48;
 
 const useStyles = makeStyles((theme) => ({
   content: {
-    paddingBottom: theme.spacing(3),
     paddingTop: tabsHeight,
   },
   tabsContainer: {
@@ -49,7 +47,7 @@ const getToolbarHeight = () => document.getElementById(TOOLBAR_ID).offsetHeight;
 let pauseScollListener = false;
 
 function HallOfFame() {
-  const [hallOfFame] = useSwrData('/hallOfFame');
+  const [{ data: hallOfFame }] = useSwrData('/hallOfFame');
 
   const [selectedYear, setSelectedYear] = useState();
   const [groups, setGroups] = useState({});
@@ -143,11 +141,11 @@ function HallOfFame() {
                 ))}
             </Tabs>
           </Paper>
-          <Container className={classes.content} maxWidth="md">
+          <PageContainer className={classes.content} maxWidth="md">
             {hallOfFame.map((entry) => (
               <HallOfFameCard key={entry.entryId} entry={entry} imageDisplayWidth={imageWidth} />
             ))}
-          </Container>
+          </PageContainer>
         </>
       )}
     </>

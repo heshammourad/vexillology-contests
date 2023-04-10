@@ -45,7 +45,11 @@ function AccountMenu({ color }) {
   const [{ isLoggedIn, refreshToken, username }, setAuthState] = useAuthState();
   const sendUserToAuthUrl = useRedditLogIn();
 
-  const [{ isModerator, submissionsToReview }] = useSwrData('/init');
+  const [
+    {
+      data: { moderator, submissionsToReview },
+    },
+  ] = useSwrData('/init');
 
   const toggleMenu = () => {
     setMenuOpen((prevOpen) => !prevOpen);
@@ -135,7 +139,7 @@ function AccountMenu({ color }) {
                         text="Settings"
                         to="/profile/settings"
                       />
-                      {isModerator && (
+                      {moderator && (
                         <MenuItemLink
                           Icon={reviewSubmissionsIcon}
                           state={{ back: pathname }}

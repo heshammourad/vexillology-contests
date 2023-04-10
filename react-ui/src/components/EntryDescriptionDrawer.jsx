@@ -59,12 +59,14 @@ function EntryDescriptionDrawer({ entryId }) {
   const [votingExpired, setVotingExpired] = useState(false);
 
   const { contestId } = useParams();
-  const [{
-    categories, entries, isContestMode, localVoting, voteEnd,
-  }, updateCache] = useSwrData(
-    `/contests/${contestId}`,
-    false,
-  );
+  const [
+    {
+      data: {
+        categories, entries, isContestMode, localVoting, voteEnd,
+      },
+    },
+    updateCache,
+  ] = useSwrData(`/contests/${contestId}`, false);
   const {
     average,
     category,

@@ -14,6 +14,7 @@ import {
   Entry,
   HallOfFame,
   Home,
+  ReviewSubmissions,
   Settings,
   Submission,
 } from './pages';
@@ -61,6 +62,7 @@ function App() {
                 <Route exact path="/contests" element={<Contests />} />
                 <Route exact path="/contests/:contestId" element={<Contest />} />
                 <Route exact path="/contests/:contestId/entry/:entryId" element={<Entry />} />
+                <Route exact path="/mod/review" element={<ReviewSubmissions />} />
                 <Route exact path="/submission" element={<Submission />} />
                 <Route exact path="/hallOfFame" element={<HallOfFame />} />
                 <Route exact path="/profile/settings" element={<Settings />} />

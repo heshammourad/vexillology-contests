@@ -1,7 +1,6 @@
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Container from '@material-ui/core/Container';
 import FormControl from '@material-ui/core/FormControl';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormHelperText from '@material-ui/core/FormHelperText';
@@ -26,7 +25,7 @@ import {
 } from '../../common';
 import snackbarTypes from '../../common/snackbarTypes';
 import {
-  Header, HtmlWrapper, InternalLink, ProtectedRoute, TabPanel,
+  Header, HtmlWrapper, InternalLink, PageContainer, ProtectedRoute, TabPanel,
 } from '../../components';
 
 import ComplianceCheckbox from './ComplianceCheckbox';
@@ -43,9 +42,6 @@ const useStyles = makeStyles((theme) => ({
   },
   complianceLegend: {
     color: theme.palette.text.primary,
-  },
-  container: {
-    marginBottom: theme.spacing(3),
   },
   file: {
     columnGap: theme.spacing(2),
@@ -101,9 +97,13 @@ const useStyles = makeStyles((theme) => ({
 const fileReader = new FileReader();
 
 function Submission() {
-  const [{
-    categories, firebaseToken, id: contestId, name: contestName, prompt, submissionEnd,
-  }] = useSwrData('/submission');
+  const [
+    {
+      data: {
+        categories, firebaseToken, id: contestId, name: contestName, prompt, submissionEnd,
+      },
+    },
+  ] = useSwrData('/submission');
   const [formState, updateFormState, resetFormState] = useFormState([
     'name',
     'category',
@@ -322,12 +322,12 @@ function Submission() {
         Contest Submission
       </Header>
       {contestId && (
-        <Container className={classes.container}>
+        <PageContainer maxWidth="md">
           <Typography className={classes.header} component="h1" variant="h6">
             {contestName}
           </Typography>
           {submissionAllowed ? (
-            <Container maxWidth="md">
+            <>
               <Tabs
                 value={selectedTab}
                 onChange={handleTabChange}
@@ -423,27 +423,27 @@ function Submission() {
                           </Paper>
                         </div>
                         {!!categories.length && (
-                          <TextField
-                            id="category"
-                            name="category"
-                            select
-                            color="secondary"
-                            variant="filled"
-                            label="Category"
-                            required
-                            helperText={formState.category.error}
-                            error={!!formState.category.error}
-                            value={formState.category.value}
-                            onBlur={handleFieldBlur}
-                            onChange={handleFieldChange}
-                          >
-                            <MenuItem value="">&nbsp;</MenuItem>
-                            {categories.map((category) => (
-                              <MenuItem key={category} value={category}>
-                                {category}
-                              </MenuItem>
-                            ))}
-                          </TextField>
+                        <TextField
+                          id="category"
+                          name="category"
+                          select
+                          color="secondary"
+                          variant="filled"
+                          label="Category"
+                          required
+                          helperText={formState.category.error}
+                          error={!!formState.category.error}
+                          value={formState.category.value}
+                          onBlur={handleFieldBlur}
+                          onChange={handleFieldChange}
+                        >
+                          <MenuItem value="">&nbsp;</MenuItem>
+                          {categories.map((category) => (
+                            <MenuItem key={category} value={category}>
+                              {category}
+                            </MenuItem>
+                          ))}
+                        </TextField>
                         )}
                         <TextField
                           id="description"
@@ -554,7 +554,7 @@ function Submission() {
                   )}
                 </ProtectedRoute>
               </TabPanel>
-            </Container>
+            </>
           ) : (
             <div>
               The submission window for this contest has closed. Click&nbsp;
@@ -562,7 +562,7 @@ function Submission() {
               &nbsp;to view entries.
             </div>
           )}
-        </Container>
+        </PageContainer>
       )}
     </>
   );
