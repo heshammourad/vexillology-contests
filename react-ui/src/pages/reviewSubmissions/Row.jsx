@@ -1,21 +1,37 @@
+import Button from '@material-ui/core/Button';
 import Chip from '@material-ui/core/Chip';
 import Collapse from '@material-ui/core/Collapse';
+import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
+import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, useTheme, withStyles } from '@material-ui/core/styles';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
+import CheckIcon from '@material-ui/icons/Check';
+import CloseIcon from '@material-ui/icons/Close';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
+import Alert from '@material-ui/lab/Alert';
+import ToggleButton from '@material-ui/lab/ToggleButton';
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import format from 'date-fns/format';
 import isToday from 'date-fns/isToday';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { markdown } from 'snudown-js';
 
-import { HtmlWrapper } from '../../components';
+import { useFormState } from '../../common';
+import { HtmlWrapper, RedditUserAttribution } from '../../components';
 
 const useStyles = makeStyles((theme) => ({
+  actions: {
+    display: 'flex',
+    flexDirection: 'column',
+    flexShrink: 0,
+    rowGap: theme.spacing(2),
+  },
   chipApproved: {
     backgroundColor: theme.palette.success.light,
   },
@@ -25,13 +41,15 @@ const useStyles = makeStyles((theme) => ({
   chipRejected: {
     backgroundColor: theme.palette.error.light,
   },
+  description: {
+    maxHeight: 300,
+    overflowY: 'auto',
+  },
   expandedImage: {
     maxHeight: 300,
-    maxWidth: 400,
+    maxWidth: '100%',
   },
   expandedRow: {
-    columnGap: theme.spacing(3),
-    display: 'flex',
     margin: '0 16px 16px 16px',
   },
   expandedTableRow: {
@@ -53,7 +71,30 @@ const useStyles = makeStyles((theme) => ({
       borderBottom: 'unset',
     },
   },
+  previewImage: {
+    [theme.breakpoints.down('xs')]: {
+      display: 'none',
+    },
+  },
 }));
+
+const EntryActionButton = withStyles((theme) => ({
+  root: {
+    borderColor: theme.palette.primary.main,
+    color: theme.palette.primary.main,
+    flexGrow: 1,
+    '&.Mui-selected': {
+      backgroundColor: theme.palette.primary.main,
+      color: theme.palette.common.white,
+      '&:hover': {
+        backgroundColor: theme.palette.primary.dark,
+      },
+    },
+    '&:hover': {
+      backgroundColor: '#fce9e7',
+    },
+  },
+}))(ToggleButton);
 
 const getSubmissionTimeDisplay = (time) => {
   const date = new Date(time);
@@ -63,15 +104,33 @@ const getSubmissionTimeDisplay = (time) => {
 
 function Row({
   submission: {
-    category, description, name, submissionStatus, submissionTime, url, user,
+    category,
+    description,
+    name: contestName,
+    submissionStatus,
+    submissionTime,
+    url,
+    user,
   },
+  userBreakdown: { approved, submitted },
 }) {
   const [open, setOpen] = useState(false);
+  const [action, setAction] = useState('approved');
+  const [formState, updateFormState] = useFormState(['reason']);
   const classes = useStyles();
+  const theme = useTheme();
+
+  const actionRejected = action === 'rejected';
 
   const handleExpandClick = () => {
     setOpen(!open);
   };
+
+  const handleActionChange = (e, newAction) => {
+    setAction(newAction);
+  };
+
+  const submit = () => {};
 
   const getSubmissionStatusDisplay = (status) => {
     let className;
@@ -96,25 +155,66 @@ function Row({
     return <Chip className={className} label={label} size="small" />;
   };
 
-  // TODO: Add user attribution
-  // const userDisplay = `/u/${user}`;
+  const handleFieldChange = ({ target: { name, value } }) => {
+    updateFormState(name, 'value', value);
+    updateFormState(name, 'error', !value && actionRejected ? 'Rejection reason is required' : '');
+  };
+
+  const isSmBreakpoint = useMediaQuery(theme.breakpoints.only('sm'));
+
+  const fields = (
+    <>
+      {category && (
+        <div>
+          <Typography component="div" variant="subtitle2">
+            Category
+          </Typography>
+          {category}
+        </div>
+      )}
+      <div>
+        <Typography component="div" variant="subtitle2">
+          Username
+        </Typography>
+        <RedditUserAttribution showUsernameOnly user={`/u/${user}`} />
+      </div>
+      <div>
+        <Typography component="div" variant="subtitle2">
+          Description
+        </Typography>
+        <div className={classes.description}>
+          <HtmlWrapper html={markdown(description)} />
+        </div>
+      </div>
+    </>
+  );
+
+  const getSubmitMessage = () => {
+    if (approved >= 2) {
+      return <Alert variant="error">This user already has 2 or more approved entries!</Alert>;
+    }
+    if (submitted > 2) {
+      return <Alert variant="warning">This user has more than 2 submissions.</Alert>;
+    }
+    return null;
+  };
 
   return (
     <>
       <TableRow className={classes.mainRow}>
         <TableCell>
           <Typography component="span" variant="subtitle2">
-            {name}
+            {contestName}
           </Typography>
         </TableCell>
-        <TableCell>
+        <TableCell align="center" className={classes.previewImage}>
           <div className={classes.imageContainer}>
             {!open && <img className={classes.image} alt="" src={url} />}
           </div>
         </TableCell>
-        <TableCell>{getSubmissionStatusDisplay(submissionStatus)}</TableCell>
-        <TableCell>{getSubmissionTimeDisplay(submissionTime)}</TableCell>
-        <TableCell>
+        <TableCell align="center">{getSubmissionStatusDisplay(submissionStatus)}</TableCell>
+        <TableCell align="center">{getSubmissionTimeDisplay(submissionTime)}</TableCell>
+        <TableCell align="right">
           <IconButton aria-label="expand row" size="small" onClick={handleExpandClick}>
             {open ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
@@ -122,32 +222,55 @@ function Row({
       </TableRow>
       <TableRow>
         <TableCell className={classes.expandedTableRow} colSpan={5}>
-          <Collapse in={open} timeout="auto" unmountOnExit>
-            <div className={classes.expandedRow}>
-              <img className={classes.expandedImage} alt="" src={url} />
-              <div className={classes.fields}>
-                {category && (
-                  <div className={classes.fieldRow}>
-                    <Typography component="div" variant="subtitle2">
-                      Category
-                    </Typography>
-                    {category}
-                  </div>
-                )}
-                <div className={classes.fieldRow}>
-                  <Typography component="div" variant="subtitle2">
-                    Username
-                  </Typography>
-                  {`/u/${user}`}
-                </div>
-                <div>
-                  <Typography component="div" variant="subtitle2">
-                    Description
-                  </Typography>
-                  <HtmlWrapper html={markdown(description)} />
-                </div>
-              </div>
-            </div>
+          <Collapse in={open} timeout="auto" unmountOnExit className={classes.expandedRow}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} md={4}>
+                <img className={classes.expandedImage} alt="" src={url} />
+                {isSmBreakpoint && fields}
+              </Grid>
+              {!isSmBreakpoint && (
+                <Grid item xs={12} md={4} className={classes.fields}>
+                  {fields}
+                </Grid>
+              )}
+              <Grid item xs={12} sm={6} md={4} className={classes.actions}>
+                <ToggleButtonGroup
+                  aria-label="review action"
+                  exclusive
+                  onChange={handleActionChange}
+                  value={action}
+                >
+                  <EntryActionButton aria-label="approve entry" value="approved">
+                    <CheckIcon fontSize="small" />
+                    Approve
+                  </EntryActionButton>
+                  <EntryActionButton aria-label="reject entry" value="rejected">
+                    <CloseIcon fontSize="small" />
+                    Reject
+                  </EntryActionButton>
+                </ToggleButtonGroup>
+                <TextField
+                  id="reason"
+                  name="reason"
+                  color="secondary"
+                  variant="filled"
+                  disabled={!actionRejected}
+                  multiline
+                  maxRows={6}
+                  minRows={6}
+                  label="Reason"
+                  required={actionRejected}
+                  helperText={formState.reason.error}
+                  error={!!formState.reason.error}
+                  value={formState.reason.value}
+                  onChange={handleFieldChange}
+                />
+                {getSubmitMessage()}
+                <Button variant="contained" color="primary" onClick={submit}>
+                  Submit
+                </Button>
+              </Grid>
+            </Grid>
           </Collapse>
         </TableCell>
       </TableRow>
@@ -164,6 +287,10 @@ Row.propTypes = {
     submissionTime: PropTypes.string,
     url: PropTypes.string,
     user: PropTypes.string,
+  }).isRequired,
+  userBreakdown: PropTypes.shape({
+    approved: PropTypes.number,
+    submitted: PropTypes.number,
   }).isRequired,
 };
 

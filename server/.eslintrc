@@ -5,6 +5,12 @@
   "extends": [
     "airbnb-base"
   ],
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "ecmaVersion": 2023,
+    "requireConfigFile": false,
+    "sourceType": "module"
+  },
   "rules": {
     "import/no-unresolved": [
       "error",
