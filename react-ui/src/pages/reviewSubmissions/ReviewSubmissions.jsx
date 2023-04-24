@@ -68,69 +68,67 @@ function ReviewSubmissions() {
       <Header position="static" to={state?.back ?? '/home'}>
         Review Submissions
       </Header>
-      <PageContainer>
-        <ProtectedRoute moderatorPath={API_PATH}>
-          <PageContainer>
-            <Typography className={classes.header} component="h1" variant="h5">
-              {contestName}
-            </Typography>
-            {submissions?.length ? (
-              <>
-                <div className={classes.chipContainer}>
-                  <FilterChip
-                    label="Pending"
-                    onClick={handleChipClick('pending')}
-                    selected={selectedChips.pending ?? false}
-                  />
-                  <FilterChip
-                    label="Approved"
-                    onClick={handleChipClick('approved')}
-                    selected={selectedChips.approved ?? false}
-                  />
-                  <FilterChip
-                    label="Rejected"
-                    onClick={handleChipClick('rejected')}
-                    selected={selectedChips.rejected ?? false}
-                  />
-                </div>
-                {filteredSubmissions
-                  && (filteredSubmissions.length ? (
-                    <TableContainer component={Paper}>
-                      <Table aria-label="submissions" size="small">
-                        <TableBody>
-                          {filteredSubmissions.map((submission) => (
-                            <Row
-                              key={submission.id}
-                              submission={submission}
-                              userBreakdown={userBreakdown[submission.user]}
-                            />
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  ) : (
-                    <>
-                      <Typography component="div" variant="subtitle2">
-                        There are no entries matching the filter.
-                      </Typography>
-                      <Button color="primary" onClick={resetFilters}>
-                        Reset Filters
-                      </Button>
-                    </>
-                  ))}
-              </>
-            ) : (
-              contestName && (
-                <Box display="flex" alignItems="center" justifyContent="center">
-                  <Typography component="div" variant="h6">
-                    There are no submissions for this contest
-                  </Typography>
-                </Box>
-              )
-            )}
-          </PageContainer>
-        </ProtectedRoute>
-      </PageContainer>
+      <ProtectedRoute moderatorPath={API_PATH}>
+        <PageContainer>
+          <Typography className={classes.header} component="h1" variant="h5">
+            {contestName}
+          </Typography>
+          {submissions?.length ? (
+            <>
+              <div className={classes.chipContainer}>
+                <FilterChip
+                  label="Pending"
+                  onClick={handleChipClick('pending')}
+                  selected={selectedChips.pending ?? false}
+                />
+                <FilterChip
+                  label="Approved"
+                  onClick={handleChipClick('approved')}
+                  selected={selectedChips.approved ?? false}
+                />
+                <FilterChip
+                  label="Rejected"
+                  onClick={handleChipClick('rejected')}
+                  selected={selectedChips.rejected ?? false}
+                />
+              </div>
+              {filteredSubmissions
+                && (filteredSubmissions.length ? (
+                  <TableContainer component={Paper}>
+                    <Table aria-label="submissions" size="small">
+                      <TableBody>
+                        {filteredSubmissions.map((submission) => (
+                          <Row
+                            key={submission.id}
+                            submission={submission}
+                            userBreakdown={userBreakdown[submission.user]}
+                          />
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                ) : (
+                  <>
+                    <Typography component="div" variant="subtitle2">
+                      There are no entries matching the filter.
+                    </Typography>
+                    <Button color="primary" onClick={resetFilters}>
+                      Reset Filters
+                    </Button>
+                  </>
+                ))}
+            </>
+          ) : (
+            contestName && (
+              <Box display="flex" alignItems="center" justifyContent="center">
+                <Typography component="div" variant="h6">
+                  There are no submissions for this contest
+                </Typography>
+              </Box>
+            )
+          )}
+        </PageContainer>
+      </ProtectedRoute>
     </>
   );
 }
