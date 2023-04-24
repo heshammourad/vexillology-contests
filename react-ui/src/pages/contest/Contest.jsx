@@ -289,7 +289,6 @@ function Contest() {
   useEffect(() => {
     forceCheck();
     window.history.pushState(
-      // TODO: Safe access usr to prevent undefined error
       { usr: { ...window.history.state?.usr, selectedCategories } },
       document.title,
     );
