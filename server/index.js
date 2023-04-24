@@ -3,7 +3,7 @@ const numCPUs = require('os').cpus().length;
 const path = require('path');
 
 const express = require('express');
-const rateLimit = require('express-rate-limit')
+const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 
 const accessToken = require('./api/accessToken');
