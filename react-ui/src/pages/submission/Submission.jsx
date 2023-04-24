@@ -1,5 +1,6 @@
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
+import Container from '@material-ui/core/Container';
 import FormControl from '@material-ui/core/FormControl';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormHelperText from '@material-ui/core/FormHelperText';
@@ -327,12 +328,12 @@ function Submission() {
         Contest Submission
       </Header>
       {contestId && (
-        <PageContainer maxWidth="md">
+        <PageContainer>
           <Typography className={classes.header} component="h1" variant="h6">
             {contestName}
           </Typography>
           {submissionAllowed ? (
-            <>
+            <Container maxWidth="md">
               <Tabs
                 value={selectedTab}
                 onChange={handleTabChange}
@@ -559,7 +560,7 @@ function Submission() {
                   )}
                 </ProtectedRoute>
               </TabPanel>
-            </>
+            </Container>
           ) : (
             <div>
               The submission window for this contest has closed. Click&nbsp;
