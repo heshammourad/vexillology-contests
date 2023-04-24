@@ -6,26 +6,13 @@ import { useComponentsState } from '../common';
 import snackbarTypes from '../common/snackbarTypes';
 
 const TYPES = {
-  [snackbarTypes.SETTINGS_ERROR]: {
-    message: 'Error submitting setting. Please try again later.',
-    severity: 'error',
-  },
-  [snackbarTypes.SETTINGS_SUCCESS]: {
-    message: 'Setting saved',
-    severity: 'success',
-  },
-  [snackbarTypes.SUBMISSION_ERROR]: {
-    message: 'Error submitting entry. Please try again later.',
-    severity: 'error',
-  },
-  [snackbarTypes.VOTING_ERROR]: {
-    message: 'Error submitting vote. Please try again later.',
-    severity: 'error',
-  },
-  [snackbarTypes.VOTING_SUCCESS]: {
-    message: 'Vote submitted!',
-    severity: 'success',
-  },
+  [snackbarTypes.REVIEW_SUBMISSION_ERROR]: 'Error updating submission. Please try again later.',
+  [snackbarTypes.REVIEW_SUBMISSION_SUCCESS]: 'Submission updated',
+  [snackbarTypes.SETTINGS_ERROR]: 'Error submitting setting. Please try again later.',
+  [snackbarTypes.SETTINGS_SUCCESS]: 'Setting saved',
+  [snackbarTypes.SUBMISSION_ERROR]: 'Error submitting entry. Please try again later.',
+  [snackbarTypes.VOTING_ERROR]: 'Error submitting vote. Please try again later.',
+  [snackbarTypes.VOTING_SUCCESS]: 'Vote submitted!',
 };
 
 function CustomSnackbar() {
@@ -51,7 +38,7 @@ function CustomSnackbar() {
     setComponentsState({ snackbar: {} });
   };
 
-  const typeToDisplay = TYPES[type];
+  const message = TYPES[type];
 
   return (
     <Snackbar
@@ -59,11 +46,11 @@ function CustomSnackbar() {
       anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       autoHideDuration={6000}
       onClose={handleClose}
-      open={isOpen && !!typeToDisplay}
+      open={isOpen && !!message}
     >
-      {typeToDisplay ? (
-        <Alert onClose={handleClose} severity={typeToDisplay.severity}>
-          {typeToDisplay.message}
+      {message ? (
+        <Alert onClose={handleClose} severity={type.split('_').pop().toLowerCase()}>
+          {message}
         </Alert>
       ) : null}
     </Snackbar>

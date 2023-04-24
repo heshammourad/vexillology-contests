@@ -67,7 +67,7 @@ exports.put = async ({ body: { id, rejectionReason, status }, username }, res) =
         'rejection_reason',
         { name: 'submission_status', cast: 'submission_status' },
       ],
-      ['modified_by', 'rejection_reason', 'submission_status'],
+      ['id', 'modified_by', 'rejection_reason', 'submission_status'],
     );
     if (!response) {
       res.status(404).send(`Entry with id='${id}' not found`);

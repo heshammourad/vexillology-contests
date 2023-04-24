@@ -1,6 +1,5 @@
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import FormControl from '@material-ui/core/FormControl';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormHelperText from '@material-ui/core/FormHelperText';
@@ -24,7 +23,12 @@ import {
 } from '../../common';
 import snackbarTypes from '../../common/snackbarTypes';
 import {
-  Header, HtmlWrapper, InternalLink, PageContainer, ProtectedRoute,
+  Header,
+  HtmlWrapper,
+  InternalLink,
+  PageContainer,
+  ProtectedRoute,
+  SubmissionButton,
 } from '../../components';
 
 import ComplianceCheckbox from './ComplianceCheckbox';
@@ -519,14 +523,14 @@ function Submission() {
                                 again.
                               </FormHelperText>
                             </FormControl>
-                            <Button
+                            <SubmissionButton
                               variant="contained"
                               color="primary"
-                              disabled={submitting}
                               onClick={submitForm}
+                              submitting={submitting}
                             >
-                              {submitting ? <CircularProgress size={24} /> : 'Submit'}
-                            </Button>
+                              Submit
+                            </SubmissionButton>
                           </fieldset>
                         </form>
                       ) : (
