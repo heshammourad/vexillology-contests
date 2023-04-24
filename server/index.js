@@ -3,7 +3,7 @@ const numCPUs = require('os').cpus().length;
 const path = require('path');
 
 const express = require('express');
-const RateLimit = require('express-rate-limit');
+const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 
 const accessToken = require('./api/accessToken');
@@ -72,7 +72,7 @@ if (!isDev && cluster.isMaster) {
   // Priority serve any static files.
   app.use(express.static(path.resolve(__dirname, '../react-ui/build')));
 
-  const limiter = new RateLimit({
+  const limiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 minute
     max: 100,
   });
