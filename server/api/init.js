@@ -17,7 +17,9 @@ exports.get = async ({ moderator }, res) => {
     let submissionsToReview = 0;
     if (moderator) {
       const submissions = await getCurrentContestSubmissions();
-      submissionsToReview = submissions.length;
+      submissionsToReview = submissions.filter(
+        ({ submissionStatus }) => submissionStatus === 'pending',
+      ).length;
     }
 
     res.send({
