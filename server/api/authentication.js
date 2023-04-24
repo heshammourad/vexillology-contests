@@ -33,12 +33,14 @@ exports.requireAuthentication = async (req, res, next) => {
       next(true);
       return;
     }
+
     const username = await reddit.getUser({ accesstoken, refreshtoken });
     if (!username) {
       res.status(401).send('User not found.');
       next(true);
       return;
     }
+
     req.username = username;
     next();
   } catch (e) {
