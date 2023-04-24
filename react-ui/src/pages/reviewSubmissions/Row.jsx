@@ -140,14 +140,34 @@ const getSubmissionTimeDisplay = (time) => {
   return format(date, formatPattern);
 };
 
-const updateSubmissions = (submissions, data) => submissions.reduce((acc, cur) => {
-  if (cur.id !== data.id) {
-    acc.push(cur);
-  } else {
-    acc.push({ ...cur, ...data });
+const updateSubmissions = (currentData, response) => {
+  const { submissionStatus, user } = currentData.submissions.find(({ id }) => id === response.id);
+  let difference = 0;
+  if (submissionStatus !== 'approved' && response.submissionStatus === 'approved') {
+    difference = 1;
+  } else if (submissionStatus === 'approved' && response.submissionStatus !== 'approved') {
+    difference = -1;
   }
-  return acc;
-}, []);
+  let { userBreakdown } = currentData;
+  if (difference) {
+    const changedUserBreakdown = userBreakdown[user];
+    const approved = (changedUserBreakdown.approved ?? 0) + difference;
+    userBreakdown = { ...userBreakdown, [user]: { ...changedUserBreakdown, approved } };
+  }
+
+  return {
+    ...currentData,
+    submissions: currentData.submissions.reduce((acc, cur) => {
+      if (cur.id !== response.id) {
+        acc.push(cur);
+      } else {
+        acc.push({ ...cur, ...response });
+      }
+      return acc;
+    }, []),
+    userBreakdown,
+  };
+};
 
 function Row({
   submission: {
@@ -240,10 +260,9 @@ function Row({
         setOpen(false);
         updateSnackbarState(snackbarTypes.REVIEW_SUBMISSION_SUCCESS);
 
-        const newSubmissions = updateSubmissions(data.submissions, response);
-        const newData = { ...data, submissions: newSubmissions };
-        updateCache(newData);
-        return newData;
+        const newSubmissions = updateSubmissions(data, response);
+        updateCache(newSubmissions);
+        return newSubmissions;
       },
       onError: showError,
     });
