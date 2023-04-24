@@ -18,7 +18,7 @@ import HallOfFameCard from './HallOfFameCard';
 
 const tabsHeight = 48;
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles({
   content: {
     paddingTop: tabsHeight,
   },
@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme) => ({
   tabsScroller: {
     flexGrow: '0',
   },
-}));
+});
 
 const TOOLBAR_ID = 'hofToolbar';
 

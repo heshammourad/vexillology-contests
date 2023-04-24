@@ -172,7 +172,7 @@ function Row({
   const { isMutating, trigger } = useSWRMutation([API_PATH, authTokens], (_, { arg }) => putData(API_PATH, arg, authTokens));
   const [open, setOpen] = useState(false);
   const [action, setAction] = useState(null);
-  const [formState, updateFormState] = useFormState(['reason']);
+  const [formState, updateFormState, resetFormState] = useFormState(['reason']);
   const updateSnackbarState = useSnackbarState();
 
   const classes = useStyles();
@@ -183,8 +183,8 @@ function Row({
   }, [submissionStatus]);
 
   useEffect(() => {
+    resetFormState();
     updateFormState('reason', 'value', rejectionReason);
-    updateFormState('reason', 'error', '');
   }, [rejectionReason]);
 
   const actionRejected = action === 'rejected';
