@@ -98,9 +98,9 @@ function ReviewSubmissions() {
                     <TableContainer component={Paper}>
                       <Table aria-label="submissions" size="small">
                         <TableBody>
-                          {filteredSubmissions.map(({ id, ...submission }) => (
+                          {filteredSubmissions.map((submission) => (
                             <Row
-                              key={id}
+                              key={submission.id}
                               submission={submission}
                               userBreakdown={userBreakdown[submission.user]}
                             />

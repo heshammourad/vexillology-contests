@@ -1,6 +1,5 @@
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import FormControl from '@material-ui/core/FormControl';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormHelperText from '@material-ui/core/FormHelperText';
@@ -25,7 +24,13 @@ import {
 } from '../../common';
 import snackbarTypes from '../../common/snackbarTypes';
 import {
-  Header, HtmlWrapper, InternalLink, PageContainer, ProtectedRoute, TabPanel,
+  Header,
+  HtmlWrapper,
+  InternalLink,
+  PageContainer,
+  ProtectedRoute,
+  SubmissionButton,
+  TabPanel,
 } from '../../components';
 
 import ComplianceCheckbox from './ComplianceCheckbox';
@@ -423,27 +428,27 @@ function Submission() {
                           </Paper>
                         </div>
                         {!!categories.length && (
-                        <TextField
-                          id="category"
-                          name="category"
-                          select
-                          color="secondary"
-                          variant="filled"
-                          label="Category"
-                          required
-                          helperText={formState.category.error}
-                          error={!!formState.category.error}
-                          value={formState.category.value}
-                          onBlur={handleFieldBlur}
-                          onChange={handleFieldChange}
-                        >
-                          <MenuItem value="">&nbsp;</MenuItem>
-                          {categories.map((category) => (
-                            <MenuItem key={category} value={category}>
-                              {category}
-                            </MenuItem>
-                          ))}
-                        </TextField>
+                          <TextField
+                            id="category"
+                            name="category"
+                            select
+                            color="secondary"
+                            variant="filled"
+                            label="Category"
+                            required
+                            helperText={formState.category.error}
+                            error={!!formState.category.error}
+                            value={formState.category.value}
+                            onBlur={handleFieldBlur}
+                            onChange={handleFieldChange}
+                          >
+                            <MenuItem value="">&nbsp;</MenuItem>
+                            {categories.map((category) => (
+                              <MenuItem key={category} value={category}>
+                                {category}
+                              </MenuItem>
+                            ))}
+                          </TextField>
                         )}
                         <TextField
                           id="description"
@@ -525,14 +530,14 @@ function Submission() {
                             your flag does not comply with the rules, fix it and submit again.
                           </FormHelperText>
                         </FormControl>
-                        <Button
+                        <SubmissionButton
                           variant="contained"
                           color="primary"
-                          disabled={submitting}
                           onClick={submitForm}
+                          submitting={submitting}
                         >
-                          {submitting ? <CircularProgress size={24} /> : 'Submit'}
-                        </Button>
+                          Submit
+                        </SubmissionButton>
                       </fieldset>
                     </form>
                   ) : (

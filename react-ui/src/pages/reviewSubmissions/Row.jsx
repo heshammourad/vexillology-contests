@@ -1,4 +1,3 @@
-import Button from '@material-ui/core/Button';
 import Chip from '@material-ui/core/Chip';
 import Collapse from '@material-ui/core/Collapse';
 import Grid from '@material-ui/core/Grid';
@@ -13,6 +12,7 @@ import CheckIcon from '@material-ui/icons/Check';
 import CloseIcon from '@material-ui/icons/Close';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
+import UndoIcon from '@material-ui/icons/Undo';
 import Alert from '@material-ui/lab/Alert';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
@@ -20,11 +20,18 @@ import clsx from 'clsx';
 import format from 'date-fns/format';
 import isToday from 'date-fns/isToday';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { markdown } from 'snudown-js';
+import useSWRMutation from 'swr/mutation';
 
-import { useFormState } from '../../common';
-import { HtmlWrapper, RedditUserAttribution } from '../../components';
+import { putData } from '../../api';
+import {
+  useAuthState, useFormState, useSnackbarState, useSwrData,
+} from '../../common';
+import snackbarTypes from '../../common/snackbarTypes';
+import { HtmlWrapper, RedditUserAttribution, SubmissionButton } from '../../components';
+
+const API_PATH = '/mod/reviewSubmissions';
 
 const useStyles = makeStyles((theme) => ({
   actions: {
@@ -71,6 +78,9 @@ const useStyles = makeStyles((theme) => ({
       display: 'none',
     },
   },
+  modifiedBy: {
+    fontStyle: 'italic',
+  },
   previewImage: {
     [theme.breakpoints.down('sm')]: {
       display: 'none',
@@ -87,6 +97,9 @@ const useStyles = makeStyles((theme) => ({
     '&$rejected': {
       backgroundColor: theme.palette.error.light,
     },
+  },
+  submissionStatus: {
+    fontWeight: 'bold',
   },
   submissionTime: {
     whiteSpace: 'nowrap',
@@ -106,6 +119,7 @@ const EntryActionButton = withStyles((theme) => ({
   root: {
     borderColor: theme.palette.primary.main,
     color: theme.palette.primary.main,
+    flexBasis: '50%',
     flexGrow: 1,
     '&.Mui-selected': {
       backgroundColor: theme.palette.primary.main,
@@ -126,11 +140,23 @@ const getSubmissionTimeDisplay = (time) => {
   return format(date, formatPattern);
 };
 
+const updateSubmissions = (submissions, data) => submissions.reduce((acc, cur) => {
+  if (cur.id !== data.id) {
+    acc.push(cur);
+  } else {
+    acc.push({ ...cur, ...data });
+  }
+  return acc;
+}, []);
+
 function Row({
   submission: {
     category,
     description,
+    id,
+    modifiedBy,
     name: entryName,
+    rejectionReason,
     submissionStatus,
     submissionTime,
     url,
@@ -138,27 +164,89 @@ function Row({
   },
   userBreakdown: { approved, submitted },
 }) {
+  const [{ accessToken, refreshToken }] = useAuthState();
+  const authTokens = { accessToken, refreshToken };
+
+  const updateCache = useSwrData(API_PATH)[1];
+  // eslint-disable-next-line max-len
+  const { isMutating, trigger } = useSWRMutation([API_PATH, authTokens], (_, { arg }) => putData(API_PATH, arg, authTokens));
   const [open, setOpen] = useState(false);
-  const [action, setAction] = useState('approved');
+  const [action, setAction] = useState(null);
   const [formState, updateFormState] = useFormState(['reason']);
+  const updateSnackbarState = useSnackbarState();
+
   const classes = useStyles();
   const theme = useTheme();
 
+  useEffect(() => {
+    setAction(submissionStatus === 'approved' ? 'pending' : 'approved');
+  }, [submissionStatus]);
+
+  useEffect(() => {
+    updateFormState('reason', 'value', rejectionReason);
+    updateFormState('reason', 'error', '');
+  }, [rejectionReason]);
+
   const actionRejected = action === 'rejected';
+
+  const validateForm = (value, forceValidate = false) => {
+    const actualValue = value ?? formState.reason.value;
+    const message = !actualValue && actionRejected ? 'Rejection reason is required' : '';
+    if (forceValidate || formState.reason.touch) {
+      updateFormState('reason', 'error', message);
+    }
+    return !message;
+  };
+
+  useEffect(() => {
+    validateForm();
+  }, [action]);
 
   const handleExpandClick = () => {
     setOpen(!open);
   };
 
   const handleActionChange = (e, newAction) => {
-    setAction(newAction);
+    if (newAction) {
+      setAction(newAction);
+    }
   };
 
-  const submit = () => {};
-
   const handleFieldChange = ({ target: { name, value } }) => {
+    updateFormState(name, 'touch', true);
     updateFormState(name, 'value', value);
-    updateFormState(name, 'error', !value && actionRejected ? 'Rejection reason is required' : '');
+    validateForm(value);
+  };
+
+  const showError = () => {
+    updateSnackbarState(snackbarTypes.REVIEW_SUBMISSION_ERROR);
+  };
+
+  const submit = () => {
+    const validForm = validateForm(null, true);
+    if (!validForm) {
+      return;
+    }
+
+    const body = { id, rejectionReason: formState.reason.value, status: action };
+    trigger(body, {
+      revalidate: false,
+      populateCache: (response, data) => {
+        if (!response) {
+          showError();
+          return data;
+        }
+
+        setOpen(false);
+        updateSnackbarState(snackbarTypes.REVIEW_SUBMISSION_SUCCESS);
+
+        const newSubmissions = updateSubmissions(data.submissions, response);
+        const newData = { ...data, submissions: newSubmissions };
+        updateCache(newData);
+        return newData;
+      },
+      onError: showError,
+    });
   };
 
   const isSmBreakpoint = useMediaQuery(theme.breakpoints.only('sm'));
@@ -190,6 +278,27 @@ function Row({
       </div>
     </>
   );
+
+  const getNonPendingEntryActionButton = () => {
+    let label;
+    switch (submissionStatus) {
+      case 'approved':
+        label = 'Unapprove';
+        break;
+      case 'rejected':
+        label = 'Unreject';
+        break;
+      default:
+        return null;
+    }
+    return (
+      <EntryActionButton aria-label={`${label} entry`} value="pending">
+        <UndoIcon fontSize="small" />
+        &nbsp;
+        {label}
+      </EntryActionButton>
+    );
+  };
 
   const getSubmitMessage = () => {
     let message;
@@ -254,15 +363,28 @@ function Row({
                   onChange={handleActionChange}
                   value={action}
                 >
-                  <EntryActionButton aria-label="approve entry" value="approved">
-                    <CheckIcon fontSize="small" />
-                    Approve
-                  </EntryActionButton>
-                  <EntryActionButton aria-label="reject entry" value="rejected">
-                    <CloseIcon fontSize="small" />
-                    Reject
-                  </EntryActionButton>
+                  {submissionStatus !== 'approved' && (
+                    <EntryActionButton aria-label="approve entry" value="approved">
+                      <CheckIcon fontSize="small" />
+                      &nbsp;Approve
+                    </EntryActionButton>
+                  )}
+                  {getNonPendingEntryActionButton()}
+                  {submissionStatus !== 'rejected' && (
+                    <EntryActionButton aria-label="reject entry" value="rejected">
+                      <CloseIcon fontSize="small" />
+                      &nbsp;Reject
+                    </EntryActionButton>
+                  )}
                 </ToggleButtonGroup>
+                {modifiedBy && (
+                  <Alert severity="info">
+                    {'Set to '}
+                    <span className={classes.submissionStatus}>{submissionStatus}</span>
+                    {' by '}
+                    <span className={classes.modifiedBy}>{modifiedBy}</span>
+                  </Alert>
+                )}
                 <TextField
                   id="reason"
                   name="reason"
@@ -276,13 +398,18 @@ function Row({
                   required={actionRejected}
                   helperText={formState.reason.error}
                   error={!!formState.reason.error}
-                  value={formState.reason.value}
+                  value={formState.reason.value ?? ''}
                   onChange={handleFieldChange}
                 />
                 {getSubmitMessage()}
-                <Button variant="contained" color="primary" onClick={submit}>
+                <SubmissionButton
+                  color="primary"
+                  variant="contained"
+                  onClick={submit}
+                  submitting={isMutating}
+                >
                   Submit
-                </Button>
+                </SubmissionButton>
               </Grid>
             </Grid>
           </Collapse>
@@ -296,7 +423,10 @@ Row.propTypes = {
   submission: PropTypes.shape({
     category: PropTypes.string,
     description: PropTypes.string,
+    id: PropTypes.string,
+    modifiedBy: PropTypes.string,
     name: PropTypes.string,
+    rejectionReason: PropTypes.string,
     submissionStatus: PropTypes.oneOf(['approved', 'pending', 'rejected']),
     submissionTime: PropTypes.string,
     url: PropTypes.string,
