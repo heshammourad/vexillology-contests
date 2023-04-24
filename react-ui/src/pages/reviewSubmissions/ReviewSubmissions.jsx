@@ -79,8 +79,8 @@ function ReviewSubmissions() {
                 <div className={classes.chipContainer}>
                   <FilterChip
                     label="Pending"
-                    onClick={handleChipClick('pending_review')}
-                    selected={selectedChips.pending_review ?? false}
+                    onClick={handleChipClick('pending')}
+                    selected={selectedChips.pending ?? false}
                   />
                   <FilterChip
                     label="Approved"
@@ -93,30 +93,31 @@ function ReviewSubmissions() {
                     selected={selectedChips.rejected ?? false}
                   />
                 </div>
-                {filteredSubmissions.length ? (
-                  <TableContainer component={Paper}>
-                    <Table aria-label="submissions" size="small">
-                      <TableBody>
-                        {filteredSubmissions.map(({ id, ...submission }) => (
-                          <Row
-                            key={id}
-                            submission={submission}
-                            userBreakdown={userBreakdown[submission.user]}
-                          />
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                ) : (
-                  <>
-                    <Typography component="div" variant="subtitle2">
-                      There are no entries matching the filter.
-                    </Typography>
-                    <Button color="primary" onClick={resetFilters}>
-                      Reset Filters
-                    </Button>
-                  </>
-                )}
+                {filteredSubmissions
+                  && (filteredSubmissions.length ? (
+                    <TableContainer component={Paper}>
+                      <Table aria-label="submissions" size="small">
+                        <TableBody>
+                          {filteredSubmissions.map(({ id, ...submission }) => (
+                            <Row
+                              key={id}
+                              submission={submission}
+                              userBreakdown={userBreakdown[submission.user]}
+                            />
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  ) : (
+                    <>
+                      <Typography component="div" variant="subtitle2">
+                        There are no entries matching the filter.
+                      </Typography>
+                      <Button color="primary" onClick={resetFilters}>
+                        Reset Filters
+                      </Button>
+                    </>
+                  ))}
               </>
             ) : (
               contestName && (

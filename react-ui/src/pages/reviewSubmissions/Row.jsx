@@ -16,6 +16,7 @@ import ExpandMore from '@material-ui/icons/ExpandMore';
 import Alert from '@material-ui/lab/Alert';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
+import clsx from 'clsx';
 import format from 'date-fns/format';
 import isToday from 'date-fns/isToday';
 import PropTypes from 'prop-types';
@@ -32,18 +33,12 @@ const useStyles = makeStyles((theme) => ({
     flexShrink: 0,
     rowGap: theme.spacing(2),
   },
-  chipApproved: {
-    backgroundColor: theme.palette.success.light,
-  },
-  chipPending: {
-    backgroundColor: theme.palette.warning.light,
-  },
-  chipRejected: {
-    backgroundColor: theme.palette.error.light,
-  },
   description: {
     maxHeight: 300,
     overflowY: 'auto',
+  },
+  entryName: {
+    maxWidth: 300,
   },
   expandedImage: {
     maxHeight: 300,
@@ -71,11 +66,40 @@ const useStyles = makeStyles((theme) => ({
       borderBottom: 'unset',
     },
   },
-  previewImage: {
-    [theme.breakpoints.down('xs')]: {
+  mainRowUser: {
+    [theme.breakpoints.down('sm')]: {
       display: 'none',
     },
   },
+  previewImage: {
+    [theme.breakpoints.down('sm')]: {
+      display: 'none',
+    },
+  },
+  statusChip: {
+    textTransform: 'capitalize',
+    '&$approved': {
+      backgroundColor: theme.palette.success.light,
+    },
+    '&$pending': {
+      backgroundColor: theme.palette.warning.light,
+    },
+    '&$rejected': {
+      backgroundColor: theme.palette.error.light,
+    },
+  },
+  submissionTime: {
+    whiteSpace: 'nowrap',
+    [theme.breakpoints.down('sm')]: {
+      display: 'none',
+    },
+  },
+  // Dummy classes
+  /* eslint-disable mui-unused-classes/unused-classes */
+  approved: {},
+  pending: {},
+  rejected: {},
+  /* eslint-enable mui-unused-classes/unused-classes */
 }));
 
 const EntryActionButton = withStyles((theme) => ({
@@ -106,7 +130,7 @@ function Row({
   submission: {
     category,
     description,
-    name: contestName,
+    name: entryName,
     submissionStatus,
     submissionTime,
     url,
@@ -132,29 +156,6 @@ function Row({
 
   const submit = () => {};
 
-  const getSubmissionStatusDisplay = (status) => {
-    let className;
-    let label;
-    switch (status) {
-      case 'approved':
-        className = classes.chipApproved;
-        label = 'Approved';
-        break;
-      case 'pending_review':
-        className = classes.chipPending;
-        label = 'Pending';
-        break;
-      case 'rejected':
-        className = classes.chipRejected;
-        label = 'Rejected';
-        break;
-      default:
-        // DO NOTHING
-        break;
-    }
-    return <Chip className={className} label={label} size="small" />;
-  };
-
   const handleFieldChange = ({ target: { name, value } }) => {
     updateFormState(name, 'value', value);
     updateFormState(name, 'error', !value && actionRejected ? 'Rejection reason is required' : '');
@@ -162,6 +163,7 @@ function Row({
 
   const isSmBreakpoint = useMediaQuery(theme.breakpoints.only('sm'));
 
+  const redditUserAttribution = <RedditUserAttribution showUsernameOnly user={`/u/${user}`} />;
   const fields = (
     <>
       {category && (
@@ -176,7 +178,7 @@ function Row({
         <Typography component="div" variant="subtitle2">
           Username
         </Typography>
-        <RedditUserAttribution showUsernameOnly user={`/u/${user}`} />
+        {redditUserAttribution}
       </div>
       <div>
         <Typography component="div" variant="subtitle2">
@@ -190,30 +192,42 @@ function Row({
   );
 
   const getSubmitMessage = () => {
+    let message;
+    let severity;
     if (approved >= 2) {
-      return <Alert variant="error">This user already has 2 or more approved entries!</Alert>;
+      message = 'This user already has 2 or more approved entries!';
+      severity = 'error';
+    } else if (submitted > 2) {
+      message = 'This user has more than 2 submissions.';
+      severity = 'warning';
     }
-    if (submitted > 2) {
-      return <Alert variant="warning">This user has more than 2 submissions.</Alert>;
-    }
-    return null;
+    return message ? <Alert severity={severity}>{message}</Alert> : null;
   };
 
   return (
     <>
       <TableRow className={classes.mainRow}>
-        <TableCell>
+        <TableCell className={classes.entryName}>
           <Typography component="span" variant="subtitle2">
-            {contestName}
+            {entryName}
           </Typography>
         </TableCell>
+        <TableCell className={classes.mainRowUser}>{!open && redditUserAttribution}</TableCell>
         <TableCell align="center" className={classes.previewImage}>
           <div className={classes.imageContainer}>
             {!open && <img className={classes.image} alt="" src={url} />}
           </div>
         </TableCell>
-        <TableCell align="center">{getSubmissionStatusDisplay(submissionStatus)}</TableCell>
-        <TableCell align="center">{getSubmissionTimeDisplay(submissionTime)}</TableCell>
+        <TableCell align="center" className={classes.submissionTime}>
+          {getSubmissionTimeDisplay(submissionTime)}
+        </TableCell>
+        <TableCell align="center">
+          <Chip
+            className={clsx(classes.statusChip, classes[submissionStatus])}
+            label={submissionStatus}
+            size="small"
+          />
+        </TableCell>
         <TableCell align="right">
           <IconButton aria-label="expand row" size="small" onClick={handleExpandClick}>
             {open ? <ExpandLess /> : <ExpandMore />}
@@ -221,7 +235,7 @@ function Row({
         </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell className={classes.expandedTableRow} colSpan={5}>
+        <TableCell className={classes.expandedTableRow} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit className={classes.expandedRow}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6} md={4}>
@@ -283,7 +297,7 @@ Row.propTypes = {
     category: PropTypes.string,
     description: PropTypes.string,
     name: PropTypes.string,
-    submissionStatus: PropTypes.oneOf(['approved', 'pending_review', 'rejected']),
+    submissionStatus: PropTypes.oneOf(['approved', 'pending', 'rejected']),
     submissionTime: PropTypes.string,
     url: PropTypes.string,
     user: PropTypes.string,

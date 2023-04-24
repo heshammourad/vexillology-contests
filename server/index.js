@@ -15,6 +15,7 @@ const reviewSubmissions = require('./api/reviewSubmissions');
 const revokeToken = require('./api/revokeToken');
 const settings = require('./api/settings');
 const submission = require('./api/submission');
+const { checkRequiredFields } = require('./api/validation');
 const votes = require('./api/votes');
 const { createLogger } = require('./logger');
 
@@ -74,7 +75,10 @@ if (!isDev && cluster.isMaster) {
   modRouter.use(express.json());
 
   modRouter.all('*', requireModerator);
-  modRouter.route('/reviewSubmissions').get(reviewSubmissions.get);
+  modRouter
+    .route('/reviewSubmissions')
+    .get(reviewSubmissions.get)
+    .put(checkRequiredFields('id', 'status'), reviewSubmissions.put);
 
   const apiRouter = express.Router();
   apiRouter.use(express.json());
@@ -89,12 +93,16 @@ if (!isDev && cluster.isMaster) {
   apiRouter
     .route('/submission')
     .get(processUser(false), submission.get)
-    .post(requireAuthentication, submission.post);
+    .post(
+      requireAuthentication,
+      checkRequiredFields('description', 'height', 'name', 'url', 'width'),
+      submission.post,
+    );
   apiRouter
     .route('/votes')
     .all(requireAuthentication, votes.all)
-    .put(votes.put)
-    .delete(votes.delete);
+    .put(checkRequiredFields('contestId', 'entryId', 'rating'), votes.put)
+    .delete(checkRequiredFields('contestId', 'entryId'), votes.delete);
   apiRouter.use('/mod', modRouter);
 
   app.use('/api', apiRouter);
