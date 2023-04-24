@@ -59,27 +59,6 @@ exports.post = async (
       return;
     }
 
-    if (!description || !height || !name || !url || !width) {
-      const missingFields = [];
-      if (!description) {
-        missingFields.push('description');
-      }
-      if (!height) {
-        missingFields.push('height');
-      }
-      if (!name) {
-        missingFields.push('name');
-      }
-      if (!url) {
-        missingFields.push('url');
-      }
-      if (!width) {
-        missingFields.push('width');
-      }
-      res.status(400).send(`Missing required fields: ${missingFields.join(', ')}`);
-      return;
-    }
-
     const validDimensionHeight = isValidDimension(height);
     const validDimensionWidth = isValidDimension(width);
     if (!validDimensionHeight || !validDimensionWidth) {

@@ -65,7 +65,8 @@ const select = async (queryStr, values) => {
 const update = async (table, data, columns, returning = []) => {
   const cs = new pgp.helpers.ColumnSet(columns, { table });
   const whereCondition = columns.reduce((acc, cur, idx) => {
-    if (!cur.startsWith('?')) {
+    const name = typeof cur === 'string' ? cur : cur.name;
+    if (!name.startsWith('?')) {
       return acc;
     }
 
@@ -74,7 +75,7 @@ const update = async (table, data, columns, returning = []) => {
       result += ' AND';
     }
 
-    const column = cur.substring(1);
+    const column = name.substring(1);
     return `${result} v.${column} = t.${column}`;
   }, ' WHERE');
 

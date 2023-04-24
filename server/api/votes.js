@@ -49,22 +49,6 @@ exports.all = async ({ body: { contestId } }, res, next) => {
 
 exports.put = async ({ body: { contestId, entryId, rating }, username }, res) => {
   try {
-    const missingRating = !rating && rating !== 0;
-    if (!contestId || !entryId || missingRating) {
-      const missingFields = [];
-      if (!contestId) {
-        missingFields.push('contestId');
-      }
-      if (!entryId) {
-        missingFields.push('entryId');
-      }
-      if (missingRating) {
-        missingFields.push('rating');
-      }
-      res.status(400).send(`Missing required fields: ${missingFields.join(', ')}`);
-      return;
-    }
-
     if (!Number.isInteger(rating) || rating < 0 || rating > 5) {
       res.status(400).send('Expected rating to be an integer between 0 and 5 inclusive.');
       return;
@@ -99,18 +83,6 @@ exports.put = async ({ body: { contestId, entryId, rating }, username }, res) =>
 
 exports.delete = async ({ body: { contestId, entryId }, username }, res) => {
   try {
-    if (!contestId || !entryId) {
-      const missingFields = [];
-      if (!contestId) {
-        missingFields.push('contestId');
-      }
-      if (!entryId) {
-        missingFields.push('entryId');
-      }
-      res.status(400).send(`Missing required fields: ${missingFields.join(', ')}`);
-      return;
-    }
-
     const voteData = { contest_id: contestId, entry_id: entryId, username };
     await db.del('votes', voteData);
     res.status(204).send();
