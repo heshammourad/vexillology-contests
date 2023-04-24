@@ -300,7 +300,7 @@ function Row({
     );
   };
 
-  const getSubmitMessage = () => {
+  const getSubmitAlert = () => {
     let message;
     let severity;
     if (approved >= 2) {
@@ -401,7 +401,7 @@ function Row({
                   value={formState.reason.value ?? ''}
                   onChange={handleFieldChange}
                 />
-                {getSubmitMessage()}
+                {getSubmitAlert()}
                 <SubmissionButton
                   color="primary"
                   variant="contained"
