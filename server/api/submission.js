@@ -1,23 +1,11 @@
 const { isAfter } = require('date-fns');
 
 const db = require('../db');
-const { getCategories } = require('../db/queries');
+const { getCategories, getCurrentContest } = require('../db/queries');
 const { getToken } = require('../firebase');
 const { createLogger } = require('../logger');
-const reddit = require('../reddit');
 
 const logger = createLogger('API/SUBMISSION');
-
-const getCurrentContest = async () => {
-  const [result] = await db.select(
-    `SELECT id, name, prompt, submission_start, submission_end, now()
-    FROM contests
-    WHERE submission_start < now()
-    ORDER BY submission_start DESC
-    LIMIT 1`,
-  );
-  return result;
-};
 
 const getSubmissions = async (contestId, username) => {
   const submissions = await db.select(
@@ -29,7 +17,7 @@ const getSubmissions = async (contestId, username) => {
   return submissions;
 };
 
-exports.get = async ({ headers: { accesstoken, refreshtoken } }, res) => {
+exports.get = async ({ username }, res) => {
   try {
     const { now, ...result } = await getCurrentContest();
     if (!result) {
@@ -38,26 +26,11 @@ exports.get = async ({ headers: { accesstoken, refreshtoken } }, res) => {
     }
 
     const categories = await getCategories(result.id);
-
-    let firebaseToken;
-    let submissions;
-    if (accesstoken && refreshtoken) {
-      const username = await reddit.getUser({ accesstoken, refreshtoken });
-      logger.debug(`Auth tokens present, creating token for ${username}`);
-      if (!username) {
-        res.status(401).send();
-        return;
-      }
-
-      firebaseToken = await getToken(username);
-
-      submissions = await getSubmissions(result.id, username);
-    }
-
     const response = { ...result, categories };
-    if (firebaseToken) {
-      response.firebaseToken = firebaseToken;
-      response.submissions = submissions;
+
+    if (username) {
+      response.firebaseToken = await getToken(username);
+      response.submissions = await getSubmissions(result.id, username);
     }
 
     res.status(200).send(response);
@@ -74,48 +47,15 @@ exports.post = async (
   {
     body: {
       category, contestId, description, height, name, url, width,
-    },
-    headers: { accesstoken, refreshtoken },
+    }, username,
   },
   res,
 ) => {
   try {
-    if (!accesstoken || !refreshtoken) {
-      res.status(401).send('Missing authentication headers.');
-      return;
-    }
-
     const { now, submissionEnd } = await getCurrentContest();
     if (isAfter(now, submissionEnd)) {
       logger.warn('Entry submitted after submission window closed');
       res.status(403).send(`Submission window closed at ${submissionEnd}`);
-      return;
-    }
-
-    const user = await reddit.getUser({ accesstoken, refreshtoken });
-    if (!user) {
-      res.status(401).send('Unable to find Reddit username');
-      return;
-    }
-
-    if (!description || !height || !name || !url || !width) {
-      const missingFields = [];
-      if (!description) {
-        missingFields.push('description');
-      }
-      if (!height) {
-        missingFields.push('height');
-      }
-      if (!name) {
-        missingFields.push('name');
-      }
-      if (!url) {
-        missingFields.push('url');
-      }
-      if (!width) {
-        missingFields.push('width');
-      }
-      res.status(400).send(`Missing required fields: ${missingFields.join(', ')}`);
       return;
     }
 
@@ -143,7 +83,7 @@ exports.post = async (
       name,
       width,
       url,
-      user,
+      user: username,
     };
     await db.insert('entries', [submissionData]);
 
@@ -151,7 +91,7 @@ exports.post = async (
     // TODO: Roll back previous insert if this fails?
     await db.insert('contest_entries', [contestEntryData]);
 
-    const submissions = await getSubmissions(contestId, user);
+    const submissions = await getSubmissions(contestId, username);
     res.status(200).send(submissions);
   } catch (err) {
     logger.error(`Error posting /submission: ${err}`);

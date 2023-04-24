@@ -3,22 +3,12 @@ const { isAfter, isBefore } = require('date-fns');
 const db = require('../db');
 const { getVoteDates } = require('../db/queries');
 const { createLogger } = require('../logger');
-const reddit = require('../reddit');
 const { camelizeObjectKeys } = require('../util');
 
 const logger = createLogger('API/CONTEST');
 
-exports.all = async (
-  { body: { contestId }, headers: { accesstoken, refreshtoken } },
-  res,
-  next,
-) => {
+exports.all = async ({ body: { contestId } }, res, next) => {
   try {
-    if (!accesstoken || !refreshtoken) {
-      res.status(401).send('Missing authentication headers.');
-      return;
-    }
-
     if (contestId) {
       logger.debug(`Vote change on ${contestId}`);
       const voteDates = await getVoteDates(contestId);
@@ -57,30 +47,13 @@ exports.all = async (
   }
 };
 
-exports.put = async ({ body: { contestId, entryId, rating }, headers }, res) => {
+exports.put = async ({ body: { contestId, entryId, rating }, username }, res) => {
   try {
-    const missingRating = !rating && rating !== 0;
-    if (!contestId || !entryId || missingRating) {
-      const missingFields = [];
-      if (!contestId) {
-        missingFields.push('contestId');
-      }
-      if (!entryId) {
-        missingFields.push('entryId');
-      }
-      if (missingRating) {
-        missingFields.push('rating');
-      }
-      res.status(400).send(`Missing required fields: ${missingFields.join(', ')}`);
-      return;
-    }
-
     if (!Number.isInteger(rating) || rating < 0 || rating > 5) {
       res.status(400).send('Expected rating to be an integer between 0 and 5 inclusive.');
       return;
     }
 
-    const username = await reddit.getUser(headers);
     const voteData = {
       contest_id: contestId,
       entry_id: entryId,
@@ -108,21 +81,8 @@ exports.put = async ({ body: { contestId, entryId, rating }, headers }, res) => 
   }
 };
 
-exports.delete = async ({ body: { contestId, entryId }, headers }, res) => {
+exports.delete = async ({ body: { contestId, entryId }, username }, res) => {
   try {
-    if (!contestId || !entryId) {
-      const missingFields = [];
-      if (!contestId) {
-        missingFields.push('contestId');
-      }
-      if (!entryId) {
-        missingFields.push('entryId');
-      }
-      res.status(400).send(`Missing required fields: ${missingFields.join(', ')}`);
-      return;
-    }
-
-    const username = await reddit.getUser(headers);
     const voteData = { contest_id: contestId, entry_id: entryId, username };
     await db.del('votes', voteData);
     res.status(204).send();

@@ -10,15 +10,17 @@ import { makeStyles } from '@material-ui/core/styles';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import AccountCircleOutlinedIcon from '@material-ui/icons/AccountCircleOutlined';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import PlaylistAddCheckIcon from '@material-ui/icons/PlaylistAddCheck';
 import RedditIcon from '@material-ui/icons/Reddit';
 import SettingsIcon from '@material-ui/icons/Settings';
 import { useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { getData } from '../api';
-import { useAuthState, useRedditLogIn } from '../common';
+import { useAuthState, useRedditLogIn, useSwrData } from '../common';
 import types from '../common/types';
 
+import CustomBadge from './CustomBadge';
 import MenuItemLink from './MenuItemLink';
 
 const useStyles = makeStyles((theme) => ({
@@ -27,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: 'column',
     rowGap: theme.spacing(1),
     padding: theme.spacing(2),
-    width: 256,
+    width: 300,
   },
   username: {
     fontWeight: 'bold',
@@ -42,6 +44,12 @@ function AccountMenu({ color }) {
 
   const [{ isLoggedIn, refreshToken, username }, setAuthState] = useAuthState();
   const sendUserToAuthUrl = useRedditLogIn();
+
+  const [
+    {
+      data: { moderator, submissionsToReview },
+    },
+  ] = useSwrData('/init');
 
   const toggleMenu = () => {
     setMenuOpen((prevOpen) => !prevOpen);
@@ -75,6 +83,12 @@ function AccountMenu({ color }) {
     }
   };
 
+  const reviewSubmissionsIcon = () => (
+    <CustomBadge invisible={!submissionsToReview}>
+      <PlaylistAddCheckIcon />
+    </CustomBadge>
+  );
+
   return (
     <>
       <IconButton
@@ -84,7 +98,9 @@ function AccountMenu({ color }) {
         onClick={toggleMenu}
         ref={anchorRef}
       >
-        {isLoggedIn ? <AccountCircleIcon /> : <AccountCircleOutlinedIcon />}
+        <CustomBadge invisible={!submissionsToReview}>
+          {isLoggedIn ? <AccountCircleIcon /> : <AccountCircleOutlinedIcon />}
+        </CustomBadge>
       </IconButton>
       <Popper
         anchorEl={anchorRef.current}
@@ -123,6 +139,14 @@ function AccountMenu({ color }) {
                         text="Settings"
                         to="/profile/settings"
                       />
+                      {moderator && (
+                        <MenuItemLink
+                          Icon={reviewSubmissionsIcon}
+                          state={{ back: pathname }}
+                          text="Review Submissions"
+                          to="/mod/review"
+                        />
+                      )}
                       <MenuItemLink
                         Icon={ExitToAppIcon}
                         onClick={handleAuthenticationAction}

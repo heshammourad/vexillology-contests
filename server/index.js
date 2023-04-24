@@ -3,16 +3,20 @@ const numCPUs = require('os').cpus().length;
 const path = require('path');
 
 const express = require('express');
+const RateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 
 const accessToken = require('./api/accessToken');
+const { requireAuthentication, requireModerator, processUser } = require('./api/authentication');
 const contest = require('./api/contest');
 const contests = require('./api/contests');
 const hallOfFame = require('./api/hallOfFame');
 const init = require('./api/init');
+const reviewSubmissions = require('./api/reviewSubmissions');
 const revokeToken = require('./api/revokeToken');
 const settings = require('./api/settings');
 const submission = require('./api/submission');
+const { checkRequiredFields } = require('./api/validation');
 const votes = require('./api/votes');
 const { createLogger } = require('./logger');
 
@@ -68,21 +72,47 @@ if (!isDev && cluster.isMaster) {
   // Priority serve any static files.
   app.use(express.static(path.resolve(__dirname, '../react-ui/build')));
 
-  const router = express.Router();
+  const limiter = new RateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 100,
+  });
+  app.use('/api', limiter);
 
-  router.use(express.json());
+  const modRouter = express.Router();
+  modRouter.use(express.json());
 
-  router.get('/accessToken/:code', accessToken.get);
-  router.get('/contests', contests.get);
-  router.get('/contests/:id', contest.get);
-  router.get('/hallOfFame', hallOfFame.get);
-  router.get('/init', init.get);
-  router.get('/revokeToken/:refreshToken', revokeToken.get);
-  router.route('/settings').all(settings.all).get(settings.get).put(settings.put);
-  router.route('/submission').get(submission.get).post(submission.post);
-  router.route('/votes').all(votes.all).put(votes.put).delete(votes.delete);
+  modRouter.all('*', requireModerator);
+  modRouter
+    .route('/reviewSubmissions')
+    .get(reviewSubmissions.get)
+    .put(checkRequiredFields('id', 'status'), reviewSubmissions.put);
 
-  app.use('/api', router);
+  const apiRouter = express.Router();
+  apiRouter.use(express.json());
+
+  apiRouter.get('/accessToken/:code', accessToken.get);
+  apiRouter.get('/contests', processUser(false), contests.get);
+  apiRouter.get('/contests/:id', contest.get);
+  apiRouter.get('/hallOfFame', hallOfFame.get);
+  apiRouter.get('/init', processUser(true), init.get);
+  apiRouter.get('/revokeToken/:refreshToken', revokeToken.get);
+  apiRouter.route('/settings').all(requireAuthentication).get(settings.get).put(settings.put);
+  apiRouter
+    .route('/submission')
+    .get(processUser(false), submission.get)
+    .post(
+      requireAuthentication,
+      checkRequiredFields('description', 'height', 'name', 'url', 'width'),
+      submission.post,
+    );
+  apiRouter
+    .route('/votes')
+    .all(requireAuthentication, votes.all)
+    .put(checkRequiredFields('contestId', 'entryId', 'rating'), votes.put)
+    .delete(checkRequiredFields('contestId', 'entryId'), votes.delete);
+  apiRouter.use('/mod', modRouter);
+
+  app.use('/api', apiRouter);
 
   // All remaining requests return the React app, so it can handle routing.
   app.get('*', (request, response) => {
