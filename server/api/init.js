@@ -17,9 +17,11 @@ exports.get = async ({ moderator }, res) => {
     let submissionsToReview = 0;
     if (moderator) {
       const submissions = await getCurrentContestSubmissions();
-      submissionsToReview = submissions.filter(
-        ({ submissionStatus }) => submissionStatus === 'pending',
-      ).length;
+      if (submissions) {
+        submissionsToReview = submissions.filter(
+          ({ submissionStatus }) => submissionStatus === 'pending',
+        ).length;
+      }
     }
 
     res.send({

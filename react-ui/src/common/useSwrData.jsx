@@ -51,7 +51,7 @@ const useSwrData = (key, allowRefresh = true) => {
     setFetched(true);
   }
 
-  return [{ data: data || {}, error }, updateCache];
+  return [{ data: data || {}, error: error?.response }, updateCache];
 };
 
 export default useSwrData;

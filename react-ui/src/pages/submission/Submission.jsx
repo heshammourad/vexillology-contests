@@ -50,6 +50,9 @@ const useStyles = makeStyles((theme) => ({
   complianceLegend: {
     color: theme.palette.text.primary,
   },
+  container: {
+    marginTop: theme.spacing(2),
+  },
   file: {
     columnGap: theme.spacing(2),
     display: 'flex',
@@ -93,9 +96,6 @@ const useStyles = makeStyles((theme) => ({
     padding: 0,
     rowGap: 16,
   },
-  header: {
-    lineHeight: '64px',
-  },
   submitAnotherEntryButton: {
     marginTop: theme.spacing(2),
   },
@@ -109,6 +109,7 @@ function Submission() {
       data: {
         categories, firebaseToken, id: contestId, name: contestName, prompt, submissionEnd,
       },
+      error,
     },
   ] = useSwrData('/submission');
   const [formState, updateFormState, resetFormState] = useFormState([
@@ -329,249 +330,254 @@ function Submission() {
       <Header position="static" to="/home">
         Contest Submission
       </Header>
-      {contestId && (
-        <PageContainer>
-          <Typography className={classes.header} component="h1" variant="h6">
-            {contestName}
-          </Typography>
-          {submissionAllowed ? (
-            <Container maxWidth="md">
-              <Tabs
-                value={selectedTab}
-                onChange={handleTabChange}
-                indicatorColor="primary"
-                textColor="primary"
-                variant="fullWidth"
-              >
-                <Tab id="tab-0" label="Contest Prompt" aria-controls="tabpanel-0" />
-                <Tab id="tab-1" label="Submission Form" aria-controls="tabpanel-1" />
-              </Tabs>
-              <TabPanel currentTab={selectedTab} index={0}>
-                <HtmlWrapper html={markdown(prompt)} />
-              </TabPanel>
-              <TabPanel currentTab={selectedTab} index={1}>
-                <ProtectedRoute
-                  message="You must log in with Reddit to submit a flag"
-                  showCancel={false}
+      <PageContainer className={classes.container}>
+        {error?.status === 404 && (
+          <div>The submission portal is not yet open. Please check again later.</div>
+        )}
+        {contestId && (
+          <>
+            <Typography component="h1" variant="h6">
+              {contestName}
+            </Typography>
+            {submissionAllowed ? (
+              <Container maxWidth="md">
+                <Tabs
+                  value={selectedTab}
+                  onChange={handleTabChange}
+                  indicatorColor="primary"
+                  textColor="primary"
+                  variant="fullWidth"
                 >
-                  {showForm ? (
-                    <form id="submission-form">
-                      <fieldset className={classes.form} disabled={submitting}>
-                        <TextField
-                          id="username"
-                          variant="filled"
-                          label="Username"
-                          disabled
-                          value={username}
-                        />
-                        <TextField
-                          id="name"
-                          name="name"
-                          color="secondary"
-                          variant="filled"
-                          helperText={formState.name.error || 'A concise name for your flag'}
-                          label="Flag Name"
-                          required
-                          error={!!formState.name.error}
-                          value={formState.name.value}
-                          onBlur={handleFieldBlur}
-                          onChange={handleFieldChange}
-                        />
-                        <div className={classes.file}>
-                          <input
-                            ref={fileInputRef}
-                            className={classes.fileInput}
-                            type="file"
-                            accept="image/jpeg,image/png"
-                            onChange={updateFile}
-                          />
+                  <Tab id="tab-0" label="Contest Prompt" aria-controls="tabpanel-0" />
+                  <Tab id="tab-1" label="Submission Form" aria-controls="tabpanel-1" />
+                </Tabs>
+                <TabPanel currentTab={selectedTab} index={0}>
+                  <HtmlWrapper html={markdown(prompt)} />
+                </TabPanel>
+                <TabPanel currentTab={selectedTab} index={1}>
+                  <ProtectedRoute
+                    message="You must log in with Reddit to submit a flag"
+                    showCancel={false}
+                  >
+                    {showForm ? (
+                      <form id="submission-form">
+                        <fieldset className={classes.form} disabled={submitting}>
                           <TextField
-                            id="fileName"
-                            ref={fileNameRef}
-                            className={classes.fileName}
+                            id="username"
                             variant="filled"
+                            label="Username"
                             disabled
-                            label="Upload File"
-                            required
-                            InputProps={{ readOnly: true }}
-                            value={formState.file.value?.name ?? ''}
-                            error={!!formState.file.error}
-                            helperText={
-                              formState.file.error
-                              || 'Upload a JPEG or PNG image (1MB max filesize)'
-                            }
+                            value={username}
                           />
-                          <Button
-                            className={classes.chooseFileButton}
-                            color="secondary"
-                            onClick={openFilePicker}
-                          >
-                            Choose file
-                          </Button>
-                        </div>
-                        <div>
-                          <Typography variant="caption">Preview</Typography>
-                          <Paper
-                            className={clsx(classes.flagPreviewContainer, {
-                              [classes.flagPreviewContainerEmpty]: !formState.file.value,
-                            })}
-                            elevation={0}
-                            variant="outlined"
-                          >
-                            <img
-                              id="flag-preview"
-                              ref={flagPreviewRef}
-                              alt=""
-                              className={clsx(classes.flagPreview, {
-                                [classes.flagPreviewActive]:
-                                  !!formState.file.value && !!fileDimensions?.width,
-                              })}
-                              onLoad={handleImageLoad}
-                            />
-                          </Paper>
-                        </div>
-                        {!!categories.length && (
                           <TextField
-                            id="category"
-                            name="category"
-                            select
+                            id="name"
+                            name="name"
                             color="secondary"
                             variant="filled"
-                            label="Category"
+                            helperText={formState.name.error || 'A concise name for your flag'}
+                            label="Flag Name"
                             required
-                            helperText={formState.category.error}
-                            error={!!formState.category.error}
-                            value={formState.category.value}
+                            error={!!formState.name.error}
+                            value={formState.name.value}
                             onBlur={handleFieldBlur}
                             onChange={handleFieldChange}
-                          >
-                            <MenuItem value="">&nbsp;</MenuItem>
-                            {categories.map((category) => (
-                              <MenuItem key={category} value={category}>
-                                {category}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                        )}
-                        <TextField
-                          id="description"
-                          name="description"
-                          color="secondary"
-                          variant="filled"
-                          multiline
-                          maxRows={6}
-                          minRows={6}
-                          label="Description"
-                          required
-                          helperText={
-                            formState.description.error
-                            || `This should be a 1-4 sentence description of your flag that explains
+                          />
+                          <div className={classes.file}>
+                            <input
+                              ref={fileInputRef}
+                              className={classes.fileInput}
+                              type="file"
+                              accept="image/jpeg,image/png"
+                              onChange={updateFile}
+                            />
+                            <TextField
+                              id="fileName"
+                              ref={fileNameRef}
+                              className={classes.fileName}
+                              variant="filled"
+                              disabled
+                              label="Upload File"
+                              required
+                              InputProps={{ readOnly: true }}
+                              value={formState.file.value?.name ?? ''}
+                              error={!!formState.file.error}
+                              helperText={
+                                formState.file.error
+                                || 'Upload a JPEG or PNG image (1MB max filesize)'
+                              }
+                            />
+                            <Button
+                              className={classes.chooseFileButton}
+                              color="secondary"
+                              onClick={openFilePicker}
+                            >
+                              Choose file
+                            </Button>
+                          </div>
+                          <div>
+                            <Typography variant="caption">Preview</Typography>
+                            <Paper
+                              className={clsx(classes.flagPreviewContainer, {
+                                [classes.flagPreviewContainerEmpty]: !formState.file.value,
+                              })}
+                              elevation={0}
+                              variant="outlined"
+                            >
+                              <img
+                                id="flag-preview"
+                                ref={flagPreviewRef}
+                                alt=""
+                                className={clsx(classes.flagPreview, {
+                                  [classes.flagPreviewActive]:
+                                    !!formState.file.value && !!fileDimensions?.width,
+                                })}
+                                onLoad={handleImageLoad}
+                              />
+                            </Paper>
+                          </div>
+                          {!!categories.length && (
+                            <TextField
+                              id="category"
+                              name="category"
+                              select
+                              color="secondary"
+                              variant="filled"
+                              label="Category"
+                              required
+                              helperText={formState.category.error}
+                              error={!!formState.category.error}
+                              value={formState.category.value}
+                              onBlur={handleFieldBlur}
+                              onChange={handleFieldChange}
+                            >
+                              <MenuItem value="">&nbsp;</MenuItem>
+                              {categories.map((category) => (
+                                <MenuItem key={category} value={category}>
+                                  {category}
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                          )}
+                          <TextField
+                            id="description"
+                            name="description"
+                            color="secondary"
+                            variant="filled"
+                            multiline
+                            maxRows={6}
+                            minRows={6}
+                            label="Description"
+                            required
+                            helperText={
+                              formState.description.error
+                              || `This should be a 1-4 sentence description of your flag that explains
                               any design choices you made`
-                          }
-                          error={!!formState.description.error}
-                          value={formState.description.value}
-                          onBlur={handleFieldBlur}
-                          onChange={handleFieldChange}
-                        />
-                        <FormControl
-                          required
-                          component="fieldset"
-                          color="secondary"
-                          error={getComplianceError()}
-                        >
-                          <FormLabel className={classes.complianceLegend} component="legend">
-                            Contest Compliance
-                          </FormLabel>
-                          <FormGroup className={classes.complianceCheckboxes}>
-                            <ComplianceCheckbox
-                              checked={formState.complianceOriginalDesign.value || false}
-                              label="Is your flag an original design for this contest?"
-                              name="complianceOriginalDesign"
-                              onBlur={handleFieldBlur}
-                              onChange={handleFieldChange}
-                            />
-                            <ComplianceCheckbox
-                              checked={formState.complianceAuthorshipAnonymous.value || false}
-                              label="Have you kept your authorship anonymous?"
-                              name="complianceAuthorshipAnonymous"
-                              onBlur={handleFieldBlur}
-                              onChange={handleFieldChange}
-                            />
-                            <ComplianceCheckbox
-                              checked={formState.complianceEffort.value || false}
-                              label="Have you put effort into your design and it is not designed to troll?"
-                              name="complianceEffort"
-                              onBlur={handleFieldBlur}
-                              onChange={handleFieldChange}
-                            />
-                            <ComplianceCheckbox
-                              checked={formState.complianceOriginalArt.value || false}
-                              label={`Is all the art used either original, or any components taken
+                            }
+                            error={!!formState.description.error}
+                            value={formState.description.value}
+                            onBlur={handleFieldBlur}
+                            onChange={handleFieldChange}
+                          />
+                          <FormControl
+                            required
+                            component="fieldset"
+                            color="secondary"
+                            error={getComplianceError()}
+                          >
+                            <FormLabel className={classes.complianceLegend} component="legend">
+                              Contest Compliance
+                            </FormLabel>
+                            <FormGroup className={classes.complianceCheckboxes}>
+                              <ComplianceCheckbox
+                                checked={formState.complianceOriginalDesign.value || false}
+                                label="Is your flag an original design for this contest?"
+                                name="complianceOriginalDesign"
+                                onBlur={handleFieldBlur}
+                                onChange={handleFieldChange}
+                              />
+                              <ComplianceCheckbox
+                                checked={formState.complianceAuthorshipAnonymous.value || false}
+                                label="Have you kept your authorship anonymous?"
+                                name="complianceAuthorshipAnonymous"
+                                onBlur={handleFieldBlur}
+                                onChange={handleFieldChange}
+                              />
+                              <ComplianceCheckbox
+                                checked={formState.complianceEffort.value || false}
+                                label="Have you put effort into your design and it is not designed to troll?"
+                                name="complianceEffort"
+                                onBlur={handleFieldBlur}
+                                onChange={handleFieldChange}
+                              />
+                              <ComplianceCheckbox
+                                checked={formState.complianceOriginalArt.value || false}
+                                label={`Is all the art used either original, or any components taken
                                 from public domain attributed in the description?`}
-                              name="complianceOriginalArt"
-                              onBlur={handleFieldBlur}
-                              onChange={handleFieldChange}
-                            />
-                            <ComplianceCheckbox
-                              checked={formState.complianceNsfwFree.value || false}
-                              label={`Is your flag free of NSFW content? This includes nudity, gore
+                                name="complianceOriginalArt"
+                                onBlur={handleFieldBlur}
+                                onChange={handleFieldChange}
+                              />
+                              <ComplianceCheckbox
+                                checked={formState.complianceNsfwFree.value || false}
+                                label={`Is your flag free of NSFW content? This includes nudity, gore
                                 and banned symbols.`}
-                              name="complianceNsfwFree"
-                              onBlur={handleFieldBlur}
-                              onChange={handleFieldChange}
-                            />
-                            <ComplianceCheckbox
-                              checked={formState.complianceFlatFlag.value || false}
-                              label="Is your flag flat and not textured?"
-                              name="complianceFlatFlag"
-                              onBlur={handleFieldBlur}
-                              onChange={handleFieldChange}
-                            />
-                          </FormGroup>
-                          <FormHelperText>
-                            Check each box to indicate that your flag complies with that rule. If
-                            your flag does not comply with the rules, fix it and submit again.
-                          </FormHelperText>
-                        </FormControl>
-                        <SubmissionButton
-                          variant="contained"
+                                name="complianceNsfwFree"
+                                onBlur={handleFieldBlur}
+                                onChange={handleFieldChange}
+                              />
+                              <ComplianceCheckbox
+                                checked={formState.complianceFlatFlag.value || false}
+                                label="Is your flag flat and not textured?"
+                                name="complianceFlatFlag"
+                                onBlur={handleFieldBlur}
+                                onChange={handleFieldChange}
+                              />
+                            </FormGroup>
+                            <FormHelperText>
+                              Check each box to indicate that your flag complies with that rule. If
+                              your flag does not comply with the rules, fix it and submit again.
+                            </FormHelperText>
+                          </FormControl>
+                          <SubmissionButton
+                            variant="contained"
+                            color="primary"
+                            onClick={submitForm}
+                            submitting={submitting}
+                          >
+                            Submit
+                          </SubmissionButton>
+                        </fieldset>
+                      </form>
+                    ) : (
+                      <Box display="flex" flexDirection="column" alignItems="center">
+                        <Typography component="div" variant="subtitle2">
+                          Your entry has been submitted.
+                        </Typography>
+                        <Button
                           color="primary"
-                          onClick={submitForm}
-                          submitting={submitting}
+                          variant="contained"
+                          className={classes.submitAnotherEntryButton}
+                          onClick={() => {
+                            setShowForm(true);
+                          }}
                         >
-                          Submit
-                        </SubmissionButton>
-                      </fieldset>
-                    </form>
-                  ) : (
-                    <Box display="flex" flexDirection="column" alignItems="center">
-                      <Typography component="div" variant="subtitle2">
-                        Your entry has been submitted.
-                      </Typography>
-                      <Button
-                        color="primary"
-                        variant="contained"
-                        className={classes.submitAnotherEntryButton}
-                        onClick={() => {
-                          setShowForm(true);
-                        }}
-                      >
-                        Submit Another Entry
-                      </Button>
-                    </Box>
-                  )}
-                </ProtectedRoute>
-              </TabPanel>
-            </Container>
-          ) : (
-            <div>
-              The submission window for this contest has closed. Click&nbsp;
-              <InternalLink to={`/contests/${contestId}`}>here</InternalLink>
-              &nbsp;to view entries.
-            </div>
-          )}
-        </PageContainer>
-      )}
+                          Submit Another Entry
+                        </Button>
+                      </Box>
+                    )}
+                  </ProtectedRoute>
+                </TabPanel>
+              </Container>
+            ) : (
+              <div>
+                The submission window for this contest has closed. Click&nbsp;
+                <InternalLink to={`/contests/${contestId}`}>here</InternalLink>
+                &nbsp;to view entries.
+              </div>
+            )}
+          </>
+        )}
+      </PageContainer>
     </>
   );
 }
