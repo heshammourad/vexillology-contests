@@ -20,7 +20,11 @@ exports.getCurrentContest = async () => {
 };
 
 exports.getCurrentContestSubmissions = async () => {
-  const { id } = await this.getCurrentContest();
+  const contest = await this.getCurrentContest();
+  if (!contest) {
+    return null;
+  }
+
   const submissions = await db.select(
     `SELECT
        ce.category,
@@ -36,7 +40,7 @@ exports.getCurrentContestSubmissions = async () => {
      FROM contest_entries ce, entries e
      WHERE ce.entry_id = e.id AND ce.contest_id = $1
      ORDER BY e.submission_time`,
-    [id],
+    [contest.id],
   );
   return submissions;
 };

@@ -19,12 +19,13 @@ const getSubmissions = async (contestId, username) => {
 
 exports.get = async ({ username }, res) => {
   try {
-    const { now, ...result } = await getCurrentContest();
-    if (!result) {
+    const contest = await getCurrentContest();
+    if (!contest) {
       res.status(404).send();
       return;
     }
 
+    const { now, ...result } = contest;
     const categories = await getCategories(result.id);
     const response = { ...result, categories };
 
