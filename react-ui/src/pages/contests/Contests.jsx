@@ -19,6 +19,9 @@ const useStyles = makeStyles((theme) => ({
   list: {
     maxWidth: 512,
   },
+  month: {
+    fontWeight: 'bold',
+  },
   nested: {
     paddingLeft: theme.spacing(4),
   },
@@ -67,9 +70,19 @@ function Contests() {
                         <ListItemLink
                           key={id}
                           className={classes.nested}
-                          primary={`${
-                            !yearEnd ? `${format(parseISO(date), 'MMM yy')} - ` : ''
-                          }${name}`}
+                          primary={(
+                            <>
+                              {!yearEnd && (
+                              <>
+                                <span className={classes.month}>
+                                  {format(parseISO(date), 'MMM yy')}
+                                </span>
+                                  &nbsp;-&nbsp;
+                              </>
+                              )}
+                              {name}
+                            </>
+                          )}
                           state={{ back: pathname }}
                           to={`/contests/${id}`}
                         />
