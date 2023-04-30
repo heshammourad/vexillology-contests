@@ -23,7 +23,6 @@ import EmojiEventsOutlinedIcon from '@material-ui/icons/EmojiEventsOutlined';
 import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
 import ThumbsUpDownOutlinedIcon from '@material-ui/icons/ThumbsUpDownOutlined';
 import clsx from 'clsx';
-import isFuture from 'date-fns/isFuture';
 import React, { useState, useEffect } from 'react';
 import { forceCheck } from 'react-lazyload';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -219,8 +218,7 @@ function Contest() {
   const [scroll, setScroll] = useScrollState();
   const [{ data: contest }, updateCache] = useSwrData(`/contests/${contestId}`, !!scroll.entryId);
 
-  const submissionEnd = contest?.submissionEnd;
-  if (submissionEnd && isFuture(submissionEnd)) {
+  if (contest?.submissionWindowOpen) {
     navigate('/submission');
   }
 

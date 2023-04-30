@@ -67,6 +67,7 @@ exports.get = async ({ params: { id }, username }, res) => {
          date,
          local_voting,
          name,
+         submission_end,
          submission_start,
          subtext,
          valid_reddit_id,
@@ -275,7 +276,7 @@ exports.get = async ({ params: { id }, username }, res) => {
       }
 
       if (isFuture(submissionEnd)) {
-        res.send({ submissionEnd });
+        res.send({ submissionWindowOpen: true });
         return;
       }
 
