@@ -1,4 +1,4 @@
-const { isBefore } = require('date-fns');
+const { isBefore, isFuture } = require('date-fns');
 const keyBy = require('lodash/keyBy');
 const partition = require('lodash/partition');
 const shuffle = require('lodash/shuffle');
@@ -63,9 +63,16 @@ const findMissingEntries = (contest, imagesData) => contest.entries.filter((entr
 exports.get = async ({ params: { id }, username }, res) => {
   try {
     const contestResults = await db.select(
-      `SELECT name, date, local_voting, subtext, valid_reddit_id, winners_thread_id
-      FROM contests
-      WHERE id = $1 AND env_level >= $2`,
+      `SELECT
+         date,
+         local_voting,
+         name,
+         submission_start,
+         subtext,
+         valid_reddit_id,
+         winners_thread_id
+       FROM contests
+       WHERE id = $1 AND env_level >= $2`,
       [id, ENV_LEVEL],
     );
     if (!contestResults.length) {
@@ -75,189 +82,224 @@ exports.get = async ({ params: { id }, username }, res) => {
     }
 
     const {
-      date, name, localVoting, subtext, validRedditId, winnersThreadId,
+      date,
+      localVoting,
+      name,
+      submissionEnd,
+      submissionStart,
+      subtext,
+      validRedditId,
+      winnersThreadId,
     } = contestResults[0];
-    if (!validRedditId) {
-      logger.warn('Attempting to access contest with invalid reddit id');
-      res.status(501).send();
-      return;
-    }
 
-    const contest = await memcache.get(
-      `reddit.${id}`,
-      async () => {
-        const contestData = await reddit.getContest(id);
-        return contestData;
-      },
-      600,
-    );
+    let response = {
+      date: date.toJSON().substr(0, 10),
+      isContestMode: false,
+      localVoting,
+      name,
+      requestId: uuidv4(),
+      submissionEnd,
+      submissionStart,
+      subtext,
+      validRedditId,
+      winnersThreadId,
+    };
 
-    const imagesData = await db.select(
-      `SELECT *
+    if (validRedditId) {
+      const contest = await memcache.get(
+        `reddit.${id}`,
+        async () => {
+          const contestData = await reddit.getContest(id);
+          return contestData;
+        },
+        600,
+      );
+
+      const imagesData = await db.select(
+        `SELECT *
       FROM entries e
       JOIN contest_entries ce
         ON e.id = ce.entry_id
       WHERE contest_id = $1`,
-      [id],
-    );
-
-    const contestEntriesData = [];
-    if (winnersThreadId) {
-      const contestWinners = imagesData.filter(
-        (image) => image.rank && image.rank <= LAST_WINNER_RANK,
+        [id],
       );
-      const winner = contestWinners.find(({ rank }) => rank === 1);
-      if (contestWinners.length < LAST_WINNER_RANK || !winner.description) {
-        const winners = await memcache.get(
-          `reddit.${winnersThreadId}`,
-          async () => {
-            const winnerData = await reddit.getWinners(winnersThreadId);
-            return winnerData;
-          },
-          CONTESTS_CACHE_TIMEOUT,
-        );
 
-        const entriesData = [];
-        winners.forEach(({ imgurId, rank, user }) => {
-          contestEntriesData.push({
-            contest_id: id,
-            entry_id: imgurId,
-            rank,
+      const contestEntriesData = [];
+      if (winnersThreadId) {
+        const contestWinners = imagesData.filter(
+          (image) => image.rank && image.rank <= LAST_WINNER_RANK,
+        );
+        const winner = contestWinners.find(({ rank }) => rank === 1);
+        if (contestWinners.length < LAST_WINNER_RANK || !winner.description) {
+          const winners = await memcache.get(
+            `reddit.${winnersThreadId}`,
+            async () => {
+              const winnerData = await reddit.getWinners(winnersThreadId);
+              return winnerData;
+            },
+            CONTESTS_CACHE_TIMEOUT,
+          );
+
+          const entriesData = [];
+          winners.forEach(({ imgurId, rank, user }) => {
+            contestEntriesData.push({
+              contest_id: id,
+              entry_id: imgurId,
+              rank,
+            });
+
+            const imageData = imagesData.find((image) => image.id === imgurId);
+            if (imageData) {
+              imageData.rank = rank;
+              imageData.user = user;
+
+              const { description, name: entryName } = contest.entries.find(
+                (entry) => entry.imgurId === imgurId,
+              );
+              entriesData.push({
+                description,
+                id: imgurId,
+                name: entryName,
+                user,
+              });
+            }
           });
 
-          const imageData = imagesData.find((image) => image.id === imgurId);
-          if (imageData) {
-            imageData.rank = rank;
-            imageData.user = user;
-
-            const { description, name: entryName } = contest.entries.find(
-              (entry) => entry.imgurId === imgurId,
-            );
-            entriesData.push({
-              description,
-              id: imgurId,
-              name: entryName,
-              user,
-            });
+          if (entriesData.length) {
+            await db.update('contest_entries', contestEntriesData, [
+              '?contest_id',
+              '?entry_id',
+              'rank',
+            ]);
+            await db.update('entries', entriesData, ['?id', 'description', 'name', 'user']);
           }
-        });
-
-        if (entriesData.length) {
-          await db.update('contest_entries', contestEntriesData, [
-            '?contest_id',
-            '?entry_id',
-            'rank',
-          ]);
-          await db.update('entries', entriesData, ['?id', 'description', 'name', 'user']);
         }
       }
-    }
 
-    const getEntryRank = (entryId) => {
-      const contestEntry = contestEntriesData.find((entry) => entry.entry_id === entryId);
-      if (contestEntry) {
-        return contestEntry.rank;
-      }
-      return null;
-    };
+      const getEntryRank = (entryId) => {
+        const contestEntry = contestEntriesData.find((entry) => entry.entry_id === entryId);
+        if (contestEntry) {
+          return contestEntry.rank;
+        }
+        return null;
+      };
 
-    const allImagesData = [...imagesData];
-    let missingEntries = findMissingEntries(contest, allImagesData);
-    if (missingEntries.length) {
-      const entriesData = await db.select('SELECT * FROM entries WHERE id = ANY ($1)', [
-        missingEntries.map((entry) => entry.imgurId),
-      ]);
-      const contestEntries = entriesData.map((entry) => ({
-        ...entry,
-        rank: getEntryRank(entry.id),
-      }));
-      if (entriesData.length) {
-        await addContestEntries(id, contestEntries);
-        allImagesData.push(...contestEntries);
-      }
-    }
-
-    missingEntries = findMissingEntries(contest, allImagesData);
-    if (missingEntries.length) {
-      const imgurData = (await imgur.getImagesData(missingEntries)).map(
-        ({ imgurId, height, width }) => ({
-          id: imgurId,
-          height,
-          width,
-        }),
-      );
-      if (imgurData.length) {
-        await addEntries(imgurData);
-        const contestEntries = imgurData.map((imageData) => ({
-          ...imageData,
-          rank: getEntryRank(imageData.id),
+      const allImagesData = [...imagesData];
+      let missingEntries = findMissingEntries(contest, allImagesData);
+      if (missingEntries.length) {
+        const entriesData = await db.select('SELECT * FROM entries WHERE id = ANY ($1)', [
+          missingEntries.map((entry) => entry.imgurId),
+        ]);
+        const contestEntries = entriesData.map((entry) => ({
+          ...entry,
+          rank: getEntryRank(entry.id),
         }));
-        await addContestEntries(id, contestEntries);
-        allImagesData.push(...contestEntries);
+        if (entriesData.length) {
+          await addContestEntries(id, contestEntries);
+          allImagesData.push(...contestEntries);
+        }
+      }
+
+      missingEntries = findMissingEntries(contest, allImagesData);
+      if (missingEntries.length) {
+        const imgurData = (await imgur.getImagesData(missingEntries)).map(
+          ({ imgurId, height, width }) => ({
+            id: imgurId,
+            height,
+            width,
+          }),
+        );
+        if (imgurData.length) {
+          await addEntries(imgurData);
+          const contestEntries = imgurData.map((imageData) => ({
+            ...imageData,
+            rank: getEntryRank(imageData.id),
+          }));
+          await addContestEntries(id, contestEntries);
+          allImagesData.push(...contestEntries);
+        }
+      }
+
+      missingEntries = findMissingEntries(contest, allImagesData);
+      if (missingEntries.length) {
+        logger.warn(
+          `Unable to retrieve image data for: [${missingEntries
+            .map(({ imgurId }) => imgurId)
+            .join(', ')}] in contest ${id}.`,
+        );
+      }
+
+      contest.entries = contest.entries.reduce((acc, cur) => {
+        const imageData = allImagesData.find((image) => cur.imgurId === image.id);
+        if (imageData) {
+          const {
+            id: imgurId, height, rank, width, user,
+          } = imageData;
+          acc.push({
+            ...cur,
+            imgurId,
+            imgurLink: `https://i.imgur.com/${imgurId}.png`,
+            height,
+            rank,
+            width,
+            user,
+          });
+        }
+        return acc;
+      }, []);
+
+      if (!contest.entries.length) {
+        logger.warn(`Unable to retrieve entries for contest: '${id}'`);
+        res.status(404).send();
+        return;
+      }
+
+      response = { ...response, ...contest };
+
+      try {
+        const updateData = response.entries.map(({ description, imgurId, name: entryName }) => ({
+          description,
+          id: imgurId,
+          name: entryName,
+        }));
+        db.update('entries', updateData, ['?id', 'description', 'name']);
+      } catch (err) {
+        logger.error(`Unable to update db: ${err}`);
       }
     }
 
-    missingEntries = findMissingEntries(contest, allImagesData);
-    if (missingEntries.length) {
-      logger.warn(
-        `Unable to retrieve image data for: [${missingEntries
-          .map(({ imgurId }) => imgurId)
-          .join(', ')}] in contest ${id}.`,
-      );
-    }
-
-    contest.entries = contest.entries.reduce((acc, cur) => {
-      const imageData = allImagesData.find((image) => cur.imgurId === image.id);
-      if (imageData) {
-        const {
-          id: imgurId, height, rank, width, user,
-        } = imageData;
-        acc.push({
-          ...cur,
-          imgurId,
-          imgurLink: `https://i.imgur.com/${imgurId}.png`,
-          height,
-          rank,
-          width,
-          user,
-        });
+    if (submissionStart) {
+      if (isFuture(submissionStart)) {
+        res.status(404).send();
+        return;
       }
-      return acc;
-    }, []);
 
-    if (!contest.entries.length) {
-      logger.warn(`Unable to retrieve entries for contest: '${id}'`);
-      res.status(404).send();
+      if (isFuture(submissionEnd)) {
+        res.send({ submissionEnd });
+        return;
+      }
+
+      // TODO: Return entries
+      res.send(501).send();
       return;
     }
 
     const categories = await getCategories(id);
     if (categories.length) {
+      response.categories = categories;
       const entryCategories = await db.select(
         'SELECT entry_id, category FROM contest_entries WHERE contest_id = $1',
         [id],
       );
       const map = new Map();
-      contest.entries.forEach((entry) => {
+      response.entries.forEach((entry) => {
         map.set(entry.imgurId, entry);
       });
       entryCategories.forEach(({ category, entryId }) => {
         map.set(entryId, { ...map.get(entryId), category });
       });
-      contest.entries = Array.from(map.values());
+      response.entries = Array.from(map.values());
     }
-
-    const response = {
-      categories,
-      date: date.toJSON().substr(0, 10),
-      localVoting,
-      name,
-      requestId: uuidv4(),
-      subtext,
-      validRedditId,
-      winnersThreadId,
-      ...contest,
-    };
 
     if (username) {
       logger.debug(`Auth tokens present, retrieving votes of ${username} on ${id}`);
@@ -277,12 +319,8 @@ exports.get = async ({ params: { id }, username }, res) => {
 
     const [{ now, voteStart, voteEnd }] = await getVoteDates(id);
     if (voteStart && voteEnd) {
-      if (isBefore(now, voteStart)) {
-        logger.error('Requesting contest before voting window opened');
-        res.status(404).send('Contest voting window is not open yet');
-        return;
-      }
       response.isContestMode = isBefore(now, voteEnd);
+      response.voteStart = voteStart;
       response.voteEnd = voteEnd;
     }
 
@@ -304,8 +342,8 @@ exports.get = async ({ params: { id }, username }, res) => {
     } else if (localVoting) {
       const voteData = await db.select(
         `SELECT entry_id, rank, category_rank, average
-        FROM contests_summary
-        WHERE contest_id = $1`,
+      FROM contests_summary
+      WHERE contest_id = $1`,
         [id],
       );
       const map = new Map();
@@ -337,17 +375,6 @@ exports.get = async ({ params: { id }, username }, res) => {
     }
 
     res.send(response);
-
-    try {
-      const updateData = response.entries.map(({ description, imgurId, name: entryName }) => ({
-        description,
-        id: imgurId,
-        name: entryName,
-      }));
-      await db.update('entries', updateData, ['?id', 'description', 'name']);
-    } catch (err) {
-      logger.error(`Unable to update db: ${err}`);
-    }
   } catch (err) {
     logger.error(`Error getting /contest/${id}: ${err})}`);
     res.status(500).send();

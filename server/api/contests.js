@@ -8,7 +8,11 @@ const logger = createLogger('API/CONTESTS');
 exports.get = async (req, res) => {
   try {
     const result = await db.select(
-      'SELECT id, name, date, year_end FROM contests WHERE env_level >= $1 ORDER BY date DESC',
+      `SELECT date, id, name, year_end
+       FROM contests
+       WHERE env_level >= $1
+         AND (submission_start IS NULL OR submission_start < now())
+       ORDER BY date DESC`,
       [ENV_LEVEL],
     );
     res.send(
