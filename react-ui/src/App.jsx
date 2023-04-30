@@ -67,7 +67,7 @@ function App() {
                 <Route
                   exact
                   path="/submit"
-                  element={<Navigate replace state={{ defaultTab: 1 }} to="submission" />}
+                  element={<Navigate replace state={{ defaultTab: 1 }} to="/submission" />}
                 />
                 <Route exact path="/hallOfFame" element={<HallOfFame />} />
                 <Route exact path="/profile/settings" element={<Settings />} />
