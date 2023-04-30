@@ -25,7 +25,7 @@ import ThumbsUpDownOutlinedIcon from '@material-ui/icons/ThumbsUpDownOutlined';
 import clsx from 'clsx';
 import React, { useState, useEffect } from 'react';
 import { forceCheck } from 'react-lazyload';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
 
 import {
@@ -213,9 +213,14 @@ const imageWidths = {
 let scrollingIntervalId;
 
 function Contest() {
+  const navigate = useNavigate();
   const { contestId } = useParams();
   const [scroll, setScroll] = useScrollState();
   const [{ data: contest }, updateCache] = useSwrData(`/contests/${contestId}`, !!scroll.entryId);
+
+  if (contest?.submissionWindowOpen) {
+    navigate('/submission');
+  }
 
   const { state = {} } = useLocation();
   const [isLoaded, setLoaded] = useState(false);
@@ -398,6 +403,8 @@ function Contest() {
     winnersThreadId,
   } = contest;
   const voteEndDate = new Date(voteEnd);
+
+  // TODO: Handle isFuture(voteStart)
   return (
     <PageWithDrawer
       handleClose={() => {

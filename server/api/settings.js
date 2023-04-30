@@ -20,7 +20,7 @@ exports.get = async ({ username }, res) => {
       res.status(404).send();
       return;
     }
-    res.status(200).send(settings);
+    res.send(settings);
   } catch (e) {
     logger.error(`Error getting settings: ${e}`);
     res.status(500).send();

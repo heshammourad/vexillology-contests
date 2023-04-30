@@ -23,7 +23,7 @@ exports.get = async (req, res) => {
       breakdownMap.set(user, userBreakdown);
     });
 
-    res.status(200).send({
+    res.send({
       name,
       submissionEnd,
       submissions,
@@ -73,7 +73,7 @@ exports.put = async ({ body: { id, rejectionReason, status }, username }, res) =
       res.status(404).send('Entry with that id not found');
       return;
     }
-    res.status(200).send(response);
+    res.send(response);
   } catch (err) {
     logger.error(`Error putting /reviewSubmissions: ${err}`);
     res.status(500).send();

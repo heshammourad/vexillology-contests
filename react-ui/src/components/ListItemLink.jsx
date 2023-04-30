@@ -30,7 +30,7 @@ function ListItemLink({
 ListItemLink.propTypes = {
   className: PropTypes.string,
   onClick: PropTypes.func,
-  primary: PropTypes.string.isRequired,
+  primary: PropTypes.node.isRequired,
   to: types.to.isRequired,
   state: PropTypes.shape({}),
 };

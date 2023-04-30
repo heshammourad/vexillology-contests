@@ -33,7 +33,7 @@ exports.get = async ({ username }, res) => {
       response.submissions = await getSubmissions(result.id, username);
     }
 
-    res.status(200).send(response);
+    res.send(response);
   } catch (err) {
     logger.error(`Error getting /submission: ${err}`);
     res.status(500).send();
@@ -92,7 +92,7 @@ exports.post = async (
     await db.insert('contest_entries', [contestEntryData]);
 
     const submissions = await getSubmissions(contestId, username);
-    res.status(200).send(submissions);
+    res.send(submissions);
   } catch (err) {
     logger.error(`Error posting /submission: ${err}`);
     res.status(500).send();
