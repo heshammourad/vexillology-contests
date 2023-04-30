@@ -17,6 +17,7 @@ import isFuture from 'date-fns/isFuture';
 import parseISO from 'date-fns/parseISO';
 import debounce from 'lodash/debounce';
 import { useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { markdown } from 'snudown-js';
 
 import { postData } from '../../api';
@@ -122,9 +123,10 @@ function Submission() {
     'complianceNsfwFree',
     'complianceFlatFlag',
   ]);
+  const { state } = useLocation();
   const [{ accessToken, refreshToken, username }] = useAuthState();
   const updateSnackbarState = useSnackbarState();
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedTab, setSelectedTab] = useState(state?.defaultTab ?? 0);
   const [showForm, setShowForm] = useState(true);
   const [fileDimensions, setFileDimensions] = useState(null);
   const [submitting, setSubmitting] = useState(false);
