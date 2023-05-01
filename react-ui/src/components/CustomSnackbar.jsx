@@ -20,6 +20,17 @@ function CustomSnackbar() {
   const [{ snackbar: { openTimestamp, type } = { snackbar: {} } }, setComponentsState] = useComponentsState();
   const [isOpen, setOpen] = useState(false);
 
+  const resetSnackbar = () => {
+    setComponentsState({ snackbar: {} });
+  };
+
+  useEffect(
+    () => () => {
+      resetSnackbar();
+    },
+    [],
+  );
+
   useEffect(() => {
     if (openTimestamp && type) {
       setOpen(true);
@@ -35,7 +46,7 @@ function CustomSnackbar() {
       return;
     }
 
-    setComponentsState({ snackbar: {} });
+    resetSnackbar();
   };
 
   const message = TYPES[type];

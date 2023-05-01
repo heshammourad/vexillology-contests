@@ -134,7 +134,6 @@ function Submission() {
   const fileInputRef = useRef(null);
   const fileNameRef = useRef(null);
   const flagPreviewRef = useRef(null);
-  const submissionSectionRef = useRef(null);
 
   const handleTabChange = (e, newValue) => {
     setSelectedTab(newValue);
@@ -289,19 +288,22 @@ function Submission() {
         return;
       }
 
-      const { data, error: postError } = postData(
-        '/submission',
-        {
-          category: formState.category.value,
-          contestId,
-          description: formState.description.value,
-          height: fileDimensions.height,
-          name: formState.name.value,
-          url: downloadUrl,
-          width: fileDimensions.width,
-        },
-        { accessToken, refreshToken },
-      );
+      const payload = {
+        contestId,
+        description: formState.description.value,
+        height: fileDimensions.height,
+        name: formState.name.value,
+        url: downloadUrl,
+        width: fileDimensions.width,
+      };
+      if (formState.category.value) {
+        payload.category = formState.category.value;
+      }
+
+      const { data, error: postError } = await postData('/submission', payload, {
+        accessToken,
+        refreshToken,
+      });
       if (postError || !data) {
         errorSubmitting = true;
         return;
@@ -309,7 +311,6 @@ function Submission() {
 
       resetFormState();
       setShowForm(false);
-      submissionSectionRef.current.scrollIntoView();
     } catch {
       errorSubmitting = true;
     } finally {

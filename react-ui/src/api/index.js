@@ -27,8 +27,8 @@ export const getData = async (path, authToken) => {
 };
 
 export const postData = async (path, newData, authToken) => {
-  const { data } = await instance.post(path, newData, generateConfig(authToken));
-  return data;
+  const response = await instance.post(path, newData, generateConfig(authToken));
+  return response;
 };
 
 export const putData = async (path, newData, authToken) => {
