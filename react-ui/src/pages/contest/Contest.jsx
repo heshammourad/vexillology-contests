@@ -219,7 +219,7 @@ function Contest() {
   const [{ data: contest }, updateCache] = useSwrData(`/contests/${contestId}`, !!scroll.entryId);
 
   if (contest?.submissionWindowOpen) {
-    navigate('/submission');
+    navigate('/submission', { replace: true });
   }
 
   const { state = {} } = useLocation();

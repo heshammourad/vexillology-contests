@@ -6,9 +6,13 @@ const logger = createLogger('API/REVIEW_SUBMISSIONS');
 
 exports.get = async (req, res) => {
   try {
-    const { name, submissionEnd } = await getCurrentContest();
-    const submissions = await getCurrentContestSubmissions();
+    const contest = await getCurrentContest();
+    if (!contest) {
+      res.status(404).send();
+      return;
+    }
 
+    const submissions = await getCurrentContestSubmissions();
     const breakdownMap = new Map();
     submissions.forEach(({ submissionStatus, user }) => {
       const userBreakdown = breakdownMap.get(user) ?? {};
@@ -23,6 +27,7 @@ exports.get = async (req, res) => {
       breakdownMap.set(user, userBreakdown);
     });
 
+    const { name, submissionEnd } = contest;
     res.send({
       name,
       submissionEnd,

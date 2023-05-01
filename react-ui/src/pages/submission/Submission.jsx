@@ -289,7 +289,7 @@ function Submission() {
         return;
       }
 
-      const response = postData(
+      const { data, error: postError } = postData(
         '/submission',
         {
           category: formState.category.value,
@@ -302,7 +302,7 @@ function Submission() {
         },
         { accessToken, refreshToken },
       );
-      if (!response) {
+      if (postError || !data) {
         errorSubmitting = true;
         return;
       }
