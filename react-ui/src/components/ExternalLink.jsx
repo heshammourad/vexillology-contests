@@ -1,11 +1,13 @@
 import Link from '@material-ui/core/Link';
 import PropTypes from 'prop-types';
 
+import types from '../common/types';
+
 function ExternalLink({
-  children, className, href, target,
+  children, className, color, href, target,
 }) {
   return (
-    <Link className={className} href={href} rel="noopener noreferrer" target={target}>
+    <Link className={className} color={color} href={href} rel="noopener noreferrer" target={target}>
       {children}
     </Link>
   );
@@ -14,12 +16,14 @@ function ExternalLink({
 ExternalLink.propTypes = {
   children: PropTypes.node.isRequired,
   className: PropTypes.string,
+  color: types.color,
   href: PropTypes.string.isRequired,
   target: PropTypes.string,
 };
 
 ExternalLink.defaultProps = {
   className: undefined,
+  color: 'primary',
   target: 'vexillology-contests',
 };
 

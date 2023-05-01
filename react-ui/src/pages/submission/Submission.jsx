@@ -36,6 +36,7 @@ import {
 } from '../../components';
 
 import ComplianceCheckbox from './ComplianceCheckbox';
+import May23 from './content/May23';
 
 const MAX_FILE_SIZE = 1024 * 1024; // 1MB
 
@@ -353,7 +354,7 @@ function Submission() {
                   <Tab id="tab-1" label="Submission Form" aria-controls="tabpanel-1" />
                 </Tabs>
                 <TabPanel currentTab={selectedTab} index={0}>
-                  <HtmlWrapper html={markdown(prompt)} />
+                  {contestId === 'may23' ? <May23 /> : <HtmlWrapper html={markdown(prompt)} />}
                 </TabPanel>
                 <TabPanel currentTab={selectedTab} index={1}>
                   <ProtectedRoute
