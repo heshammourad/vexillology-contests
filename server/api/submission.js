@@ -88,7 +88,10 @@ exports.post = async (
     };
     await db.insert('entries', [submissionData]);
 
-    const contestEntryData = { category, contest_id: contestId, entry_id: id };
+    const contestEntryData = { contest_id: contestId, entry_id: id };
+    if (category) {
+      contestEntryData.category = category;
+    }
     // TODO: Roll back previous insert if this fails?
     await db.insert('contest_entries', [contestEntryData]);
 
