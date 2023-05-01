@@ -225,7 +225,7 @@ const CITIES = [
   {
     name: 'Overland Park, Kansas',
     link: 'https://www.crwflags.com/fotw/flags/us-ksovp.html',
-    image: 'https://www.crwflags.com/fotw/images/u/us-ksovp.gif',
+    image: 'https://www.crwflags.com/fotw/images/u/us-ksovp1.gif',
     facts: [
       'Located in Johnson county',
       'Originally founded along an old military roadway',
