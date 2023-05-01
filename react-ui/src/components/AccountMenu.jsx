@@ -31,6 +31,9 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
     width: 300,
   },
+  popper: {
+    zIndex: 1,
+  },
   username: {
     fontWeight: 'bold',
   },
@@ -104,6 +107,7 @@ function AccountMenu({ color }) {
       </IconButton>
       <Popper
         anchorEl={anchorRef.current}
+        className={classes.popper}
         disablePortal
         open={isMenuOpen}
         placement="bottom-end"
