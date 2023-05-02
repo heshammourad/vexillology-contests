@@ -23,6 +23,7 @@ const VARIANTS = {
     labels: {
       ended: 'Submission is over',
       inProgress: 'left to submit!',
+      reload: 'Reload',
     },
   },
   [countdownTypes.VOTING]: {
@@ -30,6 +31,7 @@ const VARIANTS = {
     labels: {
       ended: 'Voting has ended',
       inProgress: 'left to vote!',
+      reload: 'Load Results',
     },
   },
 };
@@ -62,10 +64,10 @@ function Countdown({
 
   const classes = useStyles();
   const theme = useTheme();
-  const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
 
   let labelVariant = 'body2';
-  if (fontSize === 'small' || !isSmUp) {
+  if (fontSize === 'small' || !isMdUp) {
     labelVariant = 'caption';
   }
 
@@ -89,7 +91,7 @@ function Countdown({
         setFontSize(0.875 + (Math.max(periodDays - daysLeft, 0) / periodDays) * 0.25);
       }
 
-      const newTimeLeft = isSmUp
+      const newTimeLeft = isMdUp
         ? formatDuration(intervalToDuration({ start: now, end: endDate }), {
           format: ['days', 'hours', 'minutes', 'seconds'],
           zero: true,
@@ -104,7 +106,7 @@ function Countdown({
             return acc;
           }, [])
           .join(DELIMITER)
-        : formatDistanceStrict(now, endDate);
+        : formatDistanceStrict(now, endDate, { roundingMethod: 'floor' });
       setTimeLeft(newTimeLeft);
       setInitialized(true);
     }, 500);
@@ -114,7 +116,7 @@ function Countdown({
         clearInterval(interval);
       }
     };
-  }, [endDate]);
+  }, [endDate, isMdUp]);
 
   if (!initialized) {
     return null;
@@ -129,7 +131,7 @@ function Countdown({
       <ScheduleIcon className={classes.icon} fontSize={fontSize} />
       <Typography
         className={classes.countdownLabel}
-        style={isSmUp && timeLeft && textFontSize ? { fontSize: `${textFontSize}rem` } : null}
+        style={isMdUp && timeLeft && textFontSize ? { fontSize: `${textFontSize}rem` } : null}
         variant={labelVariant}
       >
         {timeLeft ? (
@@ -142,9 +144,9 @@ function Countdown({
         )}
       </Typography>
       {!timeLeft
-        && (isSmUp ? (
+        && (isMdUp ? (
           <Button color="primary" onClick={handleReload}>
-            Load Results
+            {variantValues.labels.reload}
           </Button>
         ) : (
           <IconButton onClick={handleReload}>
@@ -158,14 +160,18 @@ function Countdown({
 Countdown.propTypes = {
   endDate: PropTypes.instanceOf(Date).isRequired,
   fontSize: PropTypes.oneOf(['medium', 'small']),
-  handleExpiry: PropTypes.func.isRequired,
-  handleReload: PropTypes.func.isRequired,
+  handleExpiry: PropTypes.func,
+  handleReload: PropTypes.func,
   startDate: PropTypes.instanceOf(Date),
   variant: PropTypes.oneOf(Object.keys(countdownTypes)),
 };
 
 Countdown.defaultProps = {
   fontSize: 'medium',
+  handleExpiry: () => {},
+  handleReload: () => {
+    window.location.reload();
+  },
   startDate: null,
   variant: countdownTypes.VOTING,
 };

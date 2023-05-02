@@ -120,14 +120,7 @@ function EntryDescriptionDrawer({ entryId }) {
         <>
           <DrawerSectionHeader>Submit Vote</DrawerSectionHeader>
           {!differenceInDays(voteEndDate, new Date()) && (
-            <Countdown
-              endDate={voteEndDate}
-              fontSize="small"
-              handleExpiry={handleVotingExpired}
-              handleReload={() => {
-                window.location.reload();
-              }}
-            />
+            <Countdown endDate={voteEndDate} fontSize="small" handleExpiry={handleVotingExpired} />
           )}
           <Box className={classes.votingContainer} alignItems="center" display="flex">
             <VotingSlider

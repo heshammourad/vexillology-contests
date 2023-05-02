@@ -24,8 +24,10 @@ import { postData } from '../../api';
 import {
   uploadFile, useAuthState, useFormState, useSnackbarState, useSwrData,
 } from '../../common';
+import countdownTypes from '../../common/countdownTypes';
 import snackbarTypes from '../../common/snackbarTypes';
 import {
+  Countdown,
   Header,
   HtmlWrapper,
   InternalLink,
@@ -97,6 +99,14 @@ const useStyles = makeStyles((theme) => ({
     padding: 0,
     rowGap: 16,
   },
+  header: {
+    alignItems: 'center',
+    columnGap: theme.spacing(2),
+    display: 'flex',
+    marginRight: theme.spacing(2),
+    justifyContent: 'space-between',
+    width: '100%',
+  },
   submitAnotherEntryButton: {
     marginTop: theme.spacing(2),
   },
@@ -112,6 +122,7 @@ function Submission() {
       },
       error,
     },
+    updateCache,
   ] = useSwrData('/submission');
   const [formState, updateFormState, resetFormState] = useFormState([
     'name',
@@ -132,6 +143,7 @@ function Submission() {
   const [showForm, setShowForm] = useState(true);
   const [fileDimensions, setFileDimensions] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [submittingDisabled, setSubmittingDisabled] = useState(false);
   const fileInputRef = useRef(null);
   const fileNameRef = useRef(null);
   const flagPreviewRef = useRef(null);
@@ -322,6 +334,11 @@ function Submission() {
     }
   };
 
+  const handleSubmissionExpiry = () => {
+    updateCache(null);
+    setSubmittingDisabled(true);
+  };
+
   const submissionEndDate = parseISO(submissionEnd);
   const submissionAllowed = isFuture(submissionEndDate);
 
@@ -329,8 +346,13 @@ function Submission() {
 
   return (
     <>
-      <Header position="static" to="/home">
-        Contest Submission
+      <Header className={classes.header} position="static" to="/home">
+        <div>Contest Submission</div>
+        <Countdown
+          endDate={new Date(submissionEnd)}
+          handleExpiry={handleSubmissionExpiry}
+          variant={countdownTypes.SUBMISSION}
+        />
       </Header>
       <PageContainer className={classes.container}>
         {error?.status === 404 && (
@@ -541,10 +563,11 @@ function Submission() {
                             </FormHelperText>
                           </FormControl>
                           <SubmissionButton
-                            variant="contained"
                             color="primary"
+                            disabled={submittingDisabled}
                             onClick={submitForm}
                             submitting={submitting}
+                            variant="contained"
                           >
                             Submit
                           </SubmissionButton>
