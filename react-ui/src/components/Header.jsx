@@ -1,5 +1,6 @@
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
+import clsx from 'clsx';
 import PropTypes from 'prop-types';
 
 import types from '../common/types';
@@ -13,12 +14,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function Header({ children, position, to }) {
+function Header({
+  children, className, position, to,
+}) {
   const classes = useStyles();
   return (
     <AppBarDivided color="default" disableGutters position={position}>
       <ArrowBackButton to={to} />
-      <Typography className={classes.title} component="div" variant="h6">
+      <Typography className={clsx(classes.title, className)} component="div" variant="h6">
         {children}
       </Typography>
     </AppBarDivided>
@@ -27,8 +30,13 @@ function Header({ children, position, to }) {
 
 Header.propTypes = {
   children: PropTypes.node.isRequired,
+  className: PropTypes.string,
   position: PropTypes.string.isRequired,
   to: types.to.isRequired,
+};
+
+Header.defaultProps = {
+  className: undefined,
 };
 
 export default Header;

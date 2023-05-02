@@ -61,6 +61,7 @@
         ],
         "patterns": [
           "**/common/*",
+          "!**/common/countdownTypes",
           "!**/common/snackbarTypes",
           "!**/common/styles",
           "!**/common/types",

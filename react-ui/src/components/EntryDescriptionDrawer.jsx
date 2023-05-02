@@ -13,13 +13,13 @@ import { useComponentsState, useSwrData } from '../common';
 
 import Average from './Average';
 import CategoryLabel from './CategoryLabel';
+import Countdown from './Countdown';
 import DrawerSectionHeader from './DrawerSectionHeader';
 import FiveStar from './FiveStar';
 import FmpIcon from './FmpIcon';
 import HtmlWrapper from './HtmlWrapper';
 import ListItemButton from './ListItemButton';
 import RedditUserAttribution from './RedditUserAttribution';
-import VotingCountdown from './VotingCountdown';
 import VotingSlider from './VotingSlider';
 
 const useStyles = makeStyles({
@@ -120,14 +120,7 @@ function EntryDescriptionDrawer({ entryId }) {
         <>
           <DrawerSectionHeader>Submit Vote</DrawerSectionHeader>
           {!differenceInDays(voteEndDate, new Date()) && (
-            <VotingCountdown
-              fontSize="small"
-              handleExpiry={handleVotingExpired}
-              handleReload={() => {
-                window.location.reload();
-              }}
-              voteEndDate={voteEndDate}
-            />
+            <Countdown endDate={voteEndDate} fontSize="small" handleExpiry={handleVotingExpired} />
           )}
           <Box className={classes.votingContainer} alignItems="center" display="flex">
             <VotingSlider
