@@ -53,7 +53,7 @@ import {
   PageWithDrawer,
   RedditLogInDialog,
   RedditUserAttribution,
-  VotingCountdown,
+  Countdown,
   VotingSlider,
 } from '../../components';
 
@@ -445,10 +445,10 @@ function Contest() {
             <ArrowBackButton state={{ date }} to={backLink} />
             {isContestMode && (
               <Box display="inline-flex" paddingLeft={1.5}>
-                <VotingCountdown
+                <Countdown
+                  endDate={voteEndDate}
                   handleExpiry={handleVotingExpired}
                   handleReload={handleReload}
-                  voteEndDate={voteEndDate}
                 />
               </Box>
             )}

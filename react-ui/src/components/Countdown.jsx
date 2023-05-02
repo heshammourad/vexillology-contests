@@ -14,30 +14,47 @@ import isFuture from 'date-fns/isFuture';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 
+import countdownTypes from '../common/countdownTypes';
+
 const DELIMITER = ', ';
-const VOTING_DAYS = 8;
+const VARIANTS = {
+  [countdownTypes.SUBMISSION]: {
+    defaultDays: 18,
+    labels: {
+      ended: 'Submission is over',
+      inProgress: 'left to submit!',
+    },
+  },
+  [countdownTypes.VOTING]: {
+    defaultDays: 8,
+    labels: {
+      ended: 'Voting has ended',
+      inProgress: 'left to vote!',
+    },
+  },
+};
 
 const useStyles = makeStyles((theme) => ({
+  countdown: {
+    alignItems: 'center',
+    columnGap: 12,
+    display: 'inline-flex',
+  },
+  countdownLabel: {
+    lineHeight: '24px',
+  },
+  countdownWarning: {
+    color: theme.palette.error.main,
+  },
   icon: {
     [theme.breakpoints.down('xs')]: {
       display: 'none',
     },
   },
-  voteCountdown: {
-    alignItems: 'center',
-    columnGap: 12,
-    display: 'inline-flex',
-  },
-  voteCountdownLabel: {
-    lineHeight: '24px',
-  },
-  voteCountdownWarning: {
-    color: theme.palette.error.main,
-  },
 }));
 
-function VotingCountdown({
-  fontSize, handleExpiry, handleReload, voteEndDate,
+function Countdown({
+  endDate, fontSize, handleExpiry, handleReload, startDate, variant,
 }) {
   const [initialized, setInitialized] = useState(false);
   const [textFontSize, setFontSize] = useState();
@@ -52,9 +69,12 @@ function VotingCountdown({
     labelVariant = 'caption';
   }
 
+  const variantValues = VARIANTS[variant] ?? VARIANTS[countdownTypes.VOTING];
+  const periodDays = startDate ? differenceInDays(endDate, startDate) : variantValues.defaultDays;
+
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!isFuture(voteEndDate)) {
+      if (!isFuture(endDate)) {
         setFontSize();
         setTimeLeft();
         handleExpiry();
@@ -62,15 +82,15 @@ function VotingCountdown({
         return;
       }
 
-      const start = new Date();
+      const now = new Date();
 
       if (fontSize !== 'small') {
-        const daysLeft = differenceInDays(voteEndDate, start);
-        setFontSize(0.875 + (Math.max(VOTING_DAYS - daysLeft, 0) / VOTING_DAYS) * 0.25);
+        const daysLeft = differenceInDays(endDate, now);
+        setFontSize(0.875 + (Math.max(periodDays - daysLeft, 0) / periodDays) * 0.25);
       }
 
       const newTimeLeft = isSmUp
-        ? formatDuration(intervalToDuration({ start, end: voteEndDate }), {
+        ? formatDuration(intervalToDuration({ start: now, end: endDate }), {
           format: ['days', 'hours', 'minutes', 'seconds'],
           zero: true,
           delimiter: DELIMITER,
@@ -84,7 +104,7 @@ function VotingCountdown({
             return acc;
           }, [])
           .join(DELIMITER)
-        : formatDistanceStrict(start, voteEndDate);
+        : formatDistanceStrict(now, endDate);
       setTimeLeft(newTimeLeft);
       setInitialized(true);
     }, 500);
@@ -94,7 +114,7 @@ function VotingCountdown({
         clearInterval(interval);
       }
     };
-  }, [voteEndDate]);
+  }, [endDate]);
 
   if (!initialized) {
     return null;
@@ -102,24 +122,23 @@ function VotingCountdown({
 
   return (
     <div
-      className={clsx(classes.voteCountdown, {
-        [classes.voteCountdownWarning]: timeLeft && !differenceInDays(voteEndDate, new Date()),
+      className={clsx(classes.countdown, {
+        [classes.countdownWarning]: timeLeft && !differenceInDays(endDate, new Date()),
       })}
     >
       <ScheduleIcon className={classes.icon} fontSize={fontSize} />
       <Typography
-        className={classes.voteCountdownLabel}
+        className={classes.countdownLabel}
         style={isSmUp && timeLeft && textFontSize ? { fontSize: `${textFontSize}rem` } : null}
         variant={labelVariant}
       >
         {timeLeft ? (
           <>
             <span>{timeLeft}</span>
-            {' '}
-            left to vote!
+            {` ${variantValues.labels.inProgress}`}
           </>
         ) : (
-          <>Voting has ended</>
+          variantValues.labels.ended
         )}
       </Typography>
       {!timeLeft
@@ -136,15 +155,19 @@ function VotingCountdown({
   );
 }
 
-VotingCountdown.propTypes = {
+Countdown.propTypes = {
+  endDate: PropTypes.instanceOf(Date).isRequired,
   fontSize: PropTypes.oneOf(['medium', 'small']),
   handleExpiry: PropTypes.func.isRequired,
   handleReload: PropTypes.func.isRequired,
-  voteEndDate: PropTypes.instanceOf(Date).isRequired,
+  startDate: PropTypes.instanceOf(Date),
+  variant: PropTypes.oneOf(Object.keys(countdownTypes)),
 };
 
-VotingCountdown.defaultProps = {
+Countdown.defaultProps = {
   fontSize: 'medium',
+  startDate: null,
+  variant: countdownTypes.VOTING,
 };
 
-export default VotingCountdown;
+export default Countdown;
