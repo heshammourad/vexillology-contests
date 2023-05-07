@@ -31,6 +31,9 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(2),
     marginTop: theme.spacing(2),
   },
+  table: {
+    tableLayout: 'fixed',
+  },
 }));
 
 function ReviewSubmissions() {
@@ -95,7 +98,7 @@ function ReviewSubmissions() {
               {filteredSubmissions
                 && (filteredSubmissions.length ? (
                   <TableContainer component={Paper}>
-                    <Table aria-label="submissions" size="small">
+                    <Table className={classes.table} aria-label="submissions" size="small">
                       <TableBody>
                         {filteredSubmissions.map((submission) => (
                           <Row

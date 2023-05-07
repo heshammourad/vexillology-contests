@@ -45,7 +45,10 @@ const useStyles = makeStyles((theme) => ({
     overflowY: 'auto',
   },
   entryName: {
-    maxWidth: 300,
+    width: 172,
+    [theme.breakpoints.up('md')]: {
+      width: 200,
+    },
   },
   expandedImage: {
     maxHeight: 300,
@@ -56,6 +59,9 @@ const useStyles = makeStyles((theme) => ({
   },
   expandedTableRow: {
     padding: 0,
+  },
+  expandIconCell: {
+    width: 48,
   },
   fields: {
     display: 'flex',
@@ -73,17 +79,14 @@ const useStyles = makeStyles((theme) => ({
       borderBottom: 'unset',
     },
   },
-  mainRowUser: {
-    [theme.breakpoints.down('sm')]: {
-      display: 'none',
-    },
-  },
   modifiedBy: {
     fontStyle: 'italic',
   },
   previewImage: {
-    [theme.breakpoints.down('sm')]: {
-      display: 'none',
+    width: 140,
+    [theme.breakpoints.down('xs')]: {
+      padding: 0,
+      width: 0,
     },
   },
   statusChip: {
@@ -98,13 +101,26 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: theme.palette.error.light,
     },
   },
+  statusChipCell: {
+    width: 114,
+  },
   submissionStatus: {
     fontWeight: 'bold',
   },
   submissionTime: {
     whiteSpace: 'nowrap',
+    width: 72,
     [theme.breakpoints.down('sm')]: {
-      display: 'none',
+      padding: 0,
+      width: 0,
+    },
+  },
+  usernameCell: {
+    whiteSpace: 'nowrap',
+    width: 172,
+    [theme.breakpoints.down('sm')]: {
+      padding: 0,
+      width: 0,
     },
   },
   // Dummy classes
@@ -268,7 +284,9 @@ function Row({
     });
   };
 
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   const isSmBreakpoint = useMediaQuery(theme.breakpoints.only('sm'));
+  const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
 
   const redditUserAttribution = <RedditUserAttribution showUsernameOnly user={`/u/${user}`} />;
   const fields = (
@@ -340,23 +358,27 @@ function Row({
             {entryName}
           </Typography>
         </TableCell>
-        <TableCell className={classes.mainRowUser}>{!open && redditUserAttribution}</TableCell>
+        <TableCell className={classes.usernameCell}>
+          {!open && isMdUp && redditUserAttribution}
+        </TableCell>
         <TableCell align="center" className={classes.previewImage}>
-          <div className={classes.imageContainer}>
-            {!open && <img className={classes.image} alt="" src={url} />}
-          </div>
+          {isSmUp && (
+            <div className={classes.imageContainer}>
+              {!open && <img className={classes.image} alt="" src={url} />}
+            </div>
+          )}
         </TableCell>
         <TableCell align="center" className={classes.submissionTime}>
-          {getSubmissionTimeDisplay(submissionTime)}
+          {isMdUp && getSubmissionTimeDisplay(submissionTime)}
         </TableCell>
-        <TableCell align="center">
+        <TableCell align="center" className={classes.statusChipCell}>
           <Chip
             className={clsx(classes.statusChip, classes[submissionStatus])}
             label={submissionStatus}
             size="small"
           />
         </TableCell>
-        <TableCell align="right">
+        <TableCell align="right" className={classes.expandIconCell}>
           <IconButton aria-label="expand row" size="small" onClick={handleExpandClick}>
             {open ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
