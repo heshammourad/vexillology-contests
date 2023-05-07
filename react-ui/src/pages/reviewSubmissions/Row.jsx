@@ -116,7 +116,7 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   usernameCell: {
-    wordBreak: 'keep-all',
+    whiteSpace: 'nowrap',
     width: 172,
     [theme.breakpoints.down('sm')]: {
       padding: 0,
