@@ -48,11 +48,9 @@ function AccountMenu({ color }) {
   const [{ isLoggedIn, refreshToken, username }, setAuthState] = useAuthState();
   const sendUserToAuthUrl = useRedditLogIn();
 
-  const [
-    {
-      data: { moderator, submissionsToReview },
-    },
-  ] = useSwrData('/init');
+  const {
+    data: { moderator, submissionsToReview },
+  } = useSwrData('/init');
 
   const toggleMenu = () => {
     setMenuOpen((prevOpen) => !prevOpen);

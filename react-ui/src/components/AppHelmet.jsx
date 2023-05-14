@@ -5,11 +5,9 @@ import { useLocation } from 'react-router-dom';
 import { useComponentsState, useSwrData } from '../common';
 
 function AppHelmet() {
-  const [
-    {
-      data: { title = 'Vexillology Contests' },
-    },
-  ] = useSwrData('/init');
+  const {
+    data: { title = 'Vexillology Contests' },
+  } = useSwrData('/init');
   const location = useLocation();
   const setComponentsState = useComponentsState()[1];
 

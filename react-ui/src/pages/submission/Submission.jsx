@@ -115,15 +115,12 @@ const useStyles = makeStyles((theme) => ({
 const fileReader = new FileReader();
 
 function Submission() {
-  const [
-    {
-      data: {
-        categories, firebaseToken, id: contestId, name: contestName, prompt, submissionEnd,
-      },
-      error,
+  const {
+    data: {
+      categories, firebaseToken, id: contestId, name: contestName, prompt, submissionEnd,
     },
-    updateCache,
-  ] = useSwrData('/submission');
+    error,
+  } = useSwrData('/submission');
   const [formState, updateFormState, resetFormState] = useFormState([
     'name',
     'category',
@@ -335,7 +332,6 @@ function Submission() {
   };
 
   const handleSubmissionExpiry = () => {
-    updateCache(null);
     setSubmittingDisabled(true);
   };
 

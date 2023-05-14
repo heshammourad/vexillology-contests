@@ -1,57 +1,68 @@
-import addMinutes from 'date-fns/addMinutes';
-import isFuture from 'date-fns/isFuture';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
-import createPersistedState from 'use-persisted-state';
 
 import useAuthState from './useAuthState';
+import useCache from './useCache';
 
-const usePersistentState = createPersistedState('data');
-const useExpiresState = createPersistedState('expires');
+const getOptions = (key) => {
+  switch (key) {
+    case '/init':
+      return {
+        dedupingInterval: 10 * 60 * 1000, // 10 minutes
+      };
+    default: {
+      return {};
+    }
+  }
+};
 
-const useSwrData = (key, allowRefresh = true) => {
+const useSwrData = (key, revalidateOnMount = true) => {
   const [{ accessToken, isLoggedIn, refreshToken }] = useAuthState();
-  const { data, error, mutate } = useSWR([key, { accessToken, refreshToken }]);
+  const { data, error, mutate } = useSWR([key, { accessToken, refreshToken }], {
+    ...getOptions(key),
+    revalidateOnMount,
+  });
   const [prevLoggedIn, setLoggedIn] = useState(isLoggedIn);
+  const [getData, updateCache, clearCache] = useCache(key);
   const [isFetched, setFetched] = useState(!!data);
-  const [cache, setCache] = usePersistentState({});
-  const [expires, setExpires] = useExpiresState({});
+
+  useEffect(() => {
+    if (revalidateOnMount || !data) {
+      return;
+    }
+
+    updateCache(data);
+  }, [data]);
 
   useEffect(() => {
     if (isLoggedIn === prevLoggedIn) {
       return;
     }
-    setCache({});
-    setExpires({});
+    clearCache();
     setLoggedIn(isLoggedIn);
   }, [isLoggedIn]);
 
-  const updateCache = (cacheData) => {
-    setCache({ ...cache, [key]: cacheData });
-    setExpires({ ...expires, [key]: addMinutes(new Date(), 10) });
-  };
+  if (!revalidateOnMount) {
+    const cachedData = getData();
+    if (cachedData) {
+      if (!data) {
+        mutate(cachedData, false);
+      }
+      return { data: cachedData };
+    }
 
-  if (data && !allowRefresh) {
-    return [{ data }, updateCache];
+    if (!isFetched) {
+      setFetched(true);
+      setTimeout(async () => {
+        const response = await mutate();
+        if (response) {
+          updateCache(response);
+        }
+      }, 200);
+    }
   }
 
-  if (!isFetched) {
-    setTimeout(async () => {
-      const expiryDate = expires[key];
-      if (expiryDate && isFuture(new Date(expiryDate)) && cache[key]) {
-        mutate(cache[key], false);
-        return;
-      }
-
-      const response = await mutate();
-      if (response) {
-        updateCache(response);
-      }
-    }, 200);
-    setFetched(true);
-  }
-
-  return [{ data: data || {}, error: error?.response }, updateCache];
+  return { data: data || {}, error: error?.response };
 };
 
 export default useSwrData;

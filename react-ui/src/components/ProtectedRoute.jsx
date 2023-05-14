@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
 function ProtectedRoute({
   children, message, moderatorPath, showCancel,
 }) {
-  const [{ error }] = useSwrData(moderatorPath);
+  const { error } = useSwrData(moderatorPath);
   const [{ isLoggedIn }] = useAuthState();
   const sendUserToAuthUrl = useRedditLogIn();
 

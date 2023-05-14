@@ -1,5 +1,6 @@
 export { uploadFile } from './firebase';
 export { default as useAuthState } from './useAuthState';
+export { default as useCache } from './useCache';
 export { default as useCategoryLabelStyles } from './useCategoryLabelStyles';
 export { default as useClientWidth } from './useClientWidth';
 export { default as useComponentsState } from './useComponentsState';

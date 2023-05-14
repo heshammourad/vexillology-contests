@@ -47,7 +47,7 @@ function App() {
         <SWRConfig
           value={{
             fetcher: (arr) => getData(...arr),
-            revalidateOnMount: false,
+            revalidateOnMount: true,
             revalidateOnFocus: false,
             revalidateOnReconnect: false,
           }}

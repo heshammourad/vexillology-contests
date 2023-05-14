@@ -8,7 +8,7 @@ import { useParams } from 'react-router-dom';
 import useSWRMutation from 'swr/mutation';
 
 import { deleteData, putData } from '../api';
-import { useAuthState, useSnackbarState, useSwrData } from '../common';
+import { useAuthState, useCache, useSnackbarState } from '../common';
 import snackbarTypes from '../common/snackbarTypes';
 
 const MIN_SCORE = 0;
@@ -99,7 +99,7 @@ function VotingSlider({
   const [isInteractive, setInteractive] = useState(false);
 
   const url = `/contests/${contestId}`;
-  const updateCache = useSwrData(url)[1];
+  const updateCache = useCache(url)[1];
   const key = [url, authTokens];
   // eslint-disable-next-line max-len
   const { isMutating: isMutatingPut, trigger: triggerPut } = useSWRMutation(key, (_, { arg }) => putData(URL, arg, authTokens));
