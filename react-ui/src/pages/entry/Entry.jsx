@@ -65,13 +65,11 @@ const useStyles = makeStyles((theme) => ({
 
 function Entry() {
   const { contestId, entryId } = useParams();
-  const [
-    {
-      data: {
-        entries = [], localVoting, requestId, winners = [],
-      },
+  const {
+    data: {
+      entries = [], localVoting, requestId, winners = [],
     },
-  ] = useSwrData(`/contests/${contestId}`);
+  } = useSwrData(`/contests/${contestId}`, false);
 
   const { state = {} } = useLocation();
   const navigate = useNavigate();

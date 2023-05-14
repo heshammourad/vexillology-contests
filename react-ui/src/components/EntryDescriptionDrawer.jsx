@@ -9,7 +9,7 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { useComponentsState, useSwrData } from '../common';
+import { useCache, useComponentsState, useSwrData } from '../common';
 
 import Average from './Average';
 import CategoryLabel from './CategoryLabel';
@@ -59,14 +59,13 @@ function EntryDescriptionDrawer({ entryId }) {
   const [votingExpired, setVotingExpired] = useState(false);
 
   const { contestId } = useParams();
-  const [
-    {
-      data: {
-        categories, entries, isContestMode, localVoting, voteEnd,
-      },
+  const apiPath = `/contests/${contestId}`;
+  const {
+    data: {
+      categories, entries, isContestMode, localVoting, voteEnd,
     },
-    updateCache,
-  ] = useSwrData(`/contests/${contestId}`, false);
+  } = useSwrData(apiPath, false);
+  const updateCache = useCache[1];
   const {
     average,
     category,

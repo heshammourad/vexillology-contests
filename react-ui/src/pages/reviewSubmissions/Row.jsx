@@ -25,9 +25,7 @@ import { markdown } from 'snudown-js';
 import useSWRMutation from 'swr/mutation';
 
 import { putData } from '../../api';
-import {
-  useAuthState, useFormState, useSnackbarState, useSwrData,
-} from '../../common';
+import { useAuthState, useFormState, useSnackbarState } from '../../common';
 import snackbarTypes from '../../common/snackbarTypes';
 import { HtmlWrapper, RedditUserAttribution, SubmissionButton } from '../../components';
 
@@ -203,7 +201,6 @@ function Row({
   const [{ accessToken, refreshToken }] = useAuthState();
   const authTokens = { accessToken, refreshToken };
 
-  const updateCache = useSwrData(API_PATH)[1];
   // eslint-disable-next-line max-len
   const { isMutating, trigger } = useSWRMutation([API_PATH, authTokens], (_, { arg }) => putData(API_PATH, arg, authTokens));
   const [open, setOpen] = useState(false);
@@ -276,9 +273,7 @@ function Row({
         setOpen(false);
         updateSnackbarState(snackbarTypes.REVIEW_SUBMISSION_SUCCESS);
 
-        const newSubmissions = updateSubmissions(data, response);
-        updateCache(newSubmissions);
-        return newSubmissions;
+        return updateSubmissions(data, response);
       },
       onError: showError,
     });

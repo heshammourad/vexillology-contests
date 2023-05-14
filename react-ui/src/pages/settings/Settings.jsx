@@ -53,7 +53,7 @@ function Settings() {
   const [{ accessToken, isLoggedIn, refreshToken }] = useAuthState();
   const authTokens = { accessToken, refreshToken };
 
-  const [{ data }, updateCache] = useSwrData(isLoggedIn ? URL : null);
+  const { data } = useSwrData(isLoggedIn ? URL : null);
   // eslint-disable-next-line max-len
   const { isMutating, trigger } = useSWRMutation([URL, authTokens], (_, { arg }) => putData(URL, arg, authTokens));
 
@@ -74,10 +74,8 @@ function Settings() {
           return current;
         }
 
-        const newData = { ...data, ...settings };
-        updateCache(newData);
         updateSnackbarState(snackbarTypes.SETTINGS_SUCCESS);
-        return newData;
+        return { ...data, ...settings };
       },
       onError: () => {
         showError();

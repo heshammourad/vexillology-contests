@@ -29,6 +29,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
 
 import {
+  useCache,
   useCategoryLabelStyles,
   useClientWidth,
   useComponentsState,
@@ -216,7 +217,10 @@ function Contest() {
   const navigate = useNavigate();
   const { contestId } = useParams();
   const [scroll, setScroll] = useScrollState();
-  const [{ data: contest }, updateCache] = useSwrData(`/contests/${contestId}`, !!scroll.entryId);
+
+  const apiPath = `/contests/${contestId}`;
+  const { data: contest } = useSwrData(apiPath, false);
+  const updateCache = useCache(apiPath);
 
   if (contest?.submissionWindowOpen) {
     navigate('/submission', { replace: true });
