@@ -11,6 +11,7 @@ const { requireAuthentication, requireModerator, processUser } = require('./api/
 const contest = require('./api/contest');
 const contests = require('./api/contests');
 const hallOfFame = require('./api/hallOfFame');
+const images = require('./api/images');
 const init = require('./api/init');
 const reviewSubmissions = require('./api/reviewSubmissions');
 const revokeToken = require('./api/revokeToken');
@@ -128,6 +129,10 @@ if (!isDev && cluster.isMaster) {
   apiRouter.use('/mod', modRouter);
 
   app.use('/api', apiRouter);
+
+  const imageRouter = express.Router();
+  imageRouter.get('/:image', images.get);
+  app.use('/i', imageRouter);
 
   // All remaining requests return the React app, so it can handle routing.
   app.get('*', (request, response) => {

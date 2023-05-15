@@ -377,7 +377,7 @@ exports.get = async ({ params: { id }, username }, res) => {
 
     res.send(response);
   } catch (err) {
-    logger.error(`Error getting /contest/${id}: ${err})}`);
+    logger.error(`Error getting /contest/${id}: ${err}`);
     res.status(500).send();
   }
 };
