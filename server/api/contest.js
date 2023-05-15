@@ -238,8 +238,8 @@ exports.get = async ({ params: { id }, username }, res) => {
           } = imageData;
           acc.push({
             ...cur,
+            imagePath: `/i/${imgurId}.png`,
             imgurId,
-            imgurLink: `https://i.imgur.com/${imgurId}.png`,
             height,
             rank,
             width,

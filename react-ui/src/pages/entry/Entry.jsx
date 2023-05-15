@@ -259,8 +259,9 @@ function Entry() {
     return null;
   }
 
+  const imageSrc = window.location.origin + entry.imagePath;
   const redditPermalink = `https://www.reddit.com${entry.permalink}`;
-  const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${entry.imgurLink}`;
+  const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${imageSrc}`;
 
   return (
     <>
@@ -335,7 +336,7 @@ function Entry() {
               }}
             />
           )}
-          {entry.imgurLink && <img className={classes.image} src={entry.imgurLink} alt="" />}
+          {entry.imagePath && <img className={classes.image} src={entry.imagePath} alt="" />}
           {isNavigationAvailable.next && (
             <NavigateIconButton
               className={clsx(classes.navigateButton, classes.navigateNext, {

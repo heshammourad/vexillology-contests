@@ -1,6 +1,7 @@
 const axios = require('axios');
 
 const db = require('../db');
+const { getDownloadUrl } = require('../firebase');
 const { createLogger } = require('../logger');
 const memcache = require('../memcache');
 
@@ -12,11 +13,15 @@ exports.get = async ({ params: { image } }, res) => {
       image,
       async () => {
         const [id] = image.match(/([^.]*)/);
-        const [{ url } = {}] = await db.select('SELECT url FROM entries WHERE id = $1', [id]);
+        let [{ url } = {}] = await db.select('SELECT url FROM entries WHERE id = $1', [id]);
+        if (url) {
+          return url;
+        }
+
+        url = await getDownloadUrl(image);
         return url;
       },
-      1,
-      // 30 * 24 * 60 * 60, // 30 days -> seconds
+      30 * 24 * 60 * 60, // 30 days -> seconds
     );
     if (!downloadUrl) {
       res.status(404).send();

@@ -78,9 +78,9 @@ function HallOfFameCard({
     contestName,
     date,
     description,
-    entryId,
     entryName,
     height,
+    imagePath,
     redditThreadId,
     user,
     width,
@@ -96,7 +96,6 @@ function HallOfFameCard({
 
   const contestYearLabel = yearEndContest ? '' : `${format(parseISO(date), 'MMM yyyy')} - `;
   const contestLabel = `${contestYearLabel}${contestName}`;
-  const imgurUrl = `https://i.imgur.com/${entryId}.png`;
   const year = getYear(parseISO(date));
 
   const classes = useStyles();
@@ -105,7 +104,7 @@ function HallOfFameCard({
       <LazyLoadCardImage
         displayWidth={imageDisplayWidth}
         height={height}
-        image={imgurUrl}
+        image={imagePath}
         width={width}
       />
       <Box alignItems="flex-end" display="flex">
@@ -136,7 +135,7 @@ function HallOfFameCard({
         <CardActions>
           <CustomIconButton
             ariaLabel="Open FlagWaver"
-            href={`https://krikienoid.github.io/flagwaver/#?src=${imgurUrl}`}
+            href={`https://krikienoid.github.io/flagwaver/#?src=${window.location.origin}${imagePath}`}
             Icon={FlagTwoToneIcon}
           />
           <IconButton
@@ -166,9 +165,9 @@ HallOfFameCard.propTypes = {
     contestName: PropTypes.string,
     date: PropTypes.string,
     description: PropTypes.string,
-    entryId: PropTypes.string,
     entryName: PropTypes.string,
     height: PropTypes.number,
+    imagePath: PropTypes.string,
     redditThreadId: PropTypes.string,
     user: PropTypes.string,
     width: PropTypes.number,
