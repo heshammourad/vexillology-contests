@@ -238,8 +238,8 @@ exports.get = async ({ params: { id }, username }, res) => {
           } = imageData;
           acc.push({
             ...cur,
+            imagePath: `/i/${imgurId}.png`,
             imgurId,
-            imgurLink: `https://i.imgur.com/${imgurId}.png`,
             height,
             rank,
             width,
@@ -377,7 +377,7 @@ exports.get = async ({ params: { id }, username }, res) => {
 
     res.send(response);
   } catch (err) {
-    logger.error(`Error getting /contest/${id}: ${err})}`);
+    logger.error(`Error getting /contest/${id}: ${err}`);
     res.status(500).send();
   }
 };

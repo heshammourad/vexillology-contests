@@ -71,8 +71,8 @@ function EntryDescriptionDrawer({ entryId }) {
     category,
     categoryRank,
     description,
+    imagePath,
     imgurId,
-    imgurLink,
     name,
     permalink,
     rank,
@@ -80,7 +80,8 @@ function EntryDescriptionDrawer({ entryId }) {
     user,
   } = entries.find(({ id }) => id === entryId);
 
-  const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${imgurLink}`;
+  const imageSrc = window.location.origin + imagePath;
+  const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${imageSrc}`;
   const redditPermalink = `https://www.reddit.com${permalink}`;
   const showRank = localVoting && !!rank;
   const voteEndDate = new Date(voteEnd);

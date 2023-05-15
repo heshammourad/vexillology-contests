@@ -188,12 +188,12 @@ function Row({
     category,
     description,
     id,
+    imagePath,
     modifiedBy,
     name: entryName,
     rejectionReason,
     submissionStatus,
     submissionTime,
-    url,
     user,
   },
   userBreakdown: { approved, submitted },
@@ -359,7 +359,7 @@ function Row({
         <TableCell align="center" className={classes.previewImage}>
           {isSmUp && (
             <div className={classes.imageContainer}>
-              {!open && <img className={classes.image} alt="" src={url} />}
+              {!open && <img className={classes.image} alt="" src={imagePath} />}
             </div>
           )}
         </TableCell>
@@ -384,7 +384,7 @@ function Row({
           <Collapse in={open} timeout="auto" unmountOnExit className={classes.expandedRow}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6} md={4}>
-                <img className={classes.expandedImage} alt="" src={url} />
+                <img className={classes.expandedImage} alt="" src={imagePath} />
                 {isSmBreakpoint && fields}
               </Grid>
               {!isSmBreakpoint && (
@@ -460,12 +460,12 @@ Row.propTypes = {
     category: PropTypes.string,
     description: PropTypes.string,
     id: PropTypes.string,
+    imagePath: PropTypes.string,
     modifiedBy: PropTypes.string,
     name: PropTypes.string,
     rejectionReason: PropTypes.string,
     submissionStatus: PropTypes.oneOf(['approved', 'pending', 'rejected']),
     submissionTime: PropTypes.string,
-    url: PropTypes.string,
     user: PropTypes.string,
   }).isRequired,
   userBreakdown: PropTypes.shape({

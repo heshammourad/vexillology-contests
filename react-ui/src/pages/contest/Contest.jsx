@@ -583,7 +583,7 @@ function Contest() {
             <>
               <Subheader>Top 20</Subheader>
               {winners.map(({
-                height, id, imgurLink, name: entryName, rank, user, width,
+                height, id, imagePath, name: entryName, rank, user, width,
               }) => (
                 <React.Fragment key={id}>
                   <div id={id} className={classes.winnerHeading}>
@@ -603,7 +603,7 @@ function Contest() {
                       displayWidth={winnerDisplayWidth}
                       height={height}
                       id={id}
-                      image={imgurLink}
+                      image={imagePath}
                       onClick={updateScroll}
                       width={width}
                     />
@@ -627,8 +627,8 @@ function Contest() {
                     category,
                     categoryRank,
                     id,
+                    imagePath,
                     imgurId,
-                    imgurLink,
                     height,
                     name: entryName,
                     rank,
@@ -699,7 +699,7 @@ function Contest() {
                             displayWidth={rank === '1' ? winnerDisplayWidth : gridDisplayWidth}
                             height={height}
                             id={id}
-                            image={imgurLink}
+                            image={imagePath}
                             nextState={{ selectedCategories }}
                             onClick={updateScroll}
                             width={width}

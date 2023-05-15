@@ -30,12 +30,12 @@ exports.getCurrentContestSubmissions = async () => {
        ce.category,
        e.description,
        e.id,
+       '/i/' || e.id || '.png' AS image_path,
        e.modified_by,
        e.name,
        e.rejection_reason,
        e.submission_status,
        e.submission_time,
-       e.url,
        e.user
      FROM contest_entries ce, entries e
      WHERE ce.entry_id = e.id AND ce.contest_id = $1
