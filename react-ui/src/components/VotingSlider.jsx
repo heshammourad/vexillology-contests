@@ -80,7 +80,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const updateEntries = (entries, { entryId, rating }) => entries.reduce((acc, cur) => {
-  if (cur.imgurId !== entryId) {
+  const id = cur.imgurId ?? cur.id;
+  if (id !== entryId) {
     acc.push(cur);
   } else {
     acc.push({ ...cur, rating });

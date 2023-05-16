@@ -73,12 +73,13 @@ function EntryDescriptionDrawer({ entryId }) {
     description,
     imagePath,
     imgurId,
+    id,
     name,
     permalink,
     rank,
     rating,
     user,
-  } = entries.find(({ id }) => id === entryId);
+  } = entries.find((entry) => entry.id === entryId);
 
   const imageSrc = window.location.origin + imagePath;
   const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${imageSrc}`;
@@ -125,7 +126,7 @@ function EntryDescriptionDrawer({ entryId }) {
           <Box className={classes.votingContainer} alignItems="center" display="flex">
             <VotingSlider
               disabled={votingUnavailable}
-              entryId={imgurId}
+              entryId={imgurId ?? id}
               rating={rating}
               setComponentsState={setComponentsState}
             />
