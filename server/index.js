@@ -2,6 +2,7 @@ const cluster = require('cluster');
 const numCPUs = require('os').cpus().length;
 const path = require('path');
 
+const cors = require('cors');
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
@@ -132,7 +133,7 @@ if (!isDev && cluster.isMaster) {
 
   const imageRouter = express.Router();
   imageRouter.get('/:image', images.get);
-  app.use('/i', imageRouter);
+  app.use('/i', cors(), imageRouter);
 
   // All remaining requests return the React app, so it can handle routing.
   app.get('*', (request, response) => {
