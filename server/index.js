@@ -107,8 +107,8 @@ if (!isDev && cluster.isMaster) {
   apiRouter.use(express.json());
 
   apiRouter.get('/accessToken/:code', accessToken.get);
-  apiRouter.get('/contests', processUser(false), contests.get);
-  apiRouter.get('/contests/:id', contest.get);
+  apiRouter.get('/contests', contests.get);
+  apiRouter.get('/contests/:id', processUser(false), contest.get);
   apiRouter.get('/hallOfFame', hallOfFame.get);
   apiRouter.get('/init', processUser(true), init.get);
   apiRouter.get('/revokeToken/:refreshToken', revokeToken.get);

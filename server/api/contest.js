@@ -280,9 +280,22 @@ exports.get = async ({ params: { id }, username }, res) => {
         return;
       }
 
-      // TODO: Return entries
-      res.send(501).send();
-      return;
+      response.entries = await db.select(
+        `SELECT
+           ce.category,
+           e.description,
+           e.id,
+           '/i/' || e.id || '.png' AS image_path,
+           e.name,
+           e.height,
+           e.width
+         FROM contest_entries ce, entries e
+         WHERE
+           ce.entry_id = e.id
+           AND ce.contest_id = $1
+           AND e.submission_status = 'approved'`,
+        [id],
+      );
     }
 
     const categories = await getCategories(id);
@@ -294,11 +307,13 @@ exports.get = async ({ params: { id }, username }, res) => {
       );
       const map = new Map();
       response.entries.forEach((entry) => {
-        map.set(entry.imgurId, entry);
+        map.set(entry.imgurId ?? entry.id, entry);
       });
-      entryCategories.forEach(({ category, entryId }) => {
-        map.set(entryId, { ...map.get(entryId), category });
-      });
+      entryCategories
+        .filter(({ entryId }) => Array.from(map.keys()).includes(entryId))
+        .forEach(({ category, entryId }) => {
+          map.set(entryId, { ...map.get(entryId), category });
+        });
       response.entries = Array.from(map.values());
     }
 
@@ -310,7 +325,7 @@ exports.get = async ({ params: { id }, username }, res) => {
       );
       logger.debug(`${username} votes on ${id}: '${JSON.stringify(votes)}'`);
 
-      const entriesObj = keyBy(response.entries, 'imgurId');
+      const entriesObj = keyBy(response.entries, response.entries[0].imgurId ? 'imgurId' : 'id');
       votes.forEach(({ entryId, rating }) => {
         entriesObj[entryId].rating = rating;
       });
@@ -343,8 +358,8 @@ exports.get = async ({ params: { id }, username }, res) => {
     } else if (localVoting) {
       const voteData = await db.select(
         `SELECT entry_id, rank, category_rank, average
-      FROM contests_summary
-      WHERE contest_id = $1`,
+         FROM contests_summary
+         WHERE contest_id = $1`,
         [id],
       );
       const map = new Map();

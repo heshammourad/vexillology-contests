@@ -713,7 +713,7 @@ function Contest() {
                           >
                             <VotingSlider
                               disabled={votingUnavailable}
-                              entryId={imgurId}
+                              entryId={imgurId ?? id}
                               rating={rating}
                               setComponentsState={setComponentsState}
                             />
