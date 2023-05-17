@@ -62,7 +62,7 @@ function EntryDescriptionDrawer({ entryId }) {
   const apiPath = `/contests/${contestId}`;
   const {
     data: {
-      categories, entries, isContestMode, localVoting, voteEnd,
+      categories, entries = [], isContestMode, localVoting, voteEnd, winners = [],
     },
   } = useSwrData(apiPath, false);
   const updateCache = useCache[1];
@@ -79,7 +79,7 @@ function EntryDescriptionDrawer({ entryId }) {
     rank,
     rating,
     user,
-  } = entries.find((entry) => entry.id === entryId);
+  } = [...winners, ...entries].find((entry) => entry.id === entryId);
 
   const imageSrc = window.location.origin + imagePath;
   const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${imageSrc}`;
