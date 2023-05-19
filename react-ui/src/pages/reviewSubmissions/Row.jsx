@@ -27,7 +27,7 @@ import useSWRMutation from 'swr/mutation';
 import { putData } from '../../api';
 import { useAuthState, useFormState, useSnackbarState } from '../../common';
 import snackbarTypes from '../../common/snackbarTypes';
-import { HtmlWrapper, RedditUserAttribution, SubmissionButton } from '../../components';
+import { HtmlWrapper, RedditUserAttribution, SpinnerButton } from '../../components';
 
 const API_PATH = '/mod/reviewSubmissions';
 
@@ -438,14 +438,14 @@ function Row({
                   onChange={handleFieldChange}
                 />
                 {getSubmitAlert()}
-                <SubmissionButton
+                <SpinnerButton
                   color="primary"
                   variant="contained"
                   onClick={submit}
                   submitting={isMutating}
                 >
                   Submit
-                </SubmissionButton>
+                </SpinnerButton>
               </Grid>
             </Grid>
           </Collapse>

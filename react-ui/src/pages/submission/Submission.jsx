@@ -33,7 +33,7 @@ import {
   InternalLink,
   PageContainer,
   ProtectedRoute,
-  SubmissionButton,
+  SpinnerButton,
   TabPanel,
 } from '../../components';
 
@@ -558,7 +558,7 @@ function Submission() {
                               your flag does not comply with the rules, fix it and submit again.
                             </FormHelperText>
                           </FormControl>
-                          <SubmissionButton
+                          <SpinnerButton
                             color="primary"
                             disabled={submittingDisabled}
                             onClick={submitForm}
@@ -566,7 +566,7 @@ function Submission() {
                             variant="contained"
                           >
                             Submit
-                          </SubmissionButton>
+                          </SpinnerButton>
                         </fieldset>
                       </form>
                     ) : (

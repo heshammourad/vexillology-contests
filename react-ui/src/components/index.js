@@ -28,6 +28,6 @@ export { default as PageWithDrawer } from './PageWithDrawer';
 export { default as ProtectedRoute } from './ProtectedRoute';
 export { default as RedditLogInDialog } from './RedditLogInDialog';
 export { default as RedditUserAttribution } from './RedditUserAttribution';
-export { default as SubmissionButton } from './SubmissionButton';
+export { default as SpinnerButton } from './SpinnerButton';
 export { default as TabPanel } from './TabPanel';
 export { default as VotingSlider } from './VotingSlider';

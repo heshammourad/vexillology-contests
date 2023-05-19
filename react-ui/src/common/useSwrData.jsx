@@ -18,7 +18,9 @@ const getOptions = (key) => {
 
 const useSwrData = (key, revalidateOnMount = true) => {
   const [{ accessToken, isLoggedIn, refreshToken }] = useAuthState();
-  const { data, error, mutate } = useSWR([key, { accessToken, refreshToken }], {
+  const {
+    data, error, isValidating, mutate,
+  } = useSWR([key, { accessToken, refreshToken }], {
     ...getOptions(key),
     revalidateOnMount,
   });
@@ -62,7 +64,12 @@ const useSwrData = (key, revalidateOnMount = true) => {
     }
   }
 
-  return { data: data || {}, error: error?.response };
+  return {
+    data: data || {},
+    error: error?.response,
+    isValidating,
+    mutate,
+  };
 };
 
 export default useSwrData;
