@@ -8,6 +8,7 @@ const memcache = require('../memcache');
 const logger = createLogger('API/IMAGES');
 
 exports.get = async ({ params: { image } }, res) => {
+  logger.debug(`Fetching image ${image}`);
   try {
     const downloadUrl = await memcache.get(
       image,
@@ -24,6 +25,7 @@ exports.get = async ({ params: { image } }, res) => {
       30 * 24 * 60 * 60, // 30 days -> seconds
     );
     if (!downloadUrl) {
+      logger.warn(`Failed to find download URL for ${image}`);
       res.status(404).send();
       return;
     }
@@ -35,13 +37,13 @@ exports.get = async ({ params: { image } }, res) => {
           const { data } = await axios.get(downloadUrl, { responseType: 'arraybuffer' });
           return data;
         } catch (err) {
-          logger.warn(`Failed to retrieve image data from ${downloadUrl}`);
+          return null;
         }
-        return null;
       },
       24 * 60 * 60, // 1 day -> seconds
     );
     if (!imageData) {
+      logger.warn(`Failed to retrieve image data from ${downloadUrl}`);
       res.status(404).send();
       return;
     }
