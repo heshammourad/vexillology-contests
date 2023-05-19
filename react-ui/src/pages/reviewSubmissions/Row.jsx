@@ -283,7 +283,7 @@ function Row({
   const isSmBreakpoint = useMediaQuery(theme.breakpoints.only('sm'));
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
 
-  const redditUserAttribution = <RedditUserAttribution showUsernameOnly user={`/u/${user}`} />;
+  const redditUserAttribution = <RedditUserAttribution showUsernameOnly user={user} />;
   const fields = (
     <>
       {category && (
