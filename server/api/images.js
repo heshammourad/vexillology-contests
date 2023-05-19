@@ -28,9 +28,26 @@ exports.get = async ({ params: { image } }, res) => {
       return;
     }
 
-    const { data } = await axios.get(downloadUrl, { responseType: 'arraybuffer' });
+    const imageData = await memcache.get(
+      downloadUrl,
+      async () => {
+        try {
+          const { data } = await axios.get(downloadUrl, { responseType: 'arraybuffer' });
+          return data;
+        } catch (err) {
+          logger.warn(`Failed to retrieve image data from ${downloadUrl}`);
+        }
+        return null;
+      },
+      24 * 60 * 60, // 1 day -> seconds
+    );
+    if (!imageData) {
+      res.status(404).send();
+      return;
+    }
+
     res.contentType(downloadUrl.includes('png') ? 'image/png' : 'image/jpeg');
-    res.send(Buffer.from(data, 'binary'));
+    res.send(Buffer.from(imageData, 'binary'));
   } catch (err) {
     logger.error(`Error getting /i/${image}: ${err}`);
     res.status(500).send();
