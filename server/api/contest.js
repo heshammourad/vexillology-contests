@@ -269,6 +269,13 @@ exports.get = async ({ params: { id }, username }, res) => {
       }
     }
 
+    const [{ now, voteStart, voteEnd }] = await getVoteDates(id);
+    if (voteStart && voteEnd) {
+      response.isContestMode = isBefore(now, voteEnd);
+      response.voteStart = voteStart;
+      response.voteEnd = voteEnd;
+    }
+
     if (submissionStart) {
       if (isFuture(submissionStart)) {
         res.status(404).send();
@@ -280,6 +287,12 @@ exports.get = async ({ params: { id }, username }, res) => {
         return;
       }
 
+      if (isFuture(voteStart)) {
+        res.send({ name: response.name, votingWindowOpen: false });
+        return;
+      }
+
+      response.votingWindowOpen = true;
       response.entries = await db.select(
         `SELECT
            ce.category,
@@ -331,13 +344,6 @@ exports.get = async ({ params: { id }, username }, res) => {
       });
       response.entries = Object.values(entriesObj);
       logger.debug(`Merged data: '${JSON.stringify(response.entries)}'`);
-    }
-
-    const [{ now, voteStart, voteEnd }] = await getVoteDates(id);
-    if (voteStart && voteEnd) {
-      response.isContestMode = isBefore(now, voteEnd);
-      response.voteStart = voteStart;
-      response.voteEnd = voteEnd;
     }
 
     if (response.isContestMode && !winnersThreadId) {

@@ -11,7 +11,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function SubmissionButton({
+function SpinnerButton({
   children, color, onClick, submitting, variant,
 }) {
   const classes = useStyles();
@@ -23,7 +23,7 @@ function SubmissionButton({
   );
 }
 
-SubmissionButton.propTypes = {
+SpinnerButton.propTypes = {
   children: PropTypes.node.isRequired,
   color: types.color,
   onClick: PropTypes.func.isRequired,
@@ -31,10 +31,10 @@ SubmissionButton.propTypes = {
   variant: PropTypes.oneOf(['contained', 'outlined', 'text']),
 };
 
-SubmissionButton.defaultProps = {
+SpinnerButton.defaultProps = {
   color: 'default',
   submitting: false,
   variant: 'text',
 };
 
-export default SubmissionButton;
+export default SpinnerButton;

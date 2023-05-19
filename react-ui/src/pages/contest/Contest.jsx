@@ -56,6 +56,7 @@ import {
   RedditUserAttribution,
   Countdown,
   VotingSlider,
+  SpinnerButton,
 } from '../../components';
 
 import CardImageLink from './CardImageLink';
@@ -219,8 +220,8 @@ function Contest() {
   const [scroll, setScroll] = useScrollState();
 
   const apiPath = `/contests/${contestId}`;
-  const { data: contest } = useSwrData(apiPath, false);
-  const updateCache = useCache(apiPath);
+  const { data: contest, isValidating, mutate } = useSwrData(apiPath, false);
+  const updateCache = useCache(apiPath)[1];
 
   if (contest?.submissionWindowOpen) {
     navigate('/submission', { replace: true });
@@ -246,6 +247,12 @@ function Contest() {
 
   useEffect(() => {
     if (!contest.name) {
+      return;
+    }
+
+    if (contest.votingWindowOpen === false) {
+      updateCache(null);
+      setLoaded(true);
       return;
     }
 
@@ -403,12 +410,12 @@ function Contest() {
     subtext,
     validRedditId,
     voteEnd,
+    votingWindowOpen,
     winners,
     winnersThreadId,
   } = contest;
   const voteEndDate = new Date(voteEnd);
 
-  // TODO: Handle isFuture(voteStart)
   return (
     <PageWithDrawer
       handleClose={() => {
@@ -514,6 +521,24 @@ function Contest() {
           <Typography className={classes.heading} variant={headingVariant} component="h1">
             {name}
           </Typography>
+          {votingWindowOpen === false && (
+            <>
+              <Box marginBottom={2}>
+                We are working on getting the contest ready! Please check again soon.
+              </Box>
+              <SpinnerButton
+                color="primary"
+                disabled={isValidating}
+                onClick={() => {
+                  mutate();
+                }}
+                submitting={isValidating}
+                variant="contained"
+              >
+                Refresh
+              </SpinnerButton>
+            </>
+          )}
           {isContestMode && subtext && (
             <Box marginBottom={3}>
               <Typography component="div" variant="subtitle1">
