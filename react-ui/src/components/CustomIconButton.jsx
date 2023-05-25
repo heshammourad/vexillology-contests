@@ -1,3 +1,7 @@
+/**
+ * Clickable icons for both internal and external links
+ */
+
 import IconButton from '@material-ui/core/IconButton';
 import PropTypes from 'prop-types';
 

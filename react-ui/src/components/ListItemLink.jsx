@@ -1,3 +1,7 @@
+/**
+ * Row on vertically stacked list
+ */
+
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import PropTypes from 'prop-types';
@@ -37,7 +41,7 @@ ListItemLink.propTypes = {
 
 ListItemLink.defaultProps = {
   className: null,
-  onClick: () => {},
+  onClick: () => { },
   state: {},
 };
 

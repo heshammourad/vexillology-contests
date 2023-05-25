@@ -1,3 +1,9 @@
+/**
+ * User submission portal
+ * ??? no useEffect errors?
+ * ??? should try to devise HTML-styled prompts
+ */
+
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Container from '@material-ui/core/Container';

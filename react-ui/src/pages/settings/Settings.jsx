@@ -1,3 +1,7 @@
+/**
+ * Site-wide settings
+ */
+
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { useLocation } from 'react-router-dom';

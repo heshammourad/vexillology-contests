@@ -1,3 +1,9 @@
+/**
+ * Manage HTML head and metadata
+ * @returns {object} HTML tags
+ * see https://github.com/nfl/react-helmet
+ */
+
 import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation } from 'react-router-dom';

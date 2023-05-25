@@ -1,3 +1,9 @@
+/**
+ * Manages display settings
+ * @param density Controls size of images
+ * @param isInfoOpen Information drawer for entry
+ */
+
 import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useEffect } from 'react';
@@ -17,7 +23,6 @@ const useSettingsState = () => {
     if (isThemeLoaded) {
       setSettings({
         density: 'default',
-        isHideTitles: false,
         isInfoOpen,
         ...settings,
       });

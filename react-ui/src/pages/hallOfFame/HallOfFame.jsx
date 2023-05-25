@@ -1,3 +1,8 @@
+/**
+ * Top entry from each contest
+ * Horizontal year scroll, vertical entry scroll
+ */
+
 import Paper from '@material-ui/core/Paper';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
@@ -100,10 +105,10 @@ function HallOfFame() {
     setSelectedYear(newValue);
     animateScroll.scrollTo(
       document.getElementById(`hofc-${groups[newValue][0].date}`).getBoundingClientRect().top
-        + window.scrollY
-        - getToolbarHeight()
-        - tabsHeight
-        - theme.spacing(3) / 2,
+      + window.scrollY
+      - getToolbarHeight()
+      - tabsHeight
+      - theme.spacing(3) / 2,
       {
         duration: 650,
         delay: 0,

@@ -1,3 +1,8 @@
+/**
+ * Standardize state for each field (error, focus, touch, value)
+ * @returns [state, setState, resetState]
+ */
+
 import { useState } from 'react';
 
 const generateInitialState = (fields) => fields.reduce((acc, cur) => {

@@ -1,3 +1,7 @@
+/**
+ * Respond to Reddit authorize API with error message (if failed) or navigation
+ */
+
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';

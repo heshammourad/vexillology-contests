@@ -1,3 +1,9 @@
+/**
+ * Multi-instance, multi-tab/browser shared and persistent state
+ * Tracking redditLogInDialogOpen, snackbar, and votingDisabled
+ * @returns {object} [state, setState]
+ */
+
 import createPersistedState from 'use-persisted-state';
 
 const usePersistedSettings = createPersistedState('votingComponents');

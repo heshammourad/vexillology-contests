@@ -1,3 +1,7 @@
+/**
+ * Setting Snackbar state (openTimestamp and type)
+ */
+
 import useComponentsState from './useComponentsState';
 
 const useSnackbarState = () => {

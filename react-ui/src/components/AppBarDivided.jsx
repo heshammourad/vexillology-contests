@@ -1,3 +1,9 @@
+/**
+ * App header
+ * Typically called through ./Header.jsx
+ * see https://mui.com/material-ui/react-app-bar/
+ */
+
 import AppBar from '@material-ui/core/AppBar';
 import Box from '@material-ui/core/Box';
 import Toolbar from '@material-ui/core/Toolbar';

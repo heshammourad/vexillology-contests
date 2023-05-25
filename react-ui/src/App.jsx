@@ -1,3 +1,7 @@
+/**
+ * Mod-only approval of submitted content
+ */
+
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import {

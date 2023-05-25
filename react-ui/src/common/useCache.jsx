@@ -1,3 +1,7 @@
+/**
+ * Manage local cache to all data
+ */
+
 import addMinutes from 'date-fns/addMinutes';
 import isFuture from 'date-fns/isFuture';
 import createPersistedState from 'use-persisted-state';

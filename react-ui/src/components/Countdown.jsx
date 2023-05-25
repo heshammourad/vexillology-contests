@@ -1,3 +1,8 @@
+/**
+ * Time remaining to submit or vote
+ * Displayed in header
+ */
+
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
@@ -168,7 +173,7 @@ Countdown.propTypes = {
 
 Countdown.defaultProps = {
   fontSize: 'medium',
-  handleExpiry: () => {},
+  handleExpiry: () => { },
   handleReload: () => {
     window.location.reload();
   },

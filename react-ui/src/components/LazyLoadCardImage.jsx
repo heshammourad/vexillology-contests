@@ -1,3 +1,7 @@
+/**
+ * Only load image when in viewport
+ */
+
 import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';

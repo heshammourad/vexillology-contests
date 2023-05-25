@@ -1,3 +1,7 @@
+/**
+ * Row on vertically stacked menu list
+ */
+
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -39,7 +43,7 @@ MenuItemLink.propTypes = {
 
 MenuItemLink.defaultProps = {
   Icon: null,
-  onClick: () => {},
+  onClick: () => { },
   state: {},
 };
 

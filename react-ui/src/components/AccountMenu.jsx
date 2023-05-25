@@ -1,3 +1,8 @@
+/**
+ * User account
+ * Settings and log out (if moderator: submission review)
+ */
+
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import Divider from '@material-ui/core/Divider';
 import Grow from '@material-ui/core/Grow';

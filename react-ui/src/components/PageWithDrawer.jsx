@@ -1,3 +1,13 @@
+/**
+ * Wrapper to add sliding drawer
+ * @param appBar Header
+ * @param children Content to display as main page
+ * @param className
+ * @param drawer Content to display within drawer
+ * @param handleClose
+ * @param isOpen
+ */
+
 import Drawer from '@material-ui/core/Drawer';
 import IconButton from '@material-ui/core/IconButton';
 import Toolbar from '@material-ui/core/Toolbar';

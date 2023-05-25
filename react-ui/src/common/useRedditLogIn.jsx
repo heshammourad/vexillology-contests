@@ -1,3 +1,7 @@
+/**
+ * Call Reddit Authorize API
+ */
+
 import { nanoid } from 'nanoid';
 import { useLocation } from 'react-router-dom';
 

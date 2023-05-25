@@ -1,3 +1,8 @@
+/**
+ * Small selectable bubble
+ * Checkmark and filled if selected
+ */
+
 import Chip from '@material-ui/core/Chip';
 import CheckIcon from '@material-ui/icons/Check';
 import PropTypes from 'prop-types';

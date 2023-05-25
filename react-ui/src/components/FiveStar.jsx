@@ -1,3 +1,7 @@
+/**
+ * Display user rating with star symbols
+ */
+
 import { makeStyles } from '@material-ui/core/styles';
 import StarIcon from '@material-ui/icons/Star';
 import StarBorderIcon from '@material-ui/icons/StarBorder';

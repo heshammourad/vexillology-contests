@@ -1,3 +1,7 @@
+/**
+ * Voting and winners
+ */
+
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
@@ -477,7 +481,7 @@ function Contest() {
                   dense
                   subheader={
                     <ListSubheader className={classes.listSubheader}>Density</ListSubheader>
-                    }
+                  }
                 >
                   <RadioGroup
                     aria-label="density"
@@ -564,7 +568,7 @@ function Contest() {
                         className={clsx(
                           classes.categoryChip,
                           categoryLabelClasses[
-                            `label${categories.indexOf(value) % LABEL_COLORS.length}`
+                          `label${categories.indexOf(value) % LABEL_COLORS.length}`
                           ],
                         )}
                         key={value}
