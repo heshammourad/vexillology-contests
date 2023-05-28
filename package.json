@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "App to view and vote on reddit /r/vexillology contest entries",
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   },
   "scripts": {
     "start": "node server",
