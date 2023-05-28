@@ -292,8 +292,6 @@ exports.get = async ({ params: { id }, username }, res) => {
         return;
       }
 
-      const votingOver = isPast(voteEnd);
-      response.votingWindowOpen = !votingOver;
       response.entries = await db.select(
         `SELECT
            ce.category,
@@ -302,7 +300,7 @@ exports.get = async ({ params: { id }, username }, res) => {
            e.id,
            '/i/' || e.id || '.png' AS image_path,
            e.name,
-           ${votingOver ? 'e.user' : ''},
+           ${isPast(voteEnd) ? 'e.user' : ''},
            e.width
          FROM contest_entries ce, entries e
          WHERE
