@@ -1,4 +1,4 @@
-const { isBefore, isFuture } = require('date-fns');
+const { isBefore, isFuture, isPast } = require('date-fns');
 const keyBy = require('lodash/keyBy');
 const partition = require('lodash/partition');
 const shuffle = require('lodash/shuffle');
@@ -292,15 +292,17 @@ exports.get = async ({ params: { id }, username }, res) => {
         return;
       }
 
-      response.votingWindowOpen = isFuture(voteEnd);
+      const votingOver = isPast(voteEnd);
+      response.votingWindowOpen = !votingOver;
       response.entries = await db.select(
         `SELECT
            ce.category,
            e.description,
+           e.height,
            e.id,
            '/i/' || e.id || '.png' AS image_path,
            e.name,
-           e.height,
+           ${votingOver ? 'e.user' : ''},
            e.width
          FROM contest_entries ce, entries e
          WHERE
