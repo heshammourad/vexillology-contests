@@ -292,7 +292,7 @@ exports.get = async ({ params: { id }, username }, res) => {
         return;
       }
 
-      response.votingWindowOpen = true;
+      response.votingWindowOpen = isFuture(voteEnd);
       response.entries = await db.select(
         `SELECT
            ce.category,
@@ -364,8 +364,8 @@ exports.get = async ({ params: { id }, username }, res) => {
     } else if (localVoting) {
       const voteData = await db.select(
         `SELECT entry_id, rank, category_rank, average
-         FROM contests_summary
-         WHERE contest_id = $1`,
+         FROM contests_summary cs, entries e
+         WHERE cs.entry_id = e.id AND e.submission_status = 'approved' AND contest_id = $1`,
         [id],
       );
       const map = new Map();
@@ -379,9 +379,10 @@ exports.get = async ({ params: { id }, username }, res) => {
         });
       });
       response.entries.forEach((entry) => {
-        map.set(entry.imgurId, {
+        const id = entry.imgurId ?? entry.id;
+        map.set(id, {
           ...entry,
-          ...map.get(entry.imgurId),
+          ...map.get(id),
         });
       });
       response.entries = Array.from(map.values()).sort((a, b) => a.rank - b.rank);
