@@ -1,3 +1,10 @@
+/**
+ * @exports del
+ * @exports insert
+ * @exports select
+ * @exports update
+ */
+
 const { parse } = require('pg-connection-string');
 const pgp = require('pg-promise')();
 

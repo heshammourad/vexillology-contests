@@ -1,3 +1,9 @@
+/**
+ * Get contest detail
+ * FROM FIREBASE: results, voting dates,
+ * FROM REDDIT: 
+ */
+
 const { isBefore, isFuture } = require('date-fns');
 const keyBy = require('lodash/keyBy');
 const partition = require('lodash/partition');
@@ -127,6 +133,7 @@ exports.get = async ({ params: { id }, username }, res) => {
 
       const contestEntriesData = [];
       if (winnersThreadId) {
+        // Top 20
         const contestWinners = imagesData.filter(
           (image) => image.rank && image.rank <= LAST_WINNER_RANK,
         );

@@ -1,3 +1,14 @@
+/**
+ * Access Reddit user and post data
+ * 
+ * @exports getContest @returns {entries, isContestMode}
+ * @exports getUser
+ * @exports getWinners
+ * @exports isModerator
+ * @exports retrieveAccessToken
+ * @exports revokeRefreshToken
+ */
+
 const axios = require('axios');
 const Snoowrap = require('snoowrap');
 
@@ -31,6 +42,7 @@ redditApi.interceptors.response.use((response) => {
 
 const userAgent = 'node:com.vexillologycontests:v0.1.0';
 
+// ??? fix hardcode
 const snoowrap = new Snoowrap({
   userAgent,
   clientId: REDDIT_CLIENT_ID,
@@ -39,6 +51,10 @@ const snoowrap = new Snoowrap({
   password: REDDIT_PASSWORD,
 });
 
+/**
+ * @param {object} [auth] user auth
+ * @returns auth ? user-populated snoowrap : default snoowrap
+ */
 const getSnoowrap = (auth = {}) => {
   const accessToken = auth.accessToken || auth.accesstoken || auth.access_token;
   const refreshToken = auth.refreshToken || auth.refreshtoken || auth.refresh_token;
@@ -56,8 +72,15 @@ const getSnoowrap = (auth = {}) => {
   });
 };
 
+/**
+ * Fetch contest from database (or legacy reddit posts)
+ * @param {*} submissionId unique ID of reddit post
+ * @returns 
+ */
 exports.getContest = async (submissionId) => {
   logger.debug(`Getting contest submission: '${submissionId}`);
+
+  // getSubmission refers to a post, not a user submission
   const submission = await getSnoowrap().getSubmission(submissionId);
   const isContestMode = await submission.contest_mode;
   const entries = await submission.comments.reduce(
@@ -90,6 +113,10 @@ exports.getContest = async (submissionId) => {
   return contest;
 };
 
+/**
+ * @param {object} auth {accessToken, refreshToken}
+ * @returns name
+ */
 exports.getUser = async (auth) => {
   logger.debug('Getting username');
   const { name } = await getSnoowrap(auth).getMe();

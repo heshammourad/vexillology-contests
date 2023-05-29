@@ -1,3 +1,10 @@
+/**
+ * @exports getCategories
+ * @exports getCurrentContest
+ * @exports getCurrentContestSubmissions
+ * @exports getVoteDates
+ */
+
 const db = require('.');
 
 exports.getCategories = async (contestId) => {

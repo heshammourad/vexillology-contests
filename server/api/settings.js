@@ -1,3 +1,7 @@
+/**
+ * User settings saved in database (contest_reminders, username)
+ */
+
 const db = require('../db');
 const { createLogger } = require('../logger');
 

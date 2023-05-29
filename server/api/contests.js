@@ -1,3 +1,7 @@
+/**
+ * Fetch from firebase all contests date, id, name, and year_end
+ */
+
 const db = require('../db');
 const { createLogger } = require('../logger');
 

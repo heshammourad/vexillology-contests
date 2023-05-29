@@ -1,4 +1,6 @@
-# Frontend README
+# Frontend 
+
+## LINKS
 
 [react-ui folder](/react-ui/)
 
@@ -10,5 +12,6 @@
 
 Theme can be found at [pages/App.jsx](/react-ui/pages/App.jsx), along with the base Router
 
-## Packages
-- SWR and useSWR automatically manage data fetching and component updates (! only call as useSwrData)
+## PACKAGES
+
+- [SWR](https://github.com/vercel/swr) and useSWR automatically manage data fetching and component updates (! only call as useSwrData)

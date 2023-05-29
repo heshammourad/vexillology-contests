@@ -1,3 +1,8 @@
+/**
+ * Upload image to firebase
+ * Requires custom token, created by server/firebase 
+ */
+
 /* eslint-disable import/prefer-default-export */
 import { initializeApp } from 'firebase/app';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';

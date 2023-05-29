@@ -1,3 +1,7 @@
+/**
+ * Log out of Reddit
+ */
+
 const { createLogger } = require('../logger');
 const reddit = require('../reddit');
 

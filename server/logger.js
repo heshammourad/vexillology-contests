@@ -1,3 +1,7 @@
+/**
+ * Output logs to Node.js console
+ */
+
 const winston = require('winston');
 
 const { format } = winston;

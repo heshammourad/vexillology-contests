@@ -1,3 +1,9 @@
+/**
+ * Common firebase functions ???
+ * @exports getDownloadUrl  entry image URL from firebase storage
+ * @exports getToken create auth token for access to Firebase Storage
+ */
+
 const admin = require('firebase-admin');
 const { cert } = require('firebase-admin/app');
 const { getAuth } = require('firebase-admin/auth');
