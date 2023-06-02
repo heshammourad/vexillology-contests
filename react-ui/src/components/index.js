@@ -29,5 +29,6 @@ export { default as ProtectedRoute } from './ProtectedRoute';
 export { default as RedditLogInDialog } from './RedditLogInDialog';
 export { default as RedditUserAttribution } from './RedditUserAttribution';
 export { default as SpinnerButton } from './SpinnerButton';
+export { default as SubmissionsTable } from './SubmissionsTable';
 export { default as TabPanel } from './TabPanel';
 export { default as VotingSlider } from './VotingSlider';

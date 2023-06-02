@@ -1,5 +1,8 @@
+/**
+ * @file Custom or reusable prop types to extend the prop-types package.
+ */
 import {
-  bool, node, oneOf, oneOfType, shape, string,
+  bool, node, number, oneOf, oneOfType, shape, string,
 } from 'prop-types';
 
 const color = oneOf(['default', 'inherit', 'primary', 'secondary', 'transparent']);
@@ -31,6 +34,18 @@ export const defaultProps = {
 const types = {
   AppBar: shape({ ...objects.AppBar }),
   color,
+  submission: shape({
+    category: string,
+    description: string,
+    id: string,
+    imagePath: string,
+    modifiedBy: string,
+    name: string,
+    rejectionReason: string,
+    submissionStatus: oneOf(['approved', 'pending', 'rejected']),
+    submissionTime: string,
+    user: string,
+  }),
   to: oneOfType([
     shape({
       pathname: string,
@@ -38,6 +53,10 @@ const types = {
     }),
     string,
   ]),
+  userBreakdown: shape({
+    approved: number,
+    submitted: number,
+  }),
 };
 
 export default types;

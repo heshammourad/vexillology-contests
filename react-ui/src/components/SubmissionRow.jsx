@@ -22,12 +22,15 @@ import isToday from 'date-fns/isToday';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import { markdown } from 'snudown-js';
-import useSWRMutation from 'swr/mutation';
 
-import { putData } from '../../api';
-import { useAuthState, useFormState, useSnackbarState } from '../../common';
-import snackbarTypes from '../../common/snackbarTypes';
-import { HtmlWrapper, RedditUserAttribution, SpinnerButton } from '../../components';
+import { putData } from '../api';
+import { useFormState, useSnackbarState, useSwrMutation } from '../common';
+import snackbarTypes from '../common/snackbarTypes';
+import types from '../common/types';
+
+import HtmlWrapper from './HtmlWrapper';
+import RedditUserAttribution from './RedditUserAttribution';
+import SpinnerButton from './SpinnerButton';
 
 const API_PATH = '/mod/reviewSubmissions';
 
@@ -183,7 +186,33 @@ const updateSubmissions = (currentData, response) => {
   };
 };
 
-function Row({
+/**
+ * A table row containing information about a user submission for a contest. Used both by users to
+ * see their own submissions, and by moderators to review submissions.
+ *
+ * @param props
+ * @param {boolean} props.moderator - Whether to display to a moderator or a regular user. Affects
+ *  whether moderator controls are displayed.
+ * @param {string} [props.submission.category]
+ * @param {string} props.submission.description
+ * @param {id} props.submission.id
+ * @param {string} props.submission.imagePath - URL path of the submission image
+ * @param {string} [props.submission.modifiedBy] - The moderator who last modified the submission
+ *  status.
+ * @param {string} props.submission.name
+ * @param {string} [props.submission.rejectionReason] - The reason provided by the moderator when
+ *  setting the status to rejected.
+ * @param {string} [props.submission.submissionStatus] - One of `pending`, `approved`, or
+ *  `rejected`.
+ * @param {string} [props.submission.submissionTime]
+ * @param {string} [props.submission.user] - Username of the submitter.
+ * @param {number} [props.userBreakdown.approved] - Number of approved entries by the submitting
+ *  user.
+ * @param {number} [props.userBreakdown.submitted] - Number of submitted entries by the submitting
+ *  user.
+ */
+function SubmissionRow({
+  moderator,
   submission: {
     category,
     description,
@@ -198,11 +227,7 @@ function Row({
   },
   userBreakdown: { approved, submitted },
 }) {
-  const [{ accessToken, refreshToken }] = useAuthState();
-  const authTokens = { accessToken, refreshToken };
-
-  // eslint-disable-next-line max-len
-  const { isMutating, trigger } = useSWRMutation([API_PATH, authTokens], (_, { arg }) => putData(API_PATH, arg, authTokens));
+  const { isMutating, trigger } = useSwrMutation(API_PATH, putData);
   const [open, setOpen] = useState(false);
   const [action, setAction] = useState(null);
   const [formState, updateFormState, resetFormState] = useFormState(['reason']);
@@ -221,6 +246,7 @@ function Row({
   }, [rejectionReason]);
 
   const actionRejected = action === 'rejected';
+  const submissionRejected = submissionStatus === 'rejected';
 
   const validateForm = (value, forceValidate = false) => {
     const actualValue = value ?? formState.reason.value;
@@ -294,12 +320,14 @@ function Row({
           {category}
         </div>
       )}
-      <div>
-        <Typography component="div" variant="subtitle2">
-          Username
-        </Typography>
-        {redditUserAttribution}
-      </div>
+      {moderator && (
+        <div>
+          <Typography component="div" variant="subtitle2">
+            Username
+          </Typography>
+          {redditUserAttribution}
+        </div>
+      )}
       <div>
         <Typography component="div" variant="subtitle2">
           Description
@@ -308,6 +336,14 @@ function Row({
           <HtmlWrapper html={markdown(description)} />
         </div>
       </div>
+      {!moderator && submissionRejected && (
+        <div>
+          <Typography component="div" variant="subtitle2">
+            Rejection Reason
+          </Typography>
+          {formState.reason.value}
+        </div>
+      )}
     </>
   );
 
@@ -345,6 +381,9 @@ function Row({
     return message ? <Alert severity={severity}>{message}</Alert> : null;
   };
 
+  const mdGrid = moderator ? 4 : 6;
+  const dropFields = moderator && isSmBreakpoint;
+
   return (
     <>
       <TableRow className={classes.mainRow}>
@@ -354,7 +393,7 @@ function Row({
           </Typography>
         </TableCell>
         <TableCell className={classes.usernameCell}>
-          {!open && isMdUp && redditUserAttribution}
+          {moderator && !open && isMdUp && redditUserAttribution}
         </TableCell>
         <TableCell align="center" className={classes.previewImage}>
           {isSmUp && (
@@ -383,70 +422,72 @@ function Row({
         <TableCell className={classes.expandedTableRow} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit className={classes.expandedRow}>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid item xs={12} sm={6} md={mdGrid}>
                 <img className={classes.expandedImage} alt="" src={imagePath} />
-                {isSmBreakpoint && fields}
+                {dropFields && fields}
               </Grid>
-              {!isSmBreakpoint && (
-                <Grid item xs={12} md={4} className={classes.fields}>
+              {!dropFields && (
+                <Grid item xs={12} sm={6} md={mdGrid} className={classes.fields}>
                   {fields}
                 </Grid>
               )}
-              <Grid item xs={12} sm={6} md={4} className={classes.actions}>
-                <ToggleButtonGroup
-                  aria-label="review action"
-                  exclusive
-                  onChange={handleActionChange}
-                  value={action}
-                >
-                  {submissionStatus !== 'approved' && (
-                    <EntryActionButton aria-label="approve entry" value="approved">
-                      <CheckIcon fontSize="small" />
-                      &nbsp;Approve
-                    </EntryActionButton>
+              {moderator && (
+                <Grid item xs={12} sm={6} md={4} className={classes.actions}>
+                  <ToggleButtonGroup
+                    aria-label="review action"
+                    exclusive
+                    onChange={handleActionChange}
+                    value={action}
+                  >
+                    {submissionStatus !== 'approved' && (
+                      <EntryActionButton aria-label="approve entry" value="approved">
+                        <CheckIcon fontSize="small" />
+                        &nbsp;Approve
+                      </EntryActionButton>
+                    )}
+                    {getNonPendingEntryActionButton()}
+                    {submissionStatus !== 'rejected' && (
+                      <EntryActionButton aria-label="reject entry" value="rejected">
+                        <CloseIcon fontSize="small" />
+                        &nbsp;Reject
+                      </EntryActionButton>
+                    )}
+                  </ToggleButtonGroup>
+                  {modifiedBy && (
+                    <Alert severity="info">
+                      {'Set to '}
+                      <span className={classes.submissionStatus}>{submissionStatus}</span>
+                      {' by '}
+                      <span className={classes.modifiedBy}>{modifiedBy}</span>
+                    </Alert>
                   )}
-                  {getNonPendingEntryActionButton()}
-                  {submissionStatus !== 'rejected' && (
-                    <EntryActionButton aria-label="reject entry" value="rejected">
-                      <CloseIcon fontSize="small" />
-                      &nbsp;Reject
-                    </EntryActionButton>
-                  )}
-                </ToggleButtonGroup>
-                {modifiedBy && (
-                  <Alert severity="info">
-                    {'Set to '}
-                    <span className={classes.submissionStatus}>{submissionStatus}</span>
-                    {' by '}
-                    <span className={classes.modifiedBy}>{modifiedBy}</span>
-                  </Alert>
-                )}
-                <TextField
-                  id="reason"
-                  name="reason"
-                  color="secondary"
-                  variant="filled"
-                  disabled={!actionRejected}
-                  multiline
-                  maxRows={6}
-                  minRows={6}
-                  label="Reason"
-                  required={actionRejected}
-                  helperText={formState.reason.error}
-                  error={!!formState.reason.error}
-                  value={formState.reason.value ?? ''}
-                  onChange={handleFieldChange}
-                />
-                {getSubmitAlert()}
-                <SpinnerButton
-                  color="primary"
-                  variant="contained"
-                  onClick={submit}
-                  submitting={isMutating}
-                >
-                  Submit
-                </SpinnerButton>
-              </Grid>
+                  <TextField
+                    id="reason"
+                    name="reason"
+                    color="secondary"
+                    variant="filled"
+                    disabled={!actionRejected}
+                    multiline
+                    maxRows={6}
+                    minRows={6}
+                    label="Reason"
+                    required={actionRejected}
+                    helperText={formState.reason.error}
+                    error={!!formState.reason.error}
+                    value={formState.reason.value ?? ''}
+                    onChange={handleFieldChange}
+                  />
+                  {getSubmitAlert()}
+                  <SpinnerButton
+                    color="primary"
+                    variant="contained"
+                    onClick={submit}
+                    submitting={isMutating}
+                  >
+                    Submit
+                  </SpinnerButton>
+                </Grid>
+              )}
             </Grid>
           </Collapse>
         </TableCell>
@@ -455,23 +496,14 @@ function Row({
   );
 }
 
-Row.propTypes = {
-  submission: PropTypes.shape({
-    category: PropTypes.string,
-    description: PropTypes.string,
-    id: PropTypes.string,
-    imagePath: PropTypes.string,
-    modifiedBy: PropTypes.string,
-    name: PropTypes.string,
-    rejectionReason: PropTypes.string,
-    submissionStatus: PropTypes.oneOf(['approved', 'pending', 'rejected']),
-    submissionTime: PropTypes.string,
-    user: PropTypes.string,
-  }).isRequired,
-  userBreakdown: PropTypes.shape({
-    approved: PropTypes.number,
-    submitted: PropTypes.number,
-  }).isRequired,
+SubmissionRow.propTypes = {
+  moderator: PropTypes.bool,
+  submission: types.submission.isRequired,
+  userBreakdown: types.userBreakdown.isRequired,
 };
 
-export default Row;
+SubmissionRow.defaultProps = {
+  moderator: false,
+};
+
+export default SubmissionRow;

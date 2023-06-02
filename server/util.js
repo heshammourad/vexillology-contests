@@ -25,4 +25,11 @@ const camelizeObjectKeys = (obj) => {
   logger.debug(`Camelized to ${JSON.stringify(obj)}`);
 };
 
-module.exports = { camelizeObjectKeys };
+/**
+ * Helper function to generate the image path on the server from the image ID.
+ * @param {string} id - ID of the image.
+ * @returns The image path on the server.
+ */
+const generateImagePath = (id) => `/i/${id}.png`;
+
+module.exports = { camelizeObjectKeys, generateImagePath };

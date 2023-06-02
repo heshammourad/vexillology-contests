@@ -1,10 +1,9 @@
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { useLocation } from 'react-router-dom';
-import useSWRMutation from 'swr/mutation';
 
 import { putData } from '../../api';
-import { useAuthState, useSnackbarState, useSwrData } from '../../common';
+import { useSnackbarState, useSwrMutation } from '../../common';
 import snackbarTypes from '../../common/snackbarTypes';
 import {
   CustomSwitch, Header, PageContainer, ProtectedRoute,
@@ -49,13 +48,8 @@ const useStyles = makeStyles((theme) => {
 });
 
 function Settings() {
+  const { data, isMutating, trigger } = useSwrMutation(URL, putData);
   const { state } = useLocation();
-  const [{ accessToken, isLoggedIn, refreshToken }] = useAuthState();
-  const authTokens = { accessToken, refreshToken };
-
-  const { data } = useSwrData(isLoggedIn ? URL : null);
-  // eslint-disable-next-line max-len
-  const { isMutating, trigger } = useSWRMutation([URL, authTokens], (_, { arg }) => putData(URL, arg, authTokens));
 
   const updateSnackbarState = useSnackbarState();
 

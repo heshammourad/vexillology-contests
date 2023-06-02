@@ -4,14 +4,30 @@ const db = require('../db');
 const { getCategories, getCurrentContest } = require('../db/queries');
 const { getToken } = require('../firebase');
 const { createLogger } = require('../logger');
+const { generateImagePath } = require('../util');
 
 const logger = createLogger('API/SUBMISSION');
 
+/**
+ * Retrieves submissions from the database.
+ *
+ * @param {string} contestId
+ * @param {string} username
+ */
 const getSubmissions = async (contestId, username) => {
   const submissions = await db.select(
-    `SELECT ce.category, e.description, ce.entry_id, e.name, e.submission_status, e.url
-        FROM entries e, contest_entries ce
-        WHERE e.id = ce.entry_id AND ce.contest_id = $1 AND e.user = $2`,
+    `SELECT
+       ce.category,
+       e.description,
+       ce.entry_id,
+       e.name,
+       e.rejection_reason,
+       e.submission_status,
+       e.submission_time,
+       e.url
+     FROM entries e, contest_entries ce
+     WHERE e.id = ce.entry_id AND ce.contest_id = $1 AND e.user = $2
+     ORDER BY e.submission_time`,
     [contestId, username],
   );
   return submissions;
@@ -31,7 +47,12 @@ exports.get = async ({ username }, res) => {
 
     if (username) {
       response.firebaseToken = await getToken(username);
-      response.submissions = await getSubmissions(result.id, username);
+
+      const submissions = await getSubmissions(result.id, username);
+      response.submissions = submissions.map((submission) => ({
+        ...submission,
+        imagePath: generateImagePath(submission.entryId),
+      }));
     }
 
     res.send(response);
