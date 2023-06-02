@@ -380,10 +380,10 @@ exports.get = async ({ params: { id }, username }, res) => {
         });
       });
       response.entries.forEach((entry) => {
-        const id = entry.imgurId ?? entry.id;
-        map.set(id, {
+        const entryId = entry.imgurId ?? entry.id;
+        map.set(entryId, {
           ...entry,
-          ...map.get(id),
+          ...map.get(entryId),
         });
       });
       response.entries = Array.from(map.values()).sort((a, b) => a.rank - b.rank);
