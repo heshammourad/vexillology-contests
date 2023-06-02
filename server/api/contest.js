@@ -11,6 +11,7 @@ const imgur = require('../imgur');
 const { createLogger } = require('../logger');
 const memcache = require('../memcache');
 const reddit = require('../reddit');
+const { generateImagePath } = require('../util');
 
 const { CONTESTS_AVERAGE_FORMAT = '0.000', CONTESTS_CACHE_TIMEOUT = 3600, ENV_LEVEL } = process.env;
 
@@ -238,7 +239,7 @@ exports.get = async ({ params: { id }, username }, res) => {
           } = imageData;
           acc.push({
             ...cur,
-            imagePath: `/i/${imgurId}.png`,
+            imagePath: generateImagePath(imgurId),
             imgurId,
             height,
             rank,

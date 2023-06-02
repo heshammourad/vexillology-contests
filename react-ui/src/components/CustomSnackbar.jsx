@@ -11,6 +11,7 @@ const TYPES = {
   [snackbarTypes.SETTINGS_ERROR]: 'Error submitting setting. Please try again later.',
   [snackbarTypes.SETTINGS_SUCCESS]: 'Setting saved',
   [snackbarTypes.SUBMISSION_ERROR]: 'Error submitting entry. Please try again later.',
+  [snackbarTypes.SUBMISSION_SUCCESS]: 'Entry submitted successfully!',
   [snackbarTypes.VOTING_ERROR]: 'Error submitting vote. Please try again later.',
   [snackbarTypes.VOTING_SUCCESS]: 'Vote submitted!',
 };

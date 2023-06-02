@@ -10,3 +10,4 @@ export { default as useScrollState } from './useScrollState';
 export { default as useSettingsState } from './useSettingsState';
 export { default as useSnackbarState } from './useSnackbarState';
 export { default as useSwrData } from './useSwrData';
+export { default as useSwrMutation } from './useSwrMutation';

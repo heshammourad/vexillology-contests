@@ -5,10 +5,11 @@ import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import useSWRMutation from 'swr/mutation';
 
 import { deleteData, putData } from '../api';
-import { useAuthState, useCache, useSnackbarState } from '../common';
+import {
+  useAuthState, useCache, useSnackbarState, useSwrMutation,
+} from '../common';
 import snackbarTypes from '../common/snackbarTypes';
 
 const MIN_SCORE = 0;
@@ -94,20 +95,14 @@ function VotingSlider({
 }) {
   const { contestId } = useParams();
 
-  const [{ accessToken, isLoggedIn, refreshToken }] = useAuthState();
-  const authTokens = { accessToken, refreshToken };
+  const [{ isLoggedIn }] = useAuthState();
 
   const [isInteractive, setInteractive] = useState(false);
 
   const url = `/contests/${contestId}`;
   const updateCache = useCache(url)[1];
-  const key = [url, authTokens];
-  // eslint-disable-next-line max-len
-  const { isMutating: isMutatingPut, trigger: triggerPut } = useSWRMutation(key, (_, { arg }) => putData(URL, arg, authTokens));
-  const { isMutating: isMutatingDelete, trigger: triggerDelete } = useSWRMutation(
-    key,
-    (_, { arg }) => deleteData(URL, arg, authTokens),
-  );
+  const { isMutating: isMutatingPut, trigger: triggerPut } = useSwrMutation(URL, putData);
+  const { isMutating: isMutatingDelete, trigger: triggerDelete } = useSwrMutation(URL, deleteData);
 
   const updateSnackbarState = useSnackbarState();
 
