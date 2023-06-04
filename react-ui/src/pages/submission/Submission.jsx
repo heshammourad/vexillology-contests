@@ -137,7 +137,7 @@ function Submission() {
       name: contestName,
       prompt,
       submissionEnd,
-      submissions,
+      submissions = [],
     },
     error,
   } = useSwrData(API_PATH);
@@ -599,7 +599,7 @@ function Submission() {
                   </ProtectedRoute>
                 </TabPanel>
                 <TabPanel currentTab={selectedTab} index={2}>
-                  {submissions.length ? (
+                  {submissions?.length ? (
                     <div className={classes.currentSubmissions}>
                       <div>
                         <span>
