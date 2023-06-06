@@ -604,6 +604,7 @@ function Submission() {
                       <div>
                         <span>
                           You have submitted
+                          {' '}
                           {submissions.length}
                           {' '}
                           entries.
