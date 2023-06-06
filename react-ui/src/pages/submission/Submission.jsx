@@ -62,6 +62,7 @@ const useStyles = makeStyles((theme) => ({
   container: {
     marginTop: theme.spacing(2),
   },
+  currentSubmissions: {
     display: 'flex',
     flexDirection: 'column',
     rowGap: theme.spacing(2),
