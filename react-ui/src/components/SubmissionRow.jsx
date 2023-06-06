@@ -152,9 +152,13 @@ const EntryActionButton = withStyles((theme) => ({
 }))(ToggleButton);
 
 const getSubmissionTimeDisplay = (time) => {
-  const date = new Date(time);
-  const formatPattern = isToday(date) ? 'h:mm a' : 'MMM d';
-  return format(date, formatPattern);
+  try {
+    const date = new Date(time);
+    const formatPattern = isToday(date) ? 'h:mm a' : 'MMM d';
+    return format(date, formatPattern);
+  } catch (e) {
+    return null;
+  }
 };
 
 const updateSubmissions = (currentData, response) => {
