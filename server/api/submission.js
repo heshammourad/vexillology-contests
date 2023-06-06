@@ -30,7 +30,10 @@ const getSubmissions = async (contestId, username) => {
      ORDER BY e.submission_time`,
     [contestId, username],
   );
-  return submissions;
+  return submissions.map((submission) => ({
+    ...submission,
+    imagePath: generateImagePath(submission.entryId),
+  }));
 };
 
 exports.get = async ({ username }, res) => {
@@ -47,12 +50,7 @@ exports.get = async ({ username }, res) => {
 
     if (username) {
       response.firebaseToken = await getToken(username);
-
-      const submissions = await getSubmissions(result.id, username);
-      response.submissions = submissions.map((submission) => ({
-        ...submission,
-        imagePath: generateImagePath(submission.entryId),
-      }));
+      response.submissions = await getSubmissions(result.id, username);
     }
 
     res.send(response);
