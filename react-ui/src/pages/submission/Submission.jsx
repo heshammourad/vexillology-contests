@@ -343,7 +343,7 @@ function Submission() {
           updateSnackbarState(snackbarTypes.SUBMISSION_SUCCESS);
           resetFormState();
           setSelectedTab(2);
-          return { ...data, submissions: [...data.submissions, response] };
+          return { ...data, submissions: response };
         },
         onError: () => {
           errorSubmitting = true;
