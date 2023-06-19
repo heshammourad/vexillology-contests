@@ -14,7 +14,7 @@ import snackbarTypes from '../common/snackbarTypes';
 
 const MIN_SCORE = 0;
 const MAX_SCORE = 5;
-const URL = '/votes';
+const VOTES_URL = '/votes';
 
 const ThemedSlider = withStyles((theme) => ({
   root: {
@@ -99,10 +99,18 @@ function VotingSlider({
 
   const [isInteractive, setInteractive] = useState(false);
 
-  const url = `/contests/${contestId}`;
-  const updateCache = useCache(url)[1];
-  const { isMutating: isMutatingPut, trigger: triggerPut } = useSwrMutation(URL, putData);
-  const { isMutating: isMutatingDelete, trigger: triggerDelete } = useSwrMutation(URL, deleteData);
+  const contestUrl = `/contests/${contestId}`;
+  const updateCache = useCache(contestUrl)[1];
+  const { isMutating: isMutatingPut, trigger: triggerPut } = useSwrMutation(
+    contestUrl,
+    putData,
+    VOTES_URL,
+  );
+  const { isMutating: isMutatingDelete, trigger: triggerDelete } = useSwrMutation(
+    contestUrl,
+    deleteData,
+    VOTES_URL,
+  );
 
   const updateSnackbarState = useSnackbarState();
 
