@@ -301,7 +301,7 @@ exports.get = async ({ params: { id }, username }, res) => {
            e.id,
            '/i/' || e.id || '.png' AS image_path,
            e.name,
-           ${isPast(voteEnd) ? 'e.user' : ''},
+           ${isPast(voteEnd) ? 'e.user,' : ''}
            e.width
          FROM contest_entries ce, entries e
          WHERE
