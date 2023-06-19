@@ -341,6 +341,9 @@ exports.get = async ({ params: { id }, username }, res) => {
 
       const entriesObj = keyBy(response.entries, response.entries[0].imgurId ? 'imgurId' : 'id');
       votes.forEach(({ entryId, rating }) => {
+        if (!entriesObj[entryId]) {
+          return;
+        }
         entriesObj[entryId].rating = rating;
       });
       response.entries = Object.values(entriesObj);
