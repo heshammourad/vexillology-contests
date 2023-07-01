@@ -15,6 +15,7 @@ import clsx from 'clsx';
 import isFuture from 'date-fns/isFuture';
 import parseISO from 'date-fns/parseISO';
 import debounce from 'lodash/debounce';
+import pluralize from 'pluralize';
 import { useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -612,9 +613,8 @@ function Submission() {
                       <div>
                         <span>
                           You have submitted
-                          {submissions.length}
-                          {' '}
-                          entries.
+                          {` ${pluralize('entry', submissions.length, true)}`}
+                          .
                         </span>
                         <Button
                           className={classes.submitAnotherButton}
