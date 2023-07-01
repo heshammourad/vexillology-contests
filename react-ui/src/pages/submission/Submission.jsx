@@ -612,8 +612,11 @@ function Submission() {
                     <div className={classes.currentSubmissions}>
                       <div>
                         <span>
-                          You have submitted
-                          {` ${pluralize('entry', submissions.length, true)}`}
+                          You have
+                          {' '}
+                          {submissions.length
+                            ? `submitted ${pluralize('entry', submissions.length, true)}`
+                            : 'not submitted any entries yet'}
                           .
                         </span>
                         <Button
@@ -622,7 +625,8 @@ function Submission() {
                           onClick={switchToSubmissionFormTab}
                           variant="contained"
                         >
-                          Submit Another
+                          Submit
+                          {!!submissions.length && ' Another'}
                         </Button>
                       </div>
                       <div />
