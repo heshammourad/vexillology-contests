@@ -59,6 +59,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+/**
+ * A component that renders Reddit markdown text as HTML.
+ *
+ * @param props
+ * @param {string} props.text - The Reddit markdown text to render as HTML.
+ */
 function RedditMarkdown({ text }) {
   const classes = useStyles();
 

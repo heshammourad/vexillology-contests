@@ -14,6 +14,13 @@ const useStyles = makeStyles({
 
 const parser = new DOMParser();
 
+/**
+ * A component that renders HTML content.
+ *
+ * @param props
+ * @param {string} [props.className] - Additional CSS classes to apply to content.
+ * @param {string} props.html - HTML content to render.
+ */
 function HtmlWrapper({ className, html }) {
   const classes = useStyles();
 
