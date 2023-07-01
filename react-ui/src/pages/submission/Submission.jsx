@@ -159,7 +159,8 @@ function Submission() {
   const updateSnackbarState = useSnackbarState();
   const [selectedTab, setSelectedTab] = useState(state?.defaultTab ?? 0);
   const [fileDimensions, setFileDimensions] = useState(null);
-  const [submittingDisabled, setSubmittingDisabled] = useState(false);
+  const [submissionExpired, setSubmissionExpired] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef(null);
   const fileNameRef = useRef(null);
   const flagPreviewRef = useRef(null);
@@ -295,6 +296,8 @@ function Submission() {
   const submitForm = async () => {
     let errorSubmitting = false;
     try {
+      setSubmitting(true);
+
       Object.keys(formState).forEach((field) => {
         updateFormState(field, 'touch', true);
       });
@@ -354,27 +357,30 @@ function Submission() {
       if (errorSubmitting) {
         updateSnackbarState(snackbarTypes.SUBMISSION_ERROR);
       }
+      setSubmitting(false);
     }
   };
 
   const handleSubmissionExpiry = () => {
-    setSubmittingDisabled(true);
+    setSubmissionExpired(true);
   };
 
   const submissionEndDate = parseISO(submissionEnd);
   const submissionAllowed = isFuture(submissionEndDate);
+  const disableSubmitting = submitting || isMutating;
 
   const classes = useStyles();
-
   return (
     <>
       <Header className={classes.header} position="static" to="/home">
         <div>Contest Submission</div>
-        <Countdown
-          endDate={new Date(submissionEnd)}
-          handleExpiry={handleSubmissionExpiry}
-          variant={countdownTypes.SUBMISSION}
-        />
+        {submissionEnd && (
+          <Countdown
+            endDate={new Date(submissionEnd)}
+            handleExpiry={handleSubmissionExpiry}
+            variant={countdownTypes.SUBMISSION}
+          />
+        )}
       </Header>
       <PageContainer className={classes.container}>
         {error?.status === 404 && (
@@ -407,7 +413,10 @@ function Submission() {
                     showCancel={false}
                   >
                     <form id="submission-form">
-                      <fieldset className={classes.form} disabled={isMutating}>
+                      <fieldset
+                        className={classes.form}
+                        disabled={disableSubmitting || submissionExpired}
+                      >
                         <TextField
                           id="username"
                           variant="filled"
@@ -586,9 +595,9 @@ function Submission() {
                         </FormControl>
                         <SpinnerButton
                           color="primary"
-                          disabled={submittingDisabled}
+                          disabled={submissionExpired}
                           onClick={submitForm}
-                          submitting={isMutating}
+                          submitting={disableSubmitting}
                           variant="contained"
                         >
                           Submit
