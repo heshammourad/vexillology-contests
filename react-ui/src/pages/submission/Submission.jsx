@@ -15,6 +15,7 @@ import clsx from 'clsx';
 import isFuture from 'date-fns/isFuture';
 import parseISO from 'date-fns/parseISO';
 import debounce from 'lodash/debounce';
+import pluralize from 'pluralize';
 import { useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -611,10 +612,12 @@ function Submission() {
                     <div className={classes.currentSubmissions}>
                       <div>
                         <span>
-                          You have submitted
-                          {submissions.length}
+                          You have
                           {' '}
-                          entries.
+                          {submissions.length
+                            ? `submitted ${pluralize('entry', submissions.length, true)}`
+                            : 'not submitted any entries yet'}
+                          .
                         </span>
                         <Button
                           className={classes.submitAnotherButton}
@@ -622,7 +625,8 @@ function Submission() {
                           onClick={switchToSubmissionFormTab}
                           variant="contained"
                         >
-                          Submit Another
+                          Submit
+                          {!!submissions.length && ' Another'}
                         </Button>
                       </div>
                       <div />
