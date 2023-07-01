@@ -27,6 +27,7 @@ export { default as PageContainer } from './PageContainer';
 export { default as PageWithDrawer } from './PageWithDrawer';
 export { default as ProtectedRoute } from './ProtectedRoute';
 export { default as RedditLogInDialog } from './RedditLogInDialog';
+export { default as RedditMarkdown } from './RedditMarkdown';
 export { default as RedditUserAttribution } from './RedditUserAttribution';
 export { default as SpinnerButton } from './SpinnerButton';
 export { default as SubmissionsTable } from './SubmissionsTable';

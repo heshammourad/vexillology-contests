@@ -1,5 +1,6 @@
 /* eslint-disable react/no-danger */
 import { makeStyles } from '@material-ui/core/styles';
+import clsx from 'clsx';
 import PropTypes from 'prop-types';
 
 const useStyles = makeStyles({
@@ -13,7 +14,7 @@ const useStyles = makeStyles({
 
 const parser = new DOMParser();
 
-function HtmlWrapper({ html }) {
+function HtmlWrapper({ className, html }) {
   const classes = useStyles();
 
   const content = parser.parseFromString(html, 'text/html');
@@ -24,14 +25,19 @@ function HtmlWrapper({ html }) {
   });
   return (
     <div
-      className={classes.description}
+      className={clsx(classes.description, className)}
       dangerouslySetInnerHTML={{ __html: content.body.innerHTML }}
     />
   );
 }
 
 HtmlWrapper.propTypes = {
+  className: PropTypes.string,
   html: PropTypes.string,
+};
+
+HtmlWrapper.defaultProps = {
+  className: undefined,
 };
 
 HtmlWrapper.defaultProps = {
