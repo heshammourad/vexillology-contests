@@ -17,7 +17,6 @@ import parseISO from 'date-fns/parseISO';
 import debounce from 'lodash/debounce';
 import { useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { markdown } from 'snudown-js';
 
 import { postData } from '../../api';
 import {
@@ -33,10 +32,10 @@ import snackbarTypes from '../../common/snackbarTypes';
 import {
   Countdown,
   Header,
-  HtmlWrapper,
   InternalLink,
   PageContainer,
   ProtectedRoute,
+  RedditMarkdown,
   SpinnerButton,
   SubmissionsTable,
   TabPanel,
@@ -400,7 +399,7 @@ function Submission() {
                   <Tab id="tab-2" label="Current Submissions" aria-controls="tabpanel-2" />
                 </Tabs>
                 <TabPanel currentTab={selectedTab} index={0}>
-                  {contestId === 'may23' ? <May23 /> : <HtmlWrapper html={markdown(prompt)} />}
+                  {contestId === 'may23' ? <May23 /> : <RedditMarkdown text={prompt} />}
                 </TabPanel>
                 <TabPanel currentTab={selectedTab} index={1}>
                   <ProtectedRoute
@@ -604,7 +603,6 @@ function Submission() {
                       <div>
                         <span>
                           You have submitted
-                          {' '}
                           {submissions.length}
                           {' '}
                           entries.

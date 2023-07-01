@@ -21,14 +21,13 @@ import format from 'date-fns/format';
 import isToday from 'date-fns/isToday';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
-import { markdown } from 'snudown-js';
 
 import { putData } from '../api';
 import { useFormState, useSnackbarState, useSwrMutation } from '../common';
 import snackbarTypes from '../common/snackbarTypes';
 import types from '../common/types';
 
-import HtmlWrapper from './HtmlWrapper';
+import RedditMarkdown from './RedditMarkdown';
 import RedditUserAttribution from './RedditUserAttribution';
 import SpinnerButton from './SpinnerButton';
 
@@ -337,7 +336,7 @@ function SubmissionRow({
           Description
         </Typography>
         <div className={classes.description}>
-          <HtmlWrapper html={markdown(description)} />
+          <RedditMarkdown text={description} />
         </div>
       </div>
       {!moderator && submissionRejected && (
