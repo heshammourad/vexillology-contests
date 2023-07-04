@@ -32,6 +32,7 @@ import countdownTypes from '../../common/countdownTypes';
 import snackbarTypes from '../../common/snackbarTypes';
 import {
   Countdown,
+  ExternalLink,
   Header,
   InternalLink,
   PageContainer,
@@ -567,9 +568,21 @@ function Submission() {
                             label={`Description${previewDescription ? ' Preview' : ''}`}
                             required
                             helperText={
-                              formState.description.error
-                              || `This should be a 1-4 sentence description of your flag that explains
-                              any design choices you made`
+                              formState.description.error || (
+                                <div>
+                                  This should be a 1-4 sentence description of your flag that
+                                  explains any design choices you made. You can use
+                                  {' '}
+                                  <ExternalLink
+                                    color="secondary"
+                                    href="https://www.reddit.com/wiki/markdown"
+                                  >
+                                    Reddit Markdown
+                                  </ExternalLink>
+                                  {' '}
+                                  in this field.
+                                </div>
+                              )
                             }
                             error={!!formState.description.error}
                             value={formState.description.value}
