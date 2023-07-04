@@ -195,6 +195,7 @@ function Submission() {
 
   const handleTabChange = (e, newValue) => {
     setSelectedTab(newValue);
+    setPreviewDescription(false);
   };
 
   const switchToSubmissionFormTab = () => {
@@ -325,6 +326,12 @@ function Submission() {
     });
   };
 
+  const resetForm = () => {
+    resetFormState();
+    setFileDimensions(null);
+    setPreviewDescription(false);
+  };
+
   const submitForm = async () => {
     let errorSubmitting = false;
     try {
@@ -375,7 +382,7 @@ function Submission() {
           }
 
           updateSnackbarState(snackbarTypes.SUBMISSION_SUCCESS);
-          resetFormState();
+          resetForm();
           setSelectedTab(2);
           return { ...data, submissions: response.data };
         },
