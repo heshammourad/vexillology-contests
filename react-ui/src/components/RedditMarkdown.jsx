@@ -1,4 +1,5 @@
 import { makeStyles } from '@material-ui/core/styles';
+import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { markdown } from 'snudown-js';
 
@@ -63,16 +64,22 @@ const useStyles = makeStyles((theme) => ({
  * A component that renders Reddit markdown text as HTML.
  *
  * @param props
+ * @param {string} [props.className] - Additional classes to apply.
  * @param {string} props.text - The Reddit markdown text to render as HTML.
  */
-function RedditMarkdown({ text }) {
+function RedditMarkdown({ className, text }) {
   const classes = useStyles();
 
-  return <HtmlWrapper className={classes.markdown} html={markdown(text)} />;
+  return <HtmlWrapper className={clsx(classes.markdown, className)} html={markdown(text)} />;
 }
 
 RedditMarkdown.propTypes = {
+  className: PropTypes.string,
   text: PropTypes.string.isRequired,
+};
+
+RedditMarkdown.defaultProps = {
+  className: undefined,
 };
 
 export default RedditMarkdown;

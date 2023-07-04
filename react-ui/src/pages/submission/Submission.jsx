@@ -67,6 +67,24 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: 'column',
     rowGap: theme.spacing(2),
   },
+  descriptionEntry: {
+    display: 'none',
+  },
+  descriptionField: {
+    width: '100%',
+  },
+  descriptionPreview: {
+    height: 114,
+    margin: '27px 12px 10px',
+    overflowY: 'scroll',
+    position: 'absolute',
+    top: 0,
+    width: 'calc(100% - 24px)',
+    zIndex: 10,
+  },
+  descriptionWrapper: {
+    position: 'relative',
+  },
   file: {
     columnGap: theme.spacing(2),
     display: 'flex',
@@ -118,6 +136,14 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'space-between',
     width: '100%',
   },
+  previewDescription: {
+    '& textarea': {
+      visibility: 'hidden',
+    },
+  },
+  previewDescriptionButton: {
+    alignSelf: 'flex-start',
+  },
   submitAnotherButton: {
     marginLeft: theme.spacing(2),
   },
@@ -160,6 +186,7 @@ function Submission() {
   const updateSnackbarState = useSnackbarState();
   const [selectedTab, setSelectedTab] = useState(state?.defaultTab ?? 0);
   const [fileDimensions, setFileDimensions] = useState(null);
+  const [previewDescription, setPreviewDescription] = useState(false);
   const [submissionExpired, setSubmissionExpired] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef(null);
@@ -282,6 +309,10 @@ function Submission() {
       return;
     }
     setFileDimensions({ height: naturalHeight, width: naturalWidth });
+  };
+
+  const handlePreviewDescriptionClick = () => {
+    setPreviewDescription(!previewDescription);
   };
 
   const getComplianceError = (submit = false) => {
@@ -514,26 +545,44 @@ function Submission() {
                             ))}
                           </TextField>
                         )}
-                        <TextField
-                          id="description"
-                          name="description"
-                          color="secondary"
-                          variant="filled"
-                          multiline
-                          maxRows={6}
-                          minRows={6}
-                          label="Description"
-                          required
-                          helperText={
-                            formState.description.error
-                            || `This should be a 1-4 sentence description of your flag that explains
+                        <div className={classes.descriptionWrapper}>
+                          <TextField
+                            id="description"
+                            name="description"
+                            color="secondary"
+                            variant="filled"
+                            multiline
+                            maxRows={6}
+                            minRows={6}
+                            className={clsx(classes.descriptionField, {
+                              [classes.previewDescription]: previewDescription,
+                            })}
+                            label={`Description${previewDescription ? ' Preview' : ''}`}
+                            required
+                            helperText={
+                              formState.description.error
+                              || `This should be a 1-4 sentence description of your flag that explains
                               any design choices you made`
-                          }
-                          error={!!formState.description.error}
-                          value={formState.description.value}
-                          onBlur={handleFieldBlur}
-                          onChange={handleFieldChange}
-                        />
+                            }
+                            error={!!formState.description.error}
+                            value={formState.description.value}
+                            onBlur={handleFieldBlur}
+                            onChange={handleFieldChange}
+                          />
+                          <RedditMarkdown
+                            className={clsx(classes.descriptionPreview, {
+                              [classes.descriptionEntry]: !previewDescription,
+                            })}
+                            text={formState.description.value}
+                          />
+                        </div>
+                        <Button
+                          className={classes.previewDescriptionButton}
+                          color="secondary"
+                          onClick={handlePreviewDescriptionClick}
+                        >
+                          {previewDescription ? 'Hide Preview' : 'Preview Description'}
+                        </Button>
                         <FormControl
                           required
                           component="fieldset"
