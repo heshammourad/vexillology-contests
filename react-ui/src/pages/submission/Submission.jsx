@@ -76,7 +76,7 @@ const useStyles = makeStyles((theme) => ({
   descriptionPreview: {
     height: 114,
     margin: '27px 12px 10px',
-    overflowY: 'scroll',
+    overflowY: 'auto',
     position: 'absolute',
     top: 0,
     width: 'calc(100% - 24px)',
