@@ -121,7 +121,8 @@ if (!isDev && cluster.isMaster) {
       requireAuthentication,
       checkRequiredFields('description', 'height', 'name', 'url', 'width'),
       submission.post,
-    );
+    )
+    .put(requireAuthentication, checkRequiredFields('id', 'submissionStatus'), submission.put);
   apiRouter
     .route('/votes')
     .all(requireAuthentication, votes.all)
