@@ -3,7 +3,7 @@ import Slider from '@material-ui/core/Slider';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { deleteData, putData } from '../api';
@@ -93,10 +93,9 @@ const updateEntries = (entries, { entryId, rating }) => entries.reduce((acc, cur
 function VotingSlider({
   disabled, entryId, rating, setComponentsState,
 }) {
-  const { contestId } = useParams();
-
   const [{ isLoggedIn }] = useAuthState();
-
+  const { contestId } = useParams();
+  const ratingRef = useRef(rating);
   const [isInteractive, setInteractive] = useState(false);
 
   const contestUrl = `/contests/${contestId}`;
@@ -115,6 +114,10 @@ function VotingSlider({
   const updateSnackbarState = useSnackbarState();
 
   const classes = useStyles();
+
+  useEffect(() => {
+    ratingRef.current = rating;
+  }, [rating]);
 
   useEffect(() => {
     if (isInteractive) {
@@ -149,6 +152,10 @@ function VotingSlider({
   const handleSliderChange = async (event, newValue) => {
     if (!isLoggedIn) {
       setComponentsState({ redditLogInDialogOpen: true });
+      return;
+    }
+
+    if (newValue === ratingRef.current) {
       return;
     }
 
