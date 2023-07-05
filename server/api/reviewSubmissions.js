@@ -45,7 +45,7 @@ const VALID_STATUSES = ['approved', 'pending', 'rejected'];
 exports.put = async ({ body: { id, rejectionReason, status }, username }, res) => {
   try {
     if (!VALID_STATUSES.includes(status)) {
-      res.status(400).send(`Status must be one of: ${VALID_STATUSES.split(', ')}`);
+      res.status(400).send(`Status must be one of: ${VALID_STATUSES.join(', ')}`);
       return;
     }
 

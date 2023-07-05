@@ -90,6 +90,11 @@ function ReviewSubmissions() {
                   onClick={handleChipClick('rejected')}
                   selected={selectedChips.rejected ?? false}
                 />
+                <FilterChip
+                  label="Withdrawn"
+                  onClick={handleChipClick('withdrawn')}
+                  selected={selectedChips.withdrawn ?? false}
+                />
               </div>
               {filteredSubmissions
                 && (filteredSubmissions.length ? (
