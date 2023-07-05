@@ -32,6 +32,7 @@ import countdownTypes from '../../common/countdownTypes';
 import snackbarTypes from '../../common/snackbarTypes';
 import {
   Countdown,
+  Fieldset,
   Header,
   InternalLink,
   PageContainer,
@@ -118,15 +119,6 @@ const useStyles = makeStyles((theme) => ({
     maxHeight: 300,
     maxWidth: 600,
     width: '100%',
-  },
-  form: {
-    border: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    margin: 0,
-    minWidth: 0,
-    padding: 0,
-    rowGap: 16,
   },
   header: {
     alignItems: 'center',
@@ -452,10 +444,7 @@ function Submission() {
                     showCancel={false}
                   >
                     <form id="submission-form">
-                      <fieldset
-                        className={classes.form}
-                        disabled={disableSubmitting || submissionExpired}
-                      >
+                      <Fieldset disabled={disableSubmitting || submissionExpired}>
                         <TextField
                           id="username"
                           variant="filled"
@@ -659,7 +648,7 @@ function Submission() {
                         >
                           Submit
                         </SpinnerButton>
-                      </fieldset>
+                      </Fieldset>
                     </form>
                   </ProtectedRoute>
                 </TabPanel>

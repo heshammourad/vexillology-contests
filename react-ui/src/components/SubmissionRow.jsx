@@ -27,18 +27,14 @@ import { useFormState, useSnackbarState, useSwrMutation } from '../common';
 import snackbarTypes from '../common/snackbarTypes';
 import types from '../common/types';
 
+import Fieldset from './Fieldset';
 import RedditMarkdown from './RedditMarkdown';
 import RedditUserAttribution from './RedditUserAttribution';
 import SpinnerButton from './SpinnerButton';
 
-const API_PATH = '/mod/reviewSubmissions';
-
 const useStyles = makeStyles((theme) => ({
   actions: {
-    display: 'flex',
-    flexDirection: 'column',
     flexShrink: 0,
-    rowGap: theme.spacing(2),
   },
   description: {
     maxHeight: 300,
@@ -137,7 +133,10 @@ const EntryActionButton = withStyles((theme) => ({
     color: theme.palette.primary.main,
     flexBasis: '50%',
     flexGrow: 1,
-    '&.Mui-selected': {
+    '&.Mui-disabled': {
+      borderColor: theme.palette.grey[300],
+    },
+    '&.Mui-selected:not(.Mui-disabled)': {
       backgroundColor: theme.palette.primary.main,
       color: theme.palette.common.white,
       '&:hover': {
@@ -161,21 +160,7 @@ const getSubmissionTimeDisplay = (time) => {
 };
 
 const updateSubmissions = (currentData, response) => {
-  const { submissionStatus, user } = currentData.submissions.find(({ id }) => id === response.id);
-  let difference = 0;
-  if (submissionStatus !== 'approved' && response.submissionStatus === 'approved') {
-    difference = 1;
-  } else if (submissionStatus === 'approved' && response.submissionStatus !== 'approved') {
-    difference = -1;
-  }
-  let { userBreakdown } = currentData;
-  if (difference) {
-    const changedUserBreakdown = userBreakdown[user];
-    const approved = (changedUserBreakdown.approved ?? 0) + difference;
-    userBreakdown = { ...userBreakdown, [user]: { ...changedUserBreakdown, approved } };
-  }
-
-  return {
+  const newData = {
     ...currentData,
     submissions: currentData.submissions.reduce((acc, cur) => {
       if (cur.id !== response.id) {
@@ -185,8 +170,27 @@ const updateSubmissions = (currentData, response) => {
       }
       return acc;
     }, []),
-    userBreakdown,
   };
+
+  if (currentData.userBreakdown) {
+    const { submissionStatus, user } = currentData.submissions.find(({ id }) => id === response.id);
+    let difference = 0;
+    if (submissionStatus !== 'approved' && response.submissionStatus === 'approved') {
+      difference = 1;
+    } else if (submissionStatus === 'approved' && response.submissionStatus !== 'approved') {
+      difference = -1;
+    }
+    let { userBreakdown } = currentData;
+    if (difference) {
+      const changedUserBreakdown = userBreakdown[user];
+      const approved = (changedUserBreakdown.approved ?? 0) + difference;
+      userBreakdown = { ...userBreakdown, [user]: { ...changedUserBreakdown, approved } };
+    }
+
+    newData.userBreakdown = userBreakdown;
+  }
+
+  return newData;
 };
 
 /**
@@ -230,7 +234,14 @@ function SubmissionRow({
   },
   userBreakdown: { approved, submitted },
 }) {
-  const { isMutating, trigger } = useSwrMutation(API_PATH, putData);
+  const { isMutating: isMutatingReview, trigger: triggerReview } = useSwrMutation(
+    '/mod/reviewSubmissions',
+    putData,
+  );
+  const { isMutating: isMutatingUser, trigger: triggerUser } = useSwrMutation(
+    '/submission',
+    putData,
+  );
   const [open, setOpen] = useState(false);
   const [action, setAction] = useState(null);
   const [formState, updateFormState, resetFormState] = useFormState(['reason']);
@@ -250,6 +261,7 @@ function SubmissionRow({
 
   const actionRejected = action === 'rejected';
   const submissionRejected = submissionStatus === 'rejected';
+  const submissionWithdrawn = submissionStatus === 'withdrawn';
 
   const validateForm = (value, forceValidate = false) => {
     const actualValue = value ?? formState.reason.value;
@@ -284,28 +296,35 @@ function SubmissionRow({
     updateSnackbarState(snackbarTypes.REVIEW_SUBMISSION_ERROR);
   };
 
-  const submit = () => {
+  const triggerOptions = {
+    revalidate: false,
+    populateCache: (response, data) => {
+      if (!response) {
+        showError();
+        return data;
+      }
+
+      setOpen(false);
+      updateSnackbarState(snackbarTypes.REVIEW_SUBMISSION_SUCCESS);
+
+      return updateSubmissions(data, response);
+    },
+    onError: showError,
+  };
+
+  const moderatorSubmit = () => {
     const validForm = validateForm(null, true);
     if (!validForm) {
       return;
     }
 
     const body = { id, rejectionReason: formState.reason.value, status: action };
-    trigger(body, {
-      revalidate: false,
-      populateCache: (response, data) => {
-        if (!response) {
-          showError();
-          return data;
-        }
+    triggerReview(body, triggerOptions);
+  };
 
-        setOpen(false);
-        updateSnackbarState(snackbarTypes.REVIEW_SUBMISSION_SUCCESS);
-
-        return updateSubmissions(data, response);
-      },
-      onError: showError,
-    });
+  const userSubmit = () => {
+    const body = { id, submissionStatus: submissionWithdrawn ? 'pending' : 'withdrawn' };
+    triggerUser(body, triggerOptions);
   };
 
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
@@ -384,7 +403,6 @@ function SubmissionRow({
     return message ? <Alert severity={severity}>{message}</Alert> : null;
   };
 
-  const mdGrid = moderator ? 4 : 6;
   const dropFields = moderator && isSmBreakpoint;
 
   return (
@@ -425,72 +443,104 @@ function SubmissionRow({
         <TableCell className={classes.expandedTableRow} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit className={classes.expandedRow}>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={mdGrid}>
+              <Grid item xs={12} sm={6} md={4}>
                 <img className={classes.expandedImage} alt="" src={imagePath} />
                 {dropFields && fields}
               </Grid>
               {!dropFields && (
-                <Grid item xs={12} sm={6} md={mdGrid} className={classes.fields}>
+                <Grid item xs={12} sm={6} md={4} className={classes.fields}>
                   {fields}
                 </Grid>
               )}
-              {moderator && (
-                <Grid item xs={12} sm={6} md={4} className={classes.actions}>
-                  <ToggleButtonGroup
-                    aria-label="review action"
-                    exclusive
-                    onChange={handleActionChange}
-                    value={action}
-                  >
-                    {submissionStatus !== 'approved' && (
-                      <EntryActionButton aria-label="approve entry" value="approved">
-                        <CheckIcon fontSize="small" />
-                        &nbsp;Approve
-                      </EntryActionButton>
-                    )}
-                    {getNonPendingEntryActionButton()}
-                    {submissionStatus !== 'rejected' && (
-                      <EntryActionButton aria-label="reject entry" value="rejected">
-                        <CloseIcon fontSize="small" />
-                        &nbsp;Reject
-                      </EntryActionButton>
-                    )}
-                  </ToggleButtonGroup>
-                  {modifiedBy && (
-                    <Alert severity="info">
-                      {'Set to '}
-                      <span className={classes.submissionStatus}>{submissionStatus}</span>
-                      {' by '}
-                      <span className={classes.modifiedBy}>{modifiedBy}</span>
-                    </Alert>
+              <Grid item xs={12} sm={6} md={4}>
+                <Fieldset className={classes.actions}>
+                  {moderator ? (
+                    <>
+                      <ToggleButtonGroup
+                        aria-label="review action"
+                        exclusive
+                        onChange={handleActionChange}
+                        value={action}
+                      >
+                        {submissionStatus !== 'approved' && (
+                          <EntryActionButton
+                            aria-label="approve entry"
+                            disabled={submissionWithdrawn}
+                            value="approved"
+                          >
+                            <CheckIcon fontSize="small" />
+                            &nbsp;Approve
+                          </EntryActionButton>
+                        )}
+                        {getNonPendingEntryActionButton()}
+                        {submissionStatus !== 'rejected' && (
+                          <EntryActionButton
+                            aria-label="reject entry"
+                            disabled={submissionWithdrawn}
+                            value="rejected"
+                          >
+                            <CloseIcon fontSize="small" />
+                            &nbsp;Reject
+                          </EntryActionButton>
+                        )}
+                      </ToggleButtonGroup>
+                      {modifiedBy && (
+                        <Alert severity="info">
+                          {'Set to '}
+                          <span className={classes.submissionStatus}>{submissionStatus}</span>
+                          {' by '}
+                          <span className={classes.modifiedBy}>{modifiedBy}</span>
+                        </Alert>
+                      )}
+                      <TextField
+                        id="reason"
+                        name="reason"
+                        color="secondary"
+                        variant="filled"
+                        disabled={!actionRejected}
+                        multiline
+                        maxRows={6}
+                        minRows={6}
+                        label="Reason"
+                        required={actionRejected}
+                        helperText={formState.reason.error}
+                        error={!!formState.reason.error}
+                        value={formState.reason.value ?? ''}
+                        onChange={handleFieldChange}
+                      />
+                      {getSubmitAlert()}
+                      <SpinnerButton
+                        color="primary"
+                        variant="contained"
+                        onClick={moderatorSubmit}
+                        disabled={submissionWithdrawn}
+                        submitting={isMutatingReview}
+                      >
+                        Submit
+                      </SpinnerButton>
+                    </>
+                  ) : (
+                    <>
+                      {submissionStatus === 'approved' && (
+                        <Alert severity="warning">
+                          This flag is approved. If you re-submit it later, it will need to be
+                          reviewed again by a moderator.
+                        </Alert>
+                      )}
+                      <SpinnerButton
+                        color="primary"
+                        variant="contained"
+                        onClick={userSubmit}
+                        submitting={isMutatingUser}
+                      >
+                        {submissionWithdrawn ? 'Re-Submit' : 'Withdraw'}
+                        {' '}
+                        Entry
+                      </SpinnerButton>
+                    </>
                   )}
-                  <TextField
-                    id="reason"
-                    name="reason"
-                    color="secondary"
-                    variant="filled"
-                    disabled={!actionRejected}
-                    multiline
-                    maxRows={6}
-                    minRows={6}
-                    label="Reason"
-                    required={actionRejected}
-                    helperText={formState.reason.error}
-                    error={!!formState.reason.error}
-                    value={formState.reason.value ?? ''}
-                    onChange={handleFieldChange}
-                  />
-                  {getSubmitAlert()}
-                  <SpinnerButton
-                    color="primary"
-                    variant="contained"
-                    onClick={submit}
-                    submitting={isMutating}
-                  >
-                    Submit
-                  </SpinnerButton>
-                </Grid>
-              )}
+                </Fieldset>
+              </Grid>
             </Grid>
           </Collapse>
         </TableCell>

@@ -19,7 +19,7 @@ const getSubmissions = async (contestId, username) => {
     `SELECT
        ce.category,
        e.description,
-       ce.entry_id,
+       e.id,
        e.name,
        e.rejection_reason,
        e.submission_status,
@@ -32,7 +32,7 @@ const getSubmissions = async (contestId, username) => {
   );
   return submissions.map((submission) => ({
     ...submission,
-    imagePath: generateImagePath(submission.entryId),
+    imagePath: generateImagePath(submission.id),
   }));
 };
 
@@ -160,8 +160,8 @@ exports.put = async ({ body: { id, submissionStatus }, username }, res) => {
     if (entry.submissionStatus !== submissionStatus) {
       [response] = await db.update(
         'entries',
-        [{ id, submission_status: submissionStatus }],
-        ['?id', { name: 'submission_status', cast: 'submission_status' }],
+        [{ id, modified_by: null, submission_status: submissionStatus }],
+        ['?id', 'modified_by', { name: 'submission_status', cast: 'submission_status' }],
         ['id', 'submission_status'],
       );
     }

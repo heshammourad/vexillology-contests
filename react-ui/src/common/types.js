@@ -42,7 +42,7 @@ const types = {
     modifiedBy: string,
     name: string,
     rejectionReason: string,
-    submissionStatus: oneOf(['approved', 'pending', 'rejected']),
+    submissionStatus: oneOf(['approved', 'pending', 'rejected', 'withdrawn']),
     submissionTime: string,
     user: string,
   }),
