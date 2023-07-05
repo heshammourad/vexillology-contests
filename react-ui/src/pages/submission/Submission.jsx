@@ -32,8 +32,8 @@ import countdownTypes from '../../common/countdownTypes';
 import snackbarTypes from '../../common/snackbarTypes';
 import {
   Countdown,
-  Fieldset,
   ExternalLink,
+  Fieldset,
   Header,
   InternalLink,
   PageContainer,
