@@ -1,6 +1,6 @@
 /**
  * Time remaining to submit or vote
- * Displayed in header
+ * Displayed in header and entry description drawer
  */
 
 import Button from '@material-ui/core/Button';

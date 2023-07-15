@@ -1,6 +1,6 @@
 /**
  * User submission portal
- * ??? no useEffect errors?
+ * ??? Consider useEffect to manage error checking
  * ??? should try to devise HTML-styled prompts
  */
 

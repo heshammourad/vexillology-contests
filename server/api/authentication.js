@@ -1,5 +1,5 @@
 /**
- * @exports processUser ensure user is logged in
+ * @exports processUser adds username and moderator status to request
  * @exports requireAuthentication confirm authentication
  * @exports requireModerator confirm moderator
  */

@@ -1,5 +1,5 @@
 /**
- * Mod-only approval of submitted content
+ * Entry-point into the website. Contains theme and routing info.
  */
 
 import CssBaseline from '@material-ui/core/CssBaseline';

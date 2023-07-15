@@ -1,5 +1,5 @@
 /**
- * Fetch from firebase all contests date, id, name, and year_end
+ * Fetch from database all contests date, id, name, and year_end
  */
 
 const db = require('../db');

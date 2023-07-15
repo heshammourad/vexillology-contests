@@ -1,7 +1,7 @@
 /**
  * Get contest detail
- * FROM FIREBASE: results, voting dates,
- * FROM REDDIT: outdated
+ * FROM DATABASE: results and voting dates
+ * FROM REDDIT: only applied to older contests before migration
  */
 
 const { isBefore, isFuture, isPast } = require('date-fns');

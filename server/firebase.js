@@ -1,5 +1,5 @@
 /**
- * Common firebase functions ???
+ * Common firebase functions
  * @exports getDownloadUrl  entry image URL from firebase storage
  * @exports getToken create auth token for access to Firebase Storage
  */

@@ -10,4 +10,4 @@
 
 ## PACKAGES
 [winston](https://github.com/winstonjs/winston) Saving and displaying logs
-[pg-promise](https://github.com/vitaly-t/pg-promise) ???
+[pg-promise](https://github.com/vitaly-t/pg-promise) Wrapper for simplifying postgres queries

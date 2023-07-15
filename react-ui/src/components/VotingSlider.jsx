@@ -1,5 +1,5 @@
 /**
- * Record user's vote
+ * Record and display user's vote
  */
 
 import Button from '@material-ui/core/Button';
