@@ -17,6 +17,7 @@ const imgur = require('../imgur');
 const { createLogger } = require('../logger');
 const memcache = require('../memcache');
 const reddit = require('../reddit');
+const { generateImagePath } = require('../util');
 
 const { CONTESTS_AVERAGE_FORMAT = '0.000', CONTESTS_CACHE_TIMEOUT = 3600, ENV_LEVEL } = process.env;
 
@@ -245,7 +246,7 @@ exports.get = async ({ params: { id }, username }, res) => {
           } = imageData;
           acc.push({
             ...cur,
-            imagePath: `/i/${imgurId}.png`,
+            imagePath: generateImagePath(imgurId),
             imgurId,
             height,
             rank,
@@ -307,7 +308,7 @@ exports.get = async ({ params: { id }, username }, res) => {
            e.id,
            '/i/' || e.id || '.png' AS image_path,
            e.name,
-           ${isPast(voteEnd) ? 'e.user' : ''},
+           ${isPast(voteEnd) ? 'e.user,' : ''}
            e.width
          FROM contest_entries ce, entries e
          WHERE
@@ -347,6 +348,9 @@ exports.get = async ({ params: { id }, username }, res) => {
 
       const entriesObj = keyBy(response.entries, response.entries[0].imgurId ? 'imgurId' : 'id');
       votes.forEach(({ entryId, rating }) => {
+        if (!entriesObj[entryId]) {
+          return;
+        }
         entriesObj[entryId].rating = rating;
       });
       response.entries = Object.values(entriesObj);
@@ -386,10 +390,10 @@ exports.get = async ({ params: { id }, username }, res) => {
         });
       });
       response.entries.forEach((entry) => {
-        const id = entry.imgurId ?? entry.id;
-        map.set(id, {
+        const entryId = entry.imgurId ?? entry.id;
+        map.set(entryId, {
           ...entry,
-          ...map.get(id),
+          ...map.get(entryId),
         });
       });
       response.entries = Array.from(map.values()).sort((a, b) => a.rank - b.rank);

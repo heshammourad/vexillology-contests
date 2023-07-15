@@ -25,22 +25,20 @@ import format from 'date-fns/format';
 import isToday from 'date-fns/isToday';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
-import { markdown } from 'snudown-js';
-import useSWRMutation from 'swr/mutation';
 
-import { putData } from '../../api';
-import { useAuthState, useFormState, useSnackbarState } from '../../common';
-import snackbarTypes from '../../common/snackbarTypes';
-import { HtmlWrapper, RedditUserAttribution, SpinnerButton } from '../../components';
+import { putData } from '../api';
+import { useFormState, useSnackbarState, useSwrMutation } from '../common';
+import snackbarTypes from '../common/snackbarTypes';
+import types from '../common/types';
 
-const API_PATH = '/mod/reviewSubmissions';
+import Fieldset from './Fieldset';
+import RedditMarkdown from './RedditMarkdown';
+import RedditUserAttribution from './RedditUserAttribution';
+import SpinnerButton from './SpinnerButton';
 
 const useStyles = makeStyles((theme) => ({
   actions: {
-    display: 'flex',
-    flexDirection: 'column',
     flexShrink: 0,
-    rowGap: theme.spacing(2),
   },
   description: {
     maxHeight: 300,
@@ -139,7 +137,10 @@ const EntryActionButton = withStyles((theme) => ({
     color: theme.palette.primary.main,
     flexBasis: '50%',
     flexGrow: 1,
-    '&.Mui-selected': {
+    '&.Mui-disabled': {
+      borderColor: theme.palette.grey[300],
+    },
+    '&.Mui-selected:not(.Mui-disabled)': {
       backgroundColor: theme.palette.primary.main,
       color: theme.palette.common.white,
       '&:hover': {
@@ -153,27 +154,17 @@ const EntryActionButton = withStyles((theme) => ({
 }))(ToggleButton);
 
 const getSubmissionTimeDisplay = (time) => {
-  const date = new Date(time);
-  const formatPattern = isToday(date) ? 'h:mm a' : 'MMM d';
-  return format(date, formatPattern);
+  try {
+    const date = new Date(time);
+    const formatPattern = isToday(date) ? 'h:mm a' : 'MMM d';
+    return format(date, formatPattern);
+  } catch (e) {
+    return null;
+  }
 };
 
 const updateSubmissions = (currentData, response) => {
-  const { submissionStatus, user } = currentData.submissions.find(({ id }) => id === response.id);
-  let difference = 0;
-  if (submissionStatus !== 'approved' && response.submissionStatus === 'approved') {
-    difference = 1;
-  } else if (submissionStatus === 'approved' && response.submissionStatus !== 'approved') {
-    difference = -1;
-  }
-  let { userBreakdown } = currentData;
-  if (difference) {
-    const changedUserBreakdown = userBreakdown[user];
-    const approved = (changedUserBreakdown.approved ?? 0) + difference;
-    userBreakdown = { ...userBreakdown, [user]: { ...changedUserBreakdown, approved } };
-  }
-
-  return {
+  const newData = {
     ...currentData,
     submissions: currentData.submissions.reduce((acc, cur) => {
       if (cur.id !== response.id) {
@@ -183,11 +174,56 @@ const updateSubmissions = (currentData, response) => {
       }
       return acc;
     }, []),
-    userBreakdown,
   };
+
+  if (currentData.userBreakdown) {
+    const { submissionStatus, user } = currentData.submissions.find(({ id }) => id === response.id);
+    let difference = 0;
+    if (submissionStatus !== 'approved' && response.submissionStatus === 'approved') {
+      difference = 1;
+    } else if (submissionStatus === 'approved' && response.submissionStatus !== 'approved') {
+      difference = -1;
+    }
+    let { userBreakdown } = currentData;
+    if (difference) {
+      const changedUserBreakdown = userBreakdown[user];
+      const approved = (changedUserBreakdown.approved ?? 0) + difference;
+      userBreakdown = { ...userBreakdown, [user]: { ...changedUserBreakdown, approved } };
+    }
+
+    newData.userBreakdown = userBreakdown;
+  }
+
+  return newData;
 };
 
-function Row({
+/**
+ * A table row containing information about a user submission for a contest. Used both by users to
+ * see their own submissions, and by moderators to review submissions.
+ *
+ * @param props
+ * @param {boolean} props.moderator - Whether to display to a moderator or a regular user. Affects
+ *  whether moderator controls are displayed.
+ * @param {string} [props.submission.category]
+ * @param {string} props.submission.description
+ * @param {id} props.submission.id
+ * @param {string} props.submission.imagePath - URL path of the submission image
+ * @param {string} [props.submission.modifiedBy] - The moderator who last modified the submission
+ *  status.
+ * @param {string} props.submission.name
+ * @param {string} [props.submission.rejectionReason] - The reason provided by the moderator when
+ *  setting the status to rejected.
+ * @param {string} [props.submission.submissionStatus] - One of `pending`, `approved`, or
+ *  `rejected`.
+ * @param {string} [props.submission.submissionTime]
+ * @param {string} [props.submission.user] - Username of the submitter.
+ * @param {number} [props.userBreakdown.approved] - Number of approved entries by the submitting
+ *  user.
+ * @param {number} [props.userBreakdown.submitted] - Number of submitted entries by the submitting
+ *  user.
+ */
+function SubmissionRow({
+  moderator,
   submission: {
     category,
     description,
@@ -202,11 +238,14 @@ function Row({
   },
   userBreakdown: { approved, submitted },
 }) {
-  const [{ accessToken, refreshToken }] = useAuthState();
-  const authTokens = { accessToken, refreshToken };
-
-  // eslint-disable-next-line max-len
-  const { isMutating, trigger } = useSWRMutation([API_PATH, authTokens], (_, { arg }) => putData(API_PATH, arg, authTokens));
+  const { isMutating: isMutatingReview, trigger: triggerReview } = useSwrMutation(
+    '/mod/reviewSubmissions',
+    putData,
+  );
+  const { isMutating: isMutatingUser, trigger: triggerUser } = useSwrMutation(
+    '/submission',
+    putData,
+  );
   const [open, setOpen] = useState(false);
   const [action, setAction] = useState(null);
   const [formState, updateFormState, resetFormState] = useFormState(['reason']);
@@ -225,6 +264,8 @@ function Row({
   }, [rejectionReason]);
 
   const actionRejected = action === 'rejected';
+  const submissionRejected = submissionStatus === 'rejected';
+  const submissionWithdrawn = submissionStatus === 'withdrawn';
 
   const validateForm = (value, forceValidate = false) => {
     const actualValue = value ?? formState.reason.value;
@@ -259,28 +300,35 @@ function Row({
     updateSnackbarState(snackbarTypes.REVIEW_SUBMISSION_ERROR);
   };
 
-  const submit = () => {
+  const triggerOptions = {
+    revalidate: false,
+    populateCache: (response, data) => {
+      if (!response) {
+        showError();
+        return data;
+      }
+
+      setOpen(false);
+      updateSnackbarState(snackbarTypes.REVIEW_SUBMISSION_SUCCESS);
+
+      return updateSubmissions(data, response);
+    },
+    onError: showError,
+  };
+
+  const moderatorSubmit = () => {
     const validForm = validateForm(null, true);
     if (!validForm) {
       return;
     }
 
     const body = { id, rejectionReason: formState.reason.value, status: action };
-    trigger(body, {
-      revalidate: false,
-      populateCache: (response, data) => {
-        if (!response) {
-          showError();
-          return data;
-        }
+    triggerReview(body, triggerOptions);
+  };
 
-        setOpen(false);
-        updateSnackbarState(snackbarTypes.REVIEW_SUBMISSION_SUCCESS);
-
-        return updateSubmissions(data, response);
-      },
-      onError: showError,
-    });
+  const userSubmit = () => {
+    const body = { id, submissionStatus: submissionWithdrawn ? 'pending' : 'withdrawn' };
+    triggerUser(body, triggerOptions);
   };
 
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
@@ -298,20 +346,30 @@ function Row({
           {category}
         </div>
       )}
-      <div>
-        <Typography component="div" variant="subtitle2">
-          Username
-        </Typography>
-        {redditUserAttribution}
-      </div>
+      {moderator && (
+        <div>
+          <Typography component="div" variant="subtitle2">
+            Username
+          </Typography>
+          {redditUserAttribution}
+        </div>
+      )}
       <div>
         <Typography component="div" variant="subtitle2">
           Description
         </Typography>
         <div className={classes.description}>
-          <HtmlWrapper html={markdown(description)} />
+          <RedditMarkdown text={description} />
         </div>
       </div>
+      {!moderator && submissionRejected && (
+        <div>
+          <Typography component="div" variant="subtitle2">
+            Rejection Reason
+          </Typography>
+          {formState.reason.value}
+        </div>
+      )}
     </>
   );
 
@@ -349,6 +407,8 @@ function Row({
     return message ? <Alert severity={severity}>{message}</Alert> : null;
   };
 
+  const dropFields = moderator && isSmBreakpoint;
+
   return (
     <>
       <TableRow className={classes.mainRow}>
@@ -358,7 +418,7 @@ function Row({
           </Typography>
         </TableCell>
         <TableCell className={classes.usernameCell}>
-          {!open && isMdUp && redditUserAttribution}
+          {moderator && !open && isMdUp && redditUserAttribution}
         </TableCell>
         <TableCell align="center" className={classes.previewImage}>
           {isSmUp && (
@@ -389,67 +449,101 @@ function Row({
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6} md={4}>
                 <img className={classes.expandedImage} alt="" src={imagePath} />
-                {isSmBreakpoint && fields}
+                {dropFields && fields}
               </Grid>
-              {!isSmBreakpoint && (
-                <Grid item xs={12} md={4} className={classes.fields}>
+              {!dropFields && (
+                <Grid item xs={12} sm={6} md={4} className={classes.fields}>
                   {fields}
                 </Grid>
               )}
-              <Grid item xs={12} sm={6} md={4} className={classes.actions}>
-                <ToggleButtonGroup
-                  aria-label="review action"
-                  exclusive
-                  onChange={handleActionChange}
-                  value={action}
-                >
-                  {submissionStatus !== 'approved' && (
-                    <EntryActionButton aria-label="approve entry" value="approved">
-                      <CheckIcon fontSize="small" />
-                      &nbsp;Approve
-                    </EntryActionButton>
+              <Grid item xs={12} sm={6} md={4}>
+                <Fieldset className={classes.actions}>
+                  {moderator ? (
+                    <>
+                      <ToggleButtonGroup
+                        aria-label="review action"
+                        exclusive
+                        onChange={handleActionChange}
+                        value={action}
+                      >
+                        {submissionStatus !== 'approved' && (
+                          <EntryActionButton
+                            aria-label="approve entry"
+                            disabled={submissionWithdrawn}
+                            value="approved"
+                          >
+                            <CheckIcon fontSize="small" />
+                            &nbsp;Approve
+                          </EntryActionButton>
+                        )}
+                        {getNonPendingEntryActionButton()}
+                        {submissionStatus !== 'rejected' && (
+                          <EntryActionButton
+                            aria-label="reject entry"
+                            disabled={submissionWithdrawn}
+                            value="rejected"
+                          >
+                            <CloseIcon fontSize="small" />
+                            &nbsp;Reject
+                          </EntryActionButton>
+                        )}
+                      </ToggleButtonGroup>
+                      {modifiedBy && (
+                        <Alert severity="info">
+                          {'Set to '}
+                          <span className={classes.submissionStatus}>{submissionStatus}</span>
+                          {' by '}
+                          <span className={classes.modifiedBy}>{modifiedBy}</span>
+                        </Alert>
+                      )}
+                      <TextField
+                        id="reason"
+                        name="reason"
+                        color="secondary"
+                        variant="filled"
+                        disabled={!actionRejected}
+                        multiline
+                        maxRows={6}
+                        minRows={6}
+                        label="Reason"
+                        required={actionRejected}
+                        helperText={formState.reason.error}
+                        error={!!formState.reason.error}
+                        value={formState.reason.value ?? ''}
+                        onChange={handleFieldChange}
+                      />
+                      {getSubmitAlert()}
+                      <SpinnerButton
+                        color="primary"
+                        variant="contained"
+                        onClick={moderatorSubmit}
+                        disabled={submissionWithdrawn}
+                        submitting={isMutatingReview}
+                      >
+                        Submit
+                      </SpinnerButton>
+                    </>
+                  ) : (
+                    <>
+                      {submissionStatus === 'approved' && (
+                        <Alert severity="warning">
+                          This flag is approved. If you re-submit it later, it will need to be
+                          reviewed again by a moderator.
+                        </Alert>
+                      )}
+                      <SpinnerButton
+                        color="primary"
+                        variant="contained"
+                        onClick={userSubmit}
+                        submitting={isMutatingUser}
+                      >
+                        {submissionWithdrawn ? 'Re-Submit' : 'Withdraw'}
+                        {' '}
+                        Entry
+                      </SpinnerButton>
+                    </>
                   )}
-                  {getNonPendingEntryActionButton()}
-                  {submissionStatus !== 'rejected' && (
-                    <EntryActionButton aria-label="reject entry" value="rejected">
-                      <CloseIcon fontSize="small" />
-                      &nbsp;Reject
-                    </EntryActionButton>
-                  )}
-                </ToggleButtonGroup>
-                {modifiedBy && (
-                  <Alert severity="info">
-                    {'Set to '}
-                    <span className={classes.submissionStatus}>{submissionStatus}</span>
-                    {' by '}
-                    <span className={classes.modifiedBy}>{modifiedBy}</span>
-                  </Alert>
-                )}
-                <TextField
-                  id="reason"
-                  name="reason"
-                  color="secondary"
-                  variant="filled"
-                  disabled={!actionRejected}
-                  multiline
-                  maxRows={6}
-                  minRows={6}
-                  label="Reason"
-                  required={actionRejected}
-                  helperText={formState.reason.error}
-                  error={!!formState.reason.error}
-                  value={formState.reason.value ?? ''}
-                  onChange={handleFieldChange}
-                />
-                {getSubmitAlert()}
-                <SpinnerButton
-                  color="primary"
-                  variant="contained"
-                  onClick={submit}
-                  submitting={isMutating}
-                >
-                  Submit
-                </SpinnerButton>
+                </Fieldset>
               </Grid>
             </Grid>
           </Collapse>
@@ -459,23 +553,14 @@ function Row({
   );
 }
 
-Row.propTypes = {
-  submission: PropTypes.shape({
-    category: PropTypes.string,
-    description: PropTypes.string,
-    id: PropTypes.string,
-    imagePath: PropTypes.string,
-    modifiedBy: PropTypes.string,
-    name: PropTypes.string,
-    rejectionReason: PropTypes.string,
-    submissionStatus: PropTypes.oneOf(['approved', 'pending', 'rejected']),
-    submissionTime: PropTypes.string,
-    user: PropTypes.string,
-  }).isRequired,
-  userBreakdown: PropTypes.shape({
-    approved: PropTypes.number,
-    submitted: PropTypes.number,
-  }).isRequired,
+SubmissionRow.propTypes = {
+  moderator: PropTypes.bool,
+  submission: types.submission.isRequired,
+  userBreakdown: types.userBreakdown.isRequired,
 };
 
-export default Row;
+SubmissionRow.defaultProps = {
+  moderator: false,
+};
+
+export default SubmissionRow;

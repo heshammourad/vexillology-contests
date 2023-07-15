@@ -4,6 +4,7 @@
 
 const db = require('../db');
 const { createLogger } = require('../logger');
+const { generateImagePath } = require('../util');
 
 const logger = createLogger('API/HALL_OF_FAME');
 
@@ -31,7 +32,7 @@ exports.get = async (req, res) => {
           {
             date: date.toJSON().substr(0, 7),
             entryId,
-            imagePath: `/i/${entryId}.png`,
+            imagePath: generateImagePath(entryId),
             redditThreadId,
             yearEndContest: yearEnd,
             yearEndWinner: yearEnd || removedYearEndWinners.includes(entryId),

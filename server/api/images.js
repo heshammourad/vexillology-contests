@@ -37,7 +37,7 @@ exports.get = async ({ params: { image } }, res) => {
     res.contentType(downloadUrl.includes('png') ? 'image/png' : 'image/jpeg');
     res.send(Buffer.from(data, 'binary'));
   } catch (err) {
-    logger.error(`Error getting /i/${image}: ${err}`);
+    logger.warn(`Error getting /i/${image}: ${err}`);
     res.status(500).send();
   }
 };

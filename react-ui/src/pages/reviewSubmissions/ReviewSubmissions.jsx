@@ -1,9 +1,5 @@
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
-import Paper from '@material-ui/core/Paper';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableContainer from '@material-ui/core/TableContainer';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { useEffect, useState } from 'react';
@@ -11,10 +7,12 @@ import { useLocation } from 'react-router-dom';
 
 import { useSwrData } from '../../common';
 import {
-  FilterChip, Header, PageContainer, ProtectedRoute,
+  FilterChip,
+  Header,
+  PageContainer,
+  ProtectedRoute,
+  SubmissionsTable,
 } from '../../components';
-
-import Row from './Row';
 
 const API_PATH = '/mod/reviewSubmissions';
 
@@ -31,11 +29,11 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(2),
     marginTop: theme.spacing(2),
   },
-  table: {
-    tableLayout: 'fixed',
-  },
 }));
 
+/**
+ * The page for moderators to review contest submissions.
+ */
 function ReviewSubmissions() {
   const {
     data: { name: contestName, submissions, userBreakdown },
@@ -92,22 +90,19 @@ function ReviewSubmissions() {
                   onClick={handleChipClick('rejected')}
                   selected={selectedChips.rejected ?? false}
                 />
+                <FilterChip
+                  label="Withdrawn"
+                  onClick={handleChipClick('withdrawn')}
+                  selected={selectedChips.withdrawn ?? false}
+                />
               </div>
               {filteredSubmissions
                 && (filteredSubmissions.length ? (
-                  <TableContainer component={Paper}>
-                    <Table className={classes.table} aria-label="submissions" size="small">
-                      <TableBody>
-                        {filteredSubmissions.map((submission) => (
-                          <Row
-                            key={submission.id}
-                            submission={submission}
-                            userBreakdown={userBreakdown[submission.user]}
-                          />
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
+                  <SubmissionsTable
+                    moderator
+                    submissions={filteredSubmissions}
+                    userBreakdown={userBreakdown}
+                  />
                 ) : (
                   <>
                     <Typography component="div" variant="subtitle2">

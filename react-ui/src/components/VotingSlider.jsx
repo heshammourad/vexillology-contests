@@ -7,17 +7,18 @@ import Slider from '@material-ui/core/Slider';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import useSWRMutation from 'swr/mutation';
 
 import { deleteData, putData } from '../api';
-import { useAuthState, useCache, useSnackbarState } from '../common';
+import {
+  useAuthState, useCache, useSnackbarState, useSwrMutation,
+} from '../common';
 import snackbarTypes from '../common/snackbarTypes';
 
 const MIN_SCORE = 0;
 const MAX_SCORE = 5;
-const URL = '/votes';
+const VOTES_URL = '/votes';
 
 const ThemedSlider = withStyles((theme) => ({
   root: {
@@ -96,26 +97,31 @@ const updateEntries = (entries, { entryId, rating }) => entries.reduce((acc, cur
 function VotingSlider({
   disabled, entryId, rating, setComponentsState,
 }) {
+  const [{ isLoggedIn }] = useAuthState();
   const { contestId } = useParams();
-
-  const [{ accessToken, isLoggedIn, refreshToken }] = useAuthState();
-  const authTokens = { accessToken, refreshToken };
-
+  const ratingRef = useRef(rating);
   const [isInteractive, setInteractive] = useState(false);
 
-  const url = `/contests/${contestId}`;
-  const updateCache = useCache(url)[1];
-  const key = [url, authTokens];
-  // eslint-disable-next-line max-len
-  const { isMutating: isMutatingPut, trigger: triggerPut } = useSWRMutation(key, (_, { arg }) => putData(URL, arg, authTokens));
-  const { isMutating: isMutatingDelete, trigger: triggerDelete } = useSWRMutation(
-    key,
-    (_, { arg }) => deleteData(URL, arg, authTokens),
+  const contestUrl = `/contests/${contestId}`;
+  const updateCache = useCache(contestUrl)[1];
+  const { isMutating: isMutatingPut, trigger: triggerPut } = useSwrMutation(
+    contestUrl,
+    putData,
+    VOTES_URL,
+  );
+  const { isMutating: isMutatingDelete, trigger: triggerDelete } = useSwrMutation(
+    contestUrl,
+    deleteData,
+    VOTES_URL,
   );
 
   const updateSnackbarState = useSnackbarState();
 
   const classes = useStyles();
+
+  useEffect(() => {
+    ratingRef.current = rating;
+  }, [rating]);
 
   useEffect(() => {
     if (isInteractive) {
@@ -150,6 +156,10 @@ function VotingSlider({
   const handleSliderChange = async (event, newValue) => {
     if (!isLoggedIn) {
       setComponentsState({ redditLogInDialogOpen: true });
+      return;
+    }
+
+    if (newValue === ratingRef.current) {
       return;
     }
 
