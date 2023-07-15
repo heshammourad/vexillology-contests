@@ -20,17 +20,13 @@ const settings = require('./api/settings');
 const submission = require('./api/submission');
 const { checkRequiredFields } = require('./api/validation');
 const votes = require('./api/votes');
+const { IS_DEV, BACKEND_PORT } = require('./env');
 const { createLogger } = require('./logger');
 
 const logger = createLogger('INDEX');
 
-const { NODE_ENV, PORT: ENV_PORT } = process.env;
-
-const isDev = NODE_ENV !== 'production';
-const PORT = ENV_PORT || 5000;
-
 // Multi-process to utilize all CPU cores.
-if (!isDev && cluster.isMaster) {
+if (!IS_DEV && cluster.isMaster) {
   logger.info(`Node cluster master ${process.pid} is running`);
 
   // Fork workers.
@@ -49,7 +45,7 @@ if (!isDev && cluster.isMaster) {
     hostname, protocol, secure, url,
   }, res, next) => {
     const isOldDomain = hostname === 'vexillology-contests.herokuapp.com';
-    if (!isDev && (!secure || isOldDomain)) {
+    if (!IS_DEV && (!secure || isOldDomain)) {
       const newDomain = isOldDomain ? 'www.vexillologycontests.com' : hostname;
       const redirectUrl = `https://${newDomain}${url}`;
       res.redirect(301, redirectUrl);
@@ -141,9 +137,9 @@ if (!isDev && cluster.isMaster) {
     response.sendFile(path.resolve(__dirname, '../react-ui/build', 'index.html'));
   });
 
-  app.listen(PORT, () => {
+  app.listen(BACKEND_PORT, () => {
     logger.info(
-      `Node ${isDev ? 'dev server' : `cluster worker ${process.pid}`}: listening on port ${PORT}`,
+      `Node ${IS_DEV ? 'dev server' : `cluster worker ${process.pid}`}: listening on port ${BACKEND_PORT}`,
     );
   });
 }

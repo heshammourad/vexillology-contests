@@ -1,6 +1,6 @@
 /**
  * Upload image to firebase
- * Requires custom token, created by server/firebase 
+ * Requires custom token, created by server/firebase
  */
 
 /* eslint-disable import/prefer-default-export */

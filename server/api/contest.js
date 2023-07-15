@@ -1,7 +1,7 @@
 /**
  * Get contest detail
  * FROM FIREBASE: results, voting dates,
- * FROM REDDIT: 
+ * FROM REDDIT: outdated
  */
 
 const { isBefore, isFuture, isPast } = require('date-fns');
@@ -13,17 +13,18 @@ const { v4: uuidv4 } = require('uuid');
 
 const db = require('../db');
 const { getCategories, getVoteDates } = require('../db/queries');
+const { CONTEST_ENV_LEVEL } = require('../env');
 const imgur = require('../imgur');
 const { createLogger } = require('../logger');
 const memcache = require('../memcache');
 const reddit = require('../reddit');
 const { generateImagePath } = require('../util');
 
-const { CONTESTS_AVERAGE_FORMAT = '0.000', CONTESTS_CACHE_TIMEOUT = 3600, ENV_LEVEL } = process.env;
-
 const logger = createLogger('API/CONTEST');
 
 const LAST_WINNER_RANK = 20;
+const CONTESTS_AVERAGE_FORMAT = '0.000';
+const CONTESTS_CACHE_TIMEOUT = 3600;
 
 const filterRepeatedIds = async (data, idField) => {
   const ids = new Set();
@@ -81,7 +82,7 @@ exports.get = async ({ params: { id }, username }, res) => {
          winners_thread_id
        FROM contests
        WHERE id = $1 AND env_level >= $2`,
-      [id, ENV_LEVEL],
+      [id, CONTEST_ENV_LEVEL],
     );
     if (!contestResults.length) {
       logger.warn(`Contest id: ${id} not found in database.`);

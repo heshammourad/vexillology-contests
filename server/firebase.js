@@ -9,33 +9,41 @@ const { cert } = require('firebase-admin/app');
 const { getAuth } = require('firebase-admin/auth');
 const { getStorage } = require('firebase-admin/storage');
 
+const { IS_FIREBASE_ON } = require('./env');
+
 const { FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } = process.env;
 
 const LIFETIME = 60 * 24 * 60 * 60 * 1000; // 60 days -> milliseconds
 
-admin.initializeApp({
-  credential: cert({
-    clientEmail: FIREBASE_CLIENT_EMAIL,
-    privateKey: Buffer.from(FIREBASE_PRIVATE_KEY, 'base64').toString('ascii'),
-    projectId: 'vexillology-contests',
-  }),
-});
+if (IS_FIREBASE_ON) {
+  admin.initializeApp({
+    credential: cert({
+      clientEmail: FIREBASE_CLIENT_EMAIL,
+      privateKey: Buffer.from(FIREBASE_PRIVATE_KEY, 'base64').toString('ascii'),
+      projectId: 'vexillology-contests',
+    }),
+  });
 
-const storage = getStorage();
+  const storage = getStorage();
 
-exports.getDownloadUrl = async (image) => {
-  try {
-    const [downloadUrl] = await storage
-      .bucket('vexillology-contests.appspot.com')
-      .file(`images/${image}`)
-      .getSignedUrl({ action: 'read', expires: Date.now() + LIFETIME });
-    return downloadUrl;
-  } catch (err) {
-    return null;
-  }
-};
+  const getDownloadUrl = async (image) => {
+    try {
+      const [downloadUrl] = await storage
+        .bucket('vexillology-contests.appspot.com')
+        .file(`images/${image}`)
+        .getSignedUrl({ action: 'read', expires: Date.now() + LIFETIME });
+      return downloadUrl;
+    } catch (err) {
+      return null;
+    }
+  };
 
-exports.getToken = async (uid) => {
-  const token = await getAuth().createCustomToken(uid);
-  return token;
-};
+  const getToken = async (uid) => {
+    const token = await getAuth().createCustomToken(uid);
+    return token;
+  };
+
+  module.exports = {
+    getDownloadUrl, getToken,
+  };
+}

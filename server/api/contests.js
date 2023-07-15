@@ -3,9 +3,8 @@
  */
 
 const db = require('../db');
+const { CONTEST_ENV_LEVEL } = require('../env');
 const { createLogger } = require('../logger');
-
-const { ENV_LEVEL } = process.env;
 
 const logger = createLogger('API/CONTESTS');
 
@@ -17,7 +16,7 @@ exports.get = async (req, res) => {
        WHERE env_level >= $1
          AND (submission_start IS NULL OR submission_start < now())
        ORDER BY date DESC`,
-      [ENV_LEVEL],
+      [CONTEST_ENV_LEVEL],
     );
     res.send(
       result.map(({ date, ...rest }) => ({

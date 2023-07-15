@@ -3,10 +3,9 @@
  */
 
 const winston = require('winston');
+const { LOG_LEVEL } = require('./env');
 
 const { format } = winston;
-
-const { LOG_LEVEL = 'info' } = process.env;
 
 const createLogger = (customLabel) => winston.createLogger({
   level: LOG_LEVEL,

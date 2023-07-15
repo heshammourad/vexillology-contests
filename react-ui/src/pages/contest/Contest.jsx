@@ -568,6 +568,7 @@ function Contest() {
                         className={clsx(
                           classes.categoryChip,
                           categoryLabelClasses[
+                          // eslint-disable-next-line indent
                           `label${categories.indexOf(value) % LABEL_COLORS.length}`
                           ],
                         )}
