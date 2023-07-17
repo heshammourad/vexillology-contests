@@ -1,5 +1,6 @@
 /**
- * Entry for mod review and approval
+ * Users: Check submission status
+ * Mod: review and approval
  */
 
 import Chip from '@material-ui/core/Chip';

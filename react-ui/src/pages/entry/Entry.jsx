@@ -140,7 +140,7 @@ function Entry() {
 
   const handleKeyUp = ({ key }) => {
     let indexChange = 0;
-    if (key >= '1' && key <= '5') {
+    if (key >= '0' && key <= '5') {
       return;
     }
     switch (key) {
@@ -159,7 +159,7 @@ function Entry() {
       case 'r':
         redditCommentButtonRef.current.click();
         return;
-      case '0':
+      case 'c':
         // clear vote?
         return;
       default:

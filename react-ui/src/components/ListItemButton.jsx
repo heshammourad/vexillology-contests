@@ -1,5 +1,5 @@
 /**
- * Displaying row with external data in vertically stacked list
+ * Displaying row with external site in vertically stacked list
  */
 
 import ListItem from '@material-ui/core/ListItem';

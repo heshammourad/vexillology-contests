@@ -19,13 +19,13 @@ const logger = createLogger('REDDIT');
 const {
   REDDIT_CLIENT_ID,
   REDDIT_CLIENT_SECRET,
-  REDDIT_USERNAME,
   REDDIT_PASSWORD,
+  REDDIT_USERNAME,
+  WEB_APP_ACCESS_TOKEN,
   WEB_APP_CLIENT_ID,
   WEB_APP_CLIENT_SECRET,
   WEB_APP_REDIRECT_URI,
   WEB_APP_REFRESH_TOKEN,
-  WEB_APP_ACCESS_TOKEN,
 } = process.env;
 
 const redditApi = axios.create({
@@ -82,7 +82,7 @@ const getSnoowrap = (auth = {}) => {
 };
 
 /**
- * Fetch contest from database (or legacy reddit posts)
+ * Fetch contest from Reddit (or legacy reddit posts)
  * @param {*} submissionId unique ID of reddit post
  * @returns { entries:[], isContestMode }
  */
