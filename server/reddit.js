@@ -11,7 +11,7 @@
 const axios = require('axios');
 const Snoowrap = require('snoowrap');
 
-const { IS_DEV } = require('./env');
+const { IS_UNAUTHENTICATED_VIEW } = require('./env');
 const { createLogger } = require('./logger');
 
 const logger = createLogger('REDDIT');
@@ -45,18 +45,6 @@ redditApi.interceptors.response.use((response) => {
 
 const userAgent = 'node:com.vexillologycontests:v0.1.0';
 
-let snoowrap;
-
-if (!IS_DEV) {
-  snoowrap = new Snoowrap({
-    userAgent,
-    clientId: REDDIT_CLIENT_ID,
-    clientSecret: REDDIT_CLIENT_SECRET,
-    username: REDDIT_USERNAME,
-    password: REDDIT_PASSWORD,
-  });
-}
-
 /**
  * @param {object} [auth] user auth
  * @returns auth ? user-populated snoowrap : default snoowrap
@@ -67,18 +55,24 @@ const getSnoowrap = (auth = {}) => {
   const refreshToken = auth.refreshToken || auth.refreshtoken || auth.refresh_token
     || WEB_APP_REFRESH_TOKEN;
 
-  if (IS_DEV || (accessToken && refreshToken)) {
+  if (IS_UNAUTHENTICATED_VIEW || !accessToken || !refreshToken) {
+    logger.debug('No auth tokens provided, returning default snoowrap');
     return new Snoowrap({
       userAgent,
-      clientId: WEB_APP_CLIENT_ID,
-      clientSecret: WEB_APP_CLIENT_SECRET,
-      refreshToken,
-      accessToken,
+      clientId: REDDIT_CLIENT_ID,
+      clientSecret: REDDIT_CLIENT_SECRET,
+      username: REDDIT_USERNAME,
+      password: REDDIT_PASSWORD,
     });
   }
 
-  logger.debug('No auth tokens provided, returning default snoowrap');
-  return snoowrap;
+  return new Snoowrap({
+    userAgent,
+    clientId: WEB_APP_CLIENT_ID,
+    clientSecret: WEB_APP_CLIENT_SECRET,
+    refreshToken,
+    accessToken,
+  });
 };
 
 /**

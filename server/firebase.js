@@ -9,13 +9,13 @@ const { cert } = require('firebase-admin/app');
 const { getAuth } = require('firebase-admin/auth');
 const { getStorage } = require('firebase-admin/storage');
 
-const { IS_FIREBASE_ON } = require('./env');
+const { IS_FIREBASE_OFF } = require('./env');
 
 const { FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } = process.env;
 
 const LIFETIME = 60 * 24 * 60 * 60 * 1000; // 60 days -> milliseconds
 
-if (IS_FIREBASE_ON) {
+if (!IS_FIREBASE_OFF) {
   admin.initializeApp({
     credential: cert({
       clientEmail: FIREBASE_CLIENT_EMAIL,
