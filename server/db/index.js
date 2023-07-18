@@ -1,15 +1,25 @@
+/**
+ * @exports del
+ * @exports insert
+ * @exports select
+ * @exports update
+ */
+
 const { parse } = require('pg-connection-string');
 const pgp = require('pg-promise')();
 
+const { IS_DEV } = require('../env');
 const { createLogger } = require('../logger');
 const { camelizeObjectKeys } = require('../util');
 
 const { DATABASE_SCHEMA, DATABASE_URL } = process.env;
 
 const logger = createLogger('DB');
-
 const connection = parse(DATABASE_URL);
-const db = pgp({ ...connection, ssl: { rejectUnauthorized: false } });
+const db = pgp({
+  ...connection,
+  ssl: IS_DEV ? false : { rejectUnauthorized: false },
+});
 
 db.$config.options.error = (err) => {
   logger.error(`${err.toString()}`);

@@ -1,3 +1,7 @@
+/**
+ * Fetch from firebase entire hall_of_fame
+ */
+
 const db = require('../db');
 const { createLogger } = require('../logger');
 const { generateImagePath } = require('../util');

@@ -1,3 +1,7 @@
+/**
+ * Monitor for browser window width resizing
+ */
+
 import { useEffect, useState } from 'react';
 
 const getCurrentWidth = () => document.getElementsByTagName('html')[0].clientWidth;

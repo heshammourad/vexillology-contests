@@ -1,3 +1,8 @@
+/**
+ * Users: Check submission status
+ * Mod: review and approval
+ */
+
 import Chip from '@material-ui/core/Chip';
 import Collapse from '@material-ui/core/Collapse';
 import Grid from '@material-ui/core/Grid';

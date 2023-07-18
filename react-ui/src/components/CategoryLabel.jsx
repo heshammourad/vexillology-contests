@@ -1,3 +1,7 @@
+/**
+ * Display entry category (if applicable)
+ */
+
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';

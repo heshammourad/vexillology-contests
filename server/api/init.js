@@ -1,8 +1,9 @@
 const db = require('../db');
 const { getCurrentContestSubmissions } = require('../db/queries');
+const { TITLE } = require('../env');
 const { createLogger } = require('../logger');
 
-const { TITLE = 'Vexillology Contests', WEB_APP_CLIENT_ID } = process.env;
+const { WEB_APP_CLIENT_ID } = process.env;
 
 const logger = createLogger('API/INIT');
 

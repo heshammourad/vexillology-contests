@@ -1,7 +1,10 @@
-const db = require('../db');
-const { createLogger } = require('../logger');
+/**
+ * Fetch from database all contests date, id, name, and year_end
+ */
 
-const { ENV_LEVEL } = process.env;
+const db = require('../db');
+const { CONTEST_ENV_LEVEL } = require('../env');
+const { createLogger } = require('../logger');
 
 const logger = createLogger('API/CONTESTS');
 
@@ -13,7 +16,7 @@ exports.get = async (req, res) => {
        WHERE env_level >= $1
          AND (submission_start IS NULL OR submission_start < now())
        ORDER BY date DESC`,
-      [ENV_LEVEL],
+      [CONTEST_ENV_LEVEL],
     );
     res.send(
       result.map(({ date, ...rest }) => ({

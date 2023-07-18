@@ -1,3 +1,9 @@
+/**
+ * User submission portal
+ * ??? Consider useEffect to manage error checking
+ * ??? should try to devise HTML-styled prompts
+ */
+
 import Button from '@material-ui/core/Button';
 import Container from '@material-ui/core/Container';
 import FormControl from '@material-ui/core/FormControl';

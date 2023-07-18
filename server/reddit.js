@@ -1,6 +1,17 @@
+/**
+ * Access Reddit user and post data
+ * @exports getContest @returns {entries, isContestMode}
+ * @exports getUser
+ * @exports getWinners
+ * @exports isModerator
+ * @exports retrieveAccessToken
+ * @exports revokeRefreshToken
+ */
+
 const axios = require('axios');
 const Snoowrap = require('snoowrap');
 
+const { IS_UNAUTHENTICATED_VIEW } = require('./env');
 const { createLogger } = require('./logger');
 
 const logger = createLogger('REDDIT');
@@ -9,9 +20,12 @@ const {
   REDDIT_CLIENT_ID,
   REDDIT_CLIENT_SECRET,
   REDDIT_PASSWORD,
+  REDDIT_USERNAME,
+  WEB_APP_ACCESS_TOKEN,
   WEB_APP_CLIENT_ID,
   WEB_APP_CLIENT_SECRET,
   WEB_APP_REDIRECT_URI,
+  WEB_APP_REFRESH_TOKEN,
 } = process.env;
 
 const redditApi = axios.create({
@@ -31,20 +45,25 @@ redditApi.interceptors.response.use((response) => {
 
 const userAgent = 'node:com.vexillologycontests:v0.1.0';
 
-const snoowrap = new Snoowrap({
-  userAgent,
-  clientId: REDDIT_CLIENT_ID,
-  clientSecret: REDDIT_CLIENT_SECRET,
-  username: 'heshammourad',
-  password: REDDIT_PASSWORD,
-});
-
+/**
+ * @param {object} [auth] user auth
+ * @returns auth ? user-populated snoowrap : default snoowrap
+ */
 const getSnoowrap = (auth = {}) => {
-  const accessToken = auth.accessToken || auth.accesstoken || auth.access_token;
-  const refreshToken = auth.refreshToken || auth.refreshtoken || auth.refresh_token;
-  if (!accessToken || !refreshToken) {
+  const accessToken = auth.accessToken || auth.accesstoken || auth.access_token
+    || WEB_APP_ACCESS_TOKEN;
+  const refreshToken = auth.refreshToken || auth.refreshtoken || auth.refresh_token
+    || WEB_APP_REFRESH_TOKEN;
+
+  if (IS_UNAUTHENTICATED_VIEW || !accessToken || !refreshToken) {
     logger.debug('No auth tokens provided, returning default snoowrap');
-    return snoowrap;
+    return new Snoowrap({
+      userAgent,
+      clientId: REDDIT_CLIENT_ID,
+      clientSecret: REDDIT_CLIENT_SECRET,
+      username: REDDIT_USERNAME,
+      password: REDDIT_PASSWORD,
+    });
   }
 
   return new Snoowrap({
@@ -56,8 +75,15 @@ const getSnoowrap = (auth = {}) => {
   });
 };
 
+/**
+ * Fetch contest from Reddit (or legacy reddit posts)
+ * @param {*} submissionId unique ID of reddit post
+ * @returns { entries:[], isContestMode }
+ */
 exports.getContest = async (submissionId) => {
   logger.debug(`Getting contest submission: '${submissionId}`);
+
+  // getSubmission refers to a post, not a user submission
   const submission = await getSnoowrap().getSubmission(submissionId);
   const isContestMode = await submission.contest_mode;
   const entries = await submission.comments.reduce(
@@ -90,6 +116,10 @@ exports.getContest = async (submissionId) => {
   return contest;
 };
 
+/**
+ * @param {object} auth {accessToken, refreshToken}
+ * @returns name
+ */
 exports.getUser = async (auth) => {
   logger.debug('Getting username');
   const { name } = await getSnoowrap(auth).getMe();

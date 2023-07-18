@@ -1,3 +1,7 @@
+/**
+ * Sponsor FlagMaker & Print
+ */
+
 import SvgIcon from '@material-ui/core/SvgIcon';
 
 import { ReactComponent as FmpLogo } from '../images/FMP.svg';

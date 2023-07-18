@@ -1,3 +1,7 @@
+/**
+ * Record and display user's vote
+ */
+
 import Button from '@material-ui/core/Button';
 import Slider from '@material-ui/core/Slider';
 import { makeStyles, withStyles } from '@material-ui/core/styles';

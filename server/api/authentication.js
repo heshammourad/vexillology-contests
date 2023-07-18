@@ -1,3 +1,9 @@
+/**
+ * @exports processUser adds username and moderator status to request
+ * @exports requireAuthentication confirm authentication
+ * @exports requireModerator confirm moderator
+ */
+
 const db = require('../db');
 const { createLogger } = require('../logger');
 const reddit = require('../reddit');
@@ -51,7 +57,7 @@ exports.requireAuthentication = async (req, res, next) => {
 
 exports.requireModerator = async (req, res, next) => {
   try {
-    await this.requireAuthentication(req, res, () => {});
+    await this.requireAuthentication(req, res, () => { });
 
     const [{ moderator } = {}] = await db.select(
       'SELECT moderator FROM users WHERE username = $1',

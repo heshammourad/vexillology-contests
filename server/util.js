@@ -1,3 +1,5 @@
+// ??? why not just return tmp instead of overwriting obj?
+
 const camelCase = require('lodash/camelCase');
 
 const { createLogger } = require('./logger');

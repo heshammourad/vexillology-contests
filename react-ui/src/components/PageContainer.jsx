@@ -1,3 +1,7 @@
+/**
+ * Basic wrapper to center page horizontally
+ */
+
 import Box from '@material-ui/core/Box';
 import Container from '@material-ui/core/Container';
 import PropTypes from 'prop-types';

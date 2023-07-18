@@ -1,3 +1,7 @@
+/**
+ * Fetch data
+ */
+
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 
@@ -6,7 +10,16 @@ import useCache from './useCache';
 
 const getOptions = (key) => {
   switch (key) {
+    /**
+     * Init fetches the following:
+     * * experiments
+     * * moderator
+     * * submissionsToReview
+     * * development title (local, staging, production)
+     * * webAppClientId
+     */
     case '/init':
+      // Increase deduping interval to limit '/init' network calls
       return {
         dedupingInterval: 10 * 60 * 1000, // 10 minutes
       };

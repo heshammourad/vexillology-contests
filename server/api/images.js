@@ -1,3 +1,8 @@
+/**
+ * Get image from memcache or firebase
+ * Then fetch the image
+ */
+
 const axios = require('axios');
 
 const db = require('../db');

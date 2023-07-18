@@ -1,3 +1,7 @@
+/**
+ * Fetch images from Imgur
+ */
+
 const axios = require('axios');
 
 const { createLogger } = require('./logger');

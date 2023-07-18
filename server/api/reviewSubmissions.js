@@ -1,3 +1,7 @@
+/**
+ * Moderator review of submitted content
+ */
+
 const db = require('../db');
 const { getCurrentContest, getCurrentContestSubmissions } = require('../db/queries');
 const { createLogger } = require('../logger');

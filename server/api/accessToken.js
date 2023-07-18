@@ -1,3 +1,7 @@
+/**
+ * Fetch Reddit accessToken
+ */
+
 const { createLogger } = require('../logger');
 const reddit = require('../reddit');
 const { camelizeObjectKeys } = require('../util');
