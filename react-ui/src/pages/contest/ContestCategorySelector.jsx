@@ -1,5 +1,5 @@
 /**
- * Voting and winners
+ * Contest category selection (if applicable)
  */
 
 import Box from '@material-ui/core/Box';

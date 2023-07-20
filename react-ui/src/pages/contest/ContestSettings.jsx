@@ -1,5 +1,5 @@
 /**
- * Voting and winners
+ * Contest display settings
  */
 
 import FormControl from '@material-ui/core/FormControl';
