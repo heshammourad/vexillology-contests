@@ -3,17 +3,22 @@
  */
 
 import Box from '@material-ui/core/Box';
+import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
+import Chip from '@material-ui/core/Chip';
 import Divider from '@material-ui/core/Divider';
 import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
+import Input from '@material-ui/core/Input';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListSubheader from '@material-ui/core/ListSubheader';
+import MenuItem from '@material-ui/core/MenuItem';
 import RadioGroup from '@material-ui/core/RadioGroup';
+import Select from '@material-ui/core/Select';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -29,12 +34,14 @@ import { animateScroll } from 'react-scroll';
 
 import {
   useCache,
+  useCategoryLabelStyles,
   useClientWidth,
   useComponentsState,
   useScrollState,
   useSettingsState,
   useSwrData,
 } from '../../common';
+import { LABEL_COLORS } from '../../common/styles';
 import {
   ArrowBackButton,
   Average,
@@ -57,14 +64,37 @@ import {
 } from '../../components';
 
 import CardImageLink from './CardImageLink';
-import ContestCategorySelector from './ContestCategorySelector';
 import Subheader from './Subheader';
+
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const CATEGORY_MENU_PROPS = {
+  PaperProps: { style: { maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP, width: 250 } },
+};
+const FILTER_CATEGORIES_LABEL_ID = 'filter-categories-label';
 
 const scrollInstantlyTo = (scrollY) => {
   animateScroll.scrollTo(scrollY, { duration: 0, delay: 0 });
 };
 
 const useStyles = makeStyles((theme) => ({
+  categories: {
+    alignItems: 'center',
+    columnGap: 8,
+    display: 'flex',
+    marginBottom: 16,
+    maxWidth: 600,
+    minHeight: 50,
+    minWidth: 120,
+  },
+  categoryChip: {
+    margin: 2,
+  },
+  categoryLabel: {
+    borderRadius: 4,
+    display: 'inline',
+    padding: '0 4px',
+  },
   descriptionIcon: {
     paddingLeft: 4,
     top: -4,
@@ -131,6 +161,9 @@ const useStyles = makeStyles((theme) => ({
   },
   numberSymbol: {
     marginRight: 4,
+  },
+  selectedCategory: {
+    fontWeight: theme.typography.fontWeightMedium,
   },
   sponsorBanner: {
     alignItems: 'center',
@@ -281,6 +314,14 @@ function Contest() {
     );
   }, [selectedCategories]);
 
+  const handleCategoryChange = (event) => {
+    setSelectedCategories(event.target.value.sort());
+  };
+
+  const resetSelectedCategories = () => {
+    setSelectedCategories([]);
+  };
+
   const viewDescription = (entryId) => {
     setDescriptionEntryId(entryId);
     setSettingsOpen(true);
@@ -334,6 +375,7 @@ function Contest() {
   }
 
   const classes = useStyles();
+  const categoryLabelClasses = useCategoryLabelStyles();
 
   const getGridVariables = (fullWidth) => {
     const xs = 12;
@@ -508,7 +550,65 @@ function Contest() {
               </Typography>
             </Box>
           )}
-          <ContestCategorySelector {...{ categories, selectedCategories, setSelectedCategories }} />
+          {categories?.length > 0 && (
+            <div className={classes.categories}>
+              <Typography id={FILTER_CATEGORIES_LABEL_ID} variant="caption">
+                Filter categories:
+              </Typography>
+              <Select
+                input={<Input />}
+                labelId={FILTER_CATEGORIES_LABEL_ID}
+                MenuProps={CATEGORY_MENU_PROPS}
+                multiple
+                onChange={handleCategoryChange}
+                renderValue={(selected) => (
+                  <Box display="flex" flexWrap="wrap">
+                    {selected.map((value) => (
+                      <Chip
+                        className={clsx(
+                          classes.categoryChip,
+                          categoryLabelClasses[
+                          // eslint-disable-next-line indent
+                          `label${categories.indexOf(value) % LABEL_COLORS.length}`
+                          ],
+                        )}
+                        key={value}
+                        label={value}
+                      />
+                    ))}
+                  </Box>
+                )}
+                value={selectedCategories}
+              >
+                {categories.map((category, index) => (
+                  <MenuItem
+                    className={clsx({
+                      [classes.selectedCategory]: selectedCategories.includes(category),
+                    })}
+                    key={category}
+                    value={category}
+                  >
+                    <div
+                      className={clsx(
+                        classes.categoryLabel,
+                        categoryLabelClasses[`label${index % LABEL_COLORS.length}`],
+                      )}
+                    >
+                      {category}
+                    </div>
+                  </MenuItem>
+                ))}
+              </Select>
+              <Button
+                color="primary"
+                disabled={!selectedCategories.length}
+                size="small"
+                onClick={resetSelectedCategories}
+              >
+                Reset
+              </Button>
+            </div>
+          )}
           {winners && winners.length > 0 && (
             <>
               <Subheader>Top 20</Subheader>
