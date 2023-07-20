@@ -132,7 +132,7 @@ function ContestCategorySelector({
 ContestCategorySelector.propTypes = {
   setSelectedCategories: PropTypes.func,
   categories: PropTypes.arrayOf(PropTypes.string),
-  selectedCategories: PropTypes.arrayOf(PropTypes.string)
+  selectedCategories: PropTypes.arrayOf(PropTypes.string),
 };
 
 ContestCategorySelector.defaultProps = {

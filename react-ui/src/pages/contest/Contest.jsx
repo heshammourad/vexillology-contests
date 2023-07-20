@@ -7,13 +7,7 @@ import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Divider from '@material-ui/core/Divider';
-import FormControl from '@material-ui/core/FormControl';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import RadioGroup from '@material-ui/core/RadioGroup';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -40,7 +34,6 @@ import {
   Average,
   CategoryLabel,
   CustomIconButton,
-  CustomRadio,
   EntryDescriptionDrawer,
   Experiment,
   ExternalLink,
@@ -58,6 +51,7 @@ import {
 
 import CardImageLink from './CardImageLink';
 import ContestCategorySelector from './ContestCategorySelector';
+import ContestSettings from './ContestSettings';
 import Subheader from './Subheader';
 
 const scrollInstantlyTo = (scrollY) => {
@@ -113,15 +107,6 @@ const useStyles = makeStyles((theme) => ({
   },
   icon: {
     color: theme.palette.grey[700],
-  },
-  listSubheader: {
-    color: theme.palette.grey[900],
-    fontSize: '.6875rem',
-    fontWeight: 500,
-    letterSpacing: '.8px',
-    lineHeight: 1,
-    margin: '16px 0',
-    textTransform: 'uppercase',
   },
   myRating: {
     color: theme.palette.grey[600],
@@ -286,11 +271,7 @@ function Contest() {
     setSettingsOpen(true);
   };
 
-  const [{ density = 'default' }, updateSettings] = useSettingsState();
-
-  const handleDensityChange = (event) => {
-    updateSettings('density', event.target.value);
-  };
+  const [{ density = 'default' }] = useSettingsState();
 
   const toggleSettingsOpen = () => {
     setSettingsOpen(!isSettingsOpen);
@@ -433,38 +414,7 @@ function Contest() {
           ? { heading: 'Info', children: <EntryDescriptionDrawer entryId={descriptionEntryId} /> }
           : {
             heading: 'Settings',
-            children: (
-              <FormControl component="fieldset">
-                <List
-                  dense
-                  subheader={
-                    <ListSubheader className={classes.listSubheader}>Density</ListSubheader>
-                  }
-                >
-                  <RadioGroup
-                    aria-label="density"
-                    name="density"
-                    value={density}
-                    onChange={handleDensityChange}
-                  >
-                    <ListItem>
-                      <FormControlLabel
-                        value="default"
-                        control={<CustomRadio color="primary" />}
-                        label="Default"
-                      />
-                    </ListItem>
-                    <ListItem>
-                      <FormControlLabel
-                        value="compact"
-                        control={<CustomRadio color="primary" />}
-                        label="Compact"
-                      />
-                    </ListItem>
-                  </RadioGroup>
-                </List>
-              </FormControl>
-            ),
+            children: <ContestSettings />,
           }
       }
     >
