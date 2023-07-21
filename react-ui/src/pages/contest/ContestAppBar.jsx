@@ -1,5 +1,5 @@
 /**
- * Voting and winners
+ * Contest-specific content for top app bar
  */
 
 import Box from '@material-ui/core/Box';
@@ -7,7 +7,6 @@ import EmojiEventsOutlinedIcon from '@material-ui/icons/EmojiEventsOutlined';
 import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
 import ThumbsUpDownOutlinedIcon from '@material-ui/icons/ThumbsUpDownOutlined';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 
 import {
@@ -51,16 +50,14 @@ function ContestAppBarMain({ handleVotingExpired, handleReload }) {
   );
 }
 
-function ContestAppBarRight() {
+function ContestAppBarRight({ setInfoOpen }) {
   const { contestId } = useParams();
 
   const apiPath = `/contests/${contestId}`;
   const { data: contest } = useSwrData(apiPath, false);
 
-  const [isInfoOpen, setInfoOpen] = useState(false);
-
   const toggleSettingsOpen = () => {
-    setInfoOpen(!isInfoOpen);
+    setInfoOpen((prev) => !prev);
   };
 
   const {
@@ -93,6 +90,14 @@ function ContestAppBarRight() {
     </>
   );
 }
+
+ContestAppBarRight.propTypes = {
+  setInfoOpen: PropTypes.func,
+};
+
+ContestAppBarRight.defaultProps = {
+  setInfoOpen: () => { },
+};
 
 ContestAppBarMain.propTypes = {
   handleVotingExpired: PropTypes.func,

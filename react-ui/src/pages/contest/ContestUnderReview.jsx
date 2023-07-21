@@ -10,7 +10,7 @@ import {
   SpinnerButton,
 } from '../../components';
 
-function ContestEarly({ isValidating, mutate }) {
+function ContestUnderReview({ isValidating, mutate }) {
   return (
     <>
       <Box marginBottom={2}>
@@ -29,14 +29,14 @@ function ContestEarly({ isValidating, mutate }) {
   );
 }
 
-ContestEarly.propTypes = {
+ContestUnderReview.propTypes = {
   mutate: PropTypes.func,
   isValidating: PropTypes.bool,
 };
 
-ContestEarly.defaultProps = {
+ContestUnderReview.defaultProps = {
   mutate: () => { },
   isValidating: true,
 };
 
-export default ContestEarly;
+export default ContestUnderReview;

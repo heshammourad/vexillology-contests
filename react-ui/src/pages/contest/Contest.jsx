@@ -4,6 +4,7 @@
  * ??? apiPath as prop vs hooks and rederive
  * ??? How are you pulling entryId from scroll?
  * ??? remove winners / top20?
+ * ??? Logic in useEffect
  */
 
 import Box from '@material-ui/core/Box';
@@ -30,10 +31,10 @@ import {
 
 import { ContestAppBarMain, ContestAppBarRight } from './ContestAppBar';
 import ContestCategorySelector from './ContestCategorySelector';
-import ContestEarly from './ContestEarly';
 import ContestGrid from './ContestGrid';
 import ContestSettings from './ContestSettings';
 import ContestSponsor from './ContestSponsor';
+import ContestUnderReview from './ContestUnderReview';
 import ContestWinners from './ContestWinners';
 import useContestSizing from './useContestSizing';
 
@@ -191,7 +192,7 @@ function Contest() {
       appBar={{
         className: classes.icon,
         color: 'default',
-        right: <ContestAppBarRight />,
+        right: <ContestAppBarRight {...{ setInfoOpen }} />,
         children: <ContestAppBarMain {...{ handleVotingExpired, handleReload }} />,
       }}
       drawer={
@@ -206,7 +207,7 @@ function Contest() {
           <Typography className={classes.heading} variant={headingVariant} component="h1">
             {name}
           </Typography>
-          {!votingWindowOpen && <ContestEarly {...{ isValidating, mutate }} />}
+          {votingWindowOpen === false && <ContestUnderReview {...{ isValidating, mutate }} />}
           {isContestMode && subtext && (
             <Box marginBottom={3}>
               <Typography component="div" variant="subtitle1">
