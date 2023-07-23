@@ -2,7 +2,6 @@
  * Voting and winners
  * ??? Contest fields as props vs useSwrData
  * ??? apiPath as prop vs hooks and rederive
- * ??? How are you pulling entryId from scroll?
  * ??? remove winners / top20?
  * ??? Logic in useEffect
  */

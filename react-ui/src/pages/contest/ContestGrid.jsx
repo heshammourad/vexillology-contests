@@ -12,6 +12,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import DescriptionIcon from '@material-ui/icons/Description';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
+import { useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 
 import {
@@ -108,7 +109,7 @@ function ContestGrid({
 
   const votingUnavailable = votingDisabled || votingExpired;
 
-  const getGridVariables = (fullWidth) => {
+  const getGridVariables = useCallback((fullWidth) => {
     const xs = 12;
     let sm = 12;
     let md = 6;
@@ -129,7 +130,7 @@ function ContestGrid({
       md,
       lg,
     };
-  };
+  }, [density]);
 
   const {
     categories,
