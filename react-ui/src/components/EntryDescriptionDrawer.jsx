@@ -19,6 +19,7 @@ import FiveStar from './FiveStar';
 import FmpIcon from './FmpIcon';
 import HtmlWrapper from './HtmlWrapper';
 import ListItemButton from './ListItemButton';
+import RedditMarkdown from './RedditMarkdown';
 import RedditUserAttribution from './RedditUserAttribution';
 import VotingSlider from './VotingSlider';
 
@@ -74,6 +75,7 @@ function EntryDescriptionDrawer({ entryId }) {
     imagePath,
     imgurId,
     id,
+    markdown,
     name,
     permalink,
     rank,
@@ -144,7 +146,7 @@ function EntryDescriptionDrawer({ entryId }) {
         </Box>
       )}
       <DrawerSectionHeader>Description</DrawerSectionHeader>
-      <HtmlWrapper html={description} />
+      {markdown ? <RedditMarkdown text={description} /> : <HtmlWrapper html={description} />}
       <DrawerSectionHeader>Links</DrawerSectionHeader>
       <List>
         {!localVoting && (
