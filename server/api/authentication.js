@@ -10,6 +10,11 @@ const reddit = require('../reddit');
 
 const logger = createLogger('API/AUTHENTICATION');
 
+const isModerator = async (username) => {
+  const [{ moderator } = {}] = await db.select('SELECT moderator FROM users WHERE username = $1', [username]);
+  return (!!moderator);
+};
+
 exports.processUser = (checkModerator) => async (req, res, next) => {
   const {
     headers: { accesstoken, refreshtoken },
@@ -23,7 +28,7 @@ exports.processUser = (checkModerator) => async (req, res, next) => {
   req.username = username;
 
   if (checkModerator) {
-    const moderator = await reddit.isModerator(username);
+    const moderator = await isModerator(username);
     req.moderator = moderator;
   }
   next();
@@ -59,10 +64,7 @@ exports.requireModerator = async (req, res, next) => {
   try {
     await this.requireAuthentication(req, res, () => { });
 
-    const [{ moderator } = {}] = await db.select(
-      'SELECT moderator FROM users WHERE username = $1',
-      [req.username],
-    );
+    const moderator = await isModerator(req.username);
     if (!moderator) {
       res.status(403).send('Must be moderator to access resource');
       next(true);

@@ -8,7 +8,7 @@
 const { parse } = require('pg-connection-string');
 const pgp = require('pg-promise')();
 
-const { IS_DEV } = require('../env');
+const { DATABASE_SSL } = require('../env');
 const { createLogger } = require('../logger');
 const { camelizeObjectKeys } = require('../util');
 
@@ -18,7 +18,7 @@ const logger = createLogger('DB');
 const connection = parse(DATABASE_URL);
 const db = pgp({
   ...connection,
-  ssl: IS_DEV ? false : { rejectUnauthorized: false },
+  ssl: DATABASE_SSL ? { rejectUnauthorized: false } : false,
 });
 
 db.$config.options.error = (err) => {

@@ -3,14 +3,13 @@
  */
 
 import CssBaseline from '@material-ui/core/CssBaseline';
-import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import {
   BrowserRouter, Navigate, Route, Routes,
 } from 'react-router-dom';
 import { SWRConfig } from 'swr';
 
 import { getData } from './api';
-import { AppHelmet, CustomSnackbar } from './components';
+import { AppHelmet, CustomSnackbar, CustomThemeProvider } from './components';
 import {
   AuthorizeCallback,
   Contest,
@@ -23,31 +22,11 @@ import {
   Submission,
 } from './pages';
 
-import './App.css';
-
-const theme = createTheme({
-  palette: {
-    flagMakerPrint: {
-      main: '#ea433e',
-    },
-    primary: {
-      dark: '#c10000',
-      light: '#ff7c4c',
-      main: '#fc471e',
-    },
-    secondary: {
-      dark: '#3868c8',
-      light: '#a8c5ff',
-      main: '#7295fc',
-    },
-  },
-});
-
 function App() {
   return (
     <>
       <CssBaseline />
-      <ThemeProvider theme={theme}>
+      <CustomThemeProvider>
         <SWRConfig
           value={{
             fetcher: (arr) => getData(...arr),
@@ -80,7 +59,7 @@ function App() {
             <CustomSnackbar />
           </div>
         </SWRConfig>
-      </ThemeProvider>
+      </CustomThemeProvider>
     </>
   );
 }
