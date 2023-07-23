@@ -308,6 +308,7 @@ exports.get = async ({ params: { id }, username }, res) => {
            e.height,
            e.id,
            '/i/' || e.id || '.png' AS image_path,
+           e.markdown,
            e.name,
            ${isPast(voteEnd) ? 'e.user,' : ''}
            e.width
