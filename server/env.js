@@ -1,6 +1,7 @@
 // WARNING! All process.env values are strings, so check for 'true' or 'false'
 
 const {
+  DATABASE_SSL,
   ENV_LEVEL = 'prod',
   ENV_PORT,
   LOG_LEVEL: LOG_LEVEL_DOTENV,
@@ -28,6 +29,7 @@ const BACKEND_PORT = ENV_PORT || 5000;
 module.exports = {
   BACKEND_PORT,
   CONTEST_ENV_LEVEL: ENV_LEVEL,
+  DATABASE_SSL: DATABASE_SSL ? DATABASE_SSL === 'true' : true,
   FRONTEND_PORT,
   IS_DEV,
   IS_CONTESTS_OPENED,

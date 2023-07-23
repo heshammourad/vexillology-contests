@@ -9,6 +9,7 @@ export { default as CustomIconButton } from './CustomIconButton';
 export { default as CustomRadio } from './CustomRadio';
 export { default as CustomSnackbar } from './CustomSnackbar';
 export { default as CustomSwitch } from './CustomSwitch';
+export { default as CustomThemeProvider } from './CustomThemeProvider';
 export { default as DrawerSectionHeader } from './DrawerSectionHeader';
 export { default as ElevationScroll } from './ElevationScroll';
 export { default as EntryDescriptionDrawer } from './EntryDescriptionDrawer';
