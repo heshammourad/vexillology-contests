@@ -1,14 +1,13 @@
 /**
  * Full page entry
+ * ??? redirect if !entry
+ * ??? Get rid of Refs for click() events, just open link
  */
 
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
-import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
-import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
-import RedditIcon from '@material-ui/icons/Reddit';
 import clsx from 'clsx';
 import throttle from 'lodash/throttle';
 import {
@@ -16,15 +15,14 @@ import {
 } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 
-import { useScrollState, useSettingsState, useSwrData } from '../../common';
+import { useSettingsState, useSwrData } from '../../common';
 import {
-  ArrowBackButton,
-  CustomIconButton,
   EntryDescriptionDrawer,
   PageWithDrawer,
   RedditLogInDialog,
 } from '../../components';
 
+import { EntryAppBarMain, EntryAppBarRight } from './EntryAppBar';
 import NavigateIconButton from './NavigateIconButton';
 
 const calculateImageContainerHeight = (offset) => `calc(100vh - ${offset}px)`;
@@ -68,20 +66,21 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Entry() {
-  const { contestId, entryId } = useParams();
-  const {
-    data: {
-      entries = [], localVoting, requestId, winners = [],
-    },
-  } = useSwrData(`/contests/${contestId}`, false);
-
-  const { state = {} } = useLocation();
   const navigate = useNavigate();
   const classes = useStyles();
-
-  const [scroll, setScroll] = useScrollState();
+  const { state = {} } = useLocation();
+  const { contestId, entryId } = useParams();
   const [{ isInfoOpen }, updateSettings] = useSettingsState();
   const isInfoOpenRef = useRef(isInfoOpen);
+
+  const apiPath = `/contests/${contestId}`;
+  const { data } = useSwrData(apiPath, false);
+
+  const {
+    entries = [],
+    winners = [],
+  } = data;
+
   const updateInfoSetting = (infoOpen) => {
     isInfoOpenRef.current = infoOpen;
     updateSettings('isInfoOpen', infoOpen);
@@ -269,10 +268,6 @@ function Entry() {
     return null;
   }
 
-  const imageSrc = window.location.origin + entry.imagePath;
-  const redditPermalink = `https://www.reddit.com${entry.permalink}`;
-  const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${imageSrc}`;
-
   return (
     <>
       <PageWithDrawer
@@ -283,45 +278,12 @@ function Entry() {
           position: 'fixed',
           accountMenuColor: 'inherit',
           className: classes.appBar,
-          right: entry.id && (
-            <>
-              {!localVoting && (
-                <CustomIconButton
-                  innerRef={redditCommentButtonRef}
-                  href={redditPermalink}
-                  ariaLabel="Open Reddit comment"
-                  Icon={RedditIcon}
-                />
-              )}
-              <CustomIconButton
-                innerRef={flagWaverButtonRef}
-                href={flagWaverLink}
-                ariaLabel="Open FlagWaver"
-                Icon={FlagTwoToneIcon}
-              />
-              <CustomIconButton
-                ariaLabel="Open info"
-                onClick={toggleInfoDrawerOpen}
-                Icon={InfoOutlinedIcon}
-              />
-            </>
+          right: (
+            entry.id && <EntryAppBarRight {...{ redditCommentButtonRef, flagWaverButtonRef }} />
           ),
-          children: (
-            <ArrowBackButton
-              color="inherit"
-              onClick={() => {
-                setScroll({ ...scroll, entryId: entry.id });
-              }}
-              state={{
-                back: state?.back,
-                requestId,
-                selectedCategories: state?.selectedCategories ?? [],
-              }}
-              to={`/contests/${contestId}`}
-            />
-          ),
+          children: <EntryAppBarMain {...{ entryId }} />,
         }}
-        drawer={{ heading: 'Info', children: <EntryDescriptionDrawer entryId={entry.id} /> }}
+        drawer={{ heading: 'Info', children: <EntryDescriptionDrawer {...{ entryId }} /> }}
       >
         <Box
           ref={imageContainerRef}
