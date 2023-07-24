@@ -61,6 +61,7 @@ import {
   Countdown,
   VotingSlider,
   SpinnerButton,
+  MultipleChipSelect,
 } from '../../components';
 
 import CardImageLink from './CardImageLink';
@@ -481,7 +482,7 @@ function Contest() {
                   dense
                   subheader={
                     <ListSubheader className={classes.listSubheader}>Density</ListSubheader>
-                  }
+                    }
                 >
                   <RadioGroup
                     aria-label="density"
@@ -550,6 +551,7 @@ function Contest() {
               </Typography>
             </Box>
           )}
+          {categories?.length > 0 && <MultipleChipSelect label="Filter categories" />}
           {categories?.length > 0 && (
             <div className={classes.categories}>
               <Typography id={FILTER_CATEGORIES_LABEL_ID} variant="caption">
@@ -568,8 +570,8 @@ function Contest() {
                         className={clsx(
                           classes.categoryChip,
                           categoryLabelClasses[
-                          // eslint-disable-next-line indent
-                          `label${categories.indexOf(value) % LABEL_COLORS.length}`
+                            // eslint-disable-next-line indent
+                            `label${categories.indexOf(value) % LABEL_COLORS.length}`
                           ],
                         )}
                         key={value}

@@ -25,6 +25,7 @@ export { default as InternalLink } from './InternalLink';
 export { default as LazyLoadCardImage } from './LazyLoadCardImage';
 export { default as ListItemButton } from './ListItemButton';
 export { default as ListItemLink } from './ListItemLink';
+export { default as MultipleChipSelect } from './MultipleChipSelect';
 export { default as PageContainer } from './PageContainer';
 export { default as PageWithDrawer } from './PageWithDrawer';
 export { default as ProtectedRoute } from './ProtectedRoute';
