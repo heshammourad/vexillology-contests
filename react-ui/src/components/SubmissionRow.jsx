@@ -15,6 +15,7 @@ import { makeStyles, useTheme, withStyles } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import CheckIcon from '@material-ui/icons/Check';
 import CloseIcon from '@material-ui/icons/Close';
+import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import UndoIcon from '@material-ui/icons/Undo';
@@ -45,11 +46,19 @@ const useStyles = makeStyles((theme) => ({
     maxHeight: 300,
     overflowY: 'auto',
   },
+  entryError: {
+    color: theme.palette.error.main,
+  },
   entryName: {
     width: 172,
     [theme.breakpoints.up('md')]: {
       width: 200,
     },
+  },
+  entryNameWrapper: {
+    alignItems: 'center',
+    display: 'flex',
+    columnGap: theme.spacing(1),
   },
   expandedImage: {
     maxHeight: 300,
@@ -179,20 +188,13 @@ const updateSubmissions = (currentData, response) => {
 
   if (currentData.userBreakdown) {
     const { submissionStatus, user } = currentData.submissions.find(({ id }) => id === response.id);
-    let difference = 0;
-    if (submissionStatus !== 'approved' && response.submissionStatus === 'approved') {
-      difference = 1;
-    } else if (submissionStatus === 'approved' && response.submissionStatus !== 'approved') {
-      difference = -1;
-    }
-    let { userBreakdown } = currentData;
-    if (difference) {
+    if (submissionStatus !== response.submissionStatus) {
+      const { userBreakdown } = currentData;
       const changedUserBreakdown = userBreakdown[user];
-      const approved = (changedUserBreakdown.approved ?? 0) + difference;
-      userBreakdown = { ...userBreakdown, [user]: { ...changedUserBreakdown, approved } };
+      changedUserBreakdown[submissionStatus] -= 1;
+      changedUserBreakdown[response.submissionStatus] += 1;
+      newData.userBreakdown = userBreakdown;
     }
-
-    newData.userBreakdown = userBreakdown;
   }
 
   return newData;
@@ -237,7 +239,9 @@ function SubmissionRow({
     submissionTime,
     user,
   },
-  userBreakdown: { approved, submitted },
+  userBreakdown: {
+    approved = 0, rejected = 0, submitted, withdrawn = 0,
+  },
 }) {
   const { isMutating: isMutatingReview, trigger: triggerReview } = useSwrMutation(
     '/mod/reviewSubmissions',
@@ -255,8 +259,12 @@ function SubmissionRow({
   const classes = useStyles();
   const theme = useTheme();
 
+  const submissionApproved = submissionStatus === 'approved';
+  const submissionRejected = submissionStatus === 'rejected';
+  const submissionWithdrawn = submissionStatus === 'withdrawn';
+
   useEffect(() => {
-    setAction(submissionStatus === 'approved' ? 'pending' : 'approved');
+    setAction(submissionApproved ? 'pending' : 'approved');
   }, [submissionStatus]);
 
   useEffect(() => {
@@ -265,8 +273,6 @@ function SubmissionRow({
   }, [rejectionReason]);
 
   const actionRejected = action === 'rejected';
-  const submissionRejected = submissionStatus === 'rejected';
-  const submissionWithdrawn = submissionStatus === 'withdrawn';
 
   const validateForm = (value, forceValidate = false) => {
     const actualValue = value ?? formState.reason.value;
@@ -396,15 +402,23 @@ function SubmissionRow({
   };
 
   const getSubmitAlert = () => {
+    if (submissionWithdrawn) {
+      return null;
+    }
+
     let message;
     let severity;
-    if (approved >= 2) {
+
+    const showApprovedErrorOnCount = submissionApproved ? 3 : 2;
+
+    if (approved >= showApprovedErrorOnCount) {
       message = 'This user already has 2 or more approved entries!';
       severity = 'error';
-    } else if (submitted > 2) {
+    } else if (submitted - (rejected + withdrawn) > 2) {
       message = 'This user has more than 2 submissions.';
       severity = 'warning';
     }
+
     return message ? <Alert severity={severity}>{message}</Alert> : null;
   };
 
@@ -414,9 +428,14 @@ function SubmissionRow({
     <>
       <TableRow className={classes.mainRow}>
         <TableCell className={classes.entryName}>
-          <Typography component="span" variant="subtitle2">
-            {entryName}
-          </Typography>
+          <div className={classes.entryNameWrapper}>
+            {moderator && approved > 2 && submissionApproved && (
+              <ErrorOutlineIcon className={classes.entryError} />
+            )}
+            <Typography component="span" variant="subtitle2">
+              {entryName}
+            </Typography>
+          </div>
         </TableCell>
         <TableCell className={classes.usernameCell}>
           {moderator && !open && isMdUp && redditUserAttribution}
