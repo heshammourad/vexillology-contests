@@ -2,7 +2,7 @@
  * Display entry image with link
  */
 
-import CardActionArea from '@material-ui/core/CardActionArea';
+import CardActionArea from '@mui/material/CardActionArea';
 import PropTypes from 'prop-types';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 
@@ -42,7 +42,7 @@ CardImageLink.propTypes = {
 
 CardImageLink.defaultProps = {
   nextState: {},
-  onClick: () => { },
+  onClick: () => {},
 };
 
 export default CardImageLink;

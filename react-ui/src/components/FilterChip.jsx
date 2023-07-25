@@ -3,8 +3,8 @@
  * Checkmark and filled if selected
  */
 
-import Chip from '@material-ui/core/Chip';
-import CheckIcon from '@material-ui/icons/Check';
+import CheckIcon from '@mui/icons-material/Check';
+import Chip from '@mui/material/Chip';
 import PropTypes from 'prop-types';
 
 function FilterChip({ label, onClick, selected }) {

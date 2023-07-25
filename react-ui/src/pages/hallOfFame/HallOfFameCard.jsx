@@ -1,13 +1,13 @@
-import Box from '@material-ui/core/Box';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-import Collapse from '@material-ui/core/Collapse';
-import IconButton from '@material-ui/core/IconButton';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import FlagTwoToneIcon from '@mui/icons-material/FlagTwoTone';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import CardActions from '@mui/material/CardActions';
+import CardContent from '@mui/material/CardContent';
+import Collapse from '@mui/material/Collapse';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
 import clsx from 'clsx';
 import format from 'date-fns/format';
 import getYear from 'date-fns/getYear';
@@ -146,6 +146,7 @@ function HallOfFameCard({
             onClick={handleExpandClick}
             aria-expanded={expanded}
             aria-label="Show descrption"
+            size="large"
           >
             <ExpandMoreIcon />
           </IconButton>

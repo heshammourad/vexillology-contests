@@ -2,30 +2,31 @@
  * Voting and winners
  */
 
-import Box from '@material-ui/core/Box';
-import Button from '@material-ui/core/Button';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-import Chip from '@material-ui/core/Chip';
-import Divider from '@material-ui/core/Divider';
-import FormControl from '@material-ui/core/FormControl';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Grid from '@material-ui/core/Grid';
-import Input from '@material-ui/core/Input';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import MenuItem from '@material-ui/core/MenuItem';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import Select from '@material-ui/core/Select';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
-import DescriptionIcon from '@material-ui/icons/Description';
-import EmojiEventsOutlinedIcon from '@material-ui/icons/EmojiEventsOutlined';
-import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
-import ThumbsUpDownOutlinedIcon from '@material-ui/icons/ThumbsUpDownOutlined';
+import DescriptionIcon from '@mui/icons-material/Description';
+import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import ThumbsUpDownOutlinedIcon from '@mui/icons-material/ThumbsUpDownOutlined';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardActions from '@mui/material/CardActions';
+import CardContent from '@mui/material/CardContent';
+import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Grid from '@mui/material/Grid';
+import Input from '@mui/material/Input';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListSubheader from '@mui/material/ListSubheader';
+import MenuItem from '@mui/material/MenuItem';
+import RadioGroup from '@mui/material/RadioGroup';
+import Select from '@mui/material/Select';
+import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import makeStyles from '@mui/styles/makeStyles';
 import clsx from 'clsx';
 import React, { useState, useEffect } from 'react';
 import { forceCheck } from 'react-lazyload';
@@ -481,7 +482,7 @@ function Contest() {
                   dense
                   subheader={
                     <ListSubheader className={classes.listSubheader}>Density</ListSubheader>
-                  }
+                    }
                 >
                   <RadioGroup
                     aria-label="density"
@@ -568,8 +569,8 @@ function Contest() {
                         className={clsx(
                           classes.categoryChip,
                           categoryLabelClasses[
-                          // eslint-disable-next-line indent
-                          `label${categories.indexOf(value) % LABEL_COLORS.length}`
+                            // eslint-disable-next-line indent
+                            `label${categories.indexOf(value) % LABEL_COLORS.length}`
                           ],
                         )}
                         key={value}

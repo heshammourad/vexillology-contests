@@ -1,8 +1,8 @@
-import Paper from '@material-ui/core/Paper';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableContainer from '@material-ui/core/TableContainer';
-import { makeStyles } from '@material-ui/core/styles';
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableContainer from '@mui/material/TableContainer';
+import makeStyles from '@mui/styles/makeStyles';
 import PropTypes from 'prop-types';
 
 import types from '../common/types';

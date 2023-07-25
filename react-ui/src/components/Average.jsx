@@ -2,7 +2,7 @@
  * Display average score for entry
  */
 
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 
 function Average({ average, className, fullText }) {

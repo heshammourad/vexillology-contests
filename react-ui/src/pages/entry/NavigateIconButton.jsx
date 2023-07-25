@@ -1,5 +1,5 @@
-import IconButton from '@material-ui/core/IconButton';
-import { makeStyles } from '@material-ui/core/styles';
+import IconButton from '@mui/material/IconButton';
+import makeStyles from '@mui/styles/makeStyles';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 
@@ -23,7 +23,7 @@ function NavigateIconButton({ className, Icon, onClick }) {
   const classes = useStyles();
 
   return (
-    <IconButton className={clsx(classes.navigateButton, className)} onClick={onClick}>
+    <IconButton className={clsx(classes.navigateButton, className)} onClick={onClick} size="large">
       <Icon className={classes.navigateIcon} fontSize="large" />
     </IconButton>
   );

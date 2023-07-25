@@ -2,14 +2,14 @@
  * Landing page of https://www.vexillologycontests.com/
  */
 
-import Box from '@material-ui/core/Box';
-import Container from '@material-ui/core/Container';
-import Divider from '@material-ui/core/Divider';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
-import EmailIcon from '@material-ui/icons/Email';
-import FacebookIcon from '@material-ui/icons/Facebook';
-import TwitterIcon from '@material-ui/icons/Twitter';
+import EmailIcon from '@mui/icons-material/Email';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Divider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
 import { useLocation } from 'react-router-dom';
 
 import { useSwrData } from '../../common';
@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme) => ({
       color: theme.palette.grey[700],
       marginLeft: 50,
       '&:first-of-type': {
-        [theme.breakpoints.down('sm')]: {
+        [theme.breakpoints.down('md')]: {
           marginLeft: 0,
         },
       },

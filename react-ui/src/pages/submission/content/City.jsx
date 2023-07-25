@@ -1,11 +1,11 @@
-import Box from '@material-ui/core/Box';
-import Collapse from '@material-ui/core/Collapse';
-import IconButton from '@material-ui/core/IconButton';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import { makeStyles } from '@material-ui/core/styles';
-import ExpandLess from '@material-ui/icons/ExpandLess';
-import ExpandMore from '@material-ui/icons/ExpandMore';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import Box from '@mui/material/Box';
+import Collapse from '@mui/material/Collapse';
+import IconButton from '@mui/material/IconButton';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import makeStyles from '@mui/styles/makeStyles';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 
@@ -41,7 +41,9 @@ function City({
             </ExternalLink>
           )}
         />
-        <IconButton onClick={handleClick}>{open ? <ExpandLess /> : <ExpandMore />}</IconButton>
+        <IconButton onClick={handleClick} size="large">
+          {open ? <ExpandLess /> : <ExpandMore />}
+        </IconButton>
       </ListItem>
       <Collapse className={classes.collapse} in={open} timeout="auto" unmountOnExit>
         <Box display="flex">

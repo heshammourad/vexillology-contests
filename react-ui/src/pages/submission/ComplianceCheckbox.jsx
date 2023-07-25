@@ -2,9 +2,9 @@
  * Self-attestation checkbox
  */
 
-import Checkbox from '@material-ui/core/Checkbox';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import { makeStyles } from '@material-ui/core/styles';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import makeStyles from '@mui/styles/makeStyles';
 import PropTypes from 'prop-types';
 
 const useStyles = makeStyles({
@@ -40,7 +40,7 @@ ComplianceCheckbox.propTypes = {
 };
 
 ComplianceCheckbox.defaultProps = {
-  onBlur: () => { },
+  onBlur: () => {},
 };
 
 export default ComplianceCheckbox;

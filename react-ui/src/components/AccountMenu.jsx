@@ -3,21 +3,21 @@
  * Settings and log out (if moderator: submission review)
  */
 
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import Divider from '@material-ui/core/Divider';
-import Grow from '@material-ui/core/Grow';
-import IconButton from '@material-ui/core/IconButton';
-import ListItemText from '@material-ui/core/ListItemText';
-import MenuList from '@material-ui/core/MenuList';
-import Paper from '@material-ui/core/Paper';
-import Popper from '@material-ui/core/Popper';
-import { makeStyles } from '@material-ui/core/styles';
-import AccountCircleIcon from '@material-ui/icons/AccountCircle';
-import AccountCircleOutlinedIcon from '@material-ui/icons/AccountCircleOutlined';
-import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import PlaylistAddCheckIcon from '@material-ui/icons/PlaylistAddCheck';
-import RedditIcon from '@material-ui/icons/Reddit';
-import SettingsIcon from '@material-ui/icons/Settings';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
+import RedditIcon from '@mui/icons-material/Reddit';
+import SettingsIcon from '@mui/icons-material/Settings';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
+import Divider from '@mui/material/Divider';
+import Grow from '@mui/material/Grow';
+import IconButton from '@mui/material/IconButton';
+import ListItemText from '@mui/material/ListItemText';
+import MenuList from '@mui/material/MenuList';
+import Paper from '@mui/material/Paper';
+import Popper from '@mui/material/Popper';
+import makeStyles from '@mui/styles/makeStyles';
 import { useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -103,6 +103,7 @@ function AccountMenu({ color }) {
         color={color}
         onClick={toggleMenu}
         ref={anchorRef}
+        size="large"
       >
         <CustomBadge invisible={!submissionsToReview}>
           {isLoggedIn ? <AccountCircleIcon /> : <AccountCircleOutlinedIcon />}

@@ -2,9 +2,10 @@
  * Record and display user's vote
  */
 
-import Button from '@material-ui/core/Button';
-import Slider from '@material-ui/core/Slider';
-import { makeStyles, withStyles } from '@material-ui/core/styles';
+import Button from '@mui/material/Button';
+import Slider from '@mui/material/Slider';
+import makeStyles from '@mui/styles/makeStyles';
+import withStyles from '@mui/styles/withStyles';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { useState, useEffect, useRef } from 'react';

@@ -2,13 +2,13 @@
  * Full page entry
  */
 
-import Box from '@material-ui/core/Box';
-import { makeStyles } from '@material-ui/core/styles';
-import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
-import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
-import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
-import NavigateNextIcon from '@material-ui/icons/NavigateNext';
-import RedditIcon from '@material-ui/icons/Reddit';
+import FlagTwoToneIcon from '@mui/icons-material/FlagTwoTone';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import RedditIcon from '@mui/icons-material/Reddit';
+import Box from '@mui/material/Box';
+import makeStyles from '@mui/styles/makeStyles';
 import clsx from 'clsx';
 import throttle from 'lodash/throttle';
 import {

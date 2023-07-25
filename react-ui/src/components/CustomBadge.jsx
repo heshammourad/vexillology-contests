@@ -2,7 +2,7 @@
  * Dot overlaid on top-right of icon (i.e. notification circle)
  */
 
-import Badge from '@material-ui/core/Badge';
+import Badge from '@mui/material/Badge';
 import PropTypes from 'prop-types';
 
 function CustomBadge({ children, invisible }) {

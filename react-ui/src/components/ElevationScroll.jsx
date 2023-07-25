@@ -1,4 +1,4 @@
-import useScrollTrigger from '@material-ui/core/useScrollTrigger';
+import useScrollTrigger from '@mui/material/useScrollTrigger';
 import PropTypes from 'prop-types';
 import { cloneElement } from 'react';
 

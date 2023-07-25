@@ -1,9 +1,9 @@
-import Box from '@material-ui/core/Box';
-import List from '@material-ui/core/List';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
-import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
-import RedditIcon from '@material-ui/icons/Reddit';
+import FlagTwoToneIcon from '@mui/icons-material/FlagTwoTone';
+import RedditIcon from '@mui/icons-material/Reddit';
+import Box from '@mui/material/Box';
+import List from '@mui/material/List';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
 import differenceInDays from 'date-fns/differenceInDays';
 import PropTypes from 'prop-types';
 import { useState } from 'react';

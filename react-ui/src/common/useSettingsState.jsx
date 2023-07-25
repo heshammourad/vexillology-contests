@@ -4,8 +4,8 @@
  * @param isInfoOpen Information drawer for entry
  */
 
-import { useTheme } from '@material-ui/core/styles';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { useEffect } from 'react';
 import createPersistedState from 'use-persisted-state';
 

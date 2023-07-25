@@ -2,9 +2,9 @@
  * Display user rating with star symbols
  */
 
-import { makeStyles } from '@material-ui/core/styles';
-import StarIcon from '@material-ui/icons/Star';
-import StarBorderIcon from '@material-ui/icons/StarBorder';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
+import makeStyles from '@mui/styles/makeStyles';
 import PropTypes from 'prop-types';
 
 const STAR_SIZE = 16;

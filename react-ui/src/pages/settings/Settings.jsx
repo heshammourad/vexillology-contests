@@ -2,8 +2,8 @@
  * Site-wide settings
  */
 
-import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
 import { useLocation } from 'react-router-dom';
 
 import { putData } from '../../api';

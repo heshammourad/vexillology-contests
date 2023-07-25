@@ -1,6 +1,7 @@
-import Typography from '@material-ui/core/Typography';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
+import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import makeStyles from '@mui/styles/makeStyles';
 import PropTypes from 'prop-types';
 
 const useStyles = makeStyles({

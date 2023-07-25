@@ -8,11 +8,11 @@
  * @param isOpen
  */
 
-import Drawer from '@material-ui/core/Drawer';
-import IconButton from '@material-ui/core/IconButton';
-import Toolbar from '@material-ui/core/Toolbar';
-import { makeStyles } from '@material-ui/core/styles';
-import CloseIcon from '@material-ui/icons/Close';
+import CloseIcon from '@mui/icons-material/Close';
+import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import Toolbar from '@mui/material/Toolbar';
+import makeStyles from '@mui/styles/makeStyles';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 
@@ -111,7 +111,7 @@ function PageWithDrawer({
         classes={{ paper: classes.drawerPaper }}
       >
         <div className={classes.drawerHeader}>
-          <IconButton onClick={handleClose}>
+          <IconButton onClick={handleClose} size="large">
             <CloseIcon />
           </IconButton>
           <div className={classes.drawerHeading}>{drawer.heading}</div>

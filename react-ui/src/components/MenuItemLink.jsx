@@ -2,9 +2,9 @@
  * Row on vertically stacked menu list
  */
 
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import MenuItem from '@material-ui/core/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
 import PropTypes from 'prop-types';
 import { forwardRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
@@ -43,7 +43,7 @@ MenuItemLink.propTypes = {
 
 MenuItemLink.defaultProps = {
   Icon: null,
-  onClick: () => { },
+  onClick: () => {},
   state: {},
 };
 

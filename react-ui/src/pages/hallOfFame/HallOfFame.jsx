@@ -3,12 +3,13 @@
  * Horizontal year scroll, vertical entry scroll
  */
 
-import Paper from '@material-ui/core/Paper';
-import Tab from '@material-ui/core/Tab';
-import Tabs from '@material-ui/core/Tabs';
-import Toolbar from '@material-ui/core/Toolbar';
-import { useTheme, makeStyles } from '@material-ui/core/styles';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
+import Paper from '@mui/material/Paper';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import Toolbar from '@mui/material/Toolbar';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import makeStyles from '@mui/styles/makeStyles';
 import getYear from 'date-fns/getYear';
 import parseISO from 'date-fns/parseISO';
 import groupBy from 'lodash/groupBy';
@@ -105,10 +106,10 @@ function HallOfFame() {
     setSelectedYear(newValue);
     animateScroll.scrollTo(
       document.getElementById(`hofc-${groups[newValue][0].date}`).getBoundingClientRect().top
-      + window.scrollY
-      - getToolbarHeight()
-      - tabsHeight
-      - theme.spacing(3) / 2,
+        + window.scrollY
+        - getToolbarHeight()
+        - tabsHeight
+        - theme.spacing(3) / 2,
       {
         duration: 650,
         delay: 0,

@@ -2,13 +2,13 @@
  * List all contests (collapsible by year)
  */
 
-import Collapse from '@material-ui/core/Collapse';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import { makeStyles } from '@material-ui/core/styles';
-import ExpandLess from '@material-ui/icons/ExpandLess';
-import ExpandMore from '@material-ui/icons/ExpandMore';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import Collapse from '@mui/material/Collapse';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import makeStyles from '@mui/styles/makeStyles';
 import format from 'date-fns/format';
 import getYear from 'date-fns/getYear';
 import parseISO from 'date-fns/parseISO';
@@ -77,12 +77,12 @@ function Contests() {
                           primary={(
                             <>
                               {!yearEnd && (
-                                <>
-                                  <span className={classes.month}>
-                                    {format(parseISO(date), 'MMM yy')}
-                                  </span>
+                              <>
+                                <span className={classes.month}>
+                                  {format(parseISO(date), 'MMM yy')}
+                                </span>
                                   &nbsp;-&nbsp;
-                                </>
+                              </>
                               )}
                               {name}
                             </>

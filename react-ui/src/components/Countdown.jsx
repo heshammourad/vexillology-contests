@@ -3,13 +3,14 @@
  * Displayed in header, entry description drawer, and submission page
  */
 
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
-import RefreshIcon from '@material-ui/icons/Refresh';
-import ScheduleIcon from '@material-ui/icons/Schedule';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import makeStyles from '@mui/styles/makeStyles';
 import clsx from 'clsx';
 import differenceInDays from 'date-fns/differenceInDays';
 import formatDistanceStrict from 'date-fns/formatDistanceStrict';
@@ -54,7 +55,7 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.error.main,
   },
   icon: {
-    [theme.breakpoints.down('xs')]: {
+    [theme.breakpoints.down('sm')]: {
       display: 'none',
     },
   },
@@ -154,7 +155,7 @@ function Countdown({
             {variantValues.labels.reload}
           </Button>
         ) : (
-          <IconButton onClick={handleReload}>
+          <IconButton onClick={handleReload} size="large">
             <RefreshIcon />
           </IconButton>
         ))}
@@ -173,7 +174,7 @@ Countdown.propTypes = {
 
 Countdown.defaultProps = {
   fontSize: 'medium',
-  handleExpiry: () => { },
+  handleExpiry: () => {},
   handleReload: () => {
     window.location.reload();
   },

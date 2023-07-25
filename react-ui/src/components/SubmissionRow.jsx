@@ -3,24 +3,26 @@
  * Mod: review and approval
  */
 
-import Chip from '@material-ui/core/Chip';
-import Collapse from '@material-ui/core/Collapse';
-import Grid from '@material-ui/core/Grid';
-import IconButton from '@material-ui/core/IconButton';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-import TextField from '@material-ui/core/TextField';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles, useTheme, withStyles } from '@material-ui/core/styles';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
-import CheckIcon from '@material-ui/icons/Check';
-import CloseIcon from '@material-ui/icons/Close';
-import ExpandLess from '@material-ui/icons/ExpandLess';
-import ExpandMore from '@material-ui/icons/ExpandMore';
-import UndoIcon from '@material-ui/icons/Undo';
-import Alert from '@material-ui/lab/Alert';
-import ToggleButton from '@material-ui/lab/ToggleButton';
-import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import UndoIcon from '@mui/icons-material/Undo';
+import Alert from '@mui/material/Alert';
+import Chip from '@mui/material/Chip';
+import Collapse from '@mui/material/Collapse';
+import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import TextField from '@mui/material/TextField';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import makeStyles from '@mui/styles/makeStyles';
+import withStyles from '@mui/styles/withStyles';
 import clsx from 'clsx';
 import format from 'date-fns/format';
 import isToday from 'date-fns/isToday';
@@ -85,7 +87,7 @@ const useStyles = makeStyles((theme) => ({
   },
   previewImage: {
     width: 140,
-    [theme.breakpoints.down('xs')]: {
+    [theme.breakpoints.down('sm')]: {
       padding: 0,
       width: 0,
     },
@@ -111,7 +113,7 @@ const useStyles = makeStyles((theme) => ({
   submissionTime: {
     whiteSpace: 'nowrap',
     width: 72,
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       padding: 0,
       width: 0,
     },
@@ -119,7 +121,7 @@ const useStyles = makeStyles((theme) => ({
   usernameCell: {
     whiteSpace: 'nowrap',
     width: 172,
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       padding: 0,
       width: 0,
     },

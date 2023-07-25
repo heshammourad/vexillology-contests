@@ -2,8 +2,8 @@
  * Displaying row with internal page in vertically stacked list
  */
 
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -41,7 +41,7 @@ ListItemLink.propTypes = {
 
 ListItemLink.defaultProps = {
   className: null,
-  onClick: () => { },
+  onClick: () => {},
   state: {},
 };
 

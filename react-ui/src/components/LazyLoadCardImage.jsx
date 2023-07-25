@@ -2,8 +2,8 @@
  * Only load image when in viewport
  */
 
-import CardMedia from '@material-ui/core/CardMedia';
-import { makeStyles } from '@material-ui/core/styles';
+import CardMedia from '@mui/material/CardMedia';
+import makeStyles from '@mui/styles/makeStyles';
 import PropTypes from 'prop-types';
 import LazyLoad from 'react-lazyload';
 

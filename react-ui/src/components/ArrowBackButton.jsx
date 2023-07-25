@@ -1,5 +1,5 @@
-import IconButton from '@material-ui/core/IconButton';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import IconButton from '@mui/material/IconButton';
 import PropTypes from 'prop-types';
 import { Link as RouterLink } from 'react-router-dom';
 
@@ -9,7 +9,14 @@ function ArrowBackButton({
   color, onClick, state, to,
 }) {
   return (
-    <IconButton color={color} component={RouterLink} onClick={onClick} state={state} to={to}>
+    <IconButton
+      color={color}
+      component={RouterLink}
+      onClick={onClick}
+      state={state}
+      to={to}
+      size="large"
+    >
       <ArrowBackIcon />
     </IconButton>
   );

@@ -2,7 +2,7 @@
  * Clickable icons for both internal and external links
  */
 
-import IconButton from '@material-ui/core/IconButton';
+import IconButton from '@mui/material/IconButton';
 import PropTypes from 'prop-types';
 
 function CustomIconButton({
