@@ -30,7 +30,6 @@ const ThemedSlider = withStyles((theme) => ({
   mark: {
     color: theme.palette.primary.main,
     height: 8,
-    marginTop: -3,
     width: 2,
   },
   markActive: {
