@@ -477,7 +477,7 @@ function Contest() {
           : {
             heading: 'Settings',
             children: (
-              <FormControl component="fieldset">
+              <FormControl variant="standard" component="fieldset">
                 <List
                   dense
                   subheader={
@@ -557,6 +557,7 @@ function Contest() {
                 Filter categories:
               </Typography>
               <Select
+                variant="standard"
                 input={<Input />}
                 labelId={FILTER_CATEGORIES_LABEL_ID}
                 MenuProps={CATEGORY_MENU_PROPS}

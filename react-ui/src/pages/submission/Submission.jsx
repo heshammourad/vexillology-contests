@@ -599,6 +599,7 @@ function Submission() {
                           {previewDescription ? 'Hide Preview' : 'Preview Description'}
                         </Button>
                         <FormControl
+                          variant="standard"
                           required
                           component="fieldset"
                           color="secondary"
@@ -632,7 +633,7 @@ function Submission() {
                             <ComplianceCheckbox
                               checked={formState.complianceOriginalArt.value || false}
                               label={`Is all the art used either original, or any components taken
-                                from public domain attributed in the description?`}
+                              from public domain attributed in the description?`}
                               name="complianceOriginalArt"
                               onBlur={handleFieldBlur}
                               onChange={handleFieldChange}
@@ -640,7 +641,7 @@ function Submission() {
                             <ComplianceCheckbox
                               checked={formState.complianceNsfwFree.value || false}
                               label={`Is your flag free of NSFW content? This includes nudity, gore
-                                and banned symbols.`}
+                              and banned symbols.`}
                               name="complianceNsfwFree"
                               onBlur={handleFieldBlur}
                               onChange={handleFieldChange}
