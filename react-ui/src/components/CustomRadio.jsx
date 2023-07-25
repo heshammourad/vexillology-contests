@@ -4,7 +4,7 @@ import withStyles from '@mui/styles/withStyles';
 const CustomRadio = withStyles((theme) => ({
   root: {
     color: theme.palette.grey[600],
-    '&$checked': {
+    '&.Mui-checked': {
       color: theme.palette.primary.main,
     },
   },

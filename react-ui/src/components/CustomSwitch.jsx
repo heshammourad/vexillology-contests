@@ -4,10 +4,10 @@ import withStyles from '@mui/styles/withStyles';
 const CustomSwitch = withStyles((theme) => ({
   switchBase: {
     color: theme.palette.common.white,
-    '&$checked': {
+    '&.Mui-checked': {
       color: theme.palette.primary.main,
     },
-    '&$checked + $track': {
+    '&.Mui-checked + .Mui-track': {
       backgroundColor: theme.palette.primary.light,
     },
   },

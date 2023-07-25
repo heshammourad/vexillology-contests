@@ -42,7 +42,7 @@ const ThemedSlider = withStyles((theme) => ({
   },
   thumb: {
     color: theme.palette.primary.main,
-    '&:focus, &:hover, &$active': {
+    '&:focus, &:hover, &.Mui-active': {
       boxShadow: '0px 0px 0px 8px rgba(255, 69, 0, 0.16)',
     },
   },
