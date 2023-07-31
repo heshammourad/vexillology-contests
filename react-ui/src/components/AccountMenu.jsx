@@ -9,6 +9,7 @@ import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
 import RedditIcon from '@mui/icons-material/Reddit';
 import SettingsIcon from '@mui/icons-material/Settings';
+import Box from '@mui/material/Box';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
 import Divider from '@mui/material/Divider';
 import Grow from '@mui/material/Grow';
@@ -17,7 +18,6 @@ import ListItemText from '@mui/material/ListItemText';
 import MenuList from '@mui/material/MenuList';
 import Paper from '@mui/material/Paper';
 import Popper from '@mui/material/Popper';
-import makeStyles from '@mui/styles/makeStyles';
 import { useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -28,27 +28,10 @@ import types from '../common/types';
 import CustomBadge from './CustomBadge';
 import MenuItemLink from './MenuItemLink';
 
-const useStyles = makeStyles((theme) => ({
-  accountMenu: {
-    display: 'flex',
-    flexDirection: 'column',
-    rowGap: theme.spacing(1),
-    padding: theme.spacing(2),
-    width: 300,
-  },
-  popper: {
-    zIndex: 1,
-  },
-  username: {
-    fontWeight: 'bold',
-  },
-}));
-
 function AccountMenu({ color }) {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const anchorRef = useRef(null);
   const { pathname } = useLocation();
-  const classes = useStyles();
 
   const [{ isLoggedIn, refreshToken, username }, setAuthState] = useAuthState();
   const sendUserToAuthUrl = useRedditLogIn();
@@ -111,11 +94,11 @@ function AccountMenu({ color }) {
       </IconButton>
       <Popper
         anchorEl={anchorRef.current}
-        className={classes.popper}
         disablePortal
         open={isMenuOpen}
         placement="bottom-end"
         role={undefined}
+        sx={{ zIndex: 1 }}
         transition
       >
         {({ TransitionProps }) => (
@@ -124,10 +107,16 @@ function AccountMenu({ color }) {
             <Paper>
               <ClickAwayListener onClickAway={closeMenu}>
                 <MenuList
-                  className={classes.accountMenu}
                   autoFocusItem={isMenuOpen}
                   id="accountMenu"
                   onKeyDown={handleListKeyDown}
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    rowGap: 1,
+                    p: 2,
+                    width: 300,
+                  }}
                 >
                   {isLoggedIn ? (
                     <>
@@ -136,7 +125,9 @@ function AccountMenu({ color }) {
                           <>
                             Logged in as
                             {' '}
-                            <span className={classes.username}>{username}</span>
+                            <Box component="span" sx={{ fontWeight: 'bold' }}>
+                              {username}
+                            </Box>
                           </>
                         )}
                       />

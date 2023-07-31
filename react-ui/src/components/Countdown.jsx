@@ -5,13 +5,12 @@
 
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import makeStyles from '@mui/styles/makeStyles';
-import clsx from 'clsx';
 import differenceInDays from 'date-fns/differenceInDays';
 import formatDistanceStrict from 'date-fns/formatDistanceStrict';
 import formatDuration from 'date-fns/formatDuration';
@@ -42,25 +41,6 @@ const VARIANTS = {
   },
 };
 
-const useStyles = makeStyles((theme) => ({
-  countdown: {
-    alignItems: 'center',
-    columnGap: 12,
-    display: 'inline-flex',
-  },
-  countdownLabel: {
-    lineHeight: '24px',
-  },
-  countdownWarning: {
-    color: theme.palette.error.main,
-  },
-  icon: {
-    [theme.breakpoints.down('sm')]: {
-      display: 'none',
-    },
-  },
-}));
-
 function Countdown({
   endDate, fontSize, handleExpiry, handleReload, startDate, variant,
 }) {
@@ -68,7 +48,6 @@ function Countdown({
   const [textFontSize, setFontSize] = useState();
   const [timeLeft, setTimeLeft] = useState();
 
-  const classes = useStyles();
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
 
@@ -128,16 +107,23 @@ function Countdown({
     return null;
   }
 
+  const showCountdownWarning = timeLeft && !differenceInDays(endDate, new Date());
+  const useDynamicFontSize = isMdUp && timeLeft && textFontSize;
   return (
-    <div
-      className={clsx(classes.countdown, {
-        [classes.countdownWarning]: timeLeft && !differenceInDays(endDate, new Date()),
-      })}
+    <Box
+      sx={{
+        alignItems: 'center',
+        columnGap: 1.5,
+        display: 'inline-flex',
+        ...(showCountdownWarning && { color: 'error.main' }),
+      }}
     >
-      <ScheduleIcon className={classes.icon} fontSize={fontSize} />
+      <ScheduleIcon
+        sx={(t) => ({ [t.breakpoints.down('sm')]: { display: 'none' } })}
+        fontSize={fontSize}
+      />
       <Typography
-        className={classes.countdownLabel}
-        style={isMdUp && timeLeft && textFontSize ? { fontSize: `${textFontSize}rem` } : null}
+        sx={{ lineHeight: '24px', ...(useDynamicFontSize && { fontSize: `${textFontSize}rem` }) }}
         variant={labelVariant}
       >
         {timeLeft ? (
@@ -159,7 +145,7 @@ function Countdown({
             <RefreshIcon />
           </IconButton>
         ))}
-    </div>
+    </Box>
   );
 }
 

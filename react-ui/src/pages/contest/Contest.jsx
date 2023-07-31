@@ -35,14 +35,13 @@ import { animateScroll } from 'react-scroll';
 
 import {
   useCache,
-  useCategoryLabelStyles,
   useClientWidth,
   useComponentsState,
   useScrollState,
   useSettingsState,
   useSwrData,
 } from '../../common';
-import { LABEL_COLORS } from '../../common/styles';
+import { getLabelColor } from '../../common/styles';
 import {
   ArrowBackButton,
   Average,
@@ -376,7 +375,6 @@ function Contest() {
   }
 
   const classes = useStyles();
-  const categoryLabelClasses = useCategoryLabelStyles();
 
   const getGridVariables = (fullWidth) => {
     const xs = 12;
@@ -567,15 +565,10 @@ function Contest() {
                   <Box display="flex" flexWrap="wrap">
                     {selected.map((value) => (
                       <Chip
-                        className={clsx(
-                          classes.categoryChip,
-                          categoryLabelClasses[
-                            // eslint-disable-next-line indent
-                            `label${categories.indexOf(value) % LABEL_COLORS.length}`
-                          ],
-                        )}
+                        className={classes.categoryChip}
                         key={value}
                         label={value}
+                        sx={getLabelColor(categories.indexOf(value))}
                       />
                     ))}
                   </Box>
@@ -590,14 +583,9 @@ function Contest() {
                     key={category}
                     value={category}
                   >
-                    <div
-                      className={clsx(
-                        classes.categoryLabel,
-                        categoryLabelClasses[`label${index % LABEL_COLORS.length}`],
-                      )}
-                    >
+                    <Box className={classes.categoryLabel} sx={getLabelColor(index)}>
                       {category}
-                    </div>
+                    </Box>
                   </MenuItem>
                 ))}
               </Select>

@@ -1,3 +1,4 @@
+import GlobalStyles from '@mui/material/GlobalStyles';
 import {
   createTheme,
   ThemeProvider,
@@ -5,8 +6,6 @@ import {
   adaptV4Theme,
 } from '@mui/material/styles';
 import PropTypes from 'prop-types';
-
-import { useGlobalStyles } from '../common';
 
 const theme = createTheme(
   adaptV4Theme({
@@ -29,10 +28,14 @@ const theme = createTheme(
 );
 
 function CustomThemeProvider({ children }) {
-  useGlobalStyles();
   return (
     <StyledEngineProvider injectFirst>
-      <ThemeProvider theme={theme}>{children}</ThemeProvider>
+      <ThemeProvider theme={theme}>
+        <>
+          <GlobalStyles styles={{ body: { minHeight: '100%' } }} />
+          {children}
+        </>
+      </ThemeProvider>
     </StyledEngineProvider>
   );
 }

@@ -2,32 +2,22 @@
  * Display entry category (if applicable)
  */
 
+import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
-import clsx from 'clsx';
 import PropTypes from 'prop-types';
 
-import { useCategoryLabelStyles } from '../common';
-import { LABEL_COLORS } from '../common/styles';
-
-const useStyles = makeStyles({
-  label: {
-    borderRadius: 4,
-    display: 'inline',
-    padding: '0 4px',
-  },
-});
+import { getLabelColor } from '../common/styles';
 
 function CategoryLabel({ categories, category, categoryRank }) {
-  const classes = useStyles();
-  const categoryLabelClasses = useCategoryLabelStyles();
   return (
     <div>
-      <div
-        className={clsx(
-          classes.label,
-          categoryLabelClasses[`label${categories.indexOf(category) % LABEL_COLORS.length}`],
-        )}
+      <Box
+        sx={{
+          borderRadius: 1,
+          display: 'inline',
+          p: '0 4px',
+          ...getLabelColor(categories.indexOf(category)),
+        }}
       >
         <Typography variant="caption">
           {categoryRank && (
@@ -38,7 +28,7 @@ function CategoryLabel({ categories, category, categoryRank }) {
           )}
           {category}
         </Typography>
-      </div>
+      </Box>
     </div>
   );
 }
