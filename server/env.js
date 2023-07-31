@@ -3,9 +3,9 @@
 const {
   DATABASE_SSL,
   ENV_LEVEL = 'prod',
-  ENV_PORT,
   LOG_LEVEL: LOG_LEVEL_DOTENV,
   NODE_ENV,
+  PORT,
   TITLE = 'Vexillology Contests',
 } = process.env;
 
@@ -24,7 +24,7 @@ const IS_UNAUTHENTICATED_VIEW = IS_DEV && VIEW_UNAUTHENTICATED;
 const LOG_LEVEL = LOG_LEVEL_DOTENV || 'info';
 
 const FRONTEND_PORT = 3000;
-const BACKEND_PORT = ENV_PORT || 5000;
+const BACKEND_PORT = PORT || 5000;
 
 module.exports = {
   BACKEND_PORT,
