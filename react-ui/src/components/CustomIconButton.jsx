@@ -5,8 +5,10 @@
 import IconButton from '@material-ui/core/IconButton';
 import PropTypes from 'prop-types';
 
+import types from '../common/types';
+
 function CustomIconButton({
-  ariaLabel, className, href, Icon, innerRef, onClick, size,
+  ariaLabel, className, color, href, Icon, innerRef, onClick, size,
 }) {
   let target;
   if (href) {
@@ -16,7 +18,7 @@ function CustomIconButton({
     <IconButton
       aria-label={ariaLabel}
       className={className}
-      color="inherit"
+      color={color}
       href={href}
       onClick={onClick}
       ref={innerRef}
@@ -31,6 +33,7 @@ function CustomIconButton({
 CustomIconButton.propTypes = {
   ariaLabel: PropTypes.string.isRequired,
   className: PropTypes.string,
+  color: types.color,
   href: PropTypes.string,
   Icon: PropTypes.shape({}).isRequired,
   innerRef: PropTypes.oneOfType([
@@ -43,6 +46,7 @@ CustomIconButton.propTypes = {
 
 CustomIconButton.defaultProps = {
   className: undefined,
+  color: 'inherit',
   href: undefined,
   innerRef: undefined,
   onClick: undefined,

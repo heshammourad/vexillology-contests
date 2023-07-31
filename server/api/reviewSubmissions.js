@@ -23,10 +23,8 @@ exports.get = async (req, res) => {
       const submittedCount = userBreakdown?.submitted ?? 0;
       userBreakdown.submitted = submittedCount + 1;
 
-      if (submissionStatus === 'approved') {
-        const approvedCount = userBreakdown?.approved ?? 0;
-        userBreakdown.approved = approvedCount + 1;
-      }
+      const statusCount = userBreakdown[submissionStatus] ?? 0;
+      userBreakdown[submissionStatus] = statusCount + 1;
 
       breakdownMap.set(user, userBreakdown);
     });
