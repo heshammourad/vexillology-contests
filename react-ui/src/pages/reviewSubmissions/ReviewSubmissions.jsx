@@ -58,18 +58,20 @@ function ReviewSubmissions() {
   );
 
   useEffect(() => {
+    let updatedSubmissions = [...submissions];
+
     const statusesToDisplay = Object.keys(selectedChips).filter((status) => selectedChips[status]);
-    const usersToDisplay = Object.keys(selectedUsers).filter((user) => selectedUsers[user]);
-    if (!statusesToDisplay.length && !usersToDisplay.length) {
-      setFilteredSubmissions(submissions);
-      return;
+    if (statusesToDisplay.length) {
+      // eslint-disable-next-line max-len
+      updatedSubmissions = updatedSubmissions.filter(({ submissionStatus }) => statusesToDisplay.includes(submissionStatus));
     }
-    setFilteredSubmissions(
-      submissions.filter(
-        // eslint-disable-next-line max-len
-        ({ submissionStatus, user }) => statusesToDisplay.includes(submissionStatus) && usersToDisplay.includes(user),
-      ),
-    );
+
+    const usersToDisplay = Object.keys(selectedUsers).filter((user) => selectedUsers[user]);
+    if (usersToDisplay.length) {
+      updatedSubmissions = updatedSubmissions.filter(({ user }) => usersToDisplay.includes(user));
+    }
+
+    setFilteredSubmissions(updatedSubmissions);
   }, [selectedChips, selectedUsers, submissions]);
 
   useEffect(() => {
