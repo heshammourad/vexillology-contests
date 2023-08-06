@@ -45,7 +45,7 @@ const useStyles = makeStyles((theme) => ({
  */
 function ReviewSubmissions() {
   const {
-    data: { name: contestName, submissions, userBreakdown = {} },
+    data: { name: contestName, submissions = [], userBreakdown = {} },
   } = useSwrData(API_PATH);
   const { state } = useLocation();
   const [selectedChips, setSelectedChips] = useState({});
