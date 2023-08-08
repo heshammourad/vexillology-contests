@@ -9,7 +9,7 @@ import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
-import DescriptionIcon from '@material-ui/icons/Description';
+// import DescriptionIcon from '@material-ui/icons/Description';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { useCallback } from 'react';
@@ -23,8 +23,8 @@ import {
 import {
   Average,
   CategoryLabel,
-  CustomIconButton,
-  Experiment,
+  // CustomIconButton,
+  // Experiment,
   FiveStar,
   RedditUserAttribution,
   VotingSlider,
@@ -34,10 +34,10 @@ import CardImageLink from './CardImageLink';
 import useContestSizing from './useContestSizing';
 
 const useStyles = makeStyles((theme) => ({
-  descriptionIcon: {
-    paddingLeft: 4,
-    top: -4,
-  },
+  // descriptionIcon: {
+  //   paddingLeft: 4,
+  //   top: -4,
+  // },
   disabledVoting: {
     cursor: 'wait',
   },
@@ -86,9 +86,6 @@ const useStyles = makeStyles((theme) => ({
 
 function ContestGrid({
   selectedCategories,
-  updateScroll,
-  setDescriptionEntryId,
-  setInfoOpen,
   votingExpired,
 }) {
   const { contestId } = useParams();
@@ -99,11 +96,6 @@ function ContestGrid({
   const classes = useStyles();
   const [{ votingDisabled }, setComponentsState] = useComponentsState();
   const { gridDisplayWidth, winnerDisplayWidth } = useContestSizing();
-
-  const viewDescription = (entryId) => {
-    setDescriptionEntryId(entryId);
-    setInfoOpen(true);
-  };
 
   const [{ density = 'default' }] = useSettingsState();
 
@@ -182,7 +174,7 @@ function ContestGrid({
                           </Typography>
                         )}
                       </Box>
-                      <Experiment name="contest_card_description">
+                      {/* <Experiment name="contest_card_description">
                         <CustomIconButton
                           ariaLabel="View description"
                           className={classes.descriptionIcon}
@@ -192,7 +184,7 @@ function ContestGrid({
                           }}
                           size="small"
                         />
-                      </Experiment>
+                      </Experiment> */}
                     </Box>
                     {(!isContestMode || category) && (
                       <div className={classes.entryRatings}>
@@ -225,7 +217,6 @@ function ContestGrid({
                     id={id}
                     image={imagePath}
                     nextState={{ selectedCategories }}
-                    onClick={updateScroll}
                     width={width}
                   />
                 </div>
@@ -252,18 +243,12 @@ function ContestGrid({
 }
 
 ContestGrid.propTypes = {
-  updateScroll: PropTypes.func,
-  setDescriptionEntryId: PropTypes.func,
   selectedCategories: PropTypes.arrayOf(PropTypes.string),
-  setInfoOpen: PropTypes.func,
   votingExpired: PropTypes.bool,
 };
 
 ContestGrid.defaultProps = {
-  updateScroll: () => { },
-  setDescriptionEntryId: () => { },
   selectedCategories: [],
-  setInfoOpen: () => { },
   votingExpired: true,
 };
 

@@ -9,13 +9,12 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { LazyLoadCardImage } from '../../components';
 
 function CardImageLink({
-  displayWidth, height, id, image, nextState, onClick, width,
+  displayWidth, height, id, image, width,
 }) {
-  const { state = {} } = useLocation();
+  const location = useLocation();
   return (
     <RouterLink
-      onClick={onClick}
-      state={{ ...nextState, back: (state || {}).back, isFromContest: true }}
+      state={{ background: location }}
       to={`entry/${id}`}
     >
       <CardActionArea>
@@ -35,14 +34,10 @@ CardImageLink.propTypes = {
   height: PropTypes.number.isRequired,
   id: PropTypes.string.isRequired,
   image: PropTypes.string.isRequired,
-  nextState: PropTypes.shape({}),
-  onClick: PropTypes.func,
   width: PropTypes.number.isRequired,
 };
 
 CardImageLink.defaultProps = {
-  nextState: {},
-  onClick: () => { },
 };
 
 export default CardImageLink;

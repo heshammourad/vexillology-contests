@@ -40,7 +40,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-function ContestWinners({ winners = [], updateScroll }) {
+function ContestWinners({ winners = [] }) {
   const classes = useStyles();
   const { headingVariant, winnerDisplayWidth } = useContestSizing();
 
@@ -69,7 +69,6 @@ function ContestWinners({ winners = [], updateScroll }) {
               height={height}
               id={id}
               image={imagePath}
-              onClick={updateScroll}
               width={width}
             />
           </Card>
@@ -92,12 +91,10 @@ const winnerPropTypes = {
 };
 
 ContestWinners.propTypes = {
-  updateScroll: PropTypes.func,
   winners: PropTypes.arrayOf(PropTypes.shape(winnerPropTypes)),
 };
 
 ContestWinners.defaultProps = {
-  updateScroll: () => { },
   winners: [],
 };
 

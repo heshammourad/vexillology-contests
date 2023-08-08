@@ -21,7 +21,6 @@ import {
   useSwrData,
 } from '../../common';
 import {
-  EntryDescriptionDrawer,
   HtmlWrapper,
   PageContainer,
   PageWithDrawer,
@@ -72,7 +71,6 @@ function Contest() {
   const { state = {} } = useLocation();
   const [isLoaded, setLoaded] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState(state?.selectedCategories ?? []);
-  const [descriptionEntryId, setDescriptionEntryId] = useState(null);
   const [isInfoOpen, setInfoOpen] = useState(false);
   const [votingExpired, setVotingExpired] = useState(false);
 
@@ -148,12 +146,6 @@ function Contest() {
     );
   }, [selectedCategories]);
 
-  const updateScroll = () => {
-    setScroll({
-      y: window.scrollY,
-    });
-  };
-
   const handleVotingExpired = useCallback(() => {
     updateCache(null);
     setVotingExpired(true);
@@ -167,9 +159,6 @@ function Contest() {
 
   const closeEntry = useCallback(() => {
     setInfoOpen(false);
-    setTimeout(() => {
-      setDescriptionEntryId(null);
-    }, 200);
   }, []);
 
   const { headingVariant } = useContestSizing();
@@ -194,11 +183,7 @@ function Contest() {
         right: <ContestAppBarRight {...{ setInfoOpen }} />,
         children: <ContestAppBarMain {...{ handleVotingExpired, handleReload }} />,
       }}
-      drawer={
-        descriptionEntryId
-          ? { heading: 'Info', children: <EntryDescriptionDrawer entryId={descriptionEntryId} /> }
-          : { heading: 'Settings', children: <ContestSettings /> }
-      }
+      drawer={{ heading: 'Settings', children: <ContestSettings /> }}
     >
       <ContestSponsor />
       {name && (
@@ -216,15 +201,12 @@ function Contest() {
           )}
           <ContestCategorySelector {...{ categories, selectedCategories, setSelectedCategories }} />
           {winners && winners.length > 0 && (
-            <ContestWinners {...{ winners, updateScroll }} />
+            <ContestWinners {...{ winners }} />
           )}
           {entries && (
             <ContestGrid
               {...{
-                updateScroll,
                 selectedCategories,
-                setDescriptionEntryId,
-                setInfoOpen,
                 votingExpired,
               }}
             />
