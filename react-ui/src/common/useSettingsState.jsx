@@ -1,4 +1,6 @@
 /**
+ * ??? use-persisted-state is an abandoned package, find alternative
+ * ??? setSettings does not allow access to prev value
  * Manages display settings
  * @param density Controls size of images
  * @param isInfoOpen Information drawer for entry
@@ -6,7 +8,7 @@
 
 import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import createPersistedState from 'use-persisted-state';
 
 const usePersistedSettings = createPersistedState('settings');
