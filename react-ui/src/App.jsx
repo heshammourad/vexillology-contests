@@ -1,7 +1,6 @@
 /**
  * Entry-point into the website. Contains theme and routing info.
  * Modal: https://v5.reactrouter.com/web/example/modal-gallery
- * Are entryIds unique?
  */
 
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -53,7 +52,7 @@ function App() {
 function ModalSwitch() {
   const location = useLocation();
 
-  const background = location.state && location.state.background;
+  const background = location.state?.background;
 
   return (
     <div>
