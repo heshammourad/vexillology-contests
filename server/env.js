@@ -12,7 +12,7 @@ const {
 // ONLY CHANGE THESE VARIABLES
 // (or those in dotenv, which require restart)
 const OPEN_ALL_CONTESTS = true;
-const HIDE_FIREBASE = false;
+const HIDE_FIREBASE = true;
 const VIEW_UNAUTHENTICATED = false;
 
 const IS_DEV = NODE_ENV !== 'production';
