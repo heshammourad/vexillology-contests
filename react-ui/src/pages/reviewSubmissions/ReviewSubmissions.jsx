@@ -4,6 +4,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import MessageIcon from '@material-ui/icons/Message';
 import Alert from '@material-ui/lab/Alert';
+import countBy from 'lodash/countBy';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -53,9 +54,15 @@ function ReviewSubmissions() {
   const [showErrorsOnly, setShowErrorsOnly] = useState(false);
   const [filteredSubmissions, setFilteredSubmissions] = useState([]);
 
+  const submissionStatusBreakdown = countBy(submissions, 'submissionStatus');
   const usersExceedingLimit = Object.entries(userBreakdown).filter(
     (breakdown) => breakdown[1].approved > 2,
   );
+
+  const getLabelWithCount = (label) => {
+    const count = submissionStatusBreakdown[label.toLowerCase()];
+    return `${label}${count ? ` (${count})` : ''}`;
+  };
 
   useEffect(() => {
     let updatedSubmissions = [...submissions];
@@ -135,25 +142,25 @@ You have more than 2 entries in this month's contest. Can you please let us know
               <div className={classes.chipContainer}>
                 <FilterChip
                   disabled={showErrorsOnly}
-                  label="Pending"
+                  label={getLabelWithCount('Pending')}
                   onClick={handleChipClick('pending')}
                   selected={selectedChips.pending ?? false}
                 />
                 <FilterChip
                   disabled={showErrorsOnly}
-                  label="Approved"
+                  label={getLabelWithCount('Approved')}
                   onClick={handleChipClick('approved')}
                   selected={selectedChips.approved ?? false}
                 />
                 <FilterChip
                   disabled={showErrorsOnly}
-                  label="Rejected"
+                  label={getLabelWithCount('Rejected')}
                   onClick={handleChipClick('rejected')}
                   selected={selectedChips.rejected ?? false}
                 />
                 <FilterChip
                   disabled={showErrorsOnly}
-                  label="Withdrawn"
+                  label={getLabelWithCount('Withdrawn')}
                   onClick={handleChipClick('withdrawn')}
                   selected={selectedChips.withdrawn ?? false}
                 />
