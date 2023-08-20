@@ -296,28 +296,30 @@ exports.get = async ({ params: { id }, username }, res) => {
         return;
       }
 
-      if (isFuture(voteStart)) {
+      const queryEntries = async (selectExpression, submissionStatus) => db.select(
+        `SELECT ${selectExpression}
+         FROM contest_entries ce, entries e
+         WHERE ce.entry_id = e.id AND ce.contest_id = $1 AND e.submission_status = $2`,
+        [id, submissionStatus],
+      );
+      const pendingEntries = await queryEntries('*', 'pending');
+
+      if (isFuture(voteStart) || pendingEntries.length) {
         res.send({ name: response.name, votingWindowOpen: false });
         return;
       }
 
-      response.entries = await db.select(
-        `SELECT
-           ce.category,
-           e.description,
-           e.height,
-           e.id,
-           '/i/' || e.id || '.png' AS image_path,
-           e.markdown,
-           e.name,
-           ${isPast(voteEnd) ? 'e.user,' : ''}
-           e.width
-         FROM contest_entries ce, entries e
-         WHERE
-           ce.entry_id = e.id
-           AND ce.contest_id = $1
-           AND e.submission_status = 'approved'`,
-        [id],
+      response.entries = await queryEntries(
+        `ce.category,
+         e.description,
+         e.height,
+         e.id,
+         '/i/' || e.id || '.png' AS image_path,
+         e.markdown,
+         e.name,
+         ${isPast(voteEnd) ? 'e.user,' : ''}
+         e.width`,
+        'approved',
       );
     }
 
