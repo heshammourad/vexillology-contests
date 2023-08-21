@@ -1,5 +1,5 @@
 /**
- * Voting and winners
+ * Older contest results style where the top 20 flags were highlighted
  * ??? Check winnerPropTypes
  */
 
@@ -43,6 +43,10 @@ const useStyles = makeStyles(() => ({
 function ContestWinners({ winners = [] }) {
   const classes = useStyles();
   const { headingVariant, winnerDisplayWidth } = useContestSizing();
+
+  if (!winners.length) {
+    return null;
+  }
 
   return (
     <>

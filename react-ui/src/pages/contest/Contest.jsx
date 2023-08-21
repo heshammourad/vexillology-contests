@@ -1,9 +1,5 @@
 /**
  * Voting and winners
- * ??? Contest fields as props vs useSwrData
- * ??? apiPath as prop vs hooks and rederive
- * ??? remove winners / top20?
- * ??? Logic in useEffect
  */
 
 import Box from '@material-ui/core/Box';
@@ -21,13 +17,15 @@ import {
   useSwrData,
 } from '../../common';
 import {
+  EntryDescriptionDrawer,
   HtmlWrapper,
   PageContainer,
   PageWithDrawer,
   RedditLogInDialog,
 } from '../../components';
 
-import { ContestAppBarMain, ContestAppBarRight } from './ContestAppBar';
+import ContestAppBarMain from './ContestAppBarMain';
+import ContestAppBarRight from './ContestAppBarRight';
 import ContestCategorySelector from './ContestCategorySelector';
 import ContestGrid from './ContestGrid';
 import ContestSettings from './ContestSettings';
@@ -71,7 +69,8 @@ function Contest() {
   const { state = {} } = useLocation();
   const [isLoaded, setLoaded] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState(state?.selectedCategories ?? []);
-  const [isInfoOpen, setInfoOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [experimentId, setExperimentId] = useState(null);
   const [votingExpired, setVotingExpired] = useState(false);
 
   // Check for elements in viewport when isLoaded changes
@@ -157,8 +156,18 @@ function Contest() {
     window.location.reload();
   }, []);
 
-  const closeEntry = useCallback(() => {
-    setInfoOpen(false);
+  const toggleDrawerOpen = useCallback((isOpen) => {
+    setExperimentId(null);
+    setIsDrawerOpen(isOpen);
+  }, []);
+
+  const closeDrawer = useCallback(() => {
+    toggleDrawerOpen(false);
+  }, []);
+
+  const setExperimentDrawer = useCallback((entryId) => {
+    setExperimentId(entryId);
+    setIsDrawerOpen(!!entryId);
   }, []);
 
   const { headingVariant } = useContestSizing();
@@ -175,15 +184,15 @@ function Contest() {
 
   return (
     <PageWithDrawer
-      handleClose={closeEntry}
-      isOpen={isInfoOpen}
+      handleClose={closeDrawer}
+      isOpen={isDrawerOpen}
       appBar={{
         className: classes.icon,
         color: 'default',
-        right: <ContestAppBarRight {...{ setInfoOpen }} />,
+        right: <ContestAppBarRight {...{ toggleDrawerOpen }} />,
         children: <ContestAppBarMain {...{ handleVotingExpired, handleReload }} />,
       }}
-      drawer={{ heading: 'Settings', children: <ContestSettings /> }}
+      drawer={experimentId ? { heading: 'Info', children: <EntryDescriptionDrawer entryId={experimentId} /> } : { heading: 'Settings', children: <ContestSettings /> }}
     >
       <ContestSponsor />
       {name && (
@@ -200,13 +209,12 @@ function Contest() {
             </Box>
           )}
           <ContestCategorySelector {...{ categories, selectedCategories, setSelectedCategories }} />
-          {winners && winners.length > 0 && (
-            <ContestWinners {...{ winners }} />
-          )}
+          <ContestWinners {...{ winners }} />
           {entries && (
             <ContestGrid
               {...{
                 selectedCategories,
+                setExperimentDrawer,
                 votingExpired,
               }}
             />

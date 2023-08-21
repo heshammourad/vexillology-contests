@@ -1,5 +1,5 @@
 /**
- * Voting and winners
+ * Display size for contest flags
  */
 
 import { useTheme } from '@material-ui/core/styles';

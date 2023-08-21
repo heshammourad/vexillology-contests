@@ -1,6 +1,5 @@
 /**
  * Full page entry
- * ??? redirect if !entry
  * ??? Get rid of Refs for click() events, just open link
  */
 
@@ -23,7 +22,8 @@ import {
   RedditLogInDialog,
 } from '../../components';
 
-import { EntryAppBarMain, EntryAppBarRight } from './EntryAppBar';
+import EntryAppBarMain from './EntryAppBarMain';
+import EntryAppBarRight from './EntryAppBarRight';
 import NavigateIconButton from './NavigateIconButton';
 
 const calculateImageContainerHeight = (offset) => `calc(100vh - ${offset}px)`;
@@ -82,18 +82,18 @@ function EntryModal() {
   /**
    * Info drawer
    */
-  const [{ isInfoOpen }, updateSettings] = useSettingsState();
-  const isInfoOpenRef = useRef(isInfoOpen);
-  const updateInfoSetting = (infoOpen) => {
-    isInfoOpenRef.current = infoOpen;
-    updateSettings('isInfoOpen', infoOpen);
+  const [{ isEntryDescriptionOpen }, updateSettings] = useSettingsState();
+  const isEntryDescriptionOpenRef = useRef(isEntryDescriptionOpen);
+  const updateInfoSetting = (isOpen) => {
+    isEntryDescriptionOpenRef.current = isOpen;
+    updateSettings('isEntryDescriptionOpen', isOpen);
   };
   const handleDrawerClose = () => {
     updateInfoSetting(false);
   };
 
   const toggleInfoDrawerOpen = () => {
-    updateInfoSetting(!isInfoOpenRef.current);
+    updateInfoSetting(!isEntryDescriptionOpenRef.current);
   };
 
   /**
@@ -194,8 +194,8 @@ function EntryModal() {
 
   useEffect(() => {
     const allEntries = [...winners, ...entries].filter(
-      // eslint-disable-next-line max-len
-      ({ category }) => !state?.selectedCategories?.length || state?.selectedCategories?.includes(category),
+      ({ category }) => !state?.selectedCategories?.length
+        || state?.selectedCategories?.includes(category),
     );
     if (!entryId || !allEntries.length) {
       return;
@@ -288,7 +288,7 @@ function EntryModal() {
       >
         <PageWithDrawer
           handleClose={handleDrawerClose}
-          isOpen={isInfoOpen}
+          isOpen={isEntryDescriptionOpen}
           className={classes.root}
           appBar={{
             position: 'fixed',

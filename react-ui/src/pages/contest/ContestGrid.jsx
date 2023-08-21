@@ -1,5 +1,5 @@
 /**
- * Voting and winners
+ * Display grid for contests
  */
 
 import Box from '@material-ui/core/Box';
@@ -9,7 +9,7 @@ import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
-// import DescriptionIcon from '@material-ui/icons/Description';
+import DescriptionIcon from '@material-ui/icons/Description';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { useCallback } from 'react';
@@ -23,8 +23,8 @@ import {
 import {
   Average,
   CategoryLabel,
-  // CustomIconButton,
-  // Experiment,
+  CustomIconButton,
+  Experiment,
   FiveStar,
   RedditUserAttribution,
   VotingSlider,
@@ -34,10 +34,10 @@ import CardImageLink from './CardImageLink';
 import useContestSizing from './useContestSizing';
 
 const useStyles = makeStyles((theme) => ({
-  // descriptionIcon: {
-  //   paddingLeft: 4,
-  //   top: -4,
-  // },
+  descriptionIcon: {
+    paddingLeft: 4,
+    top: -4,
+  },
   disabledVoting: {
     cursor: 'wait',
   },
@@ -86,6 +86,7 @@ const useStyles = makeStyles((theme) => ({
 
 function ContestGrid({
   selectedCategories,
+  setExperimentDrawer,
   votingExpired,
 }) {
   const { contestId } = useParams();
@@ -134,8 +135,8 @@ function ContestGrid({
     <Grid container spacing={density === 'compact' ? 1 : 2}>
       {entries
         .filter(
-          // eslint-disable-next-line max-len
-          ({ category }) => !selectedCategories.length || selectedCategories.includes(category),
+          ({ category }) => !selectedCategories.length
+            || selectedCategories.includes(category),
         )
         .map(
           ({
@@ -174,17 +175,17 @@ function ContestGrid({
                           </Typography>
                         )}
                       </Box>
-                      {/* <Experiment name="contest_card_description">
+                      <Experiment name="contest_card_description">
                         <CustomIconButton
                           ariaLabel="View description"
                           className={classes.descriptionIcon}
                           Icon={DescriptionIcon}
                           onClick={() => {
-                            viewDescription(id);
+                            setExperimentDrawer(id);
                           }}
                           size="small"
                         />
-                      </Experiment> */}
+                      </Experiment>
                     </Box>
                     {(!isContestMode || category) && (
                       <div className={classes.entryRatings}>
@@ -244,6 +245,7 @@ function ContestGrid({
 
 ContestGrid.propTypes = {
   selectedCategories: PropTypes.arrayOf(PropTypes.string),
+  setExperimentDrawer: PropTypes.func.isRequired,
   votingExpired: PropTypes.bool,
 };
 

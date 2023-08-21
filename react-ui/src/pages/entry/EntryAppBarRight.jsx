@@ -1,48 +1,20 @@
 /**
- * Full page entry
+ * Entry-specific content for top app bar
  */
 
 import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import RedditIcon from '@material-ui/icons/Reddit';
 import PropTypes from 'prop-types';
-import { useParams, useLocation } from 'react-router-dom';
 
-import { useScrollState, useSwrData } from '../../common';
 import {
-  ArrowBackButton,
   CustomIconButton,
 } from '../../components';
 
-function EntryAppBarMain({ entryId }) {
-  const { state = {} } = useLocation();
-  const [scroll, setScroll] = useScrollState();
-  const { contestId } = useParams();
-  const apiPath = `/contests/${contestId}`;
-  const { data } = useSwrData(apiPath, false);
-
-  const {
-    requestId,
-  } = data;
-
-  return (
-    <ArrowBackButton
-      color="inherit"
-      onClick={() => {
-        setScroll({ ...scroll, entryId });
-      }}
-      state={{
-        back: state?.back,
-        requestId,
-        selectedCategories: state?.selectedCategories ?? [],
-      }}
-      to={`/contests/${contestId}`}
-    />
-  );
-}
-
-// eslint-disable-next-line react/prop-types, max-len, object-curly-newline
-function EntryAppBarRight({ toggleInfoDrawerOpen, redditCommentButtonRef, flagWaverButtonRef, entry = {}, data = {} }) {
+export default function EntryAppBarRight({
+  // eslint-disable-next-line react/prop-types
+  toggleInfoDrawerOpen, redditCommentButtonRef, flagWaverButtonRef, entry = {}, data = {},
+}) {
   const {
     localVoting,
   } = data;
@@ -81,12 +53,8 @@ function EntryAppBarRight({ toggleInfoDrawerOpen, redditCommentButtonRef, flagWa
   );
 }
 
-EntryAppBarMain.propTypes = {
-  entryId: PropTypes.string,
+EntryAppBarRight.propTypes = {
 };
 
-EntryAppBarMain.defaultProps = {
-  entryId: '',
+EntryAppBarRight.defaultProps = {
 };
-
-export { EntryAppBarMain, EntryAppBarRight };

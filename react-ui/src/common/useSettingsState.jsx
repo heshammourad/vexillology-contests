@@ -3,12 +3,12 @@
  * ??? setSettings does not allow access to prev value
  * Manages display settings
  * @param density Controls size of images
- * @param isInfoOpen Information drawer for entry
+ * @param isEntryDescriptionOpen When viewing entry, show description
  */
 
 import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 import createPersistedState from 'use-persisted-state';
 
 const usePersistedSettings = createPersistedState('settings');
@@ -19,13 +19,13 @@ const useSettingsState = () => {
 
   /* useMediaQuery always starts false, so we know it's loaded when xs is true */
   const isThemeLoaded = useMediaQuery(theme.breakpoints.up('xs'));
-  const isInfoOpen = useMediaQuery(theme.breakpoints.up('md'));
+  const isEntryDescriptionOpen = useMediaQuery(theme.breakpoints.up('md'));
 
   useEffect(() => {
     if (isThemeLoaded) {
       setSettings({
         density: 'default',
-        isInfoOpen,
+        isEntryDescriptionOpen,
         ...settings,
       });
     }

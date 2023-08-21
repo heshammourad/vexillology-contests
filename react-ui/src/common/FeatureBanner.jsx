@@ -6,15 +6,16 @@ import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 
 /**
  * Enum of the available screens.
- * @typedef {'submission' | 'voting'} Screen
+ * @typedef { 'contest' | 'home' | 'submission' } Screen
  */
 const SCREENS = {
+  CONTEST: 'contest',
   HOME: 'home',
   SUBMISSION: 'submission',
-  VOTING: 'voting',
 };
 
 /**
@@ -33,34 +34,34 @@ const SCREENS = {
  * @property {string[]} onScreens - An array of screens where the feature is applicable.
  */
 const features = [
-  // {
-  //   monthYear: 'August 2023',
-  //   bullets: [
-  //     {
-  //       text: 'This is a regular block of text that ideally should expand more than one line if I wrote this long enough. Hopefully. Ideally.',
-  //       onScreens: [SCREENS.HOME, SCREENS.SUBMISSION],
-  //     },
-  //     {
-  //       text: 'number 2',
-  //       onScreens: [SCREENS.HOME, SCREENS.SUBMISSION],
-  //     },
-  //   ],
-  // },
-  // {
-  //   monthYear: 'July 2023',
-  //   bullets: [
-  //     {
-  //       isBold: false,
-  //       text: 'This is an example bullet',
-  //       onScreens: [SCREENS.HOME, SCREENS.SUBMISSION],
-  //     },
-  //     {
-  //       isBold: false,
-  //       text: 'Skip me',
-  //       onScreens: [SCREENS.SUBMISSION],
-  //     },
-  //   ],
-  // },
+  {
+    monthYear: 'August 2023',
+    bullets: [
+      {
+        text: 'This is a regular block of text that ideally should expand more than one line if I wrote this long enough. Hopefully. Ideally.',
+        onScreens: [SCREENS.HOME, SCREENS.SUBMISSION],
+      },
+      {
+        text: 'number 2',
+        onScreens: [SCREENS.HOME, SCREENS.SUBMISSION],
+      },
+    ],
+  },
+  {
+    monthYear: 'July 2023',
+    bullets: [
+      {
+        isBold: false,
+        text: 'This is an example bullet',
+        onScreens: [SCREENS.HOME, SCREENS.SUBMISSION],
+      },
+      {
+        isBold: false,
+        text: 'Skip me',
+        onScreens: [SCREENS.SUBMISSION],
+      },
+    ],
+  },
 ];
 
 const useStyles = makeStyles((theme) => ({
@@ -72,6 +73,7 @@ const useStyles = makeStyles((theme) => ({
   },
   monthYear: {
     fontWeight: 'bold',
+    marginTop: 4,
   },
   isBold: {
     fontWeight: 'bold',
@@ -81,8 +83,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function FeatureBanner({ screen }) {
+function FeatureBanner({ screenOverride }) {
   const classes = useStyles();
+  const { pathname } = useLocation();
+
+  const screen = screenOverride || Object.values(SCREENS).find((val) => pathname.includes(val));
 
   const Banner = useMemo(() => {
     // Reduce features to only months and bullets that relate to given screen
@@ -105,7 +110,7 @@ function FeatureBanner({ screen }) {
         <Typography className={classes.monthYear}>NEW FEATURES</Typography>
         {
           screenFeatures.map(({ monthYear, bullets }) => (
-            <div>
+            <Box>
               <Typography className={classes.monthYear}>{monthYear}</Typography>
               {
                 bullets.map(({ isBold = false, text }) => (
@@ -115,7 +120,7 @@ function FeatureBanner({ screen }) {
                   </Typography>
                 ))
               }
-            </div>
+            </Box>
           ))
         }
       </Box>

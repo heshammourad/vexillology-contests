@@ -1,6 +1,5 @@
 /**
- * ??? When is this displayed?
- * ??? onClick={mutate} vs onClick={() => mutate()}
+ * Displayed between submission and voting, which can be delayed
  */
 
 import Box from '@material-ui/core/Box';

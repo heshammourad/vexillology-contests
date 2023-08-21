@@ -62,6 +62,8 @@ function ModalSwitch() {
         <Route exact path="/home" element={<Home />} />
         <Route exact path="/contests" element={<Contests />} />
         <Route exact path="/contests/:contestId" element={<Contest />} />
+        {/* DO NOT DELETE :entryId, required for direct link */}
+        <Route exact path="/contests/:contestId/entry/:entryId" element={<EntryModal />} />
         <Route exact path="/mod/review" element={<ReviewSubmissions />} />
         <Route exact path="/submission" element={<Submission />} />
         <Route

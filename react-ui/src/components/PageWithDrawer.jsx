@@ -12,7 +12,7 @@ import Drawer from '@material-ui/core/Drawer';
 import IconButton from '@material-ui/core/IconButton';
 import Toolbar from '@material-ui/core/Toolbar';
 import { makeStyles } from '@material-ui/core/styles';
-import CloseIcon from '@material-ui/icons/Close';
+import CollapseRight from '@material-ui/icons/KeyboardTab';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 
@@ -112,7 +112,7 @@ function PageWithDrawer({
       >
         <div className={classes.drawerHeader}>
           <IconButton onClick={handleClose}>
-            <CloseIcon />
+            <CollapseRight />
           </IconButton>
           <div className={classes.drawerHeading}>{drawer.heading}</div>
         </div>
