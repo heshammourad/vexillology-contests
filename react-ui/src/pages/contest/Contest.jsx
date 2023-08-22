@@ -73,6 +73,12 @@ function Contest() {
   const [experimentId, setExperimentId] = useState(null);
   const [votingExpired, setVotingExpired] = useState(false);
 
+  // Scroll to top when unmounted
+  // For site-wide solution see https://reactrouter.com/en/main/components/scroll-restoration
+  useEffect(() => () => {
+    scrollInstantlyTo(0);
+  }, []);
+
   // Check for elements in viewport when isLoaded changes
   useEffect(() => {
     forceCheck();
@@ -90,14 +96,25 @@ function Contest() {
       return;
     }
 
+    /*
+    entryId is set in EntryModal > EntryAppBarMain
+    ... I'm not sure how y is set
+    */
     const { entryId, y } = scroll;
+    /*
+    Looks like innerWidtha and scrollY set in useRedditLogin
+    Meanwhile, requestId is in EntryModal > EntryAppBarMain
+    */
     const { innerWidth, requestId, scrollY } = state || {};
     if (!entryId && !scrollY) {
       setLoaded(true);
       return;
     }
 
+    // ??? you cannot rely on isLoaded to have changed
+    // ??? when is this ever even called?
     if (!isLoaded && !scrollingIntervalId) {
+      // ??? this is being repeatedly called UNTIL you get a scrollY + entryEl
       scrollingIntervalId = setInterval(() => {
         if (scrollY) {
           if (window.innerWidth === innerWidth) {
@@ -127,6 +144,7 @@ function Contest() {
           scrollInstantlyTo(scrollTop);
         }
         setLoaded(true);
+        // ??? why only reset scroll on successful end?
         setScroll({});
         window.history.replaceState({}, document.title);
         window.history.pushState({ usr: { selectedCategories } }, document.title);

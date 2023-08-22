@@ -217,7 +217,6 @@ function ContestGrid({
                     height={height}
                     id={id}
                     image={imagePath}
-                    nextState={{ selectedCategories }}
                     width={width}
                   />
                 </div>

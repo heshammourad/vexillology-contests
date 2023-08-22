@@ -8,6 +8,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
+import { IS_DEV } from '../env';
+
 /**
  * Enum of the available screens.
  * @typedef { 'contest' | 'home' | 'submission' } Screen
@@ -101,7 +103,7 @@ function FeatureBanner({ screenOverride }) {
       return acc;
     }, []);
 
-    if (!screenFeatures.length) {
+    if (!IS_DEV || !screenFeatures.length) {
       return null;
     }
 

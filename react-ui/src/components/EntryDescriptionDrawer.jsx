@@ -84,7 +84,7 @@ function EntryDescriptionDrawer({ entryId }) {
     rank,
     rating,
     user,
-  } = [...winners, ...entries].find((entry) => entry.id === entryId);
+  } = [...winners, ...entries].find((entry) => entry.id === entryId) || {};
 
   const imageSrc = window.location.origin + imagePath;
   const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${imageSrc}`;
