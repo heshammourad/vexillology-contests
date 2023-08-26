@@ -302,10 +302,16 @@ exports.get = async ({ params: { id }, username }, res) => {
          WHERE ce.entry_id = e.id AND ce.contest_id = $1 AND e.submission_status = $2`,
         [id, submissionStatus],
       );
-      const pendingEntries = await queryEntries('*', 'pending');
 
-      if (isFuture(voteStart) || pendingEntries.length) {
-        res.send({ name: response.name, votingWindowOpen: false });
+      const votingNotOpenResponse = { name: response.name, votingWindowOpen: false };
+      if (isFuture(voteStart)) {
+        res.send(votingNotOpenResponse);
+        return;
+      }
+
+      const pendingEntries = await queryEntries('*', 'pending');
+      if (pendingEntries.length) {
+        res.send(votingNotOpenResponse);
         return;
       }
 
