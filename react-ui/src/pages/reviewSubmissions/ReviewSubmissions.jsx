@@ -11,24 +11,17 @@ import { useLocation } from 'react-router-dom';
 import { useSwrData } from '../../common';
 import {
   CustomIconButton,
-  FilterChip,
   Header,
   PageContainer,
   ProtectedRoute,
   SubmissionsTable,
 } from '../../components';
 
+import StatusFilters from './StatusFilters';
+
 const API_PATH = '/mod/reviewSubmissions';
 
 const useStyles = makeStyles((theme) => ({
-  chipContainer: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    '& > *': {
-      margin: theme.spacing(0.5),
-    },
-    marginBottom: theme.spacing(2),
-  },
   header: {
     marginBottom: theme.spacing(2),
     marginTop: theme.spacing(2),
@@ -54,15 +47,10 @@ function ReviewSubmissions() {
   const [showErrorsOnly, setShowErrorsOnly] = useState(false);
   const [filteredSubmissions, setFilteredSubmissions] = useState([]);
 
-  const submissionStatusBreakdown = countBy(submissions, 'submissionStatus');
+  const submissionStatusCounts = countBy(submissions, 'submissionStatus');
   const usersExceedingLimit = Object.entries(userBreakdown).filter(
     (breakdown) => breakdown[1].approved > 2,
   );
-
-  const getLabelWithCount = (label) => {
-    const count = submissionStatusBreakdown[label.toLowerCase()];
-    return `${label}${count ? ` (${count})` : ''}`;
-  };
 
   useEffect(() => {
     let updatedSubmissions = [...submissions];
@@ -139,32 +127,12 @@ You have more than 2 entries in this month's contest. Can you please let us know
           </Typography>
           {submissions?.length ? (
             <>
-              <div className={classes.chipContainer}>
-                <FilterChip
-                  disabled={showErrorsOnly}
-                  label={getLabelWithCount('Pending')}
-                  onClick={handleChipClick('pending')}
-                  selected={selectedChips.pending ?? false}
-                />
-                <FilterChip
-                  disabled={showErrorsOnly}
-                  label={getLabelWithCount('Approved')}
-                  onClick={handleChipClick('approved')}
-                  selected={selectedChips.approved ?? false}
-                />
-                <FilterChip
-                  disabled={showErrorsOnly}
-                  label={getLabelWithCount('Rejected')}
-                  onClick={handleChipClick('rejected')}
-                  selected={selectedChips.rejected ?? false}
-                />
-                <FilterChip
-                  disabled={showErrorsOnly}
-                  label={getLabelWithCount('Withdrawn')}
-                  onClick={handleChipClick('withdrawn')}
-                  selected={selectedChips.withdrawn ?? false}
-                />
-              </div>
+              <StatusFilters
+                disabled={showErrorsOnly}
+                onChipClick={handleChipClick}
+                selectedChips={selectedChips}
+                submissionStatusCounts={submissionStatusCounts}
+              />
               {usersExceedingLimit.length > 0 && (
                 <Alert className={classes.submissionsError} severity="error">
                   The following users have more than 2 approved entries:
