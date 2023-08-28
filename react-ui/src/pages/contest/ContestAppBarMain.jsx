@@ -47,11 +47,6 @@ export default function ContestAppBarMain({ handleVotingExpired, handleReload })
 }
 
 ContestAppBarMain.propTypes = {
-  handleVotingExpired: PropTypes.func,
-  handleReload: PropTypes.func,
-};
-
-ContestAppBarMain.defaultProps = {
-  handleVotingExpired: () => { },
-  handleReload: () => { },
+  handleReload: PropTypes.func.isRequired,
+  handleVotingExpired: PropTypes.func.isRequired,
 };

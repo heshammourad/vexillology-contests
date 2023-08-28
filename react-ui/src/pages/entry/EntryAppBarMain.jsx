@@ -38,9 +38,5 @@ export default function EntryAppBarMain({ entryId }) {
 }
 
 EntryAppBarMain.propTypes = {
-  entryId: PropTypes.string,
-};
-
-EntryAppBarMain.defaultProps = {
-  entryId: '',
+  entryId: PropTypes.string.isRequired,
 };

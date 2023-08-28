@@ -5,6 +5,7 @@
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
+import PropTypes from 'prop-types';
 import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -131,5 +132,9 @@ function FeatureBanner({ screenOverride }) {
 
   return Banner;
 }
+
+FeatureBanner.propTypes = {
+  screenOverride: PropTypes.bool,
+};
 
 export { SCREENS, FeatureBanner };

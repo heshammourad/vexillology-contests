@@ -6,6 +6,7 @@ import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import RedditIcon from '@material-ui/icons/Reddit';
 import PropTypes from 'prop-types';
+import { useParams } from 'react-router-dom';
 
 import {
   CustomIconButton,
@@ -13,12 +14,12 @@ import {
 
 export default function EntryAppBarRight({
   // eslint-disable-next-line react/prop-types
-  toggleInfoDrawerOpen, redditCommentButtonRef, flagWaverButtonRef, entry = {}, data = {},
+  entry = {},
+  flagWaverButtonRef,
+  localVoting,
+  redditCommentButtonRef,
+  toggleInfoDrawerOpen,
 }) {
-  const {
-    localVoting,
-  } = data;
-
   const {
     imagePath,
     permalink,
@@ -54,7 +55,22 @@ export default function EntryAppBarRight({
 }
 
 EntryAppBarRight.propTypes = {
+  entry: PropTypes.shape({}),
+  localVoting: PropTypes.bool,
+  flagWaverButtonRef: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.shape({ current: PropTypes.instanceOf(HTMLElement) }),
+  ]),
+  redditCommentButtonRef: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.shape({ current: PropTypes.instanceOf(HTMLElement) }),
+  ]),
+  toggleInfoDrawerOpen: PropTypes.func.isRequired,
 };
 
 EntryAppBarRight.defaultProps = {
+  entry: {},
+  flagWaverButtonRef: undefined,
+  localVoting: true,
+  redditCommentButtonRef: undefined,
 };

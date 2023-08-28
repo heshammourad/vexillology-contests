@@ -105,6 +105,7 @@ function EntryModal() {
   const {
     entries = [],
     winners = [],
+    localVoting,
   } = data;
   const allEntriesRef = useRef([]);
   const [entry, setEntry] = useState({});
@@ -296,7 +297,13 @@ function EntryModal() {
             className: classes.appBar,
             right: (entry?.id && (
               <EntryAppBarRight
-                {...{ redditCommentButtonRef, flagWaverButtonRef, toggleInfoDrawerOpen }}
+                {...{
+                  redditCommentButtonRef,
+                  flagWaverButtonRef,
+                  toggleInfoDrawerOpen,
+                  localVoting,
+                  entry,
+                }}
               />
             )),
             children: <EntryAppBarMain {...{ entryId }} />,

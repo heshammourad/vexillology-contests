@@ -29,12 +29,11 @@ function ContestUnderReview({ isValidating, mutate }) {
 }
 
 ContestUnderReview.propTypes = {
-  mutate: PropTypes.func,
   isValidating: PropTypes.bool,
+  mutate: PropTypes.func.isRequired,
 };
 
 ContestUnderReview.defaultProps = {
-  mutate: () => { },
   isValidating: true,
 };
 
