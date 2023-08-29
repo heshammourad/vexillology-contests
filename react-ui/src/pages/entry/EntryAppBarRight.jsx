@@ -6,7 +6,6 @@ import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import RedditIcon from '@material-ui/icons/Reddit';
 import PropTypes from 'prop-types';
-import { useParams } from 'react-router-dom';
 
 import {
   CustomIconButton,

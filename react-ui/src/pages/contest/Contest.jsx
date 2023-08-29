@@ -192,7 +192,6 @@ function Contest() {
 
   const {
     categories,
-    entries,
     isContestMode,
     name,
     subtext,
@@ -228,15 +227,13 @@ function Contest() {
           )}
           <ContestCategorySelector {...{ categories, selectedCategories, setSelectedCategories }} />
           <ContestWinners {...{ winners }} />
-          {entries && (
-            <ContestGrid
-              {...{
-                selectedCategories,
-                setExperimentDrawer,
-                votingExpired,
-              }}
-            />
-          )}
+          <ContestGrid
+            {...{
+              selectedCategories,
+              setExperimentDrawer,
+              votingExpired,
+            }}
+          />
         </PageContainer>
       )}
       <RedditLogInDialog />
