@@ -296,28 +296,36 @@ exports.get = async ({ params: { id }, username }, res) => {
         return;
       }
 
+      const queryEntries = async (selectExpression, submissionStatus) => db.select(
+        `SELECT ${selectExpression}
+         FROM contest_entries ce, entries e
+         WHERE ce.entry_id = e.id AND ce.contest_id = $1 AND e.submission_status = $2`,
+        [id, submissionStatus],
+      );
+
+      const votingNotOpenResponse = { name: response.name, votingWindowOpen: false };
       if (isFuture(voteStart)) {
-        res.send({ name: response.name, votingWindowOpen: false });
+        res.send(votingNotOpenResponse);
         return;
       }
 
-      response.entries = await db.select(
-        `SELECT
-           ce.category,
-           e.description,
-           e.height,
-           e.id,
-           '/i/' || e.id || '.png' AS image_path,
-           e.markdown,
-           e.name,
-           ${isPast(voteEnd) ? 'e.user,' : ''}
-           e.width
-         FROM contest_entries ce, entries e
-         WHERE
-           ce.entry_id = e.id
-           AND ce.contest_id = $1
-           AND e.submission_status = 'approved'`,
-        [id],
+      const pendingEntries = await queryEntries('*', 'pending');
+      if (pendingEntries.length) {
+        res.send(votingNotOpenResponse);
+        return;
+      }
+
+      response.entries = await queryEntries(
+        `ce.category,
+         e.description,
+         e.height,
+         e.id,
+         '/i/' || e.id || '.png' AS image_path,
+         e.markdown,
+         e.name,
+         ${isPast(voteEnd) ? 'e.user,' : ''}
+         e.width`,
+        'approved',
       );
     }
 
