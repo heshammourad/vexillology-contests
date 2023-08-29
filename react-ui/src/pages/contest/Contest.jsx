@@ -90,6 +90,7 @@ function Contest() {
       return;
     }
 
+    // Clear cache to prevent stale ContestUnderReview
     if (contest.votingWindowOpen === false) {
       updateCache(null);
       setLoaded(true);
@@ -98,11 +99,11 @@ function Contest() {
 
     /*
     entryId is set in EntryModal > EntryAppBarMain
-    ... I'm not sure how y is set
+    ... y was set in CardImageLink https://github.com/heshammourad/vexillology-contests/blob/aa35f88dc8df63c52da2c59575ad7e0ef1a019eb/react-ui/src/pages/contest/Contest.jsx#L242-L246
     */
     const { entryId, y } = scroll;
     /*
-    Looks like innerWidtha and scrollY set in useRedditLogin
+    Looks like innerWidth and scrollY set in useRedditLogin
     Meanwhile, requestId is in EntryModal > EntryAppBarMain
     */
     const { innerWidth, requestId, scrollY } = state || {};
@@ -111,7 +112,6 @@ function Contest() {
       return;
     }
 
-    // ??? you cannot rely on isLoaded to have changed
     // ??? when is this ever even called?
     if (!isLoaded && !scrollingIntervalId) {
       // ??? this is being repeatedly called UNTIL you get a scrollY + entryEl
@@ -144,7 +144,6 @@ function Contest() {
           scrollInstantlyTo(scrollTop);
         }
         setLoaded(true);
-        // ??? why only reset scroll on successful end?
         setScroll({});
         window.history.replaceState({}, document.title);
         window.history.pushState({ usr: { selectedCategories } }, document.title);
