@@ -53,8 +53,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-let scrollingIntervalId;
-
 function Contest() {
   const navigate = useNavigate();
   const { contestId } = useParams();
@@ -89,43 +87,31 @@ function Contest() {
     forceCheck();
   }, [isLoaded]);
 
-  // Manage position (scroll) and isLoaded
+  // ??? WHAT ELSE CAN BE REMOVED HERE?
   useEffect(() => {
+    // instead of isLoaded, I think we can just use contest.name
     if (!contest.name) {
       return;
     }
 
-    // Clear cache to prevent stale ContestUnderReview
-    if (contest.votingWindowOpen === false) {
-      updateCache(null);
-      setLoaded(true);
-      return;
-    }
+    // this code was moved to a separate useEffect
+    // if (contest.votingWindowOpen === false) {
+    //   updateCache(null);
+    //   setLoaded(true);
+    //   return;
+    // }
 
-    /*
-    entryId is set in EntryModal > EntryAppBarMain
-    */
+    // Does replaceState and pushState matter?
     const { entryId } = scroll;
-    /*
-    Looks like scrollY set in useRedditLogin
-    */
     const { scrollY } = state || {};
     if (!entryId && !scrollY) {
-      setLoaded(true);
       return;
     }
 
-    // ??? when is this ever even called?
-    if (!isLoaded && !scrollingIntervalId) {
-      // ??? this is being repeatedly called UNTIL you get a scrollY + entryEl
-      scrollingIntervalId = setInterval(() => {
-        setLoaded(true);
-        setScroll({});
-        window.history.replaceState({}, document.title);
-        window.history.pushState({ usr: { selectedCategories } }, document.title);
-        clearInterval(scrollingIntervalId);
-        scrollingIntervalId = null;
-      }, 50);
+    if (!isLoaded) {
+      setScroll({});
+      window.history.replaceState({}, document.title);
+      window.history.pushState({ usr: { selectedCategories } }, document.title);
     }
   }, [state, contest]);
 
@@ -178,8 +164,7 @@ function Contest() {
 
     // If no current scroll position or entry outside of window
     // Scroll so entryTop is 8 below header
-    if (currentScroll === undefined
-      || (entryBottom < windowTop && entryTop < windowTop)
+    if ((entryBottom < windowTop && entryTop < windowTop)
       || (entryBottom > windowBottom && entryTop > windowBottom)
     ) {
       currentScroll = entryTop - headerHeight - 8;
@@ -188,9 +173,8 @@ function Contest() {
     scrollInstantlyTo(currentScroll);
   }, []);
 
-  // scroll to entry when closing modal
-  // useEffect required for window render before scroll
   const [prevPathName, setPrevPathName] = useState(null);
+  // scroll to entry when closing modal (direct link or arrow keying)
   useEffect(() => {
     if (!pathname.includes('entry') && prevPathName?.includes('entry')) {
       const pathArray = prevPathName.split('/');
@@ -200,19 +184,25 @@ function Contest() {
     setPrevPathName(pathname);
   }, [pathname]);
 
-  // scroll to stored y position when login completed
+  // scroll to stored scrollY position when login completed (see useRedditLogIn)
+  // ??? overscrolls ???
   useEffect(() => {
+    if (!contest.name) {
+      return;
+    }
     const { scrollY, innerWidth } = state;
-    console.log('login scroll');
-    console.log('scrollY: ', scrollY);
-    console.log('innerWidth: ', innerWidth);
-    console.log('window: ', window.innerWidth);
-    console.log('window: ', window.innerWidth === innerWidth);
     if (scrollY && window.innerWidth === innerWidth) {
-      console.log('scroll me!')
       scrollInstantlyTo(scrollY);
     }
-  }, [state.scrollY]);
+  }, [state.scrollY, contest.name]);
+
+  useEffect(() => {
+    // Clear the cache if the voting window is still closed, to force it to be fetched again on next visit.
+    if (contest.votingWindowOpen === false) {
+      updateCache(null);
+      setLoaded(true);
+    }
+  }, [contest.votingWindowOpen]);
 
   const { headingVariant } = useContestSizing();
 
