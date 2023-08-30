@@ -13,12 +13,6 @@ export default function EntryAppBarMain({ entryId }) {
   const { state = {} } = useLocation();
   const [scroll, setScroll] = useScrollState();
   const { contestId } = useParams();
-  const apiPath = `/contests/${contestId}`;
-  const { data } = useSwrData(apiPath, false);
-
-  const {
-    requestId,
-  } = data;
 
   return (
     <ArrowBackButton
@@ -28,7 +22,6 @@ export default function EntryAppBarMain({ entryId }) {
       }}
       state={{
         back: state?.back,
-        requestId,
         selectedCategories: state?.selectedCategories ?? [],
       }}
       to={`/contests/${contestId}`}

@@ -50,36 +50,28 @@ function App() {
 }
 
 function ModalSwitch() {
-  const location = useLocation();
-
-  const background = location.state?.background;
-
   return (
     <div>
-      <Routes location={background || location}>
-        <Route exact path="/" element={<Navigate replace to="home" />} />
-        <Route exact path="/authorizeCallback" element={<AuthorizeCallback />} />
-        <Route exact path="/home" element={<Home />} />
-        <Route exact path="/contests" element={<Contests />} />
-        <Route exact path="/contests/:contestId" element={<Contest />} />
+      <Routes>
+        <Route path="/" element={<Navigate replace to="home" />} />
+        <Route path="/authorizeCallback" element={<AuthorizeCallback />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/contests" element={<Contests />} />
+        <Route path="/contests/:contestId" element={<Contest />}>
+
+          <Route path="/contests/:contestId/entry/:entryId" element={<EntryModal />} />
+        </Route>
         {/* DO NOT DELETE ENTRY, intentionally duplicated, this is required for direct link */}
-        <Route exact path="/contests/:contestId/entry/:entryId" element={<EntryModal />} />
-        <Route exact path="/mod/review" element={<ReviewSubmissions />} />
-        <Route exact path="/submission" element={<Submission />} />
+        <Route path="/mod/review" element={<ReviewSubmissions />} />
+        <Route path="/submission" element={<Submission />} />
         <Route
-          exact
           path="/submit"
           element={<Navigate replace state={{ defaultTab: 1 }} to="/submission" />}
         />
-        <Route exact path="/hallOfFame" element={<HallOfFame />} />
-        <Route exact path="/profile/settings" element={<Settings />} />
+        <Route path="/hallOfFame" element={<HallOfFame />} />
+        <Route path="/profile/settings" element={<Settings />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {background && (
-        <Routes>
-          <Route exact path="/contests/:contestId/entry/:entryId" element={<EntryModal />} />
-        </Routes>
-      )}
     </div>
   );
 }

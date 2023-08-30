@@ -8,7 +8,9 @@ import { makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import { useState, useEffect, useCallback } from 'react';
 import { forceCheck } from 'react-lazyload';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import {
+  Outlet, useLocation, useNavigate, useParams,
+} from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
 
 import {
@@ -34,8 +36,9 @@ import ContestUnderReview from './ContestUnderReview';
 import ContestWinners from './ContestWinners';
 import useContestSizing from './useContestSizing';
 
-const scrollInstantlyTo = (scrollY) => {
-  animateScroll.scrollTo(scrollY, { duration: 0, delay: 0 });
+const scrollInstantlyTo = (scrollY, options = {}) => {
+  const defaultOptions = { duration: 0, delay: 0 };
+  animateScroll.scrollTo(scrollY, { ...defaultOptions, ...options });
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -66,7 +69,9 @@ function Contest() {
     navigate('/submission', { replace: true });
   }
 
-  const { state = {} } = useLocation();
+  const location = useLocation();
+  const { state, pathname } = location;
+
   const [isLoaded, setLoaded] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState(state?.selectedCategories ?? []);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -99,14 +104,12 @@ function Contest() {
 
     /*
     entryId is set in EntryModal > EntryAppBarMain
-    ... y was set in CardImageLink https://github.com/heshammourad/vexillology-contests/blob/aa35f88dc8df63c52da2c59575ad7e0ef1a019eb/react-ui/src/pages/contest/Contest.jsx#L242-L246
     */
-    const { entryId, y } = scroll;
+    const { entryId } = scroll;
     /*
-    Looks like innerWidth and scrollY set in useRedditLogin
-    Meanwhile, requestId is in EntryModal > EntryAppBarMain
+    Looks like scrollY set in useRedditLogin
     */
-    const { innerWidth, requestId, scrollY } = state || {};
+    const { scrollY } = state || {};
     if (!entryId && !scrollY) {
       setLoaded(true);
       return;
@@ -116,33 +119,6 @@ function Contest() {
     if (!isLoaded && !scrollingIntervalId) {
       // ??? this is being repeatedly called UNTIL you get a scrollY + entryEl
       scrollingIntervalId = setInterval(() => {
-        if (scrollY) {
-          if (window.innerWidth === innerWidth) {
-            scrollInstantlyTo(scrollY);
-          }
-        } else {
-          const entryEl = document.getElementById(entryId);
-          if (!entryEl) {
-            return;
-          }
-
-          let scrollTop = y;
-
-          const headerHeight = document.getElementsByTagName('header')[0].offsetHeight;
-          const { bottom, top } = entryEl.getBoundingClientRect();
-          const windowTop = scrollTop + headerHeight;
-          const windowBottom = scrollTop + window.innerHeight;
-          if (
-            scrollTop === undefined
-            || (bottom < windowTop && top < windowTop)
-            || (bottom > windowBottom && top > windowBottom)
-            || requestId !== contest.requestId
-          ) {
-            scrollTop = top - headerHeight - 8;
-          }
-
-          scrollInstantlyTo(scrollTop);
-        }
         setLoaded(true);
         setScroll({});
         window.history.replaceState({}, document.title);
@@ -186,6 +162,57 @@ function Contest() {
     setExperimentId(entryId);
     setIsDrawerOpen(!!entryId);
   }, []);
+
+  const scrollToEntry = useCallback((entryId) => {
+    const entryEl = document.getElementById(entryId);
+    if (!entryEl) {
+      return;
+    }
+
+    let currentScroll = window.scrollY;
+
+    const headerHeight = document.getElementsByTagName('header')[0].offsetHeight;
+    const { bottom: entryBottom, top: entryTop } = entryEl.getBoundingClientRect();
+    const windowTop = currentScroll + headerHeight;
+    const windowBottom = currentScroll + window.innerHeight;
+
+    // If no current scroll position or entry outside of window
+    // Scroll so entryTop is 8 below header
+    if (currentScroll === undefined
+      || (entryBottom < windowTop && entryTop < windowTop)
+      || (entryBottom > windowBottom && entryTop > windowBottom)
+    ) {
+      currentScroll = entryTop - headerHeight - 8;
+    }
+
+    scrollInstantlyTo(currentScroll);
+  }, []);
+
+  // scroll to entry when closing modal
+  // useEffect required for window render before scroll
+  const [prevPathName, setPrevPathName] = useState(null);
+  useEffect(() => {
+    if (!pathname.includes('entry') && prevPathName?.includes('entry')) {
+      const pathArray = prevPathName.split('/');
+      const entryIndex = pathArray.indexOf('entry');
+      scrollToEntry(pathArray[entryIndex + 1]);
+    }
+    setPrevPathName(pathname);
+  }, [pathname]);
+
+  // scroll to stored y position when login completed
+  useEffect(() => {
+    const { scrollY, innerWidth } = state;
+    console.log('login scroll');
+    console.log('scrollY: ', scrollY);
+    console.log('innerWidth: ', innerWidth);
+    console.log('window: ', window.innerWidth);
+    console.log('window: ', window.innerWidth === innerWidth);
+    if (scrollY && window.innerWidth === innerWidth) {
+      console.log('scroll me!')
+      scrollInstantlyTo(scrollY);
+    }
+  }, [state.scrollY]);
 
   const { headingVariant } = useContestSizing();
 
@@ -236,6 +263,7 @@ function Contest() {
         </PageContainer>
       )}
       <RedditLogInDialog />
+      <Outlet />
     </PageWithDrawer>
   );
 }
