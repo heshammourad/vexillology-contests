@@ -15,7 +15,6 @@ import { animateScroll } from 'react-scroll';
 
 import {
   useCache,
-  useScrollState,
   useSwrData,
 } from '../../common';
 import {
@@ -37,6 +36,7 @@ import ContestWinners from './ContestWinners';
 import useContestSizing from './useContestSizing';
 
 const scrollInstantlyTo = (scrollY, options = {}) => {
+  console.log('scrollInstantlyTo: ', scrollY)
   const defaultOptions = { duration: 0, delay: 0 };
   animateScroll.scrollTo(scrollY, { ...defaultOptions, ...options });
 };
@@ -56,7 +56,6 @@ const useStyles = makeStyles((theme) => ({
 function Contest() {
   const navigate = useNavigate();
   const { contestId } = useParams();
-  const [scroll, setScroll] = useScrollState();
   const classes = useStyles();
 
   const apiPath = `/contests/${contestId}`;
@@ -68,9 +67,8 @@ function Contest() {
   }
 
   const location = useLocation();
-  const { state, pathname } = location;
+  const { state = {}, pathname } = location;
 
-  const [isLoaded, setLoaded] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState(state?.selectedCategories ?? []);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [experimentId, setExperimentId] = useState(null);
@@ -85,35 +83,35 @@ function Contest() {
   // Check for elements in viewport when isLoaded changes
   useEffect(() => {
     forceCheck();
-  }, [isLoaded]);
+  }, [contest.name]);
+
+
+  useEffect(() => {
+    // Clear cache if the voting window is still closed to force fetch again on next visit
+    if (contest.votingWindowOpen === false) {
+      updateCache(null);
+    }
+  }, [contest.votingWindowOpen]);
 
   // ??? WHAT ELSE CAN BE REMOVED HERE?
-  useEffect(() => {
-    // instead of isLoaded, I think we can just use contest.name
-    if (!contest.name) {
-      return;
-    }
+  // useEffect(() => {
+  // instead of isLoaded, I think we can just use contest.name
+  // if (!contest.name) {
+  //   return;
+  // }
 
-    // this code was moved to a separate useEffect
-    // if (contest.votingWindowOpen === false) {
-    //   updateCache(null);
-    //   setLoaded(true);
-    //   return;
-    // }
+  // Does replaceState and pushState matter?
+  // const { entryId } = scroll;
+  // const { scrollY } = state || {};
+  // if (!entryId && !scrollY) {
+  //   return;
+  // }
 
-    // Does replaceState and pushState matter?
-    const { entryId } = scroll;
-    const { scrollY } = state || {};
-    if (!entryId && !scrollY) {
-      return;
-    }
-
-    if (!isLoaded) {
-      setScroll({});
-      window.history.replaceState({}, document.title);
-      window.history.pushState({ usr: { selectedCategories } }, document.title);
-    }
-  }, [state, contest]);
+  // if (!isLoaded) {
+  //   window.history.replaceState({}, document.title);
+  //   window.history.pushState({ usr: { selectedCategories } }, document.title);
+  // }
+  // }, [state, contest]);
 
   // forceCheck elements in viewport when selectedCategories changes
   useEffect(() => {
@@ -130,7 +128,6 @@ function Contest() {
   }, []);
 
   const handleReload = useCallback(() => {
-    setLoaded(false);
     scrollInstantlyTo(0);
     window.location.reload();
   }, []);
@@ -155,23 +152,45 @@ function Contest() {
       return;
     }
 
-    let currentScroll = window.scrollY;
+    const currentScroll = window.scrollY;
 
     const headerHeight = document.getElementsByTagName('header')[0].offsetHeight;
-    const { bottom: entryBottom, top: entryTop } = entryEl.getBoundingClientRect();
-    const windowTop = currentScroll + headerHeight;
-    const windowBottom = currentScroll + window.innerHeight;
+    const {
+      bottom: entryBottom,
+      top: entryTop,
+      height: entryHeight,
+    } = entryEl.getBoundingClientRect();
+    const windowTop = headerHeight + 8;
+    const windowBottom = window.innerHeight - 8;
 
-    // If no current scroll position or entry outside of window
-    // Scroll so entryTop is 8 below header
-    if ((entryBottom < windowTop && entryTop < windowTop)
-      || (entryBottom > windowBottom && entryTop > windowBottom)
-    ) {
-      currentScroll = entryTop - headerHeight - 8;
+    if (entryTop < windowTop || entryBottom > windowBottom) {
+      scrollInstantlyTo(entryTop + currentScroll - windowTop);
+      return;
     }
 
-    scrollInstantlyTo(currentScroll);
+    const visibleWindow = windowBottom - windowTop;
+    if (entryBottom > windowBottom) {
+      if (visibleWindow > entryHeight) {
+        // scroll to bottom, for when scrolling downwards
+        scrollInstantlyTo(entryBottom + currentScroll - windowBottom);
+      } else {
+        // scroll to top
+        scrollInstantlyTo(entryTop + currentScroll - windowTop);
+      }
+    }
   }, []);
+
+  // scroll to stored scrollY position when login completed (see useRedditLogIn)
+  // ??? overscrolls ???
+  useEffect(() => {
+    if (!contest.name) {
+      return;
+    }
+    const { scrollY, innerWidth } = state || {};
+    if (scrollY && window.innerWidth === innerWidth) {
+      scrollInstantlyTo(scrollY);
+    }
+  }, [state?.scrollY, contest.name]);
 
   const [prevPathName, setPrevPathName] = useState(null);
   // scroll to entry when closing modal (direct link or arrow keying)
@@ -183,26 +202,6 @@ function Contest() {
     }
     setPrevPathName(pathname);
   }, [pathname]);
-
-  // scroll to stored scrollY position when login completed (see useRedditLogIn)
-  // ??? overscrolls ???
-  useEffect(() => {
-    if (!contest.name) {
-      return;
-    }
-    const { scrollY, innerWidth } = state;
-    if (scrollY && window.innerWidth === innerWidth) {
-      scrollInstantlyTo(scrollY);
-    }
-  }, [state.scrollY, contest.name]);
-
-  useEffect(() => {
-    // Clear the cache if the voting window is still closed, to force it to be fetched again on next visit.
-    if (contest.votingWindowOpen === false) {
-      updateCache(null);
-      setLoaded(true);
-    }
-  }, [contest.votingWindowOpen]);
 
   const { headingVariant } = useContestSizing();
 
@@ -229,7 +228,7 @@ function Contest() {
     >
       <ContestSponsor />
       {name && (
-        <PageContainer className={clsx({ [classes.entriesLoading]: !isLoaded })} fixed>
+        <PageContainer className={clsx({ [classes.entriesLoading]: !contest.name })} fixed>
           <Typography className={classes.heading} variant={headingVariant} component="h1">
             {name}
           </Typography>

@@ -306,7 +306,7 @@ function EntryModal() {
                 }}
               />
             )),
-            children: <EntryAppBarMain {...{ entryId }} />,
+            children: <EntryAppBarMain />,
           }}
           drawer={{ heading: 'Info', children: <EntryDescriptionDrawer {...{ entryId }} /> }}
         >
