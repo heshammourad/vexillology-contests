@@ -36,7 +36,6 @@ import ContestWinners from './ContestWinners';
 import useContestSizing from './useContestSizing';
 
 const scrollInstantlyTo = (scrollY, options = {}) => {
-  console.log('scrollInstantlyTo: ', scrollY)
   const defaultOptions = { duration: 0, delay: 0 };
   animateScroll.scrollTo(scrollY, { ...defaultOptions, ...options });
 };
@@ -67,7 +66,7 @@ function Contest() {
   }
 
   const location = useLocation();
-  const { state = {}, pathname } = location;
+  const { state = {} } = location;
 
   const [selectedCategories, setSelectedCategories] = useState(state?.selectedCategories ?? []);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -163,7 +162,7 @@ function Contest() {
     const windowTop = headerHeight + 8;
     const windowBottom = window.innerHeight - 8;
 
-    if (entryTop < windowTop || entryBottom > windowBottom) {
+    if (entryTop < windowTop) {
       scrollInstantlyTo(entryTop + currentScroll - windowTop);
       return;
     }
@@ -181,7 +180,7 @@ function Contest() {
   }, []);
 
   // scroll to stored scrollY position when login completed (see useRedditLogIn)
-  // ??? overscrolls ???
+  // ??? This code underscrolls when position is at the bottom of the flags (end of page)
   useEffect(() => {
     if (!contest.name) {
       return;
@@ -192,16 +191,15 @@ function Contest() {
     }
   }, [state?.scrollY, contest.name]);
 
-  const [prevPathName, setPrevPathName] = useState(null);
+  const [entryId, setEntryId] = useState(null);
   // scroll to entry when closing modal (direct link or arrow keying)
+  // see EntryAppBarMain
   useEffect(() => {
-    if (!pathname.includes('entry') && prevPathName?.includes('entry')) {
-      const pathArray = prevPathName.split('/');
-      const entryIndex = pathArray.indexOf('entry');
-      scrollToEntry(pathArray[entryIndex + 1]);
+    if (entryId) {
+      scrollToEntry(entryId);
+      setEntryId(null);
     }
-    setPrevPathName(pathname);
-  }, [pathname]);
+  }, [entryId]);
 
   const { headingVariant } = useContestSizing();
 
@@ -252,7 +250,7 @@ function Contest() {
         </PageContainer>
       )}
       <RedditLogInDialog />
-      <Outlet />
+      <Outlet context={[setEntryId]} />
     </PageWithDrawer>
   );
 }

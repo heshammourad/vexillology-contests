@@ -30,7 +30,6 @@ const imageWidths = {
 
 function useContestSizing() {
   const [{ density = 'default' }] = useSettingsState();
-
   // Check screen width
   const theme = useTheme();
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));

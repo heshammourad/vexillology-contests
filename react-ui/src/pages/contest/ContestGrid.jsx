@@ -131,123 +131,166 @@ function ContestGrid({
     isContestMode,
   } = contest;
 
-  const tempSolution = useMemo(() => {
-    if (!entries) {
-      return null;
-    }
+  if (!entries) {
+    return null;
+  }
 
-    return (
-      <Grid container spacing={density === 'compact' ? 1 : 2}>
-        {entries
-          .filter(
-            ({ category }) => !selectedCategories.length
-              || selectedCategories.includes(category),
-          )
-          .map(
-            ({
-              average,
-              category,
-              categoryRank,
-              id,
-              imagePath,
-              imgurId,
-              height,
-              name: entryName,
-              rank,
-              rating,
-              user,
-              width,
-            }) => (
-              // eslint-disable-next-line react/jsx-props-no-spreading
-              <Grid key={id} item {...getGridVariables(rank === '1')}>
-                <Card id={id} className={classes.entry}>
-                  <CardContent className={classes.entryHeading}>
-                    {rank && (
-                      <Typography component="div" variant="h6">
-                        <span className={classes.numberSymbol}>#</span>
-                        {rank}
-                      </Typography>
-                    )}
-                    <div className={classes.entryInfo}>
-                      <Box alignItems="flex-start" display="flex" flexGrow={1}>
-                        <Box flexGrow={1}>
-                          <Typography component="div" variant="subtitle2">
-                            {entryName}
-                          </Typography>
-                          {user && (
-                            <Typography variant="caption">
-                              <RedditUserAttribution user={user} />
-                            </Typography>
-                          )}
-                        </Box>
-                        <Experiment name="contest_card_description">
-                          <CustomIconButton
-                            ariaLabel="View description"
-                            className={classes.descriptionIcon}
-                            Icon={DescriptionIcon}
-                            onClick={() => {
-                              setExperimentDrawer(id);
-                            }}
-                            size="small"
-                          />
-                        </Experiment>
-                      </Box>
-                      {(!isContestMode || category) && (
-                        <div className={classes.entryRatings}>
-                          {category && (
-                            <CategoryLabel
-                              categories={categories}
-                              category={category}
-                              categoryRank={categoryRank}
-                            />
-                          )}
-                          {!isContestMode && (
-                            <>
-                              <Average average={average} fullText={rank === '1'} />
-                              {rating > -1 && (
-                                <Typography className={classes.myRating} variant="caption">
-                                  {rank === '1' && <span>My&nbsp;rating:&nbsp;</span>}
-                                  <FiveStar rating={rating} />
-                                </Typography>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                  <div className={classes.entryImageContainer}>
-                    <CardImageLink
-                      displayWidth={rank === '1' ? winnerDisplayWidth : gridDisplayWidth}
-                      height={height}
-                      id={id}
-                      image={imagePath}
-                      width={width}
+  return (
+    <Grid container spacing={density === 'compact' ? 1 : 2}>
+      {entries
+        .filter(
+          ({ category }) => !selectedCategories.length
+            || selectedCategories.includes(category),
+        )
+        .map(
+          ({
+            average,
+            category,
+            categoryRank,
+            id,
+            imagePath,
+            imgurId,
+            height,
+            name: entryName,
+            rank,
+            rating,
+            user,
+            width,
+          }) => (
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            <Grid key={id} item {...getGridVariables(rank === '1')}>
+              <Card id={id} className={classes.entry} sx={{ maxWidth: rank === '1' ? winnerDisplayWidth : gridDisplayWidth }}>
+                <TemporarySolution {...{
+                  average,
+                  category,
+                  categories,
+                  categoryRank,
+                  entryName,
+                  id,
+                  isContestMode,
+                  rank,
+                  rating,
+                  setExperimentDrawer,
+                  user,
+                }}
+                />
+                <div className={classes.entryImageContainer}>
+                  <CardImageLink
+                    displayWidth={rank === '1' ? winnerDisplayWidth : gridDisplayWidth}
+                    height={height}
+                    id={id}
+                    image={imagePath}
+                    width={width}
+                  />
+                </div>
+                {isContestMode && (
+                  <CardActions
+                    className={clsx(classes.votingSlider, {
+                      [classes.disabledVoting]: votingDisabled,
+                    })}
+                  >
+                    <VotingSlider
+                      disabled={votingUnavailable}
+                      entryId={imgurId ?? id}
+                      rating={rating}
+                      setComponentsState={setComponentsState}
                     />
-                  </div>
-                  {isContestMode && (
-                    <CardActions
-                      className={clsx(classes.votingSlider, {
-                        [classes.disabledVoting]: votingDisabled,
-                      })}
-                    >
-                      <VotingSlider
-                        disabled={votingUnavailable}
-                        entryId={imgurId ?? id}
-                        rating={rating}
-                        setComponentsState={setComponentsState}
-                      />
-                    </CardActions>
-                  )}
-                </Card>
-              </Grid>
-            ),
-          )}
-      </Grid>
-    );
-  }, [entries]);
+                  </CardActions>
+                )}
+              </Card>
+            </Grid>
+          ),
+        )}
+    </Grid>
+  );
+}
 
-  return tempSolution;
+function TemporarySolution({
+  average,
+  category,
+  categories, // is this the issue?
+  categoryRank,
+  entryName,
+  id,
+  isContestMode, // is this the issue?
+  rank,
+  rating,
+  setExperimentDrawer, // is this the issue?
+  user,
+}) {
+  const classes = useStyles();
+
+  const temporary = useMemo(() => (
+    <CardContent className={classes.entryHeading}>
+      {rank && (
+        <Typography component="div" variant="h6">
+          <span className={classes.numberSymbol}>#</span>
+          {rank}
+        </Typography>
+      )}
+      <div className={classes.entryInfo}>
+        <Box alignItems="flex-start" display="flex" flexGrow={1}>
+          <Box flexGrow={1}>
+            <Typography component="div" variant="subtitle2">
+              {entryName}
+            </Typography>
+            {user && (
+              <Typography variant="caption">
+                <RedditUserAttribution user={user} />
+              </Typography>
+            )}
+          </Box>
+          <Experiment name="contest_card_description">
+            <CustomIconButton
+              ariaLabel="View description"
+              className={classes.descriptionIcon}
+              Icon={DescriptionIcon}
+              onClick={() => {
+                setExperimentDrawer(id);
+              }}
+              size="small"
+            />
+          </Experiment>
+        </Box>
+        {(!isContestMode || category) && (
+          <div className={classes.entryRatings}>
+            {category && (
+              <CategoryLabel
+                categories={categories}
+                category={category}
+                categoryRank={categoryRank}
+              />
+            )}
+            {!isContestMode && (
+              <>
+                <Average average={average} fullText={rank === '1'} />
+                {rating > -1 && (
+                  <Typography className={classes.myRating} variant="caption">
+                    {rank === '1' && <span>My&nbsp;rating:&nbsp;</span>}
+                    <FiveStar rating={rating} />
+                  </Typography>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </CardContent>
+  ), [
+    average,
+    category,
+    categories,
+    categoryRank,
+    entryName,
+    id,
+    isContestMode,
+    rank,
+    rating,
+    setExperimentDrawer,
+    user,
+  ]);
+
+  return temporary;
 }
 
 ContestGrid.propTypes = {
