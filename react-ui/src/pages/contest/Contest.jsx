@@ -250,7 +250,7 @@ function Contest() {
         </PageContainer>
       )}
       <RedditLogInDialog />
-      <Outlet context={[setEntryId]} />
+      <Outlet context={{ selectedCategories, setEntryId }} />
     </PageWithDrawer>
   );
 }

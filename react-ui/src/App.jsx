@@ -58,7 +58,6 @@ function ModalSwitch() {
         <Route path="/home" element={<Home />} />
         <Route path="/contests" element={<Contests />} />
         <Route path="/contests/:contestId" element={<Contest />}>
-
           <Route path="/contests/:contestId/entry/:entryId" element={<EntryModal />} />
         </Route>
         {/* DO NOT DELETE ENTRY, intentionally duplicated, this is required for direct link */}

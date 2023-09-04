@@ -8,7 +8,7 @@ import {
 } from '../../components';
 
 export default function EntryAppBarMain() {
-  const [shareEntryWithContest] = useOutletContext();
+  const { setEntryId: shareEntryWithContest } = useOutletContext();
   const { state = {} } = useLocation();
   const { contestId, entryId } = useParams();
 
@@ -18,7 +18,6 @@ export default function EntryAppBarMain() {
       onClick={() => shareEntryWithContest(entryId)}
       state={{
         back: state?.back,
-        selectedCategories: state?.selectedCategories ?? [],
       }}
       to={`/contests/${contestId}`}
       icon="close"

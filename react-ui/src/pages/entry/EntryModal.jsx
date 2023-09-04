@@ -13,7 +13,7 @@ import throttle from 'lodash/throttle';
 import {
   useEffect, useMemo, useRef, useState,
 } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 
 import { useSettingsState, useSwrData } from '../../common';
 import {
@@ -120,6 +120,7 @@ function EntryModal() {
    * Navigation
    */
   const navigate = useNavigate();
+  const { selectedCategories = [] } = useOutletContext();
   const { state = {} } = useLocation();
   const [isNavigationAvailable, updateNavigationAvailable] = useState({
     before: false,
@@ -195,8 +196,8 @@ function EntryModal() {
 
   useEffect(() => {
     const allEntries = [...winners, ...entries].filter(
-      ({ category }) => !state?.selectedCategories?.length
-        || state?.selectedCategories?.includes(category),
+      ({ category }) => !selectedCategories?.length
+        || selectedCategories?.includes(category),
     );
     if (!entryId || !allEntries.length) {
       return;
