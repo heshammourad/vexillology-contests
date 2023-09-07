@@ -86,7 +86,7 @@ const useStyles = makeStyles((theme) => ({
 
 function ContestGrid({
   selectedCategories,
-  setExperimentDrawer,
+  setDrawer,
   votingExpired,
 }) {
   const { contestId } = useParams();
@@ -170,7 +170,7 @@ function ContestGrid({
                   isContestMode,
                   rank,
                   rating,
-                  setExperimentDrawer,
+                  setDrawer,
                   user,
                 }}
                 />
@@ -215,7 +215,7 @@ function TemporarySolution({
   isContestMode, // is this the issue?
   rank,
   rating,
-  setExperimentDrawer, // is this the issue?
+  setDrawer, // is this the issue?
   user,
 }) {
   const classes = useStyles();
@@ -246,7 +246,7 @@ function TemporarySolution({
               className={classes.descriptionIcon}
               Icon={DescriptionIcon}
               onClick={() => {
-                setExperimentDrawer(id);
+                setDrawer(id);
               }}
               size="small"
             />
@@ -286,7 +286,7 @@ function TemporarySolution({
     isContestMode,
     rank,
     rating,
-    setExperimentDrawer,
+    setDrawer,
     user,
   ]);
 
@@ -295,7 +295,7 @@ function TemporarySolution({
 
 ContestGrid.propTypes = {
   selectedCategories: PropTypes.arrayOf(PropTypes.string),
-  setExperimentDrawer: PropTypes.func.isRequired,
+  setDrawer: PropTypes.func.isRequired,
   votingExpired: PropTypes.bool,
 };
 

@@ -70,7 +70,7 @@ function Contest() {
 
   const [selectedCategories, setSelectedCategories] = useState(state?.selectedCategories ?? []);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [experimentId, setExperimentId] = useState(null);
+  const [drawerEntryId, setDrawerEntryId] = useState(null);
   const [votingExpired, setVotingExpired] = useState(false);
 
   // Scroll to top when unmounted
@@ -124,7 +124,7 @@ function Contest() {
   }, []);
 
   const toggleDrawerOpen = useCallback((isOpen) => {
-    setExperimentId(null);
+    setDrawerEntryId(null);
     setIsDrawerOpen(isOpen);
   }, []);
 
@@ -132,8 +132,8 @@ function Contest() {
     toggleDrawerOpen(false);
   }, []);
 
-  const setExperimentDrawer = useCallback((entryId) => {
-    setExperimentId(entryId);
+  const setDrawer = useCallback((entryId) => {
+    setDrawerEntryId(entryId);
     setIsDrawerOpen(!!entryId);
   }, []);
 
@@ -183,15 +183,15 @@ function Contest() {
     }
   }, [state?.scrollY, contest.name]);
 
-  const [entryId, setEntryId] = useState(null);
+  const [scrollEntryId, setScrollEntryId] = useState(null);
   // scroll to entry when closing modal (direct link or arrow keying)
   // see EntryAppBarMain
   useEffect(() => {
-    if (entryId) {
-      scrollToEntry(entryId);
-      setEntryId(null);
+    if (scrollEntryId) {
+      scrollToEntry(scrollEntryId);
+      setScrollEntryId(null);
     }
-  }, [entryId]);
+  }, [scrollEntryId]);
 
   const { headingVariant } = useContestSizing();
 
@@ -214,7 +214,7 @@ function Contest() {
         right: <ContestAppBarRight {...{ toggleDrawerOpen }} />,
         children: <ContestAppBarMain {...{ handleVotingExpired, handleReload }} />,
       }}
-      drawer={experimentId ? { heading: 'Info', children: <EntryDescriptionDrawer entryId={experimentId} /> } : { heading: 'Settings', children: <ContestSettings /> }}
+      drawer={drawerEntryId ? { heading: 'Info', children: <EntryDescriptionDrawer entryId={drawerEntryId} /> } : { heading: 'Settings', children: <ContestSettings /> }}
     >
       <ContestSponsor />
       {name && (
@@ -235,14 +235,14 @@ function Contest() {
           <ContestGrid
             {...{
               selectedCategories,
-              setExperimentDrawer,
+              setDrawer,
               votingExpired,
             }}
           />
         </PageContainer>
       )}
       <RedditLogInDialog />
-      <Outlet context={{ selectedCategories, setEntryId }} />
+      <Outlet context={{ selectedCategories, setScrollEntryId }} />
     </PageWithDrawer>
   );
 }

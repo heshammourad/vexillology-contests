@@ -8,14 +8,14 @@ import {
 } from '../../components';
 
 export default function EntryAppBarMain() {
-  const { setEntryId: shareEntryWithContest } = useOutletContext();
+  const { setScrollEntryId } = useOutletContext();
   const { state = {} } = useLocation();
   const { contestId, entryId } = useParams();
 
   return (
     <RouterLinkIconButton
       color="inherit"
-      onClick={() => shareEntryWithContest(entryId)}
+      onClick={() => setScrollEntryId(entryId)}
       state={{
         back: state?.back,
       }}
