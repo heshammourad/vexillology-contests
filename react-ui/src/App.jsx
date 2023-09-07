@@ -5,7 +5,7 @@
 
 import CssBaseline from '@material-ui/core/CssBaseline';
 import {
-  BrowserRouter, Navigate, Route, Routes, useLocation, Link,
+  BrowserRouter, Navigate, Route, Routes, Link,
 } from 'react-router-dom';
 import { SWRConfig } from 'swr';
 
@@ -60,7 +60,6 @@ function ModalSwitch() {
         <Route path="/contests/:contestId" element={<Contest />}>
           <Route path="/contests/:contestId/entry/:entryId" element={<EntryModal />} />
         </Route>
-        {/* DO NOT DELETE ENTRY, intentionally duplicated, this is required for direct link */}
         <Route path="/mod/review" element={<ReviewSubmissions />} />
         <Route path="/submission" element={<Submission />} />
         <Route

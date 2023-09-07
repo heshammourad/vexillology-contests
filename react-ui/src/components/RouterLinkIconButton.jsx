@@ -7,7 +7,7 @@ import { Link as RouterLink } from 'react-router-dom';
 
 import types from '../common/types';
 
-function ArrowBackButton({
+function RouterLinkIconButton({
   color, onClick, state, to, icon = 'arrowback',
 }) {
   const Icon = useMemo(() => {
@@ -28,7 +28,7 @@ function ArrowBackButton({
   );
 }
 
-ArrowBackButton.propTypes = {
+RouterLinkIconButton.propTypes = {
   color: PropTypes.string,
   onClick: PropTypes.func,
   state: PropTypes.shape({}),
@@ -36,11 +36,11 @@ ArrowBackButton.propTypes = {
   icon: PropTypes.string,
 };
 
-ArrowBackButton.defaultProps = {
+RouterLinkIconButton.defaultProps = {
   color: 'default',
   onClick: () => { },
   state: {},
   icon: 'arrowback',
 };
 
-export default ArrowBackButton;
+export default RouterLinkIconButton;

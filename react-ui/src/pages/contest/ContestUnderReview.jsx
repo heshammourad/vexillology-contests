@@ -34,7 +34,7 @@ ContestUnderReview.propTypes = {
 };
 
 ContestUnderReview.defaultProps = {
-  isValidating: true,
+  isValidating: false,
 };
 
 export default ContestUnderReview;

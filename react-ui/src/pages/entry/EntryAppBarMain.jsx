@@ -4,7 +4,7 @@
 import { useParams, useLocation, useOutletContext } from 'react-router-dom';
 
 import {
-  ArrowBackButton,
+  RouterLinkIconButton,
 } from '../../components';
 
 export default function EntryAppBarMain() {
@@ -13,7 +13,7 @@ export default function EntryAppBarMain() {
   const { contestId, entryId } = useParams();
 
   return (
-    <ArrowBackButton
+    <RouterLinkIconButton
       color="inherit"
       onClick={() => shareEntryWithContest(entryId)}
       state={{

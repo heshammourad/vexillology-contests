@@ -5,6 +5,7 @@
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
+import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -111,21 +112,19 @@ function FeatureBanner({ screenOverride }) {
     return (
       <Box className={classes.banner}>
         <Typography className={classes.monthYear}>NEW FEATURES</Typography>
-        {
-          screenFeatures.map(({ monthYear, bullets }) => (
-            <Box>
-              <Typography className={classes.monthYear}>{monthYear}</Typography>
-              {
-                bullets.map(({ isBold = false, text }) => (
-                  <Typography className={[classes.bullet, isBold && classes.isBold]}>
-                    {'-  '}
-                    {text}
-                  </Typography>
-                ))
-              }
-            </Box>
-          ))
-        }
+        {screenFeatures.map(({ monthYear, bullets }) => (
+          <Box key={monthYear}>
+            <Typography className={clsx(classes.monthYear)}>{monthYear}</Typography>
+            {
+              bullets.map(({ isBold = false, text }) => (
+                <Typography className={clsx(classes.bullet, { [classes.isBold]: isBold })}>
+                  {'-  '}
+                  {text}
+                </Typography>
+              ))
+            }
+          </Box>
+        ))}
       </Box>
     );
   }, []);

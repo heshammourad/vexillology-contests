@@ -13,7 +13,12 @@ import throttle from 'lodash/throttle';
 import {
   useEffect, useMemo, useRef, useState,
 } from 'react';
-import { useParams, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
+import {
+  useParams,
+  useLocation,
+  useNavigate,
+  useOutletContext,
+} from 'react-router-dom';
 
 import { useSettingsState, useSwrData } from '../../common';
 import {
@@ -82,18 +87,18 @@ function EntryModal() {
   /**
    * Info drawer
    */
-  const [{ isEntryDescriptionOpen }, updateSettings] = useSettingsState();
-  const isEntryDescriptionOpenRef = useRef(isEntryDescriptionOpen);
+  const [{ isEntryDrawerOpen }, updateSettings] = useSettingsState();
+  const isEntryDrawerOpenRef = useRef(isEntryDrawerOpen);
   const updateInfoSetting = (isOpen) => {
-    isEntryDescriptionOpenRef.current = isOpen;
-    updateSettings('isEntryDescriptionOpen', isOpen);
+    isEntryDrawerOpenRef.current = isOpen;
+    updateSettings('isEntryDrawerOpen', isOpen);
   };
   const handleDrawerClose = () => {
     updateInfoSetting(false);
   };
 
   const toggleInfoDrawerOpen = () => {
-    updateInfoSetting(!isEntryDescriptionOpenRef.current);
+    updateInfoSetting(!isEntryDrawerOpenRef.current);
   };
 
   /**
@@ -290,7 +295,7 @@ function EntryModal() {
       >
         <PageWithDrawer
           handleClose={handleDrawerClose}
-          isOpen={isEntryDescriptionOpen}
+          isOpen={isEntryDrawerOpen}
           className={classes.root}
           appBar={{
             position: 'fixed',

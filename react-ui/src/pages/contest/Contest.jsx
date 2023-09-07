@@ -84,7 +84,6 @@ function Contest() {
     forceCheck();
   }, [contest.name]);
 
-
   useEffect(() => {
     // Clear cache if the voting window is still closed to force fetch again on next visit
     if (contest.votingWindowOpen === false) {
@@ -98,17 +97,10 @@ function Contest() {
   // if (!contest.name) {
   //   return;
   // }
-
-  // Does replaceState and pushState matter?
   // const { entryId } = scroll;
   // const { scrollY } = state || {};
   // if (!entryId && !scrollY) {
   //   return;
-  // }
-
-  // if (!isLoaded) {
-  //   window.history.replaceState({}, document.title);
-  //   window.history.pushState({ usr: { selectedCategories } }, document.title);
   // }
   // }, [state, contest]);
 

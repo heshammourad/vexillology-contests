@@ -13,17 +13,12 @@ import {
 
 export default function EntryAppBarRight({
   // eslint-disable-next-line react/prop-types
-  entry = {},
+  entry: { imagePath, permalink },
   flagWaverButtonRef,
   localVoting,
   redditCommentButtonRef,
   toggleInfoDrawerOpen,
 }) {
-  const {
-    imagePath,
-    permalink,
-  } = entry;
-
   const imageSrc = window.location.origin + imagePath;
   const redditPermalink = `https://www.reddit.com${permalink}`;
   const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${imageSrc}`;

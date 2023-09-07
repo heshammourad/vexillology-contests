@@ -7,19 +7,29 @@ import PropTypes from 'prop-types';
 import { useLocation, useParams } from 'react-router-dom';
 
 import {
+  useAuthState,
   useSwrData,
 } from '../../common';
 import {
   RouterLinkIconButton,
   Countdown,
 } from '../../components';
+import useSWR from 'swr';
 
 export default function ContestAppBarMain({ handleVotingExpired, handleReload }) {
   const { contestId } = useParams();
   const { state = {} } = useLocation();
 
   const apiPath = `/contests/${contestId}`;
-  const { data: contest } = useSwrData(apiPath, false);
+
+  const [{ accessToken, refreshToken }] = useAuthState();
+
+  // https://swr.vercel.app/docs/arguments
+  const uniqueKey = [apiPath, { accessToken, refreshToken }];
+  // fetcher is set as provider in App.jsx and calls getData in index.js
+  const {
+    data: contest = {},
+  } = useSWR(uniqueKey, { revalidateOnMount: false });
 
   const backLink = (state || {}).back || '/contests';
 
