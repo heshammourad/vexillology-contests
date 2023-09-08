@@ -205,7 +205,7 @@ function ContestGrid({
   );
 }
 
-// Unknown issue: selecting entry re-renders ContestGrid
+// ??? Unknown issue: selecting entry re-renders ContestGrid
 // And without wrapper, CardContent causes 150-200ms delay
 function CardContentWrapper({
   average,

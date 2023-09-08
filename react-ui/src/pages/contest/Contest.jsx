@@ -211,8 +211,8 @@ function Contest() {
       appBar={{
         className: classes.icon,
         color: 'default',
-        right: <ContestAppBarRight {...{ toggleDrawerOpen }} />,
-        children: <ContestAppBarMain {...{ handleVotingExpired, handleReload }} />,
+        right: <ContestAppBarRight {...{ toggleDrawerOpen, contest }} />,
+        children: <ContestAppBarMain {...{ handleVotingExpired, handleReload, contest }} />,
       }}
       drawer={drawerEntryId ? { heading: 'Info', children: <EntryDescriptionDrawer entryId={drawerEntryId} /> } : { heading: 'Settings', children: <ContestSettings /> }}
     >

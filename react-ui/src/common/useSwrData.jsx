@@ -33,6 +33,9 @@ const getOptions = (path) => {
   }
 };
 
+// ??? Unknown issue: multiple calls made with Contest and ContestAppBar_
+// https://github.com/vercel/swr/issues/1786
+// https://github.com/vercel/swr/issues/1417
 const useSwrData = (path, revalidateOnMount = true) => {
   const [getData, updateCache, clearCache] = useCache(path);
   const [{ accessToken, isLoggedIn, refreshToken }] = useAuthState();

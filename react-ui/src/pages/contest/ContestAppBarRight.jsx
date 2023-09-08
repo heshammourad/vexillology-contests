@@ -9,23 +9,22 @@ import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
 
 import {
-  useSwrData,
-} from '../../common';
-import {
   CustomIconButton,
 } from '../../components';
 
-export default function ContestAppBarRight({ toggleDrawerOpen }) {
+export default function ContestAppBarRight({ toggleDrawerOpen, contest }) {
   const { contestId } = useParams();
-
-  const apiPath = `/contests/${contestId}`;
-  const { data: contest } = useSwrData(apiPath, false);
 
   const {
     localVoting,
+    name,
     validRedditId,
     winnersThreadId,
   } = contest;
+
+  if (!name) {
+    return null;
+  }
 
   return (
     <>
@@ -54,8 +53,20 @@ export default function ContestAppBarRight({ toggleDrawerOpen }) {
 
 ContestAppBarRight.propTypes = {
   toggleDrawerOpen: PropTypes.func,
+  contest: {
+    localVoting: PropTypes.bool,
+    name: PropTypes.string,
+    validRedditId: PropTypes.bool,
+    winnersThreadId: PropTypes.string,
+  },
 };
 
 ContestAppBarRight.defaultProps = {
   toggleDrawerOpen: () => { },
+  contest: {
+    localVoting: true,
+    name: undefined,
+    validRedditId: false,
+    winnersThreadId: undefined,
+  },
 };
