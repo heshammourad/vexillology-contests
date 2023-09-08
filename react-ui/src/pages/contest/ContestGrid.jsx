@@ -160,7 +160,7 @@ function ContestGrid({
             // eslint-disable-next-line react/jsx-props-no-spreading
             <Grid key={id} item {...getGridVariables(rank === '1')}>
               <Card id={id} className={classes.entry} sx={{ maxWidth: rank === '1' ? winnerDisplayWidth : gridDisplayWidth }}>
-                <TemporarySolution {...{
+                <CardContentWrapper {...{
                   average,
                   category,
                   categories,
@@ -205,7 +205,9 @@ function ContestGrid({
   );
 }
 
-function TemporarySolution({
+// Unknown issue: selecting entry re-renders ContestGrid
+// And without wrapper, CardContent causes 150-200ms delay
+function CardContentWrapper({
   average,
   category,
   categories, // is this the issue?
@@ -220,7 +222,7 @@ function TemporarySolution({
 }) {
   const classes = useStyles();
 
-  const temporary = useMemo(() => (
+  const cardContent = useMemo(() => (
     <CardContent className={classes.entryHeading}>
       {rank && (
         <Typography component="div" variant="h6">
@@ -290,7 +292,7 @@ function TemporarySolution({
     user,
   ]);
 
-  return temporary;
+  return cardContent;
 }
 
 ContestGrid.propTypes = {
