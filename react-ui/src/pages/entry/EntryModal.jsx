@@ -1,30 +1,34 @@
 /**
  * Full page entry
+ * ??? Get rid of Refs for click() events, just open link
  */
 
 import Box from '@material-ui/core/Box';
+import Dialog from '@material-ui/core/Dialog';
 import { makeStyles } from '@material-ui/core/styles';
-import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
-import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
-import RedditIcon from '@material-ui/icons/Reddit';
 import clsx from 'clsx';
 import throttle from 'lodash/throttle';
 import {
   useEffect, useMemo, useRef, useState,
 } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
-
-import { useScrollState, useSettingsState, useSwrData } from '../../common';
 import {
-  ArrowBackButton,
-  CustomIconButton,
+  useParams,
+  useLocation,
+  useNavigate,
+  useOutletContext,
+} from 'react-router-dom';
+
+import { useSettingsState, useSwrData } from '../../common';
+import {
   EntryDescriptionDrawer,
   PageWithDrawer,
   RedditLogInDialog,
 } from '../../components';
 
+import EntryAppBarMain from './EntryAppBarMain';
+import EntryAppBarRight from './EntryAppBarRight';
 import NavigateIconButton from './NavigateIconButton';
 
 const calculateImageContainerHeight = (offset) => `calc(100vh - ${offset}px)`;
@@ -67,35 +71,62 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function Entry() {
-  const { contestId, entryId } = useParams();
-  const {
-    data: {
-      entries = [], localVoting, requestId, winners = [],
-    },
-  } = useSwrData(`/contests/${contestId}`, false);
-
-  const { state = {} } = useLocation();
-  const navigate = useNavigate();
+function EntryModal() {
+  /**
+   * Layout
+   */
   const classes = useStyles();
+  const imageContainerRef = useRef(null);
 
-  const [scroll, setScroll] = useScrollState();
-  const [{ isInfoOpen }, updateSettings] = useSettingsState();
-  const isInfoOpenRef = useRef(isInfoOpen);
-  const updateInfoSetting = (infoOpen) => {
-    isInfoOpenRef.current = infoOpen;
-    updateSettings('isInfoOpen', infoOpen);
+  /**
+   * AppBar
+   */
+  const redditCommentButtonRef = useRef(null);
+  const flagWaverButtonRef = useRef(null);
+
+  /**
+   * Info drawer
+   */
+  const [{ isEntryDrawerOpen }, updateSettings] = useSettingsState();
+  const isEntryDrawerOpenRef = useRef(isEntryDrawerOpen);
+  const updateInfoSetting = (isOpen) => {
+    isEntryDrawerOpenRef.current = isOpen;
+    updateSettings('isEntryDrawerOpen', isOpen);
+  };
+  const handleDrawerClose = () => {
+    updateInfoSetting(false);
   };
 
+  const toggleInfoDrawerOpen = () => {
+    updateInfoSetting(!isEntryDrawerOpenRef.current);
+  };
+
+  /**
+   * Entries
+   */
+  const { contestId, entryId } = useParams();
+  const apiPath = `/contests/${contestId}`;
+  const { data } = useSwrData(apiPath, false);
+  const {
+    entries = [],
+    winners = [],
+    localVoting,
+  } = data;
   const allEntriesRef = useRef([]);
+  const [entry, setEntry] = useState({});
   const [entryIndex, updateEntryIndex] = useState(-1);
   const entryIndexRef = useRef(entryIndex);
   const setEntryIndex = (value) => {
     entryIndexRef.current = value;
     updateEntryIndex(value);
   };
-  const [entry, setEntry] = useState({});
 
+  /**
+   * Navigation
+   */
+  const navigate = useNavigate();
+  const { selectedCategories = [] } = useOutletContext();
+  const { state = {} } = useLocation();
   const [isNavigationAvailable, updateNavigationAvailable] = useState({
     before: false,
     next: false,
@@ -108,18 +139,6 @@ function Entry() {
   const [isNavigationVisible, setNavigationVisible] = useState({ before: true, next: true });
   const hideNavigation = () => {
     setNavigationVisible({ before: false, next: false });
-  };
-
-  const redditCommentButtonRef = useRef(null);
-  const flagWaverButtonRef = useRef(null);
-  const imageContainerRef = useRef(null);
-
-  const handleDrawerClose = () => {
-    updateInfoSetting(false);
-  };
-
-  const toggleInfoDrawerOpen = () => {
-    updateInfoSetting(!isInfoOpenRef.current);
   };
 
   const handleNavigate = (indexChange) => {
@@ -182,8 +201,8 @@ function Entry() {
 
   useEffect(() => {
     const allEntries = [...winners, ...entries].filter(
-      // eslint-disable-next-line max-len
-      ({ category }) => !state?.selectedCategories?.length || state?.selectedCategories?.includes(category),
+      ({ category }) => !selectedCategories?.length
+        || selectedCategories?.includes(category),
     );
     if (!entryId || !allEntries.length) {
       return;
@@ -265,104 +284,79 @@ function Entry() {
     handleNavigate(indexChange);
   };
 
-  if (!entry) {
-    return null;
-  }
-
-  const imageSrc = window.location.origin + entry.imagePath;
-  const redditPermalink = `https://www.reddit.com${entry.permalink}`;
-  const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${imageSrc}`;
-
   return (
     <>
-      <PageWithDrawer
-        handleClose={handleDrawerClose}
-        isOpen={isInfoOpenRef.current}
-        className={classes.root}
-        appBar={{
-          position: 'fixed',
-          accountMenuColor: 'inherit',
-          className: classes.appBar,
-          right: entry.id && (
-            <>
-              {!localVoting && (
-                <CustomIconButton
-                  innerRef={redditCommentButtonRef}
-                  href={redditPermalink}
-                  ariaLabel="Open Reddit comment"
-                  Icon={RedditIcon}
-                />
-              )}
-              <CustomIconButton
-                innerRef={flagWaverButtonRef}
-                href={flagWaverLink}
-                ariaLabel="Open FlagWaver"
-                Icon={FlagTwoToneIcon}
-              />
-              <CustomIconButton
-                ariaLabel="Open info"
-                onClick={toggleInfoDrawerOpen}
-                Icon={InfoOutlinedIcon}
-              />
-            </>
-          ),
-          children: (
-            <ArrowBackButton
-              color="inherit"
-              onClick={() => {
-                setScroll({ ...scroll, entryId: entry.id });
-              }}
-              state={{
-                back: state?.back,
-                requestId,
-                selectedCategories: state?.selectedCategories ?? [],
-              }}
-              to={`/contests/${contestId}`}
-            />
-          ),
-        }}
-        drawer={{ heading: 'Info', children: <EntryDescriptionDrawer entryId={entry.id} /> }}
+      <Dialog
+        open
+        fullScreen
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        transitionDuration={0}
       >
-        <Box
-          ref={imageContainerRef}
-          className={clsx(classes.imageContainer, {
-            [classes.clickActive]: isNavigationVisible.before || isNavigationVisible.next,
-          })}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          onMouseUp={handleMouseUp}
-          onMouseMove={handleMouseMoveThrottled}
-          onTouchEnd={handleTouchEnd}
+        <PageWithDrawer
+          handleClose={handleDrawerClose}
+          isOpen={isEntryDrawerOpen}
+          className={classes.root}
+          appBar={{
+            position: 'fixed',
+            accountMenuColor: 'inherit',
+            className: classes.appBar,
+            right: (entry?.id && (
+              <EntryAppBarRight
+                {...{
+                  redditCommentButtonRef,
+                  flagWaverButtonRef,
+                  toggleInfoDrawerOpen,
+                  localVoting,
+                  entry,
+                }}
+              />
+            )),
+            children: <EntryAppBarMain />,
+          }}
+          drawer={{ heading: 'Info', children: <EntryDescriptionDrawer {...{ entryId }} /> }}
         >
-          {isNavigationAvailable.before && (
-            <NavigateIconButton
-              className={clsx(classes.navigateButton, classes.navigateBefore, {
-                [classes.navigateVisible]: isNavigationVisible.before,
-              })}
-              Icon={NavigateBeforeIcon}
-              onClick={() => {
-                handleNavigate(-1);
-              }}
-            />
-          )}
-          {entry.imagePath && <img className={classes.image} src={entry.imagePath} alt="" />}
-          {isNavigationAvailable.next && (
-            <NavigateIconButton
-              className={clsx(classes.navigateButton, classes.navigateNext, {
-                [classes.navigateVisible]: isNavigationVisible.next,
-              })}
-              Icon={NavigateNextIcon}
-              onClick={() => {
-                handleNavigate(1);
-              }}
-            />
-          )}
-        </Box>
-      </PageWithDrawer>
+          <Box
+            ref={imageContainerRef}
+            className={clsx(classes.imageContainer, {
+              [classes.clickActive]: isNavigationVisible.before || isNavigationVisible.next,
+            })}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMoveThrottled}
+            onTouchEnd={handleTouchEnd}
+          >
+            {isNavigationAvailable.before && (
+              <NavigateIconButton
+                className={clsx(classes.navigateButton, classes.navigateBefore, {
+                  [classes.navigateVisible]: isNavigationVisible.before,
+                })}
+                Icon={NavigateBeforeIcon}
+                onClick={() => {
+                  handleNavigate(-1);
+                }}
+              />
+            )}
+            {entry?.imagePath && <img className={classes.image} src={entry.imagePath} alt="" />}
+            {isNavigationAvailable.next && (
+              <NavigateIconButton
+                className={clsx(classes.navigateButton, classes.navigateNext, {
+                  [classes.navigateVisible]: isNavigationVisible.next,
+                })}
+                Icon={NavigateNextIcon}
+                onClick={() => {
+                  handleNavigate(1);
+                }}
+              />
+            )}
+          </Box>
+        </PageWithDrawer>
+      </Dialog>
       <RedditLogInDialog />
     </>
   );
 }
 
-export default Entry;
+export default EntryModal;

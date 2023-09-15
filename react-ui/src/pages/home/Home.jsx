@@ -13,6 +13,8 @@ import TwitterIcon from '@material-ui/icons/Twitter';
 import { useLocation } from 'react-router-dom';
 
 import { useSwrData } from '../../common';
+// eslint-disable-next-line no-restricted-imports
+import { FeatureBanner, SCREENS } from '../../common/FeatureBanner';
 import {
   AppBarDivided, CustomIconButton, ExternalLink, InternalLink,
 } from '../../components';
@@ -88,6 +90,7 @@ function Home() {
     <>
       <AppBarDivided color="default" position="sticky" />
       <Container>
+        <FeatureBanner screen={SCREENS.HOME} />
         <Typography className={classes.heading} component="h1" variant="h6">
           Welcome to Vexillology Contests!
         </Typography>

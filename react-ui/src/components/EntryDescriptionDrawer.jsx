@@ -1,3 +1,6 @@
+/**
+ * ??? early return null will create error if change in number of hooks found
+ */
 import Box from '@material-ui/core/Box';
 import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
@@ -81,7 +84,7 @@ function EntryDescriptionDrawer({ entryId }) {
     rank,
     rating,
     user,
-  } = [...winners, ...entries].find((entry) => entry.id === entryId);
+  } = [...winners, ...entries].find((entry) => entry.id === entryId) || {};
 
   const imageSrc = window.location.origin + imagePath;
   const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${imageSrc}`;
@@ -100,10 +103,10 @@ function EntryDescriptionDrawer({ entryId }) {
     <div className={classes.drawerContent}>
       <Box display="flex">
         {showRank && (
-        <div className={classes.rank}>
-          #
-          {rank}
-        </div>
+          <div className={classes.rank}>
+            #
+            {rank}
+          </div>
         )}
         <Box>
           <div className={classes.entryName}>{name}</div>

@@ -3,6 +3,7 @@
 const {
   DATABASE_SSL,
   ENV_LEVEL = 'prod',
+  FIREBASE_PRIVATE_KEY = false,
   LOG_LEVEL: LOG_LEVEL_DOTENV,
   NODE_ENV,
   PORT,
@@ -12,13 +13,12 @@ const {
 // ONLY CHANGE THESE VARIABLES
 // (or those in dotenv, which require restart)
 const OPEN_ALL_CONTESTS = true;
-const HIDE_FIREBASE = false;
 const VIEW_UNAUTHENTICATED = false;
 
 const IS_DEV = NODE_ENV !== 'production';
 
 const IS_CONTESTS_OPENED = IS_DEV && OPEN_ALL_CONTESTS;
-const IS_FIREBASE_OFF = IS_DEV && HIDE_FIREBASE;
+const IS_FIREBASE_OFF = IS_DEV && !FIREBASE_PRIVATE_KEY;
 const IS_UNAUTHENTICATED_VIEW = IS_DEV && VIEW_UNAUTHENTICATED;
 
 const LOG_LEVEL = LOG_LEVEL_DOTENV || 'info';

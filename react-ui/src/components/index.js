@@ -1,7 +1,7 @@
 export { default as AccountMenu } from './AccountMenu';
 export { default as AppBarDivided } from './AppBarDivided';
 export { default as AppHelmet } from './AppHelmet';
-export { default as ArrowBackButton } from './ArrowBackButton';
+export { default as RouterLinkIconButton } from './RouterLinkIconButton';
 export { default as Average } from './Average';
 export { default as CategoryLabel } from './CategoryLabel';
 export { default as Countdown } from './Countdown';

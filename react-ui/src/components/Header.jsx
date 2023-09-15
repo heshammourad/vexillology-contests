@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import types from '../common/types';
 
 import AppBarDivided from './AppBarDivided';
-import ArrowBackButton from './ArrowBackButton';
+import RouterLinkIconButton from './RouterLinkIconButton';
 
 const useStyles = makeStyles((theme) => ({
   title: {
@@ -20,7 +20,7 @@ function Header({
   const classes = useStyles();
   return (
     <AppBarDivided color="default" disableGutters position={position}>
-      <ArrowBackButton to={to} />
+      <RouterLinkIconButton to={to} />
       <Typography className={clsx(classes.title, className)} component="div" variant="h6">
         {children}
       </Typography>
