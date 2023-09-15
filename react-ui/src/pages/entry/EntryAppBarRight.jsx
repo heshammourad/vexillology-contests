@@ -12,7 +12,6 @@ import {
 } from '../../components';
 
 export default function EntryAppBarRight({
-  // eslint-disable-next-line react/prop-types
   entry: { imagePath, permalink },
   flagWaverButtonRef,
   localVoting,
@@ -49,7 +48,10 @@ export default function EntryAppBarRight({
 }
 
 EntryAppBarRight.propTypes = {
-  entry: PropTypes.shape({}),
+  entry: PropTypes.shape({
+    imagePath: PropTypes.string,
+    permalink: PropTypes.string,
+  }),
   localVoting: PropTypes.bool,
   flagWaverButtonRef: PropTypes.oneOfType([
     PropTypes.func,
