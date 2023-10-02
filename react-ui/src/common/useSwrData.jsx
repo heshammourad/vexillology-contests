@@ -42,7 +42,7 @@ const useSwrData = (path, revalidateOnMount = true) => {
 
   // https://swr.vercel.app/docs/arguments
   const uniqueKey = [path, { accessToken, refreshToken }];
-  // fetcher is set as provider in App.jsx and calls getData in index.js
+  // fetcher is set as provider in App.jsx and calls getData in react-ui/src/api/index.js
   const {
     data, error, isValidating, isLoading, mutate,
   } = useSWR(uniqueKey, { ...getOptions(path), revalidateOnMount });
