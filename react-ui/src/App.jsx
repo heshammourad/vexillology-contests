@@ -10,7 +10,12 @@ import {
 import { SWRConfig } from 'swr';
 
 import { getData } from './api';
-import { AppHelmet, CustomSnackbar, CustomThemeProvider } from './components';
+import {
+  AppHelmet,
+  CustomSnackbar,
+  CustomThemeProvider,
+  EnvAlerts,
+} from './components';
 import {
   AuthorizeCallback,
   Contest,
@@ -22,6 +27,7 @@ import {
   Settings,
   Submission,
 } from './pages';
+import localStorageProvider from './utils/LocalStorageProvider';
 
 function App() {
   return (
@@ -31,6 +37,7 @@ function App() {
         <SWRConfig
           value={{
             fetcher: (arr) => getData(...arr),
+            provider: localStorageProvider,
             revalidateOnMount: true,
             revalidateOnFocus: false,
             revalidateOnReconnect: false,
@@ -42,6 +49,7 @@ function App() {
               <ModalSwitch />
             </BrowserRouter>
             <CustomSnackbar />
+            <EnvAlerts />
           </div>
         </SWRConfig>
       </CustomThemeProvider>

@@ -65,6 +65,7 @@
           "!**/common/snackbarTypes",
           "!**/common/styles",
           "!**/common/types",
+          "!**/common/useAuthState",
           "**/components/*",
           "**/pages/*"
         ]

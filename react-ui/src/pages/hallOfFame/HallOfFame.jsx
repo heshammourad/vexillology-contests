@@ -16,8 +16,9 @@ import throttle from 'lodash/throttle';
 import { useState, useEffect } from 'react';
 import { Events, animateScroll } from 'react-scroll';
 
-import { useClientWidth, useSwrData } from '../../common';
+import { useClientWidth } from '../../common';
 import { Header, PageContainer } from '../../components';
+import useSwrHallOfFame from '../../utils/useSwrHallOfFame';
 
 import HallOfFameCard from './HallOfFameCard';
 
@@ -52,7 +53,7 @@ const getToolbarHeight = () => document.getElementById(TOOLBAR_ID).offsetHeight;
 let pauseScollListener = false;
 
 function HallOfFame() {
-  const { data: hallOfFame } = useSwrData('/hallOfFame');
+  const { data: hallOfFame } = useSwrHallOfFame();
 
   const [selectedYear, setSelectedYear] = useState();
   const [groups, setGroups] = useState({});

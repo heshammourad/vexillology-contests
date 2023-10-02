@@ -1,5 +1,7 @@
 // WARNING! All process.env values are strings, so check for 'true' or 'false'
 
+// You will want to create you own dotenv file
+// Ask other developers for their (redacted) version to ensure you have all variables
 const {
   DATABASE_SSL,
   ENV_LEVEL = 'prod',
@@ -10,15 +12,21 @@ const {
   TITLE = 'Vexillology Contests',
 } = process.env;
 
-// ONLY CHANGE THESE VARIABLES
-// (or those in dotenv, which require restart)
-const OPEN_ALL_CONTESTS = true;
+/**
+ * DEVELOPER VARIALBES
+ * Only change these variables
+ * (or the variables in dotenv, which require restart)
+ */
+
 const VIEW_UNAUTHENTICATED = false;
+
+// END DEVELOPER VARIABLES ***************************************
 
 const IS_DEV = NODE_ENV !== 'production';
 
-const IS_CONTESTS_OPENED = IS_DEV && OPEN_ALL_CONTESTS;
+// Allows developers without FIREBASE_PRIVATE_KEY to run app locally
 const IS_FIREBASE_OFF = IS_DEV && !FIREBASE_PRIVATE_KEY;
+// Allows developers to view as unauthenticated user without signing out
 const IS_UNAUTHENTICATED_VIEW = IS_DEV && VIEW_UNAUTHENTICATED;
 
 const LOG_LEVEL = LOG_LEVEL_DOTENV || 'info';
@@ -32,7 +40,6 @@ module.exports = {
   DATABASE_SSL: DATABASE_SSL ? DATABASE_SSL === 'true' : true,
   FRONTEND_PORT,
   IS_DEV,
-  IS_CONTESTS_OPENED,
   IS_FIREBASE_OFF,
   IS_UNAUTHENTICATED_VIEW,
   LOG_LEVEL,

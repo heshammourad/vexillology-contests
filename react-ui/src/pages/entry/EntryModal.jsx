@@ -14,18 +14,20 @@ import {
   useEffect, useMemo, useRef, useState,
 } from 'react';
 import {
-  useParams,
   useLocation,
   useNavigate,
   useOutletContext,
 } from 'react-router-dom';
 
-import { useSettingsState, useSwrData } from '../../common';
+import { useSettingsState } from '../../common';
 import {
   EntryDescriptionDrawer,
   PageWithDrawer,
   RedditLogInDialog,
 } from '../../components';
+// eslint-disable-next-line import/no-unresolved
+import useEntryId from '../../utils/useEntryId';
+import useSwrContest from '../../utils/useSwrContest';
 
 import EntryAppBarMain from './EntryAppBarMain';
 import EntryAppBarRight from './EntryAppBarRight';
@@ -104,9 +106,8 @@ function EntryModal() {
   /**
    * Entries
    */
-  const { contestId, entryId } = useParams();
-  const apiPath = `/contests/${contestId}`;
-  const { data } = useSwrData(apiPath, false);
+  const entryId = useEntryId();
+  const { data } = useSwrContest();
   const {
     entries = [],
     winners = [],

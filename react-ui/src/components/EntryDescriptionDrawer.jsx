@@ -10,9 +10,9 @@ import RedditIcon from '@material-ui/icons/Reddit';
 import differenceInDays from 'date-fns/differenceInDays';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
 
-import { useCache, useComponentsState, useSwrData } from '../common';
+import { useComponentsState } from '../common';
+import useSwrContest from '../utils/useSwrContest';
 
 import Average from './Average';
 import CategoryLabel from './CategoryLabel';
@@ -62,14 +62,12 @@ function EntryDescriptionDrawer({ entryId }) {
   const [{ votingDisabled }, setComponentsState] = useComponentsState();
   const [votingExpired, setVotingExpired] = useState(false);
 
-  const { contestId } = useParams();
-  const apiPath = `/contests/${contestId}`;
   const {
     data: {
       categories, entries = [], isContestMode, localVoting, voteEnd, winners = [],
     },
-  } = useSwrData(apiPath, false);
-  const updateCache = useCache[1];
+    mutate,
+  } = useSwrContest();
   const {
     average,
     category,
@@ -94,8 +92,10 @@ function EntryDescriptionDrawer({ entryId }) {
   const votingUnavailable = votingDisabled || votingExpired;
 
   const handleVotingExpired = () => {
-    updateCache(null);
-    setVotingExpired(true);
+    if (!votingExpired) {
+      mutate();
+      setVotingExpired(true);
+    }
   };
 
   const classes = useStyles();

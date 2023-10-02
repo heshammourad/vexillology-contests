@@ -12,7 +12,7 @@ import { useParams } from 'react-router-dom';
 
 import { deleteData, putData } from '../api';
 import {
-  useAuthState, useCache, useSnackbarState, useSwrMutation,
+  useAuthState, useSnackbarState, useSwrMutation,
 } from '../common';
 import snackbarTypes from '../common/snackbarTypes';
 
@@ -103,7 +103,7 @@ function VotingSlider({
   const [isInteractive, setInteractive] = useState(false);
 
   const contestUrl = `/contests/${contestId}`;
-  const updateCache = useCache(contestUrl)[1];
+  // useSwrContest???
   const { isMutating: isMutatingPut, trigger: triggerPut } = useSwrMutation(
     contestUrl,
     putData,
@@ -144,7 +144,6 @@ function VotingSlider({
 
       const newEntries = updateEntries(contest.entries, input);
       const newData = { ...contest, entries: newEntries };
-      updateCache(newData);
       updateSnackbarState(snackbarTypes.VOTING_SUCCESS);
       return newData;
     },

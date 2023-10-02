@@ -31,7 +31,6 @@ import {
   useAuthState,
   useFormState,
   useSnackbarState,
-  useSwrData,
   useSwrMutation,
 } from '../../common';
 import countdownTypes from '../../common/countdownTypes';
@@ -49,6 +48,7 @@ import {
   SubmissionsTable,
   TabPanel,
 } from '../../components';
+import useSwrSubmission from '../../utils/useSwrSubmission';
 
 import ComplianceCheckbox from './ComplianceCheckbox';
 import May23 from './content/May23';
@@ -165,7 +165,8 @@ function Submission() {
       submissions = [],
     },
     error,
-  } = useSwrData(API_PATH);
+  } = useSwrSubmission();
+  // useSWRMutation shares cache store with useSWR to avoid race conditions
   const { isMutating, trigger } = useSwrMutation(API_PATH, postData);
 
   const [formState, updateFormState, resetFormState] = useFormState([
@@ -421,7 +422,7 @@ function Submission() {
         )}
       </Header>
       <PageContainer className={classes.container}>
-        {error?.status === 404 && (
+        {error?.response?.status === 404 && (
           <div>The submission portal is not yet open. Please check again later.</div>
         )}
         {contestId && (

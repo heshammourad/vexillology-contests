@@ -13,12 +13,10 @@ import DescriptionIcon from '@material-ui/icons/Description';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { useCallback, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
 
 import {
   useComponentsState,
   useSettingsState,
-  useSwrData,
 } from '../../common';
 import {
   Average,
@@ -29,6 +27,7 @@ import {
   RedditUserAttribution,
   VotingSlider,
 } from '../../components';
+import useSwrContest from '../../utils/useSwrContest';
 
 import CardImageLink from './CardImageLink';
 import useContestSizing from './useContestSizing';
@@ -89,10 +88,7 @@ function ContestGrid({
   setDrawer,
   votingExpired,
 }) {
-  const { contestId } = useParams();
-
-  const apiPath = `/contests/${contestId}`;
-  const { data: contest } = useSwrData(apiPath, false);
+  const { data: contest } = useSwrContest();
 
   const classes = useStyles();
   const [{ votingDisabled }, setComponentsState] = useComponentsState();
