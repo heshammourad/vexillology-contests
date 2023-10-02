@@ -4,7 +4,13 @@
  * @returns map of past session
  */
 
+const START_WITHOUT_CACHE = false;
+
 export default function localStorageProvider() {
+    if (START_WITHOUT_CACHE) {
+        return new Map();
+    }
+
     // When initializing, we restore the data from `localStorage` into a map.
     const map = new Map(JSON.parse(localStorage.getItem('app-cache') || '[]'));
 

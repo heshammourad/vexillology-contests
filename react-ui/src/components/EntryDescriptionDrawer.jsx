@@ -12,6 +12,7 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 
 import { useComponentsState } from '../common';
+import { IS_VOTING_VIEW } from '../env';
 import useSwrContest from '../utils/useSwrContest';
 
 import Average from './Average';
@@ -92,7 +93,7 @@ function EntryDescriptionDrawer({ entryId }) {
   const votingUnavailable = votingDisabled || votingExpired;
 
   const handleVotingExpired = () => {
-    if (!votingExpired) {
+    if (!votingExpired && !IS_VOTING_VIEW) {
       mutate();
       setVotingExpired(true);
     }

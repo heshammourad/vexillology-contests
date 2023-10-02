@@ -27,6 +27,7 @@ import {
   RedditUserAttribution,
   VotingSlider,
 } from '../../components';
+import { IS_VOTING_VIEW } from '../../env';
 import useSwrContest from '../../utils/useSwrContest';
 
 import CardImageLink from './CardImageLink';
@@ -152,50 +153,53 @@ function ContestGrid({
             rating,
             user,
             width,
-          }) => (
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            <Grid key={id} item {...getGridVariables(rank === '1')}>
-              <Card id={id} className={classes.entry} sx={{ maxWidth: rank === '1' ? winnerDisplayWidth : gridDisplayWidth }}>
-                <CardContentWrapper {...{
-                  average,
-                  category,
-                  categories,
-                  categoryRank,
-                  entryName,
-                  id,
-                  isContestMode,
-                  rank,
-                  rating,
-                  setDrawer,
-                  user,
-                }}
-                />
-                <div className={classes.entryImageContainer}>
-                  <CardImageLink
-                    displayWidth={rank === '1' ? winnerDisplayWidth : gridDisplayWidth}
-                    height={height}
-                    id={id}
-                    image={imagePath}
-                    width={width}
+          }) => {
+            const isWinner = rank === '1' && !IS_VOTING_VIEW;
+            return (
+              // eslint-disable-next-line react/jsx-props-no-spreading
+              <Grid key={id} item {...getGridVariables(isWinner)}>
+                <Card id={id} className={classes.entry} sx={{ maxWidth: isWinner ? winnerDisplayWidth : gridDisplayWidth }}>
+                  <CardContentWrapper {...{
+                    average,
+                    category,
+                    categories,
+                    categoryRank,
+                    entryName,
+                    id,
+                    isContestMode,
+                    rank,
+                    rating,
+                    setDrawer,
+                    user,
+                  }}
                   />
-                </div>
-                {isContestMode && (
-                  <CardActions
-                    className={clsx(classes.votingSlider, {
-                      [classes.disabledVoting]: votingDisabled,
-                    })}
-                  >
-                    <VotingSlider
-                      disabled={votingUnavailable}
-                      entryId={imgurId ?? id}
-                      rating={rating}
-                      setComponentsState={setComponentsState}
+                  <div className={classes.entryImageContainer}>
+                    <CardImageLink
+                      displayWidth={isWinner ? winnerDisplayWidth : gridDisplayWidth}
+                      height={height}
+                      id={id}
+                      image={imagePath}
+                      width={width}
                     />
-                  </CardActions>
-                )}
-              </Card>
-            </Grid>
-          ),
+                  </div>
+                  {isContestMode && (
+                    <CardActions
+                      className={clsx(classes.votingSlider, {
+                        [classes.disabledVoting]: votingDisabled,
+                      })}
+                    >
+                      <VotingSlider
+                        disabled={votingUnavailable}
+                        entryId={imgurId ?? id}
+                        rating={rating}
+                        setComponentsState={setComponentsState}
+                      />
+                    </CardActions>
+                  )}
+                </Card>
+              </Grid>
+            );
+          },
         )}
     </Grid>
   );
@@ -217,6 +221,7 @@ function CardContentWrapper({
   user,
 }) {
   const classes = useStyles();
+  const isWinner = rank === '1' && !IS_VOTING_VIEW;
 
   const cardContent = useMemo(() => (
     <CardContent className={classes.entryHeading}>
@@ -261,10 +266,10 @@ function CardContentWrapper({
             )}
             {!isContestMode && (
               <>
-                <Average average={average} fullText={rank === '1'} />
+                <Average average={average} fullText={isWinner} />
                 {rating > -1 && (
                   <Typography className={classes.myRating} variant="caption">
-                    {rank === '1' && <span>My&nbsp;rating:&nbsp;</span>}
+                    {isWinner && <span>My&nbsp;rating:&nbsp;</span>}
                     <FiveStar rating={rating} />
                   </Typography>
                 )}

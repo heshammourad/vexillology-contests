@@ -21,13 +21,16 @@ const useSwrContest = (revalidateOnMount = false) => {
   }
 
   const isContestMode = !IS_SUBMISSION_VIEW && (data.isContestMode || IS_VOTING_VIEW);
-  const submissionWindowOpen = data.submissionWindowOpen || IS_SUBMISSION_VIEW;
+  const votingWindowOpen = (!IS_SUBMISSION_VIEW && (data.isContestMode || IS_VOTING_VIEW))
+    || data.votingWindowOpen;
+  const submissionWindowOpen = IS_SUBMISSION_VIEW || data.submissionWindowOpen;
 
   return {
     data: {
       ...data,
       isContestMode,
       submissionWindowOpen,
+      votingWindowOpen,
     },
     error,
     ...rest,
