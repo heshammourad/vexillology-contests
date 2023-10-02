@@ -49,12 +49,12 @@ export default function ContestAppBarMain({ handleVotingExpired, handleReload, c
 ContestAppBarMain.propTypes = {
   handleReload: PropTypes.func.isRequired,
   handleVotingExpired: PropTypes.func.isRequired,
-  contest: {
+  contest: PropTypes.shape({
     date: PropTypes.string.isRequired,
     isContestMode: PropTypes.bool,
     name: PropTypes.string,
-    voteEnd: PropTypes.instanceOf(Date),
-  },
+    voteEnd: PropTypes.string,
+  }),
 };
 
 ContestAppBarMain.defaultProps = {
