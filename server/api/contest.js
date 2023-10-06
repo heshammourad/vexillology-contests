@@ -7,7 +7,6 @@
 const { isBefore, isFuture, isPast } = require('date-fns');
 const keyBy = require('lodash/keyBy');
 const partition = require('lodash/partition');
-const shuffle = require('lodash/shuffle');
 const numeral = require('numeral');
 const { v4: uuidv4 } = require('uuid');
 
@@ -368,7 +367,25 @@ exports.get = async ({ params: { id }, username }, res) => {
     }
 
     if (response.isContestMode && !winnersThreadId) {
-      response.entries = shuffle(response.entries.map(({ rank, user, ...entry }) => entry)).sort(
+      /**
+       * Reproducible yet random hash function
+       * Concatenates username and entryId for distinct hash
+       * @param {string} entryId
+       * @returns {int}
+       */
+      const getHash = (entryId) => {
+        const seed = username + entryId;
+        let hash = 0;
+        for (let i = 0; i < seed.length; i += 1) {
+          // eslint-disable-next-line no-bitwise
+          hash = (hash << 5) - hash + seed.charCodeAt(i);
+          // eslint-disable-next-line no-bitwise
+          hash |= 0; // Convert to 32bit integer
+        }
+        return hash;
+      };
+
+      response.entries = response.entries.map(({ rank, user, ...entry }) => entry).sort(
         (a, b) => {
           if (a.rating > -1 && b.rating === undefined) {
             return 1;
@@ -376,10 +393,10 @@ exports.get = async ({ params: { id }, username }, res) => {
           if (b.rating > -1 && a.rating === undefined) {
             return -1;
           }
-          if (a.rating === undefined && b.rating === undefined) {
-            return 0;
+          if (b.rating !== a.rating) {
+            return b.rating - a.rating;
           }
-          return b.rating - a.rating;
+          return getHash(b.id) - getHash(a.id);
         },
       );
     } else if (localVoting) {
