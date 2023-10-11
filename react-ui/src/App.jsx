@@ -14,7 +14,7 @@ import {
   AppHelmet,
   CustomSnackbar,
   CustomThemeProvider,
-  EnvAlerts,
+  DevBar,
 } from './components';
 import {
   AuthorizeCallback,
@@ -49,7 +49,7 @@ function App() {
               <ModalSwitch />
             </BrowserRouter>
             <CustomSnackbar />
-            <EnvAlerts />
+            <DevBar />
           </div>
         </SWRConfig>
       </CustomThemeProvider>
