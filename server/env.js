@@ -4,7 +4,7 @@
 // Ask other developers for their (redacted) version to ensure you have all variables
 const {
   DATABASE_SSL,
-  ENV_LEVEL = 'prod',
+  ENV_LEVEL = 'dev',
   FIREBASE_PRIVATE_KEY = false,
   LOG_LEVEL: LOG_LEVEL_DOTENV,
   NODE_ENV,

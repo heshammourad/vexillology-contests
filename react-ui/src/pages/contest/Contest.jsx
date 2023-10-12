@@ -54,7 +54,7 @@ function Contest() {
   const navigate = useNavigate();
   const classes = useStyles();
 
-  const { data: contest, isValidating, mutate } = useSwrContest('Contest');
+  const { data: contest, isValidating, mutate } = useSwrContest();
 
   const location = useLocation();
   const { state = {} } = location;

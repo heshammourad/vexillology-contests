@@ -11,39 +11,40 @@ import Stack from '@mui/material/Stack';
 import { putData } from '../api';
 import { useAuthState } from '../common';
 import { IS_DEV_BAR } from '../env';
-import useContestId from '../utils/useContestId';
+import useSwrContest from '../utils/useSwrContest';
 import useSwrInit from '../utils/useSwrInit';
 
-const devContests = ['prerelease', 'review', 'voting', 'results'];
+const contestStatus = ['prerelease', 'submission', 'review', 'voting', 'results'];
 
 function DevBar() {
-  const contestId = useContestId();
+  const { data, error, mutate: mutateContest } = useSwrContest('dev');
+  const name = error?.data?.name || data?.name;
   const { data: { moderator: isModerator }, mutate: mutateMod } = useSwrInit();
-  const [{ accessToken, refreshToken }] = useAuthState();
+  const [{ isLoggedIn, accessToken, refreshToken }] = useAuthState();
   const authTokens = { accessToken, refreshToken };
 
   if (!IS_DEV_BAR) {
     return null;
   }
 
-  const reset = async () => {
+  const setContest = async (status) => {
     try {
-      const res = await putData('/devReset', { test: true });
-      console.log(res);
+      await putData('/dev/contest', { status });
+      mutateContest();
       // can you trigger data and or page refresh?
+      return null;
     } catch (error) {
-      console.log(error);
-      // what do you normally do here?
+      return null;
     }
   };
 
   const toggleMod = async () => {
     try {
-      await putData('/devMod', { moderator: !isModerator }, authTokens);
+      await putData('/dev/mod', { moderator: !isModerator }, authTokens);
       mutateMod();
+      return null;
     } catch (error) {
-      console.log(error);
-      // what do you normally do here?
+      return null;
     }
   };
 
@@ -61,17 +62,30 @@ function DevBar() {
         alignItems: 'center',
       }}
     >
-      <Typography>Contests</Typography>
-      {devContests.map((cId) => <Button variant={contestId === cId ? 'contained' : 'outlined'}>{cId}</Button>)}
-      <Divider orientation="vertical" flexItem light />
-      <Button variant="outlined" onClick={reset}>Reset</Button>
+      {
+        isLoggedIn
+          ? (
+            <>
+              <Typography>Dev contest</Typography>
+              {
+                !!name && (
+                  <>
+                    {contestStatus.map((cId) => <Button variant={name === cId ? 'contained' : 'outlined'} onClick={() => setContest(cId)}>{cId}</Button>)}
+                    <Divider orientation="vertical" flexItem light />
+                  </>
+                )
+              }
+              <Button variant="outlined" onClick={() => setContest('reset')}>{name ? 'Reset' : 'Create'}</Button>
 
-      <Divider orientation="vertical" flexItem />
-
-      <Typography>Mod mode</Typography>
-      <Button variant={isModerator ? 'contained' : 'outlined'} onClick={toggleMod}>
-        {isModerator ? 'ON' : 'OFF'}
-      </Button>
+              <Divider orientation="vertical" flexItem />
+              <Typography>Mod mode</Typography>
+              <Button variant={isModerator ? 'contained' : 'outlined'} onClick={toggleMod}>
+                {isModerator ? 'ON' : 'OFF'}
+              </Button>
+            </>
+          )
+          : <Typography>Not logged in</Typography>
+      }
     </Stack>
   );
 }

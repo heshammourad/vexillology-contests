@@ -4,7 +4,8 @@
  * @returns map of past session
  */
 
-const START_WITHOUT_CACHE = false;
+import { START_WITHOUT_CACHE } from "../env";
+
 
 export default function localStorageProvider() {
     if (START_WITHOUT_CACHE) {

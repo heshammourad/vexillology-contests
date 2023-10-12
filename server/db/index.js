@@ -102,4 +102,5 @@ module.exports = {
   insert,
   select,
   update,
+  any: db.any,
 };

@@ -276,7 +276,6 @@ exports.get = async ({ params: { id }, username }, res) => {
         logger.error(`Unable to update db: ${err}`);
       }
     }
-
     const [{ now, voteStart, voteEnd }] = await getVoteDates(id);
     if (voteStart && voteEnd) {
       response.isContestMode = isBefore(now, voteEnd);
@@ -286,12 +285,12 @@ exports.get = async ({ params: { id }, username }, res) => {
 
     if (submissionStart) {
       if (isFuture(submissionStart)) {
-        res.status(404).send();
+        res.status(404).send(id === 'dev' ? { name } : {});
         return;
       }
 
       if (isFuture(submissionEnd)) {
-        res.send({ submissionWindowOpen: true });
+        res.send({ submissionWindowOpen: true, name });
         return;
       }
 
@@ -355,7 +354,7 @@ exports.get = async ({ params: { id }, username }, res) => {
       );
       logger.debug(`${username} votes on ${id}: '${JSON.stringify(votes)}'`);
 
-      const entriesObj = keyBy(response.entries, response.entries[0].imgurId ? 'imgurId' : 'id');
+      const entriesObj = keyBy(response.entries, response.entries[0]?.imgurId ? 'imgurId' : 'id');
       votes.forEach(({ entryId, rating }) => {
         if (!entriesObj[entryId]) {
           return;
@@ -434,7 +433,6 @@ exports.get = async ({ params: { id }, username }, res) => {
         response.winners = winners.sort((a, b) => a.rank - b.rank);
       }
     }
-
     res.send(response);
   } catch (err) {
     logger.error(`Error getting /contest/${id}: ${err}`);

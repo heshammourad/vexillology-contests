@@ -8,8 +8,8 @@ import useContestId from './useContestId';
 import useSwrAuth from './useSwrAuth';
 
 // revalidateIfStale = false
-const useSwrContest = (revalidateOnMount = false) => {
-  const contestId = useContestId();
+const useSwrContest = (overrideId, revalidateOnMount = false) => {
+  const contestId = overrideId || useContestId();
   const apiPath = `/contests/${contestId}`;
 
   const { data = {}, error: e, ...rest } = useSwrAuth(apiPath, { ...revalidateOnMount });

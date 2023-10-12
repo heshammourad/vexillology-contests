@@ -14,6 +14,7 @@ const { NODE_ENV } = process.env;
 const VIEW_SUBMISSION = false; // NOTE: submission overrides voting
 const VIEW_VOTING = false; // NOTE: voting is overriden by submission
 const VIEW_DEV_BAR = true;
+const START_WITHOUT_CACHE = true;
 
 // END DEVELOPER VARIABLES ***************************************
 
@@ -27,4 +28,5 @@ export {
     IS_SUBMISSION_VIEW,
     IS_VOTING_VIEW,
     IS_DEV_BAR,
+    START_WITHOUT_CACHE,
 };
