@@ -3,14 +3,14 @@
  * ??? ideally this would be top of document, but fighting with AppBar/Toolbar
  */
 
-import Button from '@material-ui/core/Button';
-import { Typography } from '@mui/material';
+import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 
 import { putData } from '../api';
 import { useAuthState } from '../common';
-import { IS_DEV_BAR } from '../env';
+import { IS_DEV_BAR, START_WITHOUT_CACHE } from '../env';
 import useSwrContest from '../utils/useSwrContest';
 import useSwrInit from '../utils/useSwrInit';
 
@@ -31,7 +31,7 @@ function DevBar() {
     try {
       await putData('/dev/contest', { status });
       mutateContest();
-      // can you trigger data and or page refresh?
+      window.location.reload();
       return null;
     } catch (error) {
       return null;
@@ -53,7 +53,7 @@ function DevBar() {
       direction="row"
       spacing={2}
       sx={{
-        backgroundColor: 'violet',
+        backgroundColor: 'lightgrey',
         position: 'fixed',
         bottom: 0,
         width: '100%',
@@ -79,13 +79,16 @@ function DevBar() {
 
               <Divider orientation="vertical" flexItem />
               <Typography>Mod mode</Typography>
-              <Button variant={isModerator ? 'contained' : 'outlined'} onClick={toggleMod}>
+              <Button color={isModerator ? 'success' : 'error'} variant="contained" onClick={toggleMod}>
                 {isModerator ? 'ON' : 'OFF'}
               </Button>
             </>
           )
           : <Typography>Not logged in</Typography>
       }
+      <Divider orientation="vertical" flexItem />
+      <Typography>{START_WITHOUT_CACHE ? 'Cache OFF' : 'Cache ON'}</Typography>
+      {/* <Button variant="contained" color={START_WITHOUT_CACHE ? 'error' : 'success'}>{START_WITHOUT_CACHE ? 'Cache OFF' : 'Cache ON'}</Button> */}
     </Stack>
   );
 }

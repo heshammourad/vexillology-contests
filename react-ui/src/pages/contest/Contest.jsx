@@ -20,7 +20,6 @@ import {
   PageWithDrawer,
   RedditLogInDialog,
 } from '../../components';
-import { IS_VOTING_VIEW } from '../../env';
 import useSwrContest from '../../utils/useSwrContest';
 
 import ContestAppBarMain from './ContestAppBarMain';
@@ -98,7 +97,7 @@ function Contest() {
   }, [selectedCategories]);
 
   const handleVotingExpired = useCallback(() => {
-    if (!votingExpired && !IS_VOTING_VIEW) {
+    if (!votingExpired) {
       mutate();
       setVotingExpired(true);
     }

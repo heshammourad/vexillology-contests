@@ -2,7 +2,6 @@ const { isAfter, isBefore } = require('date-fns');
 
 const db = require('../db');
 const { getVoteDates } = require('../db/queries');
-const { IS_VOTING_VIEW } = require('../env');
 const { createLogger } = require('../logger');
 const { camelizeObjectKeys } = require('../util');
 
@@ -29,18 +28,16 @@ exports.all = async ({ body: { contestId } }, res, next) => {
         return;
       }
 
-      if (!IS_VOTING_VIEW) {
-        if (isBefore(now, voteStart)) {
-          logger.error('Vote submitted before voting window opened');
-          res.status(403).send(`Voting window doesn't open until ${voteStart}`);
-          return;
-        }
+      if (isBefore(now, voteStart)) {
+        logger.error('Vote submitted before voting window opened');
+        res.status(403).send(`Voting window doesn't open until ${voteStart}`);
+        return;
+      }
 
-        if (isAfter(now, voteEnd)) {
-          logger.warn('Vote submitted after voting window closed');
-          res.status(403).send(`Voting window closed at ${voteEnd}`);
-          return;
-        }
+      if (isAfter(now, voteEnd)) {
+        logger.warn('Vote submitted after voting window closed');
+        res.status(403).send(`Voting window closed at ${voteEnd}`);
+        return;
       }
     }
     next();

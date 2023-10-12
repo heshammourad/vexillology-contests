@@ -1,13 +1,7 @@
 /*
-TO DO
-  NOTE!!! you just need to make sure to await and res.send() before you mutate
-
-  2. You need a name from submission
-1. You need entries for VOTING and beyond to work
-
 Eliminate a lot of the VIEW_VOTING / VIEW_SUBMISSION
+(see status === 'reset')
 Consider adding categories, entries for review, entries for voting, entries for results
-Function to control moderator (may require creating user)
 */
 
 const db = require('../db');
@@ -163,22 +157,6 @@ exports.reset = async (req, res) => {
       // eslint-disable-next-line max-len
       contests.map((values) => fields.reduce((acc, field, i) => ({ ...acc, [field]: values[i] }), {})),
     );
-
-    res.send();
-
-    // Create user "dev"
-    // ALREADY TESTED
-    // await db.del('users', { username: 'dev' });
-    // await db.insert('users', [{ username: 'dev', contest_reminders: true, moderator: false }]);
-
-    // FUTURE: contest_categories
-    // FUTURE: submission entry
-    // FUTURE: voting flags (dev user 2)
-    // FUTURE: results flags (dev user 2)
-  } catch (err) {
-    console.log('reset error: ', err)
-    // logger.error(`Error (re)setting /vote: ${err}`);
-    res.status(500).send();
   }
 };
 */
