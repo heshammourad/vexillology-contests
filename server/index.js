@@ -128,7 +128,7 @@ if (!IS_DEV && cluster.isMaster) {
   apiRouter.use('/mod', modRouter);
 
   if (IS_DEV) {
-    apiRouter.route('/dev/contest').put(dev.contest);
+    apiRouter.route('/dev/contest').put(requireAuthentication, dev.contest);
     apiRouter.route('/dev/mod').put(requireAuthentication, dev.mod);
   }
 

@@ -19,6 +19,8 @@ const {
  */
 
 const ALLOW_UNAUTHENTICATED = false;
+const CURRENT_CONTEST_DEV = true;
+const IGNORE_PENDING_DEV = true;
 
 // END DEVELOPER VARIABLES ***************************************
 
@@ -37,8 +39,10 @@ const BACKEND_PORT = PORT || 5000;
 module.exports = {
   BACKEND_PORT,
   CONTEST_ENV_LEVEL: ENV_LEVEL,
+  CURRENT_CONTEST_DEV,
   DATABASE_SSL: DATABASE_SSL ? DATABASE_SSL === 'true' : true,
   FRONTEND_PORT,
+  IGNORE_PENDING_DEV,
   IS_DEV,
   IS_FIREBASE_OFF,
   IS_UNAUTHENTICATED_VIEW,

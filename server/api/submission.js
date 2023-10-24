@@ -2,6 +2,7 @@ const { isAfter, isBefore } = require('date-fns');
 
 const db = require('../db');
 const { getCategories, getCurrentContest } = require('../db/queries');
+const { IS_FIREBASE_OFF } = require('../env');
 const { getToken } = require('../firebase');
 const { createLogger } = require('../logger');
 const { generateImagePath } = require('../util');
@@ -49,7 +50,9 @@ exports.get = async ({ username }, res) => {
     const response = { ...result, categories };
 
     if (username) {
-      response.firebaseToken = await getToken(username);
+      if (!IS_FIREBASE_OFF) {
+        response.firebaseToken = await getToken(username);
+      }
       response.submissions = await getSubmissions(result.id, username);
     }
 

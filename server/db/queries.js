@@ -5,6 +5,8 @@
  * @exports getVoteDates
  */
 
+const { CURRENT_CONTEST_DEV } = require('../env');
+
 const db = require('.');
 
 exports.getCategories = async (contestId) => {
@@ -20,6 +22,7 @@ exports.getCurrentContest = async () => {
     `SELECT id, name, prompt, submission_start, submission_end, now()
      FROM contests
      WHERE submission_start < now()
+     ${CURRENT_CONTEST_DEV ? "AND id = 'dev'" : ''}
      ORDER BY submission_start DESC
      LIMIT 1`,
   );

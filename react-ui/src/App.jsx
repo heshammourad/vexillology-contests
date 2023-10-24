@@ -47,9 +47,9 @@ function App() {
             <BrowserRouter>
               <AppHelmet />
               <ModalSwitch />
+              <DevBar />
             </BrowserRouter>
             <CustomSnackbar />
-            <DevBar />
           </div>
         </SWRConfig>
       </CustomThemeProvider>

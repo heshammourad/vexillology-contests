@@ -1,11 +1,13 @@
 /*
-Eliminate a lot of the VIEW_VOTING / VIEW_SUBMISSION
-(see status === 'reset')
-Consider adding categories, entries for review, entries for voting, entries for results
+  Easier to refresh entire dev entry instead of upsert/update the dates
+  ??? What is the removed column for in entries?
 */
 
 const db = require('../db');
 const { createLogger } = require('../logger');
+
+const NOW = new Date();
+const VOTE_MAX = 5;
 
 const logger = createLogger('API/DEV');
 
@@ -14,14 +16,13 @@ const getDevContest = (status) => {
   const contestIndex = contestStatuses.indexOf(status);
   const isAfter = (lastStatus) => contestIndex > contestStatuses.indexOf(lastStatus);
 
-  const now = new Date();
-  const yearEnd = now.getMonth() === 11; // getMonth is zero-based
-  const date = now.toISOString().split('T')[0];
+  const yearEnd = NOW.getMonth() === 11; // getMonth is zero-based
+  const date = NOW.toISOString().split('T')[0];
   const fiveYears = 1000 * 60 * 60 * 24 * 365 * 5;
-  const pastest = new Date(now.getTime() - fiveYears - 1).toISOString();
-  const past = new Date(now.getTime() - fiveYears).toISOString();
-  const future = new Date(now.getTime() + fiveYears).toISOString();
-  const futurest = new Date(now.getTime() + fiveYears + 1).toISOString();
+  const pastest = new Date(NOW.getTime() - fiveYears - 1).toISOString();
+  const past = new Date(NOW.getTime() - fiveYears).toISOString();
+  const future = new Date(NOW.getTime() + fiveYears).toISOString();
+  const futurest = new Date(NOW.getTime() + fiveYears + 1).toISOString();
 
   /*
                 s_start   s_end     v_start   v_end
@@ -50,39 +51,139 @@ const getDevContest = (status) => {
   };
 };
 
-exports.contest = async ({ body: { status } }, res) => {
+exports.contest = async ({ body: { status }, username }, res) => {
   try {
     const isExisting = (await db.any("SELECT EXISTS (SELECT 1 FROM contests WHERE id='dev')"))[0].exists;
 
     if (status === 'reset') {
-      // Reset only applies to entries and voting
-      // Reset does not change the contest period (submission, voting)
+      /*
+        ------- CONTEST -------
+        Create a dev contest ONLY if it doesn't exit already
+        Reset should not change contest timestamps to avoid changing status
+      */
       if (!isExisting) {
         await db.insert('contests', [getDevContest(status)]);
       }
-      //   // delete all 'dev' contest entries and votes
-      //   // re-add the original
-      //   // ALREADY TESTED
-      //   await db.del('users', { username: 'dev' });
-      //   await db.insert('users', [{ username: 'dev', contest_reminders: true, moderator: false }]);
 
-      //   // FUTURE: contest_categories
-      //   // FUTURE: submission entry
-      //   // FUTURE: voting flags (dev user 2)
-      //   // FUTURE: results flags (dev user 2)
-    } else {
-      // Easier to refresh entire dev entry instead of upsert/update the dates
-      if (isExisting) {
-        await db.del('contests', { id: 'dev' });
+      /*
+        ------- DELETE OLD DATA -------
+        Ensures developer account is in dev database
+        Create a fake "dev" user
+      */
+      await db.del('votes', { contest_id: 'dev' });
+      await db.del('contest_entries', { contest_id: 'dev' });
+      await db.any("DELETE FROM entries WHERE id LIKE 'dev%';");
+      await db.del('contest_categories', { contest_id: 'dev' });
+
+      /*
+        ------- CONTEST_CATEGORIES -------
+        Create categories for dev contest
+      */
+      const categories = [{ contest_id: 'dev', category: 'cat1' }, { contest_id: 'dev', category: 'cat2' }];
+      await db.insert('contest_categories', categories);
+
+      /*
+        ------- USERS -------
+        Ensures developer account is in dev database
+        Create a fake "dev" user
+      */
+      const users = await db.select('SELECT username FROM users');
+      if (!users.some((user) => user.username === username)) {
+        await db.insert('users', [{ username, contest_reminders: true, moderator: true }]);
+        users.push({ username });
       }
-      await db.insert('contests', [getDevContest(status)]);
+      if (!users.some((user) => user.username === 'dev')) {
+        await db.insert('users', [{ username: 'dev', contest_reminders: true, moderator: false }]);
+        users.push({ username: 'dev' });
+      }
+
+      /*
+        ------- ENTRIES -------
+        Create some flags for yourself and dev user
+        Adust as desired
+        NOTE: borrows flags from existing entires but overrides key data
+              accurate url, width, height
+              diversity of images, descriptions, etc
+      */
+      let entryVersions = [
+        { user: 'dev', name: 'Pending (dev)', submission_status: 'pending' },
+        { user: 'dev', name: 'Withdrawn (dev)', submission_status: 'withdrawn' },
+        {
+          user: 'dev', name: 'Approved (dev)', submission_status: 'approved', modified_by: 'VertigoOne',
+        },
+        {
+          user: 'dev', name: 'Rejected (dev)', submission_status: 'rejected', modified_by: 'VertigoOne', rejection_reason: 'Rejected because.',
+        },
+        { user: username, name: 'Pending (dev)', submission_status: 'pending' },
+        { user: username, name: 'Withdrawn (dev)', submission_status: 'withdrawn' },
+        {
+          user: username, name: 'Approved (dev)', submission_status: 'approved', modified_by: 'VertigoOne',
+        },
+        {
+          user: username, name: 'Rejected (dev)', submission_status: 'rejected', modified_by: 'VertigoOne', rejection_reason: 'Rejected because.',
+        },
+      ];
+
+      // add sequential dev# for id (NOTE: zero-indexed, can do i+1 if desired)
+      entryVersions = entryVersions.map((v, i) => ({ ...v, id: `dev${i}` }));
+
+      const existingEntries = await db.select(`SELECT width, height, url FROM entries WHERE height > 600 AND POSITION('https://firebasestorage.googleapis.com' IN url) > 0 LIMIT ${entryVersions.length}`);
+      await db.insert('entries', entryVersions.map((version, i) => ({
+        ...existingEntries[i], ...version,
+      })));
+
+      /*
+        ------- CONTEST_ENTRIES -------
+        Connect the two
+      */
+      await db.insert('contest_entries', entryVersions.map(({ id }, i) => ({
+        contest_id: 'dev',
+        entry_id: id,
+        rank: null,
+        category: categories[i % categories.length].category, // alternating entries
+      })));
+
+      /*
+        ------- VOTES -------
+        Random voting, all users on all flags
+      */
+      const approvedEntries = entryVersions.filter((version) => version.submission_status === 'approved');
+
+      await db.insert('votes', users.flatMap(({ username: u }) => (
+        approvedEntries.map(({ id }) => ({
+          username: u,
+          entry_id: id,
+          contest_id: 'dev',
+          rating: u === approvedEntries.user
+            ? VOTE_MAX
+            : Math.floor(Math.random() * (VOTE_MAX + 1)),
+          last_modified: NOW,
+        }))
+      )));
+    } else {
+      const contest = getDevContest(status);
+      // Switch contest status
+      if (isExisting) {
+        // update rejects date for some reason
+        // await db.update('contests',
+        // [contest], Object.keys(contest).map((key) => (key === 'id' ? '?id' : key)));
+        await db.any(`UPDATE contests
+          SET
+            name = '${contest.name}',
+            date = '${contest.date}',
+            year_end = ${contest.year_end},
+            submission_start = '${contest.submission_start}',
+            submission_end = '${contest.submission_end}',
+            vote_start = '${contest.vote_start}',
+            vote_end = '${contest.vote_end}'
+          WHERE id = 'dev';`);
+      } else {
+        await db.insert('contests', [contest]);
+      }
     }
 
     res.send();
-
-    // Create user "dev"
   } catch (err) {
-    // console.log('contest error: ', err);
     logger.error(`Error (re)setting /vote: ${err}`);
     res.status(500).send();
   }
@@ -106,57 +207,8 @@ exports.mod = async ({ body: { moderator }, username }, res) => {
 
     res.status(status).send();
   } catch (err) {
-    // console.log('mod error: ', err);
-    logger.error(`Error toggling /mod: ${err}`);
+    console.log('mod error: ', err);
+    // logger.error(`Error toggling /mod: ${err}`);
     res.status(500).send();
   }
 };
-
-
-
-/*
-exports.reset = async (req, res) => {
-  try {
-    // Create and populate table contests_dev
-    const devContests = 'contests_dev';
-    const hold = await db.any(`SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = '${devContests}');`)
-    if (hold[0].exists) {
-      await db.any(`DROP TABLE ${devContests}`);
-    }
-
-    await db.any(`CREATE TABLE ${devContests} (
-      id character varying NOT NULL,
-      name character varying NOT NULL,
-      date date,
-      env_level vexillology_contests_backup.env_level DEFAULT 'dev'::vexillology_contests_backup.env_level,
-      year_end boolean DEFAULT false NOT NULL,
-      winners_thread_id character varying,
-      valid_reddit_id boolean DEFAULT true NOT NULL,
-      vote_start timestamp with time zone,
-      vote_end timestamp with time zone,
-      subtext character varying,
-      local_voting boolean DEFAULT true NOT NULL,
-      submission_start timestamp with time zone,
-      submission_end timestamp with time zone,
-      prompt character varying,
-      CONSTRAINT contests_check CHECK (((vote_end > vote_start) AND (submission_end > submission_start)))
-    );`);
-
-    const fields = ['id', 'name', 'date', 'env_level', 'year_end', 'winners_thread_id', 'valid_reddit_id', 'vote_start', 'vote_end', 'subtext', 'local_voting', 'submission_start', 'submission_end', 'prompt'];
-    const contests = [
-      ['prerelease', 'Prerelease', date, 'dev', false, null, true, future, futurest, 'Prelease subtext', true, future, futurest, 'Prerelease prompt'],
-      ['submission', 'Submission', date, 'dev', false, null, true, future, futurest, 'Submission subtext', true, pastest, futurest, 'Submission prompt'],
-      ['review', 'Review', date, 'dev', false, null, true, future, futurest, 'Review subtext', true, pastest, past, 'Review prompt'],
-      ['voting', 'Voting', date, 'dev', false, null, true, pastest, futurest, 'Voting subtext', true, pastest, past, 'Voting prompt'],
-      ['results', 'Results', date, 'dev', false, null, true, pastest, past, 'Results subtext', true, pastest, past, 'Results prompt'],
-    ];
-
-    
-    await db.insert(
-      devContests,
-      // eslint-disable-next-line max-len
-      contests.map((values) => fields.reduce((acc, field, i) => ({ ...acc, [field]: values[i] }), {})),
-    );
-  }
-};
-*/

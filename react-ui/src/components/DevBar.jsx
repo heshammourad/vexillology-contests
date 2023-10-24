@@ -7,6 +7,7 @@ import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { useNavigate } from 'react-router-dom';
 
 import { putData } from '../api';
 import { useAuthState } from '../common';
@@ -18,6 +19,7 @@ const contestStatus = ['prerelease', 'submission', 'review', 'voting', 'results'
 
 function DevBar() {
   const { data, error, mutate: mutateContest } = useSwrContest('dev');
+  const navigate = useNavigate();
   const name = error?.data?.name || data?.name;
   const { data: { moderator: isModerator }, mutate: mutateMod } = useSwrInit();
   const [{ isLoggedIn, accessToken, refreshToken }] = useAuthState();
@@ -29,11 +31,12 @@ function DevBar() {
 
   const setContest = async (status) => {
     try {
-      await putData('/dev/contest', { status });
+      await putData('/dev/contest', { status }, authTokens);
       mutateContest();
-      window.location.reload();
+      // window.location.reload();
+      navigate('/contests/dev', { replace: true });
       return null;
-    } catch (error) {
+    } catch (e) {
       return null;
     }
   };
@@ -43,7 +46,7 @@ function DevBar() {
       await putData('/dev/mod', { moderator: !isModerator }, authTokens);
       mutateMod();
       return null;
-    } catch (error) {
+    } catch (e) {
       return null;
     }
   };
@@ -70,7 +73,7 @@ function DevBar() {
               {
                 !!name && (
                   <>
-                    {contestStatus.map((cId) => <Button variant={name === cId ? 'contained' : 'outlined'} onClick={() => setContest(cId)}>{cId}</Button>)}
+                    {contestStatus.map((cId) => <Button key={cId} variant={name === cId ? 'contained' : 'outlined'} onClick={() => setContest(cId)}>{cId}</Button>)}
                     <Divider orientation="vertical" flexItem light />
                   </>
                 )
@@ -88,7 +91,6 @@ function DevBar() {
       }
       <Divider orientation="vertical" flexItem />
       <Typography>{START_WITHOUT_CACHE ? 'Cache OFF' : 'Cache ON'}</Typography>
-      {/* <Button variant="contained" color={START_WITHOUT_CACHE ? 'error' : 'success'}>{START_WITHOUT_CACHE ? 'Cache OFF' : 'Cache ON'}</Button> */}
     </Stack>
   );
 }

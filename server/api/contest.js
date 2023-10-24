@@ -12,7 +12,7 @@ const { v4: uuidv4 } = require('uuid');
 
 const db = require('../db');
 const { getCategories, getVoteDates } = require('../db/queries');
-const { CONTEST_ENV_LEVEL } = require('../env');
+const { CONTEST_ENV_LEVEL, IGNORE_PENDING_DEV } = require('../env');
 const imgur = require('../imgur');
 const { createLogger } = require('../logger');
 const memcache = require('../memcache');
@@ -180,7 +180,7 @@ exports.get = async ({ params: { id }, username }, res) => {
               '?entry_id',
               'rank',
             ]);
-            await db.update('entries', entriesData, ['?id', 'description', 'name', 'user']);
+            await db.update('entries', [entriesData], ['?id', 'description', 'name', 'user']);
           }
         }
       }
@@ -308,7 +308,7 @@ exports.get = async ({ params: { id }, username }, res) => {
       }
 
       const pendingEntries = await queryEntries('*', 'pending');
-      if (pendingEntries.length) {
+      if (pendingEntries.length && !IGNORE_PENDING_DEV) {
         res.send(votingNotOpenResponse);
         return;
       }
