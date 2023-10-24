@@ -35,6 +35,7 @@ const types = {
   AppBar: shape({ ...objects.AppBar }),
   color,
   submission: shape({
+    backgroundColor: oneOf(['#000', '#FFF', '#4b91e3']),
     category: string,
     description: string,
     id: string,

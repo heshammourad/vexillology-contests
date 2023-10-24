@@ -36,11 +36,11 @@ import NavigateIconButton from './NavigateIconButton';
 const calculateImageContainerHeight = (offset) => `calc(100vh - ${offset}px)`;
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    backgroundColor: theme.palette.common.black,
-  },
+  root: (props) => ({
+    backgroundColor: props?.backgroundColor || theme.palette.common.black,
+  }),
   appBar: {
-    backgroundColor: 'inherit',
+    backgroundColor: theme.palette.common.black,
   },
   clickActive: {
     cursor: 'pointer',
@@ -74,12 +74,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function EntryModal() {
-  /**
-   * Layout
-   */
-  const classes = useStyles();
-  const imageContainerRef = useRef(null);
-
   /**
    * AppBar
    */
@@ -121,6 +115,12 @@ function EntryModal() {
     entryIndexRef.current = value;
     updateEntryIndex(value);
   };
+
+  /**
+ * Layout
+ */
+  const classes = useStyles(entry);
+  const imageContainerRef = useRef(null);
 
   /**
    * Navigation

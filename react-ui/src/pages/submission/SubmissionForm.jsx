@@ -17,6 +17,7 @@ import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
+import { Box, Stack } from '@mui/material';
 import clsx from 'clsx';
 import debounce from 'lodash/debounce';
 import PropTypes from 'prop-types';
@@ -38,12 +39,15 @@ import {
   RedditMarkdown,
   SpinnerButton,
 } from '../../components';
+import useSwrSubmission from '../../utils/useSwrSubmission';
 
 import ComplianceCheckbox from './ComplianceCheckbox';
-import useSwrSubmission from '../../utils/useSwrSubmission';
 
 const API_PATH = '/submission';
 const MAX_FILE_SIZE = 1024 * 1024; // 1MB
+const BACKGROUND_PADDING = 20;
+const BACKGROUNDS = ['#000', '#FFF', '#4b91e3'];
+const BACKGROUND_BOX_SIZE = 75;
 
 const useStyles = makeStyles((theme) => ({
   chooseFileButton: {
@@ -99,13 +103,14 @@ const useStyles = makeStyles((theme) => ({
     visibility: 'visible',
   },
   flagPreviewContainer: {
-    maxHeight: 300,
+    maxHeight: 300 + (BACKGROUND_PADDING * 2),
     width: 'fit-content',
+    padding: BACKGROUND_PADDING,
   },
   flagPreviewContainerEmpty: {
     height: '50vw',
-    maxHeight: 300,
-    maxWidth: 600,
+    maxHeight: 300 + (BACKGROUND_PADDING * 2),
+    maxWidth: 600 + (BACKGROUND_PADDING * 2),
     width: '100%',
   },
   previewDescription: {
@@ -149,6 +154,7 @@ function SubmissionForm({
   ]);
   const [{ username }] = useAuthState();
   const updateSnackbarState = useSnackbarState();
+  const [backgroundColor, setBackgroundColor] = useState(BACKGROUNDS[0]);
   const [fileDimensions, setFileDimensions] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef(null);
@@ -321,6 +327,7 @@ function SubmissionForm({
         name: formState.name.value,
         url: downloadUrl,
         width: fileDimensions.width,
+        backgroundColor,
       };
       if (formState.category.value) {
         payload.category = formState.category.value;
@@ -422,6 +429,7 @@ function SubmissionForm({
               className={clsx(classes.flagPreviewContainer, {
                 [classes.flagPreviewContainerEmpty]: !formState.file.value,
               })}
+              style={{ backgroundColor }}
               elevation={0}
               variant="outlined"
             >
@@ -436,6 +444,22 @@ function SubmissionForm({
                 onLoad={handleImageLoad}
               />
             </Paper>
+          </div>
+          <div>
+            <Typography variant="caption">Background color</Typography>
+            <Stack direction="row" spacing={2}>
+              {BACKGROUNDS.map((color) => (
+                <Box
+                  sx={{
+                    height: BACKGROUND_BOX_SIZE,
+                    width: BACKGROUND_BOX_SIZE,
+                    border: '1px solid black',
+                    backgroundColor: color,
+                  }}
+                  onClick={() => setBackgroundColor(color)}
+                />
+              ))}
+            </Stack>
           </div>
           {!!categories.length && (
             <TextField

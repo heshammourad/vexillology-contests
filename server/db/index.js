@@ -102,8 +102,6 @@ const update = async (table, data, columns, returning = []) => {
 //   const values = rowArray.map((row) => `(${columns.map((col) => `'${row[col]}'`).join(', ')})`).join(', ');
 //   const pk = keys.join(', ');
 //   const set = columns.map((col) => `${col} = EXCLUDED.${col}`).join(', ');
-
-//   console.log(`INSERT INTO ${table} (${columns.join(', ')}) VALUES ${values} ON CONFLICT (${pk}) DO UPDATE SET ${set};`)
 //   return db.manyOrNone(`
 //     INSERT INTO ${table} (${columns.join(', ')})
 //     VALUES ${values}

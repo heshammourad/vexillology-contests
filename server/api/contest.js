@@ -315,6 +315,7 @@ exports.get = async ({ params: { id }, username }, res) => {
 
       response.entries = await queryEntries(
         `ce.category,
+         e.background_color,
          e.description,
          e.height,
          e.id,

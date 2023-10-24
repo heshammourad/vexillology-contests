@@ -8,6 +8,7 @@ const { createLogger } = require('../logger');
 
 const NOW = new Date();
 const VOTE_MAX = 5;
+const BACKGROUND_COLORS = ['#000', '#FFF', '#4b91e3'];
 
 const logger = createLogger('API/DEV');
 
@@ -125,7 +126,7 @@ exports.contest = async ({ body: { status }, username }, res) => {
       ];
 
       // add sequential dev# for id (NOTE: zero-indexed, can do i+1 if desired)
-      entryVersions = entryVersions.map((v, i) => ({ ...v, id: `dev${i}` }));
+      entryVersions = entryVersions.map((v, i) => ({ ...v, id: `dev${i}`, background_color: BACKGROUND_COLORS[i % 3] }));
 
       const existingEntries = await db.select(`SELECT width, height, url FROM entries WHERE height > 600 AND POSITION('https://firebasestorage.googleapis.com' IN url) > 0 LIMIT ${entryVersions.length}`);
       await db.insert('entries', entryVersions.map((version, i) => ({
@@ -207,8 +208,7 @@ exports.mod = async ({ body: { moderator }, username }, res) => {
 
     res.status(status).send();
   } catch (err) {
-    console.log('mod error: ', err);
-    // logger.error(`Error toggling /mod: ${err}`);
+    logger.error(`Error toggling /mod: ${err}`);
     res.status(500).send();
   }
 };

@@ -19,6 +19,7 @@ const getSubmissions = async (contestId, username) => {
   const submissions = await db.select(
     `SELECT
        ce.category,
+       e.background_color,
        e.description,
        e.id,
        e.name,
@@ -74,7 +75,7 @@ const isWithinSubmissionWindow = async () => {
 exports.post = async (
   {
     body: {
-      category, contestId, description, height, name, url, width,
+      category, contestId, description, height, name, url, width, backgroundColor,
     }, username,
   },
   res,
@@ -113,6 +114,7 @@ exports.post = async (
       width,
       url,
       user: username,
+      background_color: backgroundColor,
     };
     await db.insert('entries', [submissionData]);
 
