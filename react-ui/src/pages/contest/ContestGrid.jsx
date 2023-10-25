@@ -15,8 +15,8 @@ import PropTypes from 'prop-types';
 import { useCallback, useMemo } from 'react';
 
 import {
-  useComponentsState,
   useSettingsState,
+  useVoting,
 } from '../../common';
 import {
   Average,
@@ -86,17 +86,14 @@ const useStyles = makeStyles((theme) => ({
 function ContestGrid({
   selectedCategories,
   setDrawer,
-  votingExpired,
 }) {
+  const { votingDisabled } = useVoting();
   const { data: contest } = useSwrContest();
 
   const classes = useStyles();
-  const [{ votingDisabled }, setComponentsState] = useComponentsState();
   const { gridDisplayWidth, winnerDisplayWidth } = useContestSizing();
 
   const [{ density = 'default' }] = useSettingsState();
-
-  const votingUnavailable = votingDisabled || votingExpired;
 
   const getGridVariables = useCallback((fullWidth) => {
     const xs = 12;
@@ -186,10 +183,8 @@ function ContestGrid({
                     })}
                   >
                     <VotingSlider
-                      disabled={votingUnavailable}
                       entryId={imgurId ?? id}
                       rating={rating}
-                      setComponentsState={setComponentsState}
                     />
                   </CardActions>
                 )}
@@ -294,12 +289,10 @@ function CardContentWrapper({
 ContestGrid.propTypes = {
   selectedCategories: PropTypes.arrayOf(PropTypes.string),
   setDrawer: PropTypes.func.isRequired,
-  votingExpired: PropTypes.bool,
 };
 
 ContestGrid.defaultProps = {
   selectedCategories: [],
-  votingExpired: true,
 };
 
 export default ContestGrid;

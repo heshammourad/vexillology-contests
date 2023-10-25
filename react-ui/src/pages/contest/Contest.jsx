@@ -61,7 +61,6 @@ function Contest() {
   const [selectedCategories, setSelectedCategories] = useState(state?.selectedCategories ?? []);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerEntryId, setDrawerEntryId] = useState(null);
-  const [votingExpired, setVotingExpired] = useState(false);
 
   // useEffect(() => {
   if (contest?.submissionWindowOpen) {
@@ -95,13 +94,6 @@ function Contest() {
       document.title,
     );
   }, [selectedCategories]);
-
-  const handleVotingExpired = useCallback(() => {
-    if (!votingExpired) {
-      mutate();
-      setVotingExpired(true);
-    }
-  }, [votingExpired]);
 
   const handleReload = useCallback(() => {
     scrollInstantlyTo(0);
@@ -197,7 +189,7 @@ function Contest() {
         className: classes.icon,
         color: 'default',
         right: <ContestAppBarRight {...{ toggleDrawerOpen, contest }} />,
-        children: <ContestAppBarMain {...{ handleVotingExpired, handleReload, contest }} />,
+        children: <ContestAppBarMain {...{ handleReload, contest }} />,
       }}
       drawer={drawerEntryId ? { heading: 'Info', children: <EntryDescriptionDrawer entryId={drawerEntryId} /> } : { heading: 'Settings', children: <ContestSettings /> }}
     >
@@ -221,7 +213,6 @@ function Contest() {
             {...{
               selectedCategories,
               setDrawer,
-              votingExpired,
             }}
           />
         </PageContainer>

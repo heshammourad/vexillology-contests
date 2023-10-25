@@ -6,13 +6,15 @@ import Box from '@material-ui/core/Box';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 
+import { useVoting } from '../../common';
 import {
   RouterLinkIconButton,
   Countdown,
 } from '../../components';
 
-export default function ContestAppBarMain({ handleVotingExpired, handleReload, contest }) {
+export default function ContestAppBarMain({ handleReload, contest }) {
   const { state = {} } = useLocation();
+  const { voteEndDate } = useVoting();
 
   const backLink = (state || {}).back || '/contests';
 
@@ -27,8 +29,6 @@ export default function ContestAppBarMain({ handleVotingExpired, handleReload, c
     return null;
   }
 
-  const voteEndDate = new Date(voteEnd);
-
   return (
     <>
       {/* date allows Contests page to know which year is expanded  */}
@@ -37,7 +37,6 @@ export default function ContestAppBarMain({ handleVotingExpired, handleReload, c
         <Box display="inline-flex" paddingLeft={1.5}>
           <Countdown
             endDate={voteEndDate}
-            handleExpiry={handleVotingExpired}
             handleReload={handleReload}
           />
         </Box>
@@ -48,7 +47,6 @@ export default function ContestAppBarMain({ handleVotingExpired, handleReload, c
 
 ContestAppBarMain.propTypes = {
   handleReload: PropTypes.func.isRequired,
-  handleVotingExpired: PropTypes.func.isRequired,
   contest: PropTypes.shape({
     date: PropTypes.string.isRequired,
     isContestMode: PropTypes.bool,

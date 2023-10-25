@@ -12,7 +12,7 @@ import { useParams } from 'react-router-dom';
 
 import { deleteData, putData } from '../api';
 import {
-  useAuthState, useSnackbarState, useSwrMutation,
+  useAuthState, useComponentsState, useSnackbarState, useSwrMutation, useVoting,
 } from '../common';
 import snackbarTypes from '../common/snackbarTypes';
 
@@ -95,8 +95,10 @@ const updateEntries = (entries, { entryId, rating }) => entries.reduce((acc, cur
 }, []);
 
 function VotingSlider({
-  disabled, entryId, rating, setComponentsState,
+  entryId, rating,
 }) {
+  const setComponentsState = useComponentsState()[1];
+  const { disableVoting, votingUnavailable: disabled } = useVoting();
   const [{ isLoggedIn }] = useAuthState();
   const { contestId } = useParams();
   const ratingRef = useRef(rating);
@@ -125,7 +127,7 @@ function VotingSlider({
 
   useEffect(() => {
     if (isInteractive) {
-      setComponentsState({ votingDisabled: isMutatingDelete || isMutatingPut });
+      disableVoting(isMutatingDelete || isMutatingPut);
     }
   }, [isInteractive, isMutatingDelete, isMutatingPut]);
 
@@ -205,14 +207,11 @@ function VotingSlider({
 }
 
 VotingSlider.propTypes = {
-  disabled: PropTypes.bool,
   entryId: PropTypes.string.isRequired,
   rating: PropTypes.number,
-  setComponentsState: PropTypes.func.isRequired,
 };
 
 VotingSlider.defaultProps = {
-  disabled: false,
   rating: null,
 };
 

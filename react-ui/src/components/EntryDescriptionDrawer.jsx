@@ -9,9 +9,8 @@ import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import RedditIcon from '@material-ui/icons/Reddit';
 import differenceInDays from 'date-fns/differenceInDays';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
 
-import { useComponentsState } from '../common';
+import { useVoting } from '../common';
 import useSwrContest from '../utils/useSwrContest';
 
 import Average from './Average';
@@ -26,10 +25,16 @@ import RedditMarkdown from './RedditMarkdown';
 import RedditUserAttribution from './RedditUserAttribution';
 import VotingSlider from './VotingSlider';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   average: {
     flexGrow: 1,
     fontWeight: 'bold',
+  },
+  banner: {
+    backgroundColor: theme.palette.primary.ultralight,
+    borderRadius: 10,
+    padding: 4,
+    marginBottom: 4,
   },
   drawerContent: {
     fontSize: '16px',
@@ -52,21 +57,19 @@ const useStyles = makeStyles({
   votingContainer: {
     marginTop: 16,
   },
-});
+}));
 
 function EntryDescriptionDrawer({ entryId }) {
   if (!entryId) {
     return null;
   }
 
-  const [{ votingDisabled }, setComponentsState] = useComponentsState();
-  const [votingExpired, setVotingExpired] = useState(false);
+  const { voteEndDate } = useVoting();
 
   const {
     data: {
-      categories, entries = [], isContestMode, localVoting, voteEnd, winners = [],
+      categories, entries = [], isContestMode, localVoting, winners = [],
     },
-    mutate,
   } = useSwrContest();
   const {
     average,
@@ -88,19 +91,13 @@ function EntryDescriptionDrawer({ entryId }) {
   const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${imageSrc}`;
   const redditPermalink = `https://www.reddit.com${permalink}`;
   const showRank = localVoting && !!rank;
-  const voteEndDate = new Date(voteEnd);
-  const votingUnavailable = votingDisabled || votingExpired;
-
-  const handleVotingExpired = () => {
-    if (!votingExpired) {
-      mutate();
-      setVotingExpired(true);
-    }
-  };
 
   const classes = useStyles();
   return (
     <div className={classes.drawerContent}>
+      <Box className={classes.banner}>
+        <Typography variant="subtitle1">You can now vote by typing 0-5 or c on your keyboard.</Typography>
+      </Box>
       <Box display="flex">
         {showRank && (
           <div className={classes.rank}>
@@ -126,14 +123,12 @@ function EntryDescriptionDrawer({ entryId }) {
         <>
           <DrawerSectionHeader>Submit Vote</DrawerSectionHeader>
           {!differenceInDays(voteEndDate, new Date()) && (
-            <Countdown endDate={voteEndDate} fontSize="small" handleExpiry={handleVotingExpired} />
+            <Countdown endDate={voteEndDate} fontSize="small" />
           )}
           <Box className={classes.votingContainer} alignItems="center" display="flex">
             <VotingSlider
-              disabled={votingUnavailable}
               entryId={imgurId ?? id}
               rating={rating}
-              setComponentsState={setComponentsState}
             />
           </Box>
         </>

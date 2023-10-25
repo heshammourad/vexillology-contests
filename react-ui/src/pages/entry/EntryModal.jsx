@@ -161,6 +161,9 @@ function EntryModal() {
   const handleKeyUp = ({ key }) => {
     let indexChange = 0;
     if (key >= '0' && key <= '5') {
+      // submit vote
+      // REMEMBER TO RECORD WHETHER VOTE IS KEYED OR NOT, ideally with computer vs phone
+      indexChange = 1;
       return;
     }
     switch (key) {
