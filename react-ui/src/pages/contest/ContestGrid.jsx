@@ -16,7 +16,7 @@ import { useCallback, useMemo } from 'react';
 
 import {
   useSettingsState,
-  useVoting,
+  useVotingStatus,
 } from '../../common';
 import {
   Average,
@@ -87,7 +87,7 @@ function ContestGrid({
   selectedCategories,
   setDrawer,
 }) {
-  const { votingDisabled } = useVoting();
+  const { votingDisabled } = useVotingStatus();
   const { data: contest } = useSwrContest();
 
   const classes = useStyles();

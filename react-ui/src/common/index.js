@@ -13,3 +13,4 @@ export { default as useSnackbarState } from './useSnackbarState';
 export { default as useSwrData } from './useSwrData';
 export { default as useSwrMutation } from './useSwrMutation';
 export { default as useVoting } from './useVoting';
+export { default as useVotingStatus } from './useVotingStatus';

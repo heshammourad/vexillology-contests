@@ -10,7 +10,7 @@ import RedditIcon from '@material-ui/icons/Reddit';
 import differenceInDays from 'date-fns/differenceInDays';
 import PropTypes from 'prop-types';
 
-import { useVoting } from '../common';
+import { useVotingStatus } from '../common';
 import useSwrContest from '../utils/useSwrContest';
 
 import Average from './Average';
@@ -64,7 +64,7 @@ function EntryDescriptionDrawer({ entryId }) {
     return null;
   }
 
-  const { voteEndDate } = useVoting();
+  const { voteEndDate } = useVotingStatus();
 
   const {
     data: {

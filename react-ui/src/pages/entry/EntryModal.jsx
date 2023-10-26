@@ -19,7 +19,7 @@ import {
   useOutletContext,
 } from 'react-router-dom';
 
-import { useSettingsState } from '../../common';
+import { useSettingsState, useVoting } from '../../common';
 import {
   EntryDescriptionDrawer,
   PageWithDrawer,
@@ -125,6 +125,7 @@ function EntryModal() {
   /**
    * Navigation
    */
+  const { changeRating, clearRating } = useVoting(entryId);
   const navigate = useNavigate();
   const { selectedCategories = [] } = useOutletContext();
   const { state = {} } = useLocation();
@@ -161,8 +162,9 @@ function EntryModal() {
   const handleKeyUp = ({ key }) => {
     let indexChange = 0;
     if (key >= '0' && key <= '5') {
-      // submit vote
-      // REMEMBER TO RECORD WHETHER VOTE IS KEYED OR NOT, ideally with computer vs phone
+      // ??? I would love it if we could track whether votes mobile or desktop
+      // ??? and if desktop, how many were keyed
+      changeRating(parseInt(key, 10), entry?.rating);
       indexChange = 1;
       return;
     }
@@ -183,7 +185,7 @@ function EntryModal() {
         redditCommentButtonRef.current.click();
         return;
       case 'c':
-        // clear vote?
+        clearRating();
         return;
       default:
         return;

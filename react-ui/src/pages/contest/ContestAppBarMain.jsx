@@ -6,7 +6,7 @@ import Box from '@material-ui/core/Box';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 
-import { useVoting } from '../../common';
+import { useVotingStatus } from '../../common';
 import {
   RouterLinkIconButton,
   Countdown,
@@ -14,7 +14,7 @@ import {
 
 export default function ContestAppBarMain({ handleReload, contest }) {
   const { state = {} } = useLocation();
-  const { voteEndDate } = useVoting();
+  const { voteEndDate } = useVotingStatus();
 
   const backLink = (state || {}).back || '/contests';
 

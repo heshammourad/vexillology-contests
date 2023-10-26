@@ -107,21 +107,21 @@ exports.contest = async ({ body: { status }, username }, res) => {
               diversity of images, descriptions, etc
       */
       let entryVersions = [
-        { user: 'dev', name: 'Pending (dev)', submission_status: 'pending' },
-        { user: 'dev', name: 'Withdrawn (dev)', submission_status: 'withdrawn' },
+        { user: 'dev', name: 'Pending example', submission_status: 'pending' },
+        { user: 'dev', name: 'Withdrawn example', submission_status: 'withdrawn' },
         {
-          user: 'dev', name: 'Approved (dev)', submission_status: 'approved', modified_by: 'VertigoOne',
+          user: 'dev', name: 'Approved example', submission_status: 'approved', modified_by: 'VertigoOne',
         },
         {
-          user: 'dev', name: 'Rejected (dev)', submission_status: 'rejected', modified_by: 'VertigoOne', rejection_reason: 'Rejected because.',
+          user: 'dev', name: 'Rejected example', submission_status: 'rejected', modified_by: 'VertigoOne', rejection_reason: 'Rejected because.',
         },
-        { user: username, name: 'Pending (dev)', submission_status: 'pending' },
-        { user: username, name: 'Withdrawn (dev)', submission_status: 'withdrawn' },
+        { user: username, name: 'Pending example', submission_status: 'pending' },
+        { user: username, name: 'Withdrawn example', submission_status: 'withdrawn' },
         {
-          user: username, name: 'Approved (dev)', submission_status: 'approved', modified_by: 'VertigoOne',
+          user: username, name: 'Approved example', submission_status: 'approved', modified_by: 'VertigoOne',
         },
         {
-          user: username, name: 'Rejected (dev)', submission_status: 'rejected', modified_by: 'VertigoOne', rejection_reason: 'Rejected because.',
+          user: username, name: 'Rejected example', submission_status: 'rejected', modified_by: 'VertigoOne', rejection_reason: 'Rejected because.',
         },
       ];
 
