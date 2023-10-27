@@ -14,6 +14,7 @@ import { AppHelmet, CustomSnackbar, CustomThemeProvider } from './components';
 import {
   AuthorizeCallback,
   Contest,
+  ContestRules,
   Contests,
   EntryModal,
   HallOfFame,
@@ -62,6 +63,7 @@ function ModalSwitch() {
         </Route>
         <Route path="/mod/review" element={<ReviewSubmissions />} />
         <Route path="/submission" element={<Submission />} />
+        <Route exact path="/submission/rules" element={<ContestRules />} />
         <Route
           path="/submit"
           element={<Navigate replace state={{ defaultTab: 1 }} to="/submission" />}
