@@ -3,12 +3,18 @@
   ??? What is the removed column for in entries?
 */
 
+const {
+  add,
+  format,
+  formatISO,
+  sub,
+} = require('date-fns');
+
 const db = require('../db');
 const { createLogger } = require('../logger');
 
-const NOW = new Date();
 const VOTE_MAX = 5;
-const BACKGROUND_COLORS = ['#000', '#FFF', '#4b91e3'];
+const BACKGROUND_COLORS = ['#000000', '#FFFFFF', '#4b91e3'];
 
 const logger = createLogger('API/DEV');
 
@@ -17,13 +23,13 @@ const getDevContest = (status) => {
   const contestIndex = contestStatuses.indexOf(status);
   const isAfter = (lastStatus) => contestIndex > contestStatuses.indexOf(lastStatus);
 
-  const yearEnd = NOW.getMonth() === 11; // getMonth is zero-based
-  const date = NOW.toISOString().split('T')[0];
-  const fiveYears = 1000 * 60 * 60 * 24 * 365 * 5;
-  const pastest = new Date(NOW.getTime() - fiveYears - 1).toISOString();
-  const past = new Date(NOW.getTime() - fiveYears).toISOString();
-  const future = new Date(NOW.getTime() + fiveYears).toISOString();
-  const futurest = new Date(NOW.getTime() + fiveYears + 1).toISOString();
+  const now = new Date();
+  const yearEnd = format(now, 'MM') === 12; // or format(NOW, 'MMM') === 'Dec'
+  const date = formatISO(now, { representation: 'date' });
+  const pastest = sub(now, { years: 5, months: 1 }).toISOString();
+  const past = sub(now, { years: 5 }).toISOString();
+  const future = add(now, { years: 5 }).toISOString();
+  const futurest = add(now, { years: 5, months: 1 }).toISOString();
 
   /*
                 s_start   s_end     v_start   v_end
@@ -73,7 +79,7 @@ exports.contest = async ({ body: { status }, username }, res) => {
       */
       await db.del('votes', { contest_id: 'dev' });
       await db.del('contest_entries', { contest_id: 'dev' });
-      await db.any("DELETE FROM entries WHERE id LIKE 'dev%';");
+      await db.any("DELETE FROM entries WHERE id LIKE 'dev-%';");
       await db.del('contest_categories', { contest_id: 'dev' });
 
       /*
@@ -101,7 +107,7 @@ exports.contest = async ({ body: { status }, username }, res) => {
       /*
         ------- ENTRIES -------
         Create some flags for yourself and dev user
-        Adust as desired
+        Adjust as desired
         NOTE: borrows flags from existing entires but overrides key data
               accurate url, width, height
               diversity of images, descriptions, etc
@@ -126,9 +132,9 @@ exports.contest = async ({ body: { status }, username }, res) => {
       ];
 
       // add sequential dev# for id (NOTE: zero-indexed, can do i+1 if desired)
-      entryVersions = entryVersions.map((v, i) => ({ ...v, id: `dev${i}`, background_color: BACKGROUND_COLORS[i % 3] }));
+      entryVersions = entryVersions.map((v, i) => ({ ...v, id: `dev-${i}`, background_color: BACKGROUND_COLORS[i % 3] }));
 
-      const existingEntries = await db.select(`SELECT width, height, url FROM entries WHERE height > 600 AND POSITION('https://firebasestorage.googleapis.com' IN url) > 0 LIMIT ${entryVersions.length}`);
+      const existingEntries = await db.select(`SELECT width, height, url FROM entries WHERE height > 600 AND url LIKE '%firebasestorage%' LIMIT ${entryVersions.length}`);
       await db.insert('entries', entryVersions.map((version, i) => ({
         ...existingEntries[i], ...version,
       })));
@@ -158,7 +164,7 @@ exports.contest = async ({ body: { status }, username }, res) => {
           rating: u === approvedEntries.user
             ? VOTE_MAX
             : Math.floor(Math.random() * (VOTE_MAX + 1)),
-          last_modified: NOW,
+          last_modified: new Date(),
         }))
       )));
     } else {

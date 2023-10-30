@@ -11,6 +11,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import { defaultProps, objects } from '../common/types';
 
 import AccountMenu from './AccountMenu';
+import DevBar from './DevBar';
 import ElevationScroll from './ElevationScroll';
 
 function AppBarDivided({
@@ -22,8 +23,10 @@ function AppBarDivided({
   position,
   right,
 }) {
+  const isModal = accountMenuColor === 'inherit';
   const appBar = (
     <AppBar className={className} color={color} position={position}>
+      {!isModal && <DevBar />}
       <Toolbar>
         <Box display="flex" alignItems="center" flexGrow={1}>
           {children}

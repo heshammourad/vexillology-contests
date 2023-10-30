@@ -207,7 +207,7 @@ const updateSubmissions = (currentData, response) => {
  * @param props
  * @param {boolean} props.moderator - Whether to display to a moderator or a regular user. Affects
  *  whether moderator controls are displayed.
- * @param {string} [props.submission.backgroundColor] - One of '#000', '#FFF', '#4b91e3'
+ * @param {string} [props.submission.backgroundColor] - One of '#000000', '#FFFFFF', '#4b91e3'
  * @param {string} [props.submission.category]
  * @param {string} props.submission.description
  * @param {id} props.submission.id
@@ -229,7 +229,7 @@ const updateSubmissions = (currentData, response) => {
 function SubmissionRow({
   moderator,
   submission: {
-    backgroundColor = '#000',
+    backgroundColor = '#000000',
     category,
     description,
     id,

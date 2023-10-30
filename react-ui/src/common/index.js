@@ -6,6 +6,7 @@ export { default as useClientWidth } from './useClientWidth';
 export { default as useComponentsState } from './useComponentsState';
 export { default as useFormState } from './useFormState';
 export { default as useGlobalStyles } from './useGlobalStyles';
+export { default as useIsTouchScreen } from './useIsTouchScreen';
 export { default as useRedditLogIn } from './useRedditLogIn';
 export { default as useScrollState } from './useScrollState';
 export { default as useSettingsState } from './useSettingsState';

@@ -26,7 +26,7 @@ export default function ContestAppBarMain({ handleReload, contest }) {
   } = contest;
 
   if (!name) {
-    return null;
+    return <RouterLinkIconButton state={{ date }} to={backLink} />;
   }
 
   return (

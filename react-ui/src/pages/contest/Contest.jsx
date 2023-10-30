@@ -62,11 +62,9 @@ function Contest() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerEntryId, setDrawerEntryId] = useState(null);
 
-  // useEffect(() => {
   if (contest?.submissionWindowOpen) {
     navigate('/submission', { replace: true });
   }
-  // }, [contest.submissionWindowOpen]);
 
   // Scroll to top when unmounted
   // For site-wide solution see https://reactrouter.com/en/main/components/scroll-restoration
@@ -85,15 +83,6 @@ function Contest() {
       mutate();
     }
   }, [contest.votingWindowOpen]);
-
-  // forceCheck elements in viewport when selectedCategories changes
-  useEffect(() => {
-    forceCheck();
-    window.history.pushState(
-      { usr: { ...window.history.state?.usr, selectedCategories } },
-      document.title,
-    );
-  }, [selectedCategories]);
 
   const handleReload = useCallback(() => {
     scrollInstantlyTo(0);

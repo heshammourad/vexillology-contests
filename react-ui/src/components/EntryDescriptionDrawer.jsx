@@ -10,7 +10,10 @@ import RedditIcon from '@material-ui/icons/Reddit';
 import differenceInDays from 'date-fns/differenceInDays';
 import PropTypes from 'prop-types';
 
-import { useVotingStatus } from '../common';
+import {
+  useIsTouchScreen,
+  useVotingStatus,
+} from '../common';
 import useSwrContest from '../utils/useSwrContest';
 
 import Average from './Average';
@@ -34,6 +37,8 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.primary.ultralight,
     borderRadius: 10,
     padding: 4,
+    paddingLeft: 8,
+    paddingRight: 8,
     marginBottom: 4,
   },
   drawerContent: {
@@ -65,6 +70,7 @@ function EntryDescriptionDrawer({ entryId }) {
   }
 
   const { voteEndDate } = useVotingStatus();
+  const isTouchScreen = useIsTouchScreen();
 
   const {
     data: {
@@ -95,9 +101,11 @@ function EntryDescriptionDrawer({ entryId }) {
   const classes = useStyles();
   return (
     <div className={classes.drawerContent}>
-      <Box className={classes.banner}>
-        <Typography variant="subtitle1">You can now vote by typing 0-5 or c on your keyboard.</Typography>
-      </Box>
+      {!isTouchScreen && (
+        <Box className={classes.banner}>
+          <Typography variant="subtitle1">You can now vote by typing 0-5 on your keyboard, or type c to clear your vote.</Typography>
+        </Box>
+      )}
       <Box display="flex">
         {showRank && (
           <div className={classes.rank}>

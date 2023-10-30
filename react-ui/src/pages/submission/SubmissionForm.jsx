@@ -1,12 +1,3 @@
-// ??? check if multiple API calls due to refactoring
-/**
- * Form to allow users to submit flags
- * @param {string} previewDescription - User-submitted entry description
- * @param {func} setPreviewDescription - Function to change previewDescription
- * @param {func} setSelectedTab - Go to different submission tab
- * @param {bool} submissionExpired - is submission window open
- */
-
 import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 import FormGroup from '@material-ui/core/FormGroup';
@@ -46,7 +37,7 @@ import ComplianceCheckbox from './ComplianceCheckbox';
 const API_PATH = '/submission';
 const MAX_FILE_SIZE = 1024 * 1024; // 1MB
 const BACKGROUND_PADDING = 20;
-const BACKGROUNDS = ['#000', '#FFF', '#4b91e3'];
+const BACKGROUNDS = ['#000000', '#FFFFFF', '#4b91e3'];
 const BACKGROUND_BOX_SIZE = 75;
 
 const useStyles = makeStyles((theme) => ({
@@ -125,6 +116,14 @@ const useStyles = makeStyles((theme) => ({
 
 const fileReader = new FileReader();
 
+/**
+ * Form to allow users to submit flags
+ * @param props
+ * @param {string} props.previewDescription - User-submitted entry description
+ * @param {func} props.setPreviewDescription - Function to change previewDescription
+ * @param {func} props.setSelectedTab - Go to different submission tab
+ * @param {bool} props.submissionExpired - is submission window open
+ */
 function SubmissionForm({
   previewDescription,
   setPreviewDescription,

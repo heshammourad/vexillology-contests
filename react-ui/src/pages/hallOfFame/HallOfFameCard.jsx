@@ -102,7 +102,7 @@ function HallOfFameCard({
   const classes = useStyles();
   return (
     <Card className={classes.card} id={`hofc-${date}`} data-year={year}>
-      <CardActionArea>
+      <CardActionArea disabled>
         <LazyLoadCardImage
           displayWidth={imageDisplayWidth}
           height={height}

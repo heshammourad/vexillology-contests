@@ -107,14 +107,14 @@ exports.post = async (
 
     const id = url.match(/%2F(\w*)/)[1];
     const submissionData = {
+      background_color: backgroundColor,
       description,
       height,
       id,
       name,
-      width,
       url,
       user: username,
-      background_color: backgroundColor,
+      width,
     };
     await db.insert('entries', [submissionData]);
 

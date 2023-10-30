@@ -4,13 +4,17 @@
 
 import useSWR from 'swr';
 
-import useAuthState from '../common/useAuthState';
+import { useAuthState } from '../common';
 
 const useSwrAuth = (path, options = {}) => {
-  const [{ accessToken, refreshToken }] = useAuthState();
+  const [{
+    refreshTokens, // Delete in future force quit
+    accessTokens, // Delete in future force quit
+    authTokens = { refreshTokens, accessTokens },
+  }] = useAuthState();
 
   // https://swr.vercel.app/docs/arguments
-  const uniqueKey = [path, { accessToken, refreshToken }];
+  const uniqueKey = [path, authTokens];
   // fetcher is set as provider in App.jsx and calls getData in index.js
   const {
     data, error, isLoading, isValidating, mutate,

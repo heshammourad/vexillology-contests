@@ -25,7 +25,6 @@ import {
   PageWithDrawer,
   RedditLogInDialog,
 } from '../../components';
-// eslint-disable-next-line import/no-unresolved
 import useEntryId from '../../utils/useEntryId';
 import useSwrContest from '../../utils/useSwrContest';
 
@@ -117,13 +116,13 @@ function EntryModal() {
   };
 
   /**
- * Layout
- */
+  * Layout
+  */
   const classes = useStyles(entry);
   const imageContainerRef = useRef(null);
 
   /**
-   * Navigation
+   * Navigation and voting
    */
   const { changeRating, clearRating } = useVoting(entryId);
   const navigate = useNavigate();
@@ -164,7 +163,8 @@ function EntryModal() {
     if (key >= '0' && key <= '5') {
       // ??? I would love it if we could track whether votes mobile or desktop
       // ??? and if desktop, how many were keyed
-      changeRating(parseInt(key, 10), entry?.rating);
+      // https://stackoverflow.com/questions/39435395/reactjs-how-to-determine-if-the-application-is-being-viewed-on-mobile-or-deskto
+      changeRating(parseInt(key, 10), entry?.rating, true);
       indexChange = 1;
       return;
     }

@@ -47,8 +47,6 @@ function Submission() {
   // ??? Pass in to submission form or not?
   const {
     data: {
-      // categories,
-      // firebaseToken,
       id: contestId,
       name: contestName,
       prompt,
@@ -110,7 +108,6 @@ function Submission() {
                 <TabPanel currentTab={selectedTab} index={0}>
                   <SubmissionPrompt {...{ contestId, prompt }} />
                 </TabPanel>
-
                 <TabPanel currentTab={selectedTab} index={1}>
                   <SubmissionForm {...{
                     previewDescription,

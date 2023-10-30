@@ -14,7 +14,6 @@ import {
   AppHelmet,
   CustomSnackbar,
   CustomThemeProvider,
-  DevBar,
 } from './components';
 import {
   AuthorizeCallback,
@@ -47,7 +46,6 @@ function App() {
             <BrowserRouter>
               <AppHelmet />
               <ModalSwitch />
-              <DevBar />
             </BrowserRouter>
             <CustomSnackbar />
           </div>

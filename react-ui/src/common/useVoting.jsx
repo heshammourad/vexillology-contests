@@ -10,6 +10,7 @@ import useContestId from '../utils/useContestId';
 import snackbarTypes from './snackbarTypes';
 import useAuthState from './useAuthState';
 import useComponentsState from './useComponentsState';
+import useIsTouchScreen from './useIsTouchScreen';
 import useSnackbarState from './useSnackbarState';
 import useSwrMutation from './useSwrMutation';
 import useVotingStatus from './useVotingStatus';
@@ -28,6 +29,7 @@ const updateEntries = (entries, { entryId, rating }) => entries.reduce((acc, cur
 
 function useVoting(entryId) {
   const contestId = useContestId();
+  const isTouchScreen = useIsTouchScreen();
   const contestUrl = `/contests/${contestId}`;
   const setComponentsState = useComponentsState()[1];
   const [{ isLoggedIn }] = useAuthState();
@@ -67,7 +69,7 @@ function useVoting(entryId) {
     },
   });
 
-  const changeRating = (newValue, oldValue) => {
+  const changeRating = (newValue, oldValue, isKeyed = false) => {
     if (!isLoggedIn) {
       setComponentsState({ redditLogInDialogOpen: true });
       return;
@@ -79,7 +81,13 @@ function useVoting(entryId) {
 
     disableVoting(true);
 
-    const voteInput = { contestId, entryId, rating: newValue };
+    const voteInput = {
+      contestId,
+      entryId,
+      isDesktop: !isTouchScreen,
+      isKeyed,
+      rating: newValue,
+    };
     triggerPut(voteInput, triggerOptions(voteInput));
   };
 

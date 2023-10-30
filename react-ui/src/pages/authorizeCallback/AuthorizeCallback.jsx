@@ -74,13 +74,13 @@ function AuthorizeCallback() {
         return;
       }
 
-      retrieveAccessTokens(code).then((tokens) => {
-        if (!tokens.accessToken || !tokens.refreshToken) {
+      retrieveAccessTokens(code).then(({ username, ...authTokens }) => {
+        if (!authTokens.accessToken || !authTokens.refreshToken) {
           setErrorMessage(DATA_ERROR);
           return;
         }
 
-        setAuthState({ ...tokens, isLoggedIn: true });
+        setAuthState({ authTokens, username, isLoggedIn: true });
 
         navigate(redirectPath, { replace: true, state: scrollState });
       });

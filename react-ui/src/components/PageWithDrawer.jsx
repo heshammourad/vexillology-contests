@@ -17,6 +17,7 @@ import clsx from 'clsx';
 import PropTypes from 'prop-types';
 
 import types from '../common/types';
+import { IS_DEV_BAR } from '../env';
 
 import AppBarDivided from './AppBarDivided';
 
@@ -81,6 +82,7 @@ function PageWithDrawer({
   appBar, children, className, drawer, handleClose, isOpen,
 }) {
   const classes = useStyles();
+  const isModal = appBar.accountMenuColor === 'inherit';
   return (
     <div className={clsx(classes.root, className)}>
       <AppBarDivided
@@ -100,6 +102,7 @@ function PageWithDrawer({
           [classes.contentShift]: isOpen,
         })}
       >
+        {IS_DEV_BAR && !isModal && <Toolbar variant="dense" />}
         <Toolbar />
         {children}
       </main>

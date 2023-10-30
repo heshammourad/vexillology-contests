@@ -51,7 +51,7 @@ function AccountMenu({ color }) {
   const { pathname } = useLocation();
   const classes = useStyles();
 
-  const [{ isLoggedIn, refreshToken, username }, setAuthState] = useAuthState();
+  const [{ isLoggedIn, authTokens: { refreshToken }, username }, setAuthState] = useAuthState();
   const sendUserToAuthUrl = useRedditLogIn();
 
   const {
