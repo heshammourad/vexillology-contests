@@ -180,7 +180,7 @@ exports.get = async ({ params: { id }, username }, res) => {
               '?entry_id',
               'rank',
             ]);
-            await db.update('entries', [entriesData], ['?id', 'description', 'name', 'user']);
+            await db.update('entries', entriesData, ['?id', 'description', 'name', 'user']);
           }
         }
       }

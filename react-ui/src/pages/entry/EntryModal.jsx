@@ -302,6 +302,7 @@ function EntryModal() {
         <PageWithDrawer
           handleClose={handleDrawerClose}
           isOpen={isEntryDrawerOpen}
+          isModal
           className={classes.root}
           appBar={{
             position: 'fixed',

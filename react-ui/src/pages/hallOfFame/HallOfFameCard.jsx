@@ -1,6 +1,5 @@
 import Box from '@material-ui/core/Box';
 import Card from '@material-ui/core/Card';
-import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Collapse from '@material-ui/core/Collapse';
@@ -46,6 +45,7 @@ const useStyles = makeStyles((theme) => {
     },
     card: {
       marginTop: theme.spacing(3),
+      position: 'relative',
     },
     cardContent: {
       flex: 1,
@@ -102,14 +102,12 @@ function HallOfFameCard({
   const classes = useStyles();
   return (
     <Card className={classes.card} id={`hofc-${date}`} data-year={year}>
-      <CardActionArea disabled>
-        <LazyLoadCardImage
-          displayWidth={imageDisplayWidth}
-          height={height}
-          image={imagePath}
-          width={width}
-        />
-      </CardActionArea>
+      <LazyLoadCardImage
+        displayWidth={imageDisplayWidth}
+        height={height}
+        image={imagePath}
+        width={width}
+      />
       <Box alignItems="flex-end" display="flex">
         <CardContent className={classes.cardContent}>
           {entryName && (

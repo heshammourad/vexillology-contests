@@ -7,11 +7,7 @@ import useSWR from 'swr';
 import { useAuthState } from '../common';
 
 const useSwrAuth = (path, options = {}) => {
-  const [{
-    refreshTokens, // Delete in future force quit
-    accessTokens, // Delete in future force quit
-    authTokens = { refreshTokens, accessTokens },
-  }] = useAuthState();
+  const [{ authTokens }] = useAuthState();
 
   // https://swr.vercel.app/docs/arguments
   const uniqueKey = [path, authTokens];

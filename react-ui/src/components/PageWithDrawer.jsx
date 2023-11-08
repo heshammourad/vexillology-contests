@@ -79,10 +79,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function PageWithDrawer({
-  appBar, children, className, drawer, handleClose, isOpen,
+  appBar, children, className, drawer, handleClose, isOpen, isModal,
 }) {
   const classes = useStyles();
-  const isModal = appBar.accountMenuColor === 'inherit';
   return (
     <div className={clsx(classes.root, className)}>
       <AppBarDivided
@@ -135,11 +134,13 @@ PageWithDrawer.propTypes = {
   }).isRequired,
   handleClose: PropTypes.func.isRequired,
   isOpen: PropTypes.bool.isRequired,
+  isModal: PropTypes.bool,
 };
 
 PageWithDrawer.defaultProps = {
   children: null,
   className: null,
+  isModal: false,
 };
 
 export default PageWithDrawer;

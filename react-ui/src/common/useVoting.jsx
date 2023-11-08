@@ -69,6 +69,7 @@ function useVoting(entryId) {
     },
   });
 
+  // ??? Should this be a async and auto-next?
   const changeRating = (newValue, oldValue, isKeyed = false) => {
     if (!isLoggedIn) {
       setComponentsState({ redditLogInDialogOpen: true });

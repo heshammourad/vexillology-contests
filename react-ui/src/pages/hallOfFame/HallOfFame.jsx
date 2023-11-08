@@ -18,6 +18,7 @@ import { Events, animateScroll } from 'react-scroll';
 
 import { useClientWidth } from '../../common';
 import { Header, PageContainer } from '../../components';
+import { IS_DEV_BAR } from '../../env';
 import useSwrHallOfFame from '../../utils/useSwrHallOfFame';
 
 import HallOfFameCard from './HallOfFameCard';
@@ -127,6 +128,7 @@ function HallOfFame() {
       <Toolbar id={TOOLBAR_ID} />
       {hallOfFame && !!hallOfFame.length && (
         <>
+          {IS_DEV_BAR && <Toolbar variant="dense" />}
           <Paper className={classes.tabsContainer} square>
             <Tabs
               classes={{

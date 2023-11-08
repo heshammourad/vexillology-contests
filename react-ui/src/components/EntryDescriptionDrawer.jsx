@@ -7,6 +7,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import RedditIcon from '@material-ui/icons/Reddit';
+import Alert from '@mui/material/Alert';
 import differenceInDays from 'date-fns/differenceInDays';
 import PropTypes from 'prop-types';
 
@@ -101,11 +102,6 @@ function EntryDescriptionDrawer({ entryId }) {
   const classes = useStyles();
   return (
     <div className={classes.drawerContent}>
-      {!isTouchScreen && (
-        <Box className={classes.banner}>
-          <Typography variant="subtitle1">You can now vote by typing 0-5 on your keyboard, or type c to clear your vote.</Typography>
-        </Box>
-      )}
       <Box display="flex">
         {showRank && (
           <div className={classes.rank}>
@@ -129,6 +125,11 @@ function EntryDescriptionDrawer({ entryId }) {
       )}
       {isContestMode ? (
         <>
+          {!isTouchScreen && (
+            <Alert severity="info">
+              You can now vote by typing 0-5 on your keyboard, or type c to clear your vote.
+            </Alert>
+          )}
           <DrawerSectionHeader>Submit Vote</DrawerSectionHeader>
           {!differenceInDays(voteEndDate, new Date()) && (
             <Countdown endDate={voteEndDate} fontSize="small" />
