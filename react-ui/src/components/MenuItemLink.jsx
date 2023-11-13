@@ -19,10 +19,10 @@ function menuItemComponent({ state, to }) {
 function MenuItemLink({
   Icon, onClick, state, text, to,
 }) {
-  const renderLink = useMemo(() => menuItemComponent({ state, to }), [to]);
+  const renderLink = to ? useMemo(() => menuItemComponent({ state, to }), [to]) : undefined;
 
   return (
-    <MenuItem button component={to ? renderLink : undefined} onClick={onClick}>
+    <MenuItem button component={renderLink} onClick={onClick}>
       {Icon && (
         <ListItemIcon>
           <Icon />
@@ -38,13 +38,14 @@ MenuItemLink.propTypes = {
   onClick: PropTypes.func,
   state: PropTypes.shape({}),
   text: PropTypes.string.isRequired,
-  to: types.to.isRequired,
+  to: types.to,
 };
 
 MenuItemLink.defaultProps = {
   Icon: null,
-  onClick: () => { },
+  onClick: () => {},
   state: {},
+  to: null,
 };
 
 export default MenuItemLink;
