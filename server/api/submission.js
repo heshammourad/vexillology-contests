@@ -48,7 +48,8 @@ exports.get = async ({ username }, res) => {
 
     const { now, ...result } = contest;
     const categories = await getCategories(result.id);
-    const response = { ...result, categories };
+    const backgroundColors = (await db.select('SELECT * FROM background_colors')).map((obj) => obj.color);
+    const response = { ...result, categories, backgroundColors };
 
     if (username) {
       if (!IS_FIREBASE_OFF) {

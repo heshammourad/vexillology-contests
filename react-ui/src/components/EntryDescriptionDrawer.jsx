@@ -29,18 +29,10 @@ import RedditMarkdown from './RedditMarkdown';
 import RedditUserAttribution from './RedditUserAttribution';
 import VotingSlider from './VotingSlider';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   average: {
     flexGrow: 1,
     fontWeight: 'bold',
-  },
-  banner: {
-    backgroundColor: theme.palette.primary.ultralight,
-    borderRadius: 10,
-    padding: 4,
-    paddingLeft: 8,
-    paddingRight: 8,
-    marginBottom: 4,
   },
   drawerContent: {
     fontSize: '16px',

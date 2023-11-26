@@ -53,7 +53,7 @@ function Submission() {
       submissionEnd,
       submissions = [],
     },
-    error,
+    // error,
     isLoading,
   } = useSwrSubmission();
   // useSWRMutation shares cache store with useSWR to avoid race conditions
@@ -75,9 +75,20 @@ function Submission() {
   const submissionEndDate = parseISO(submissionEnd);
   const submissionAllowed = isFuture(submissionEndDate);
 
+  const PORTAL_NOT_OPEN_MSG = (
+    <div>The submission portal is not yet open. Please check again later.</div>
+  );
+  const PORTAL_CLOSED_MSG = (
+    <div>
+      The submission window for this contest has closed. Click&nbsp;
+      <InternalLink to={`/contests/${contestId}`}>here</InternalLink>
+      &nbsp;to view entries.
+    </div>
+  );
+
   const noData = (isLoading
     ? <CircularProgress />
-    : <div>The submission portal is not yet open. Please check again later.</div>);
+    : PORTAL_NOT_OPEN_MSG);
 
   const classes = useStyles();
   return (
@@ -93,9 +104,6 @@ function Submission() {
         )}
       </Header>
       <PageContainer className={classes.container}>
-        {error?.response?.status === 404 && (
-          <div>The submission portal is not yet open. Please check again later.</div>
-        )}
         {contestId ? (
           <>
             <Typography className={classes.title} component="h1" variant="h6">
@@ -122,13 +130,7 @@ function Submission() {
                   <SubmissionManage {...{ handleTabChange, submissions }} />
                 </TabPanel>
               </Container>
-            ) : (
-              <div>
-                The submission window for this contest has closed. Click&nbsp;
-                <InternalLink to={`/contests/${contestId}`}>here</InternalLink>
-                &nbsp;to view entries.
-              </div>
-            )}
+            ) : PORTAL_CLOSED_MSG}
           </>
         ) : noData}
       </PageContainer>

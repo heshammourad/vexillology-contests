@@ -14,7 +14,6 @@ const db = require('../db');
 const { createLogger } = require('../logger');
 
 const VOTE_MAX = 5;
-const BACKGROUND_COLORS = ['#000000', '#FFFFFF', '#4b91e3'];
 
 const logger = createLogger('API/DEV');
 
@@ -131,8 +130,9 @@ exports.contest = async ({ body: { status }, username }, res) => {
         },
       ];
 
+      const backgroundColors = (await db.select('SELECT * FROM background_colors')).map((obj) => obj.color);
       // add sequential dev# for id (NOTE: zero-indexed, can do i+1 if desired)
-      entryVersions = entryVersions.map((v, i) => ({ ...v, id: `dev-${i}`, background_color: BACKGROUND_COLORS[i % 3] }));
+      entryVersions = entryVersions.map((v, i) => ({ ...v, id: `dev-${i}`, background_color: backgroundColors[i % 3] }));
 
       const existingEntries = await db.select(`SELECT width, height, url FROM entries WHERE height > 600 AND url LIKE '%firebasestorage%' LIMIT ${entryVersions.length}`);
       await db.insert('entries', entryVersions.map((version, i) => ({

@@ -29,7 +29,7 @@ function useVotingStatus() {
 
   useEffect(() => {
     if (isFuture(voteEndDate)) {
-      const timeToEnd = Math.min(differenceInMilliseconds(voteEndDate, new Date()), MAX_DELAY)
+      const timeToEnd = Math.min(differenceInMilliseconds(voteEndDate, new Date()), MAX_DELAY);
       const timeout = setTimeout(() => {
         mutate();
         setVotingExpired(true);

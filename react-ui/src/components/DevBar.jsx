@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { putData } from '../api';
 import { useAuthState } from '../common';
-import { IS_DEV_BAR, START_WITHOUT_CACHE } from '../env';
+import { VIEW_DEV_BAR, START_WITHOUT_CACHE } from '../env';
 import useSwrContest from '../utils/useSwrContest';
 import useSwrInit from '../utils/useSwrInit';
 
@@ -24,7 +24,7 @@ function DevBar() {
   const { data: { moderator: isModerator }, mutate: mutateMod } = useSwrInit();
   const [{ authTokens, isLoggedIn }] = useAuthState();
 
-  if (!IS_DEV_BAR) {
+  if (!VIEW_DEV_BAR) {
     return null;
   }
 

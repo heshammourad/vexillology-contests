@@ -124,7 +124,7 @@ function EntryModal() {
   /**
    * Navigation and voting
    */
-  const { changeRating, clearRating } = useVoting(entryId);
+  const { changeRating, clearRating } = useVoting(entryId, 'EntryModal');
   const navigate = useNavigate();
   const { selectedCategories = [] } = useOutletContext();
   const { state = {} } = useLocation();
@@ -160,14 +160,6 @@ function EntryModal() {
 
   const handleKeyUp = ({ key }) => {
     let indexChange = 0;
-    if (key >= '0' && key <= '5') {
-      // ??? I would love it if we could track whether votes mobile or desktop
-      // ??? and if desktop, how many were keyed
-      // https://stackoverflow.com/questions/39435395/reactjs-how-to-determine-if-the-application-is-being-viewed-on-mobile-or-deskto
-      changeRating(parseInt(key, 10), entry?.rating, true);
-      indexChange = 1;
-      return;
-    }
     switch (key) {
       case 'ArrowLeft':
         indexChange = -1;
@@ -188,6 +180,13 @@ function EntryModal() {
         clearRating();
         return;
       default:
+        if (key >= '0' && key <= '5') {
+          // ??? I would love it if we could track whether votes mobile or desktop
+          // ??? and if desktop, how many were keyed
+          // https://stackoverflow.com/questions/39435395/reactjs-how-to-determine-if-the-application-is-being-viewed-on-mobile-or-deskto
+          changeRating(parseInt(key, 10), entry?.rating, true);
+          indexChange = 1;
+        }
         return;
     }
     handleNavigate(indexChange);
@@ -203,7 +202,7 @@ function EntryModal() {
     return () => {
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, []);
+  }, [handleKeyUp]);
 
   useEffect(() => {
     const allEntries = [...winners, ...entries].filter(

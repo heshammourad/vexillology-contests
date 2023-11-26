@@ -19,12 +19,9 @@ exports.get = async (req, res) => {
     const submissions = await getCurrentContestSubmissions();
     const breakdownMap = new Map();
     submissions.forEach(({ submissionStatus, user }) => {
-      const userBreakdown = breakdownMap.get(user) ?? {};
-      const submittedCount = userBreakdown?.submitted ?? 0;
-      userBreakdown.submitted = submittedCount + 1;
-
-      const statusCount = userBreakdown[submissionStatus] ?? 0;
-      userBreakdown[submissionStatus] = statusCount + 1;
+      const userBreakdown = breakdownMap.get(user) ?? { submitted: 0 };
+      userBreakdown.submitted += 1;
+      userBreakdown[submissionStatus] = (userBreakdown[submissionStatus] ?? 0) + 1;
 
       breakdownMap.set(user, userBreakdown);
     });

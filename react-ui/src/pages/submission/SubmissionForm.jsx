@@ -37,7 +37,6 @@ import ComplianceCheckbox from './ComplianceCheckbox';
 const API_PATH = '/submission';
 const MAX_FILE_SIZE = 1024 * 1024; // 1MB
 const BACKGROUND_PADDING = 20;
-const BACKGROUNDS = ['#000000', '#FFFFFF', '#4b91e3'];
 const BACKGROUND_BOX_SIZE = 75;
 
 const useStyles = makeStyles((theme) => ({
@@ -119,7 +118,7 @@ const fileReader = new FileReader();
 /**
  * Form to allow users to submit flags
  * @param props
- * @param {string} props.previewDescription - User-submitted entry description
+ * @param {bool} props.previewDescription - User-submitted entry description
  * @param {func} props.setPreviewDescription - Function to change previewDescription
  * @param {func} props.setSelectedTab - Go to different submission tab
  * @param {bool} props.submissionExpired - is submission window open
@@ -135,6 +134,7 @@ function SubmissionForm({
       categories,
       firebaseToken,
       id: contestId,
+      backgroundColors = [],
     },
   } = useSwrSubmission();
   const { isMutating, trigger } = useSwrMutation(API_PATH, postData);
@@ -153,7 +153,7 @@ function SubmissionForm({
   ]);
   const [{ username }] = useAuthState();
   const updateSnackbarState = useSnackbarState();
-  const [backgroundColor, setBackgroundColor] = useState(BACKGROUNDS[0]);
+  const [backgroundColor, setBackgroundColor] = useState(backgroundColors[0] || '#000000');
   const [fileDimensions, setFileDimensions] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef(null);
@@ -447,8 +447,9 @@ function SubmissionForm({
           <div>
             <Typography variant="caption">Background color</Typography>
             <Stack direction="row" spacing={2}>
-              {BACKGROUNDS.map((color) => (
+              {backgroundColors.map((color) => (
                 <Box
+                  key={color}
                   sx={{
                     height: BACKGROUND_BOX_SIZE,
                     width: BACKGROUND_BOX_SIZE,
@@ -496,7 +497,6 @@ function SubmissionForm({
                 [classes.previewDescription]: previewDescription,
               })}
               label={`Description${previewDescription ? ' Preview' : ''}`}
-              required
               helperText={
                 formState.description.error || (
                   <div>
@@ -613,6 +613,6 @@ export default SubmissionForm;
 SubmissionForm.propTypes = {
   setSelectedTab: PropTypes.func.isRequired,
   submissionExpired: PropTypes.bool.isRequired,
-  previewDescription: PropTypes.string.isRequired,
+  previewDescription: PropTypes.bool.isRequired,
   setPreviewDescription: PropTypes.func.isRequired,
 };

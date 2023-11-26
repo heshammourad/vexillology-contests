@@ -5,22 +5,21 @@
 // Ask other developers for their (redacted) version to ensure you have all variables
 const { NODE_ENV } = process.env;
 
+const IS_DEV = NODE_ENV !== 'production';
+
 /**
  * DEVELOPER VARIALBES
  * Only change these variables
  * (or the variables in dotenv, which require restart)
  */
 
-const VIEW_DEV_BAR = true;
-const START_WITHOUT_CACHE = false;
+const VIEW_DEV_BAR = true && IS_DEV;
+const START_WITHOUT_CACHE = false && IS_DEV;
 
 // END DEVELOPER VARIABLES ***************************************
 
-const IS_DEV = NODE_ENV !== 'production';
-const IS_DEV_BAR = IS_DEV && VIEW_DEV_BAR;
-
 export {
-    IS_DEV,
-    IS_DEV_BAR,
-    START_WITHOUT_CACHE,
+  IS_DEV,
+  VIEW_DEV_BAR,
+  START_WITHOUT_CACHE,
 };

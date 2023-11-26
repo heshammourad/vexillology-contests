@@ -17,7 +17,7 @@ import clsx from 'clsx';
 import PropTypes from 'prop-types';
 
 import types from '../common/types';
-import { IS_DEV_BAR } from '../env';
+import { VIEW_DEV_BAR } from '../env';
 
 import AppBarDivided from './AppBarDivided';
 
@@ -101,7 +101,7 @@ function PageWithDrawer({
           [classes.contentShift]: isOpen,
         })}
       >
-        {IS_DEV_BAR && !isModal && <Toolbar variant="dense" />}
+        {VIEW_DEV_BAR && !isModal && <Toolbar variant="dense" />}
         <Toolbar />
         {children}
       </main>
