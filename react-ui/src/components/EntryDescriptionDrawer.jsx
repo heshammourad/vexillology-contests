@@ -29,7 +29,7 @@ import RedditMarkdown from './RedditMarkdown';
 import RedditUserAttribution from './RedditUserAttribution';
 import VotingSlider from './VotingSlider';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles({
   average: {
     flexGrow: 1,
     fontWeight: 'bold',
@@ -55,7 +55,7 @@ const useStyles = makeStyles(() => ({
   votingContainer: {
     marginTop: 16,
   },
-}));
+});
 
 function EntryDescriptionDrawer({ entryId }) {
   if (!entryId) {

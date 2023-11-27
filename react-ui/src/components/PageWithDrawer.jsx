@@ -93,6 +93,7 @@ function PageWithDrawer({
         isElevationScroll={appBar.isElevationScroll}
         position={appBar.position}
         right={appBar.right}
+        isModal={isModal}
       >
         {appBar.children}
       </AppBarDivided>

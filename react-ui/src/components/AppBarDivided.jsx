@@ -22,8 +22,8 @@ function AppBarDivided({
   isElevationScroll,
   position,
   right,
+  isModal,
 }) {
-  const isModal = accountMenuColor === 'inherit';
   const appBar = (
     <AppBar className={className} color={color} position={position}>
       {!isModal && <DevBar />}

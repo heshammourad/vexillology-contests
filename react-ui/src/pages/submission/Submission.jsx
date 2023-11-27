@@ -75,20 +75,9 @@ function Submission() {
   const submissionEndDate = parseISO(submissionEnd);
   const submissionAllowed = isFuture(submissionEndDate);
 
-  const PORTAL_NOT_OPEN_MSG = (
-    <div>The submission portal is not yet open. Please check again later.</div>
-  );
-  const PORTAL_CLOSED_MSG = (
-    <div>
-      The submission window for this contest has closed. Click&nbsp;
-      <InternalLink to={`/contests/${contestId}`}>here</InternalLink>
-      &nbsp;to view entries.
-    </div>
-  );
-
   const noData = (isLoading
     ? <CircularProgress />
-    : PORTAL_NOT_OPEN_MSG);
+    : <div>The submission portal is not yet open. Please check again later.</div>);
 
   const classes = useStyles();
   return (
@@ -130,7 +119,13 @@ function Submission() {
                   <SubmissionManage {...{ handleTabChange, submissions }} />
                 </TabPanel>
               </Container>
-            ) : PORTAL_CLOSED_MSG}
+            ) : (
+              <div>
+                The submission window for this contest has closed. Click&nbsp;
+                <InternalLink to={`/contests/${contestId}`}>here</InternalLink>
+                &nbsp;to view entries.
+              </div>
+            )}
           </>
         ) : noData}
       </PageContainer>
