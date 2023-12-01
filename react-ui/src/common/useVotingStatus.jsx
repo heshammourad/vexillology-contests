@@ -12,6 +12,7 @@ import useSwrContest from '../utils/useSwrContest';
 
 import useComponentsState from './useComponentsState';
 
+// Max allowable value for setTimeout, should realistically only apply to demo contest
 const MAX_DELAY = 2147483647;
 
 function useVotingStatus() {

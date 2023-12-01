@@ -6,7 +6,6 @@
 const {
   add,
   format,
-  formatISO,
   sub,
 } = require('date-fns');
 
@@ -24,11 +23,10 @@ const getDevContest = (status) => {
 
   const now = new Date();
   const yearEnd = format(now, 'MM') === 12; // or format(NOW, 'MMM') === 'Dec'
-  const date = formatISO(now, { representation: 'date' });
-  const pastest = sub(now, { years: 5, months: 1 }).toISOString();
-  const past = sub(now, { years: 5 }).toISOString();
-  const future = add(now, { years: 5 }).toISOString();
-  const futurest = add(now, { years: 5, months: 1 }).toISOString();
+  const pastest = sub(now, { years: 5, months: 1 });
+  const past = sub(now, { years: 5 });
+  const future = add(now, { years: 5 });
+  const futurest = add(now, { years: 5, months: 1 });
 
   /*
                 s_start   s_end     v_start   v_end
@@ -40,21 +38,31 @@ const getDevContest = (status) => {
   */
 
   return {
-    id: 'dev',
-    name: status === 'reset' ? 'submission' : status,
-    date,
-    env_level: 'dev',
-    year_end: yearEnd,
-    winners_thread_id: null,
-    valid_reddit_id: false,
-    submission_start: isAfter('prerelease') ? pastest : future,
-    submission_end: isAfter('submission') ? past : futurest,
-    vote_start: (isAfter('review') ? pastest : future) + 2, // avoid vote before submission
-    vote_end: (isAfter('voting') ? past : futurest) + 2, // avoid vote before submission
-    subtext: 'Dev subtext',
-    local_voting: true,
-    prompt: 'This is the prompt for the development contest.',
+    id: 'dev', // character varying
+    name: status === 'reset' ? 'submission' : status, // character varying
+    date: now, // date
+    env_level: 'dev', // env_level
+    year_end: yearEnd, // boolean
+    winners_thread_id: null, // character varying
+    valid_reddit_id: false, // boolean
+    submission_start: isAfter('prerelease') ? pastest : future, // timestamp with time zone
+    submission_end: isAfter('submission') ? past : futurest, // timestamp with time zone
+    vote_start: add((isAfter('review') ? pastest : future), { seconds: 2 }), // timestamp with time zone
+    vote_end: add((isAfter('voting') ? past : futurest), { seconds: 2 }), // timestamp with time zone
+    subtext: 'Dev subtext', // character varying
+    local_voting: true, // boolean
+    prompt: 'This is the prompt for the development contest.', // character varying
   };
+};
+
+const CASTINGS = {
+  id: '?id',
+  date: 'date',
+  env_level: 'env_level',
+  submission_start: 'timestamp',
+  submission_end: 'timestamp',
+  vote_start: 'timestamp',
+  vote_end: 'timestamp',
 };
 
 exports.contest = async ({ body: { status }, username }, res) => {
@@ -171,19 +179,12 @@ exports.contest = async ({ body: { status }, username }, res) => {
       const contest = getDevContest(status);
       // Switch contest status
       if (isExisting) {
-        // update rejects date for some reason
-        // await db.update('contests',
-        // [contest], Object.keys(contest).map((key) => (key === 'id' ? '?id' : key)));
-        await db.any(`UPDATE contests
-          SET
-            name = '${contest.name}',
-            date = '${contest.date}',
-            year_end = ${contest.year_end},
-            submission_start = '${contest.submission_start}',
-            submission_end = '${contest.submission_end}',
-            vote_start = '${contest.vote_start}',
-            vote_end = '${contest.vote_end}'
-          WHERE id = 'dev';`);
+        await db.update('contests', [contest], Object.keys(contest).map((key) => {
+          if (key === 'id') {
+            return '?id';
+          }
+          return { name: key, cast: CASTINGS[key] };
+        }));
       } else {
         await db.insert('contests', [contest]);
       }
