@@ -19,7 +19,7 @@ function menuItemComponent({ state, to }) {
 function MenuItemLink({
   Icon, onClick, state, text, to,
 }) {
-  const renderLink = to ? useMemo(() => menuItemComponent({ state, to }), [to]) : undefined;
+  const renderLink = useMemo(() => (to ? menuItemComponent({ state, to }) : undefined), [to]);
 
   return (
     <MenuItem button component={renderLink} onClick={onClick}>
