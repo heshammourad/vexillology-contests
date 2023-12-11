@@ -1,5 +1,5 @@
 import useSwrAuth from './useSwrAuth';
 
-const useSwrContest = (id) => useSwrAuth(`/staticContent/${id}`);
+const useSwrStaticContent = (id) => useSwrAuth(`/staticContent/${id}`);
 
-export default useSwrContest;
+export default useSwrStaticContent;
