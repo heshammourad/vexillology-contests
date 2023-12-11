@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 
-import useSwrContest from '../data/useSwrStaticContent';
+import useSwrStaticContent from '../data/useSwrStaticContent';
 
 import HtmlWrapper from './HtmlWrapper';
 import RedditMarkdown from './RedditMarkdown';
@@ -12,7 +12,7 @@ import RedditMarkdown from './RedditMarkdown';
  * @param {string} props.id - DB ID of static content.
  */
 function StaticContent({ className, id }) {
-  const { data } = useSwrContest(id);
+  const { data } = useSwrStaticContent(id);
   if (!data) {
     return null;
   }
