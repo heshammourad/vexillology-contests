@@ -45,9 +45,6 @@ HtmlWrapper.propTypes = {
 
 HtmlWrapper.defaultProps = {
   className: undefined,
-};
-
-HtmlWrapper.defaultProps = {
   html: '',
 };
 
