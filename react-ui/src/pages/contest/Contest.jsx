@@ -15,10 +15,10 @@ import { animateScroll } from 'react-scroll';
 
 import {
   EntryDescriptionDrawer,
-  HtmlWrapper,
   PageContainer,
   PageWithDrawer,
   RedditLogInDialog,
+  StaticContent,
 } from '../../components';
 import useSwrContest from '../../data/useSwrContest';
 
@@ -68,9 +68,12 @@ function Contest() {
 
   // Scroll to top when unmounted
   // For site-wide solution see https://reactrouter.com/en/main/components/scroll-restoration
-  useEffect(() => () => {
-    scrollInstantlyTo(0);
-  }, []);
+  useEffect(
+    () => () => {
+      scrollInstantlyTo(0);
+    },
+    [],
+  );
 
   // Check for elements in viewport when isLoaded changes
   useEffect(() => {
@@ -162,12 +165,7 @@ function Contest() {
   const { headingVariant } = useContestSizing();
 
   const {
-    categories,
-    isContestMode,
-    name,
-    subtext,
-    votingWindowOpen,
-    winners,
+    categories, isContestMode, name, votingWindowOpen, winners,
   } = contest;
 
   return (
@@ -180,7 +178,11 @@ function Contest() {
         right: <ContestAppBarRight {...{ toggleDrawerOpen, contest }} />,
         children: <ContestAppBarMain {...{ handleReload, contest }} />,
       }}
-      drawer={drawerEntryId ? { heading: 'Info', children: <EntryDescriptionDrawer entryId={drawerEntryId} /> } : { heading: 'Settings', children: <ContestSettings /> }}
+      drawer={
+        drawerEntryId
+          ? { heading: 'Info', children: <EntryDescriptionDrawer entryId={drawerEntryId} /> }
+          : { heading: 'Settings', children: <ContestSettings /> }
+      }
     >
       <ContestSponsor />
       {name && (
@@ -189,10 +191,10 @@ function Contest() {
             {name}
           </Typography>
           {votingWindowOpen === false && <ContestUnderReview {...{ isValidating, mutate }} />}
-          {isContestMode && subtext && (
+          {isContestMode && (
             <Box marginBottom={3}>
               <Typography component="div" variant="subtitle1">
-                <HtmlWrapper html={subtext} />
+                <StaticContent id="voting_instructions" />
               </Typography>
             </Box>
           )}
