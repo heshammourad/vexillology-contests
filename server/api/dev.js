@@ -120,21 +120,24 @@ exports.contest = async ({ body: { status }, username }, res) => {
               diversity of images, descriptions, etc
       */
       let entryVersions = [
-        { user: 'dev', name: 'Pending example', submission_status: 'pending' },
-        { user: 'dev', name: 'Withdrawn example', submission_status: 'withdrawn' },
+        { user: 'dev', name: 'Pending example 1', submission_status: 'pending' },
+        { user: username, name: 'Pending example 2', submission_status: 'pending' },
+        { user: 'dev', name: 'Withdrawn example 1', submission_status: 'withdrawn' },
+        { user: username, name: 'Withdrawn example 2', submission_status: 'withdrawn' },
         {
           user: 'dev', name: 'Approved example', submission_status: 'approved', modified_by: 'VertigoOne',
         },
         {
-          user: 'dev', name: 'Rejected example', submission_status: 'rejected', modified_by: 'VertigoOne', rejection_reason: 'Rejected because.',
-        },
-        { user: username, name: 'Pending example', submission_status: 'pending' },
-        { user: username, name: 'Withdrawn example', submission_status: 'withdrawn' },
-        {
-          user: username, name: 'Approved example', submission_status: 'approved', modified_by: 'VertigoOne',
+          user: 'dev', name: 'Approved example 2', submission_status: 'approved', modified_by: 'VertigoOne',
         },
         {
-          user: username, name: 'Rejected example', submission_status: 'rejected', modified_by: 'VertigoOne', rejection_reason: 'Rejected because.',
+          user: username, name: 'Approved example 3', submission_status: 'approved', modified_by: 'VertigoOne',
+        },
+        {
+          user: 'dev', name: 'Rejected example 1', submission_status: 'rejected', modified_by: 'VertigoOne', rejection_reason: 'Rejected because.',
+        },
+        {
+          user: username, name: 'Rejected example 2', submission_status: 'rejected', modified_by: 'VertigoOne', rejection_reason: 'Rejected because.',
         },
       ];
 
