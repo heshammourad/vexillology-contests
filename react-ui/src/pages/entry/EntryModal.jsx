@@ -182,10 +182,7 @@ function EntryModal() {
         return;
       default:
         if (key >= '0' && key <= '5') {
-          // ??? I would love it if we could track whether votes mobile or desktop
-          // ??? and if desktop, how many were keyed
-          // https://stackoverflow.com/questions/39435395/reactjs-how-to-determine-if-the-application-is-being-viewed-on-mobile-or-deskto
-          changeRating(parseInt(key, 10), entry?.rating, true);
+          changeRating(parseInt(key, 10), entry?.rating, /* isKeyed= */ true);
           indexChange = 1;
         }
         return;
