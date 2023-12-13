@@ -448,16 +448,19 @@ function SubmissionForm({
             <Typography variant="caption">Background color</Typography>
             <Stack direction="row" spacing={2}>
               {backgroundColors.map((color) => (
-                <Box
+                <Button
                   key={color}
-                  sx={{
-                    height: BACKGROUND_BOX_SIZE,
-                    width: BACKGROUND_BOX_SIZE,
-                    border: '1px solid black',
-                    backgroundColor: color,
-                  }}
                   onClick={() => setBackgroundColor(color)}
-                />
+                >
+                  <Box
+                    sx={{
+                      height: BACKGROUND_BOX_SIZE,
+                      width: BACKGROUND_BOX_SIZE,
+                      border: '1px solid black',
+                      backgroundColor: color,
+                    }}
+                  />
+                </Button>
               ))}
             </Stack>
           </div>
