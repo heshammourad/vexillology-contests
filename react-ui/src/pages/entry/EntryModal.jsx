@@ -183,7 +183,6 @@ function EntryModal() {
       default:
         if (key >= '0' && key <= '5') {
           changeRating(parseInt(key, 10), entry?.rating, /* isKeyed= */ true);
-          indexChange = 1;
         }
         return;
     }
