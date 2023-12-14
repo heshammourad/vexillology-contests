@@ -20,9 +20,9 @@ const DEV_VARIABLES = {
   // Triggers default reddit snoowrap, only for admin
   IS_UNAUTHENTICATED_VIEW: false,
   // Fetches the "dev" contest as the current frontpage contest
-  ALLOW_DEV_CONTEST: true,
+  ALLOW_DEV_CONTEST: false,
   // Ignore flags with pending status (so dev contest can enter voting or results status)
-  IGNORE_PENDING_DEV: true,
+  IGNORE_PENDING_DEV: false,
 };
 
 const DEV_ENV_EXPORT = Object.entries(DEV_VARIABLES).reduce((acc, [key, value]) => ({

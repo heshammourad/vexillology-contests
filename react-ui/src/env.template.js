@@ -10,7 +10,7 @@ const IS_DEV = NODE_ENV !== 'production';
 
 // Developer bar to quickly change database for frequent needs
 // Change mod status and create / change status of dev contest
-const VIEW_DEV_BAR = true && IS_DEV;
+const VIEW_DEV_BAR = false && IS_DEV;
 // Clear sticky cache
 const START_WITHOUT_CACHE = false && IS_DEV;
 
