@@ -7,8 +7,7 @@
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 
-import useAuthState from './useAuthState';
-import useCache from './useCache';
+import { useAuthState, useCache } from '../common';
 
 const REVALIDATION_DELAY = 200; // ms
 

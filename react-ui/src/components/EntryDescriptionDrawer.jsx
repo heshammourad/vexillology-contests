@@ -13,9 +13,9 @@ import PropTypes from 'prop-types';
 
 import {
   useIsTouchScreen,
-  useVotingStatus,
 } from '../common';
 import useSwrContest from '../data/useSwrContest';
+import useVotingStatus from '../data/useVotingStatus';
 
 import Average from './Average';
 import CategoryLabel from './CategoryLabel';

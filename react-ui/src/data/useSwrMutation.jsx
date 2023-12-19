@@ -1,6 +1,6 @@
 import useSWRMutation from 'swr/mutation';
 
-import useAuthState from './useAuthState';
+import { useAuthState } from '../common';
 
 /**
  * This callback type is called `apiFunction` and is displayed as a global symbol.

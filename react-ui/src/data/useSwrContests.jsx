@@ -2,7 +2,7 @@
  * Get all contests
  */
 
-import { useSwrAuth } from '../common';
+import useSwrAuth from './useSwrAuth';
 
 const useSwrContests = () => useSwrAuth('/contests');
 

@@ -11,8 +11,3 @@ export { default as useRedditLogIn } from './useRedditLogIn';
 export { default as useScrollState } from './useScrollState';
 export { default as useSettingsState } from './useSettingsState';
 export { default as useSnackbarState } from './useSnackbarState';
-export { default as useSwrAuth } from './useSwrAuth';
-export { default as useSwrData } from './useSwrData';
-export { default as useSwrMutation } from './useSwrMutation';
-export { default as useVoting } from './useVoting';
-export { default as useVotingStatus } from './useVotingStatus';

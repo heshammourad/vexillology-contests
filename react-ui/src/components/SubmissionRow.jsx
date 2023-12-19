@@ -28,10 +28,11 @@ import isToday from 'date-fns/isToday';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 
-import { useFormState, useSnackbarState, useSwrMutation } from '../common';
+import { useFormState, useSnackbarState } from '../common';
 import snackbarTypes from '../common/snackbarTypes';
 import types from '../common/types';
 import { putData } from '../data/api';
+import useSwrMutation from '../data/useSwrMutation';
 
 import Fieldset from './Fieldset';
 import RedditMarkdown from './RedditMarkdown';

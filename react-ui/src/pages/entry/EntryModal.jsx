@@ -19,7 +19,7 @@ import {
   useOutletContext,
 } from 'react-router-dom';
 
-import { useSettingsState, useVoting } from '../../common';
+import { useSettingsState } from '../../common';
 import {
   EntryDescriptionDrawer,
   PageWithDrawer,
@@ -27,6 +27,7 @@ import {
 } from '../../components';
 import useEntryId from '../../data/useEntryId';
 import useSwrContest from '../../data/useSwrContest';
+import useVoting from '../../data/useVoting';
 
 import EntryAppBarMain from './EntryAppBarMain';
 import EntryAppBarRight from './EntryAppBarRight';

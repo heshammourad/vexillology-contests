@@ -4,7 +4,7 @@
 
 import useSWR from 'swr';
 
-import { useAuthState } from '.';
+import { useAuthState } from '../common';
 
 const useSwrAuth = (path, options = {}) => {
   const [{ authTokens }] = useAuthState();

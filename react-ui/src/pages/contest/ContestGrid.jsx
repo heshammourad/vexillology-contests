@@ -16,7 +16,6 @@ import { useCallback, useMemo } from 'react';
 
 import {
   useSettingsState,
-  useVotingStatus,
 } from '../../common';
 import {
   Average,
@@ -28,6 +27,7 @@ import {
   VotingSlider,
 } from '../../components';
 import useSwrContest from '../../data/useSwrContest';
+import useVotingStatus from '../../data/useVotingStatus';
 
 import CardImageLink from './CardImageLink';
 import useContestSizing from './useContestSizing';
