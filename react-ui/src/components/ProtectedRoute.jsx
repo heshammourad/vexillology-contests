@@ -7,7 +7,8 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 
-import { useAuthState, useRedditLogIn } from '../common';
+import useAuthState from '../common/useAuthState';
+import useRedditLogIn from '../common/useRedditLogIn';
 
 import InternalLink from './InternalLink';
 import PageContainer from './PageContainer';

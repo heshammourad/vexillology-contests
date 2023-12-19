@@ -9,7 +9,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useNavigate } from 'react-router-dom';
 
-import { useAuthState } from '../common';
+import useAuthState from '../common/useAuthState';
 import { putData } from '../data/api';
 import useSwrContest from '../data/useSwrContest';
 import useSwrInit from '../data/useSwrInit';

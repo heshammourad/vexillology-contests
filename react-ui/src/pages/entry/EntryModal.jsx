@@ -19,7 +19,7 @@ import {
   useOutletContext,
 } from 'react-router-dom';
 
-import { useSettingsState } from '../../common';
+import useSettingsState from '../../common/useSettingsState';
 import {
   EntryDescriptionDrawer,
   PageWithDrawer,

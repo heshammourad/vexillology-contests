@@ -5,10 +5,8 @@
 import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 
-import {
-  useClientWidth,
-  useSettingsState,
-} from '../../common';
+import useClientWidth from '../../common/useClientWidth';
+import useSettingsState from '../../common/useSettingsState';
 
 const imageWidths = {
   default: {

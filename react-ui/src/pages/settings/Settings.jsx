@@ -6,8 +6,8 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { useLocation } from 'react-router-dom';
 
-import { useSnackbarState } from '../../common';
 import snackbarTypes from '../../common/snackbarTypes';
+import useSnackbarState from '../../common/useSnackbarState';
 import {
   CustomSwitch, Header, PageContainer, ProtectedRoute,
 } from '../../components';

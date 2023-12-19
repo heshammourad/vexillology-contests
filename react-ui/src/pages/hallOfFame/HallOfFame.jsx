@@ -16,7 +16,7 @@ import throttle from 'lodash/throttle';
 import { useState, useEffect } from 'react';
 import { Events, animateScroll } from 'react-scroll';
 
-import { useClientWidth } from '../../common';
+import useClientWidth from '../../common/useClientWidth';
 import { Header, PageContainer } from '../../components';
 import useSwrHallOfFame from '../../data/useSwrHallOfFame';
 import { VIEW_DEV_BAR } from '../../env';

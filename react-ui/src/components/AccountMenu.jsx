@@ -21,8 +21,9 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import { useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { useAuthState, useRedditLogIn } from '../common';
 import types from '../common/types';
+import useAuthState from '../common/useAuthState';
+import useRedditLogIn from '../common/useRedditLogIn';
 import { getData } from '../data/api';
 import useSwrInit from '../data/useSwrInit';
 

@@ -14,9 +14,7 @@ import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { useCallback, useMemo } from 'react';
 
-import {
-  useSettingsState,
-} from '../../common';
+import useSettingsState from '../../common/useSettingsState';
 import {
   Average,
   CategoryLabel,

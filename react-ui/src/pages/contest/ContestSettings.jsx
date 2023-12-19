@@ -10,9 +10,7 @@ import ListSubheader from '@material-ui/core/ListSubheader';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import { makeStyles } from '@material-ui/core/styles';
 
-import {
-  useSettingsState,
-} from '../../common';
+import useSettingsState from '../../common/useSettingsState';
 import {
   CustomRadio,
 } from '../../components';

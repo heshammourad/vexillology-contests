@@ -8,7 +8,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import { useAuthState, useRedditLogIn } from '../../common';
+import useAuthState from '../../common/useAuthState';
+import useRedditLogIn from '../../common/useRedditLogIn';
 import { PageContainer } from '../../components';
 import { getData } from '../../data/api';
 

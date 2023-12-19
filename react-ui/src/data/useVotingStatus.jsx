@@ -8,7 +8,7 @@ import differenceInMilliseconds from 'date-fns/differenceInMilliseconds';
 import isFuture from 'date-fns/isFuture';
 import { useEffect, useState } from 'react';
 
-import { useComponentsState } from '../common';
+import useComponentsState from '../common/useComponentsState';
 
 import useSwrContest from './useSwrContest';
 
