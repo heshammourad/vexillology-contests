@@ -5,7 +5,7 @@
 import { nanoid } from 'nanoid';
 import { useLocation } from 'react-router-dom';
 
-import useSwrInit from '../utils/useSwrInit';
+import useSwrInit from '../data/useSwrInit';
 
 import useAuthState from './useAuthState';
 

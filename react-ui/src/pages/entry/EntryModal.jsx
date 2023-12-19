@@ -25,8 +25,8 @@ import {
   PageWithDrawer,
   RedditLogInDialog,
 } from '../../components';
-import useEntryId from '../../utils/useEntryId';
-import useSwrContest from '../../utils/useSwrContest';
+import useEntryId from '../../data/useEntryId';
+import useSwrContest from '../../data/useSwrContest';
 
 import EntryAppBarMain from './EntryAppBarMain';
 import EntryAppBarRight from './EntryAppBarRight';

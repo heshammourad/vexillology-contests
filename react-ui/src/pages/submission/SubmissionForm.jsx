@@ -14,7 +14,6 @@ import debounce from 'lodash/debounce';
 import PropTypes from 'prop-types';
 import { useRef, useState } from 'react';
 
-import { postData } from '../../api';
 import {
   uploadFile,
   useAuthState,
@@ -30,7 +29,8 @@ import {
   RedditMarkdown,
   SpinnerButton,
 } from '../../components';
-import useSwrSubmission from '../../utils/useSwrSubmission';
+import { postData } from '../../data/api';
+import useSwrSubmission from '../../data/useSwrSubmission';
 
 import ComplianceCheckbox from './ComplianceCheckbox';
 

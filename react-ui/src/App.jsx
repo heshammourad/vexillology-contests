@@ -9,12 +9,13 @@ import {
 } from 'react-router-dom';
 import { SWRConfig } from 'swr';
 
-import { getData } from './api';
 import {
   AppHelmet,
   CustomSnackbar,
   CustomThemeProvider,
 } from './components';
+import localStorageProvider from './data/LocalStorageProvider';
+import { getData } from './data/api';
 import {
   AuthorizeCallback,
   Contest,
@@ -26,7 +27,6 @@ import {
   Settings,
   Submission,
 } from './pages';
-import localStorageProvider from './utils/LocalStorageProvider';
 
 function App() {
   return (

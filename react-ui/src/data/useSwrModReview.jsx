@@ -2,7 +2,7 @@
  * Fetch winning flags from each contest
  */
 
-import useSwrAuth from './useSwrAuth';
+import { useSwrAuth } from '../common';
 
 const useSwrModReview = () => useSwrAuth('/mod/reviewSubmissions');
 

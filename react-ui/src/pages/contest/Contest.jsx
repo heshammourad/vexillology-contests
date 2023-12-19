@@ -20,7 +20,7 @@ import {
   PageWithDrawer,
   RedditLogInDialog,
 } from '../../components';
-import useSwrContest from '../../utils/useSwrContest';
+import useSwrContest from '../../data/useSwrContest';
 
 import ContestAppBarMain from './ContestAppBarMain';
 import ContestAppBarRight from './ContestAppBarRight';

@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 
-import useSwrInit from '../utils/useSwrInit';
+import useSwrInit from '../data/useSwrInit';
 
 function Experiment({ children, name }) {
   const {

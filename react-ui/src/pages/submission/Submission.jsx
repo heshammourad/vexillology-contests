@@ -19,7 +19,7 @@ import {
   PageContainer,
   TabPanel,
 } from '../../components';
-import useSwrSubmission from '../../utils/useSwrSubmission';
+import useSwrSubmission from '../../data/useSwrSubmission';
 
 import SubmissionForm from './SubmissionForm';
 import SubmissionManage from './SubmissionManage';

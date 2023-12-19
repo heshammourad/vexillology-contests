@@ -18,8 +18,8 @@ import { Events, animateScroll } from 'react-scroll';
 
 import { useClientWidth } from '../../common';
 import { Header, PageContainer } from '../../components';
+import useSwrHallOfFame from '../../data/useSwrHallOfFame';
 import { VIEW_DEV_BAR } from '../../env';
-import useSwrHallOfFame from '../../utils/useSwrHallOfFame';
 
 import HallOfFameCard from './HallOfFameCard';
 

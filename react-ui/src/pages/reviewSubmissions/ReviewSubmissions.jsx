@@ -15,7 +15,7 @@ import {
   ProtectedRoute,
   SubmissionsTable,
 } from '../../components';
-import useSwrModReview from '../../utils/useSwrModReview';
+import useSwrModReview from '../../data/useSwrModReview';
 
 import StatusFilters from './StatusFilters';
 

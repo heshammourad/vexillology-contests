@@ -4,8 +4,8 @@
  * votingUnavailable: votingDisabled || votingExpired
  */
 
-import { deleteData, putData } from '../api';
-import useContestId from '../utils/useContestId';
+import { deleteData, putData } from '../data/api';
+import useContestId from '../data/useContestId';
 
 import snackbarTypes from './snackbarTypes';
 import useAuthState from './useAuthState';

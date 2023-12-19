@@ -9,11 +9,11 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useNavigate } from 'react-router-dom';
 
-import { putData } from '../api';
 import { useAuthState } from '../common';
+import { putData } from '../data/api';
+import useSwrContest from '../data/useSwrContest';
+import useSwrInit from '../data/useSwrInit';
 import { VIEW_DEV_BAR, START_WITHOUT_CACHE } from '../env';
-import useSwrContest from '../utils/useSwrContest';
-import useSwrInit from '../utils/useSwrInit';
 
 const contestStatus = ['prerelease', 'submission', 'review', 'voting', 'results'];
 

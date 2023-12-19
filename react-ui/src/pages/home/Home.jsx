@@ -17,8 +17,8 @@ import { FeatureBanner, SCREENS } from '../../common/FeatureBanner';
 import {
   AppBarDivided, CustomIconButton, ExternalLink, InternalLink,
 } from '../../components';
+import useSwrContests from '../../data/useSwrContests';
 import logo from '../../images/logo.png';
-import useSwrContests from '../../utils/useSwrContests';
 
 const useStyles = makeStyles((theme) => ({
   contestName: {

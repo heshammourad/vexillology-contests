@@ -7,7 +7,7 @@
  * * webAppClientId
  */
 
-import useSwrAuth from './useSwrAuth';
+import { useSwrAuth } from '../common';
 
 // Limit '/init' network calls to >10 minute intervals
 const DEDUPING_INTERVAL = 600000;

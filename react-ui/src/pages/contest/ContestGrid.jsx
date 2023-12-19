@@ -27,7 +27,7 @@ import {
   RedditUserAttribution,
   VotingSlider,
 } from '../../components';
-import useSwrContest from '../../utils/useSwrContest';
+import useSwrContest from '../../data/useSwrContest';
 
 import CardImageLink from './CardImageLink';
 import useContestSizing from './useContestSizing';

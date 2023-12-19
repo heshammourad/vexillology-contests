@@ -4,8 +4,9 @@
 
 import { useEffect } from 'react';
 
+import { useSwrAuth } from '../common';
+
 import useContestId from './useContestId';
-import useSwrAuth from './useSwrAuth';
 
 // revalidateIfStale = false
 const useSwrContest = (overrideId, revalidateOnMount = false) => {

@@ -4,7 +4,7 @@
 
 [react-ui folder](/react-ui/)
 
-[api subfolder](/react-ui/api) for get, post, put, and delete
+[api subfolder](/react-ui/data/api) for get, post, put, and delete
 [common subfolder](/react-ui/common)
 [components subfolder](/react-ui/components) for reusable or abstracted logic and elements
 [images subfolder](/react-ui/images) for website assets

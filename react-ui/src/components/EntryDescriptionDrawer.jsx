@@ -15,7 +15,7 @@ import {
   useIsTouchScreen,
   useVotingStatus,
 } from '../common';
-import useSwrContest from '../utils/useSwrContest';
+import useSwrContest from '../data/useSwrContest';
 
 import Average from './Average';
 import CategoryLabel from './CategoryLabel';

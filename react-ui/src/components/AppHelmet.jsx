@@ -9,7 +9,7 @@ import { Helmet } from 'react-helmet';
 import { useLocation } from 'react-router-dom';
 
 import { useComponentsState } from '../common';
-import useSwrInit from '../utils/useSwrInit';
+import useSwrInit from '../data/useSwrInit';
 
 function AppHelmet() {
   const {
