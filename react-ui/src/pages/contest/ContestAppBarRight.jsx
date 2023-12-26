@@ -8,18 +8,13 @@ import ThumbsUpDownOutlinedIcon from '@material-ui/icons/ThumbsUpDownOutlined';
 import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
 
-import {
-  CustomIconButton,
-} from '../../components';
+import { CustomIconButton } from '../../components';
 
 export default function ContestAppBarRight({ toggleDrawerOpen, contest }) {
   const { contestId } = useParams();
 
   const {
-    localVoting,
-    name,
-    validRedditId,
-    winnersThreadId,
+    localVoting, name, validRedditId, winnersThreadId,
   } = contest;
 
   if (!name) {
@@ -53,16 +48,16 @@ export default function ContestAppBarRight({ toggleDrawerOpen, contest }) {
 
 ContestAppBarRight.propTypes = {
   toggleDrawerOpen: PropTypes.func,
-  contest: {
+  contest: PropTypes.shape({
     localVoting: PropTypes.bool,
     name: PropTypes.string,
     validRedditId: PropTypes.bool,
     winnersThreadId: PropTypes.string,
-  },
+  }),
 };
 
 ContestAppBarRight.defaultProps = {
-  toggleDrawerOpen: () => { },
+  toggleDrawerOpen: () => {},
   contest: {
     localVoting: true,
     name: undefined,
