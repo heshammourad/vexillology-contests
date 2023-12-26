@@ -16,19 +16,11 @@ const logger = createLogger('API/STATIC_CONTENT');
  */
 exports.get = async ({ params: { id } }, res) => {
   try {
-    let markdown = false;
-    const content = await memcache.get(`sc/${id}`, async () => {
-      const [result = {}] = await db.select('SELECT url, markdown FROM static_content WHERE id = $1', [id]);
-
-      const { url } = result;
-      if (!url) {
-        return null;
-      }
-      markdown = result.markdown;
-
-      const { data } = await axios.get(url);
-      return data;
-    });
+    const [result = {}] = await db.select(
+      'SELECT content, markdown FROM static_content WHERE id = $1',
+      [id],
+    );
+    const { content, markdown } = result;
     if (!content) {
       logger.info(`Static content with id='${id}' not found`);
       res.status(404).send();
