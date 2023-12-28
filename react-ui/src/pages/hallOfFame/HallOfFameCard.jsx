@@ -24,10 +24,13 @@ import {
 } from '../../components';
 import flair from '../../images/flair.png';
 
-const useStyles = makeStyles((theme) => {
-  const FLAIR_START_YEAR = 2015;
-  const FLAIR_WIDTH = 25;
+// The first year available in /images/flair.png.
+const FLAIR_START_YEAR = 2015;
+// The last year available in /images/flair.png.
+const FLAIR_END_YEAR = 2022;
+const FLAIR_WIDTH = 25;
 
+const useStyles = makeStyles((theme) => {
   const styles = {
     bestOfYear: {
       '&::after': {
@@ -66,10 +69,24 @@ const useStyles = makeStyles((theme) => {
       transform: 'rotate(180deg)',
     },
   };
-  for (let i = FLAIR_START_YEAR; i <= 2022; i += 1) {
-    const offset = (i - FLAIR_START_YEAR) * FLAIR_WIDTH;
-    styles[`bestOfYear${i}`] = { '&::after': { backgroundPosition: `-${offset}px 0` } };
+
+  const currentYear = getYear(new Date());
+  for (let i = FLAIR_START_YEAR; i <= currentYear; i += 1) {
+    const style = {};
+    if (i <= FLAIR_END_YEAR) {
+      // If the flair is available in images/flair.png, set the horizontal offset.
+      const offset = (i - FLAIR_START_YEAR) * FLAIR_WIDTH;
+      style.backgroundPosition = `-${offset}px 0`;
+    } else {
+      // If the flair is not available, use year text instead.
+      style.background = 'none';
+      style.content = `"${i}"`;
+      style.verticalAlign = 0;
+    }
+
+    styles[`bestOfYear${i}`] = { '&::after': style };
   }
+
   return styles;
 });
 
