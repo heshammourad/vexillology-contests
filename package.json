@@ -8,7 +8,7 @@
   "scripts": {
     "start": "node server",
     "build": "cd react-ui/ && npm install && npm run build",
-    "heroku": "nodemon -L --exec \"heroku local\" --signal SIGTERM",
+    "heroku": "nodemon -L --exec \"heroku local\" --signal SIGTERM -- --port 5000",
     "prepare": "husky install"
   },
   "cacheDirectories": [
