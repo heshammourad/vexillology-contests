@@ -48,6 +48,7 @@ const useStyles = makeStyles((theme) => {
     },
     card: {
       marginTop: theme.spacing(3),
+      position: 'relative',
     },
     cardContent: {
       flex: 1,

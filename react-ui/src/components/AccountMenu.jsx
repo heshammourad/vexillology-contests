@@ -22,8 +22,9 @@ import { useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { getData } from '../api';
-import { useAuthState, useRedditLogIn, useSwrData } from '../common';
+import { useAuthState, useRedditLogIn } from '../common';
 import types from '../common/types';
+import useSwrInit from '../utils/useSwrInit';
 
 import CustomBadge from './CustomBadge';
 import MenuItemLink from './MenuItemLink';
@@ -50,12 +51,12 @@ function AccountMenu({ color }) {
   const { pathname } = useLocation();
   const classes = useStyles();
 
-  const [{ isLoggedIn, refreshToken, username }, setAuthState] = useAuthState();
+  const [{ isLoggedIn, authTokens: { refreshToken }, username }, setAuthState] = useAuthState();
   const sendUserToAuthUrl = useRedditLogIn();
 
   const {
     data: { moderator, submissionsToReview },
-  } = useSwrData('/init');
+  } = useSwrInit();
 
   const toggleMenu = () => {
     setMenuOpen((prevOpen) => !prevOpen);

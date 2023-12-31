@@ -8,7 +8,6 @@ import countBy from 'lodash/countBy';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { useSwrData } from '../../common';
 import {
   CustomIconButton,
   Header,
@@ -16,10 +15,9 @@ import {
   ProtectedRoute,
   SubmissionsTable,
 } from '../../components';
+import useSwrModReview from '../../utils/useSwrModReview';
 
 import StatusFilters from './StatusFilters';
-
-const API_PATH = '/mod/reviewSubmissions';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -40,7 +38,8 @@ const useStyles = makeStyles((theme) => ({
 function ReviewSubmissions() {
   const {
     data: { name: contestName, submissions = [], userBreakdown = {} },
-  } = useSwrData(API_PATH);
+    error,
+  } = useSwrModReview();
   const { state } = useLocation();
   const [selectedChips, setSelectedChips] = useState({});
   const [selectedUsers, setSelectedUsers] = useState({});
@@ -120,7 +119,7 @@ You have more than 2 entries in this month's contest. Can you please let us know
       <Header position="static" to={state?.back ?? '/home'}>
         Review Submissions
       </Header>
-      <ProtectedRoute moderatorPath={API_PATH}>
+      <ProtectedRoute errorStatus={error?.response?.status}>
         <PageContainer>
           <Typography className={classes.header} component="h1" variant="h5">
             {contestName}

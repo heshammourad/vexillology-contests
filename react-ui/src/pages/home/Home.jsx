@@ -12,13 +12,13 @@ import FacebookIcon from '@material-ui/icons/Facebook';
 import TwitterIcon from '@material-ui/icons/Twitter';
 import { useLocation } from 'react-router-dom';
 
-import { useSwrData } from '../../common';
 // eslint-disable-next-line no-restricted-imports
 import { FeatureBanner, SCREENS } from '../../common/FeatureBanner';
 import {
   AppBarDivided, CustomIconButton, ExternalLink, InternalLink,
 } from '../../components';
 import logo from '../../images/logo.png';
+import useSwrContests from '../../utils/useSwrContests';
 
 const useStyles = makeStyles((theme) => ({
   contestName: {
@@ -82,7 +82,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Home() {
-  const { data: contests } = useSwrData('/contests');
+  const { data: contests } = useSwrContests();
   const location = useLocation();
 
   const classes = useStyles();

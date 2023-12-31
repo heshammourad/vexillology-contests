@@ -16,8 +16,8 @@ import groupBy from 'lodash/groupBy';
 import { Fragment, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { useSwrData } from '../../common';
 import { Header, ListItemLink } from '../../components';
+import useSwrContests from '../../utils/useSwrContests';
 
 const useStyles = makeStyles((theme) => ({
   list: {
@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Contests() {
-  const { data: contests } = useSwrData('/contests');
+  const { data: contests } = useSwrContests();
   const { pathname, state = {} } = useLocation();
 
   const [openYear, setOpenYear] = useState(null);

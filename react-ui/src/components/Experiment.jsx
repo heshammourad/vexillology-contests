@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types';
 
-import { useSwrData } from '../common';
+import useSwrInit from '../utils/useSwrInit';
 
 function Experiment({ children, name }) {
   const {
     data: { experiments = {} },
-  } = useSwrData('/init');
+  } = useSwrInit();
   return experiments[name] ? children : null;
 }
 

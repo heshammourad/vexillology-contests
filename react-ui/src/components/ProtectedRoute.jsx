@@ -7,7 +7,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 
-import { useAuthState, useRedditLogIn, useSwrData } from '../common';
+import { useAuthState, useRedditLogIn } from '../common';
 
 import InternalLink from './InternalLink';
 import PageContainer from './PageContainer';
@@ -30,9 +30,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function ProtectedRoute({
-  children, message, moderatorPath, showCancel,
+  children, message, errorStatus, showCancel,
 }) {
-  const { error } = useSwrData(moderatorPath);
   const [{ isLoggedIn }] = useAuthState();
   const sendUserToAuthUrl = useRedditLogIn();
 
@@ -58,7 +57,7 @@ function ProtectedRoute({
     );
   }
 
-  if (error?.response?.status === 403) {
+  if (errorStatus === 403) {
     return (
       <PageContainer className={classes.container}>
         <Typography className={classes.message}>Must be a moderator to access page</Typography>
@@ -73,13 +72,13 @@ function ProtectedRoute({
 ProtectedRoute.propTypes = {
   children: PropTypes.node.isRequired,
   message: PropTypes.string,
-  moderatorPath: PropTypes.string,
+  errorStatus: PropTypes.number,
   showCancel: PropTypes.bool,
 };
 
 ProtectedRoute.defaultProps = {
   message: 'You must be logged in to view this page',
-  moderatorPath: null,
+  errorStatus: undefined,
   showCancel: true,
 };
 

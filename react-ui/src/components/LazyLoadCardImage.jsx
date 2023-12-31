@@ -35,6 +35,7 @@ function LazyLoadCardImage({
           image={image}
           height={maxHeight}
           onLoad={() => setLoaded(true)}
+          onError={() => setLoaded(true)}
         />
         {!isLoaded && (
           <Box sx={{

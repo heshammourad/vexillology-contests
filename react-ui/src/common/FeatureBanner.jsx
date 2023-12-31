@@ -117,7 +117,10 @@ function FeatureBanner({ screenOverride }) {
             <Typography className={clsx(classes.monthYear)}>{monthYear}</Typography>
             {
               bullets.map(({ isBold = false, text }) => (
-                <Typography className={clsx(classes.bullet, { [classes.isBold]: isBold })}>
+                <Typography
+                  key={text}
+                  className={clsx(classes.bullet, { [classes.isBold]: isBold })}
+                >
                   {'-  '}
                   {text}
                 </Typography>

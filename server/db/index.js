@@ -97,9 +97,23 @@ const update = async (table, data, columns, returning = []) => {
   return result;
 };
 
+// const upsert = async (table, rowArray, keys) => {
+//   const columns = Object.keys(rowArray[0]);
+//   const values = rowArray.map((row) => `(${columns.map((col) => `'${row[col]}'`).join(', ')})`).join(', ');
+//   const pk = keys.join(', ');
+//   const set = columns.map((col) => `${col} = EXCLUDED.${col}`).join(', ');
+//   return db.manyOrNone(`
+//     INSERT INTO ${table} (${columns.join(', ')})
+//     VALUES ${values}
+//     ON CONFLICT (${pk})
+//     DO UPDATE SET ${set};
+//   `);
+// };
+
 module.exports = {
   del,
   insert,
   select,
   update,
+  any: db.any,
 };

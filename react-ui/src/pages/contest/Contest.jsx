@@ -9,14 +9,10 @@ import clsx from 'clsx';
 import { useState, useEffect, useCallback } from 'react';
 import { forceCheck } from 'react-lazyload';
 import {
-  Outlet, useLocation, useNavigate, useParams,
+  Outlet, useLocation, useNavigate,
 } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
 
-import {
-  useCache,
-  useSwrData,
-} from '../../common';
 import {
   EntryDescriptionDrawer,
   HtmlWrapper,
@@ -24,6 +20,7 @@ import {
   PageWithDrawer,
   RedditLogInDialog,
 } from '../../components';
+import useSwrContest from '../../utils/useSwrContest';
 
 import ContestAppBarMain from './ContestAppBarMain';
 import ContestAppBarRight from './ContestAppBarRight';
@@ -54,16 +51,9 @@ const useStyles = makeStyles((theme) => ({
 
 function Contest() {
   const navigate = useNavigate();
-  const { contestId } = useParams();
   const classes = useStyles();
 
-  const apiPath = `/contests/${contestId}`;
-  const { data: contest, isValidating, mutate } = useSwrData(apiPath, false);
-  const updateCache = useCache(apiPath)[1];
-
-  if (contest?.submissionWindowOpen) {
-    navigate('/submission', { replace: true });
-  }
+  const { data: contest, isValidating, mutate } = useSwrContest();
 
   const location = useLocation();
   const { state = {} } = location;
@@ -71,7 +61,10 @@ function Contest() {
   const [selectedCategories, setSelectedCategories] = useState(state?.selectedCategories ?? []);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerEntryId, setDrawerEntryId] = useState(null);
-  const [votingExpired, setVotingExpired] = useState(false);
+
+  if (contest?.submissionWindowOpen) {
+    navigate('/submission', { replace: true });
+  }
 
   // Scroll to top when unmounted
   // For site-wide solution see https://reactrouter.com/en/main/components/scroll-restoration
@@ -87,36 +80,9 @@ function Contest() {
   useEffect(() => {
     // Clear cache if the voting window is still closed to force fetch again on next visit
     if (contest.votingWindowOpen === false) {
-      updateCache(null);
+      mutate();
     }
   }, [contest.votingWindowOpen]);
-
-  // ??? WHAT ELSE CAN BE REMOVED HERE?
-  // useEffect(() => {
-  // instead of isLoaded, I think we can just use contest.name
-  // if (!contest.name) {
-  //   return;
-  // }
-  // const { entryId } = scroll;
-  // const { scrollY } = state || {};
-  // if (!entryId && !scrollY) {
-  //   return;
-  // }
-  // }, [state, contest]);
-
-  // forceCheck elements in viewport when selectedCategories changes
-  useEffect(() => {
-    forceCheck();
-    window.history.pushState(
-      { usr: { ...window.history.state?.usr, selectedCategories } },
-      document.title,
-    );
-  }, [selectedCategories]);
-
-  const handleVotingExpired = useCallback(() => {
-    updateCache(null);
-    setVotingExpired(true);
-  }, []);
 
   const handleReload = useCallback(() => {
     scrollInstantlyTo(0);
@@ -212,7 +178,7 @@ function Contest() {
         className: classes.icon,
         color: 'default',
         right: <ContestAppBarRight {...{ toggleDrawerOpen, contest }} />,
-        children: <ContestAppBarMain {...{ handleVotingExpired, handleReload, contest }} />,
+        children: <ContestAppBarMain {...{ handleReload, contest }} />,
       }}
       drawer={drawerEntryId ? { heading: 'Info', children: <EntryDescriptionDrawer entryId={drawerEntryId} /> } : { heading: 'Settings', children: <ContestSettings /> }}
     >
@@ -236,7 +202,6 @@ function Contest() {
             {...{
               selectedCategories,
               setDrawer,
-              votingExpired,
             }}
           />
         </PageContainer>

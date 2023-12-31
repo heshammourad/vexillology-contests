@@ -14,6 +14,7 @@ export const objects = {
     className: string,
     color,
     isElevationScroll: bool,
+    isModal: bool,
     position: oneOf(['absolute', 'fixed', 'relative', 'static', 'sticky']),
     right: node,
   },
@@ -26,6 +27,7 @@ export const defaultProps = {
     className: undefined,
     color: 'primary',
     isElevationScroll: false,
+    isModal: false,
     position: 'fixed',
     right: null,
   },
@@ -35,6 +37,7 @@ const types = {
   AppBar: shape({ ...objects.AppBar }),
   color,
   submission: shape({
+    backgroundColor: oneOf(['#000000', '#FFFFFF', '#4B91E3']),
     category: string,
     description: string,
     id: string,
