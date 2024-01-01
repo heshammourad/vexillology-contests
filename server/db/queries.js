@@ -9,7 +9,7 @@ const db = require('.');
 
 exports.getCategories = async (contestId) => {
   const categories = await db.select(
-    'SELECT category FROM contest_categories WHERE contest_id = $1 ORDER BY "order", category',
+    'SELECT category FROM contest_categories WHERE contest_id = $1 ORDER BY sort_order, category',
     [contestId],
   );
   return categories.map(({ category }) => category);
