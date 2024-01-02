@@ -5,15 +5,16 @@
 import { nanoid } from 'nanoid';
 import { useLocation } from 'react-router-dom';
 
+import useSwrInit from '../utils/useSwrInit';
+
 import useAuthState from './useAuthState';
-import useSwrData from './useSwrData';
 
 const useRedditLogIn = () => {
   const { pathname } = useLocation();
   const setAuthState = useAuthState()[1];
   const {
     data: { webAppClientId },
-  } = useSwrData('/init');
+  } = useSwrInit();
 
   const sendUserToAuthUrl = ({ stateValues = {} } = {}) => {
     const nonce = nanoid();

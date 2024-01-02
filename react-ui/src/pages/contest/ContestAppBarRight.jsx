@@ -53,12 +53,12 @@ export default function ContestAppBarRight({ toggleDrawerOpen, contest }) {
 
 ContestAppBarRight.propTypes = {
   toggleDrawerOpen: PropTypes.func,
-  contest: {
+  contest: PropTypes.shape({
     localVoting: PropTypes.bool,
     name: PropTypes.string,
     validRedditId: PropTypes.bool,
     winnersThreadId: PropTypes.string,
-  },
+  }),
 };
 
 ContestAppBarRight.defaultProps = {

@@ -7,12 +7,15 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import RedditIcon from '@material-ui/icons/Reddit';
+import Alert from '@mui/material/Alert';
 import differenceInDays from 'date-fns/differenceInDays';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
 
-import { useCache, useComponentsState, useSwrData } from '../common';
+import {
+  useIsTouchScreen,
+  useVotingStatus,
+} from '../common';
+import useSwrContest from '../utils/useSwrContest';
 
 import Average from './Average';
 import CategoryLabel from './CategoryLabel';
@@ -59,17 +62,14 @@ function EntryDescriptionDrawer({ entryId }) {
     return null;
   }
 
-  const [{ votingDisabled }, setComponentsState] = useComponentsState();
-  const [votingExpired, setVotingExpired] = useState(false);
+  const { voteEndDate } = useVotingStatus();
+  const isTouchScreen = useIsTouchScreen();
 
-  const { contestId } = useParams();
-  const apiPath = `/contests/${contestId}`;
   const {
     data: {
-      categories, entries = [], isContestMode, localVoting, voteEnd, winners = [],
+      categories, entries = [], isContestMode, localVoting, winners = [],
     },
-  } = useSwrData(apiPath, false);
-  const updateCache = useCache[1];
+  } = useSwrContest();
   const {
     average,
     category,
@@ -90,13 +90,6 @@ function EntryDescriptionDrawer({ entryId }) {
   const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${imageSrc}`;
   const redditPermalink = `https://www.reddit.com${permalink}`;
   const showRank = localVoting && !!rank;
-  const voteEndDate = new Date(voteEnd);
-  const votingUnavailable = votingDisabled || votingExpired;
-
-  const handleVotingExpired = () => {
-    updateCache(null);
-    setVotingExpired(true);
-  };
 
   const classes = useStyles();
   return (
@@ -124,16 +117,19 @@ function EntryDescriptionDrawer({ entryId }) {
       )}
       {isContestMode ? (
         <>
+          {!isTouchScreen && (
+            <Alert severity="info">
+              You can now vote by typing 0-5 on your keyboard, or type c to clear your vote.
+            </Alert>
+          )}
           <DrawerSectionHeader>Submit Vote</DrawerSectionHeader>
           {!differenceInDays(voteEndDate, new Date()) && (
-            <Countdown endDate={voteEndDate} fontSize="small" handleExpiry={handleVotingExpired} />
+            <Countdown endDate={voteEndDate} fontSize="small" />
           )}
           <Box className={classes.votingContainer} alignItems="center" display="flex">
             <VotingSlider
-              disabled={votingUnavailable}
               entryId={imgurId ?? id}
               rating={rating}
-              setComponentsState={setComponentsState}
             />
           </Box>
         </>

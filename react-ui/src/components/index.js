@@ -13,6 +13,7 @@ export { default as CustomThemeProvider } from './CustomThemeProvider';
 export { default as DrawerSectionHeader } from './DrawerSectionHeader';
 export { default as ElevationScroll } from './ElevationScroll';
 export { default as EntryDescriptionDrawer } from './EntryDescriptionDrawer';
+export { default as DevBar } from './DevBar';
 export { default as Experiment } from './Experiment';
 export { default as ExternalLink } from './ExternalLink';
 export { default as Fieldset } from './Fieldset';

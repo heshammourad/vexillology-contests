@@ -207,6 +207,7 @@ const updateSubmissions = (currentData, response) => {
  * @param props
  * @param {boolean} props.moderator - Whether to display to a moderator or a regular user. Affects
  *  whether moderator controls are displayed.
+ * @param {string} [props.submission.backgroundColor] - See types.js
  * @param {string} [props.submission.category]
  * @param {string} props.submission.description
  * @param {id} props.submission.id
@@ -228,6 +229,7 @@ const updateSubmissions = (currentData, response) => {
 function SubmissionRow({
   moderator,
   submission: {
+    backgroundColor = 'transparent',
     category,
     description,
     id,
@@ -443,7 +445,14 @@ function SubmissionRow({
         <TableCell align="center" className={classes.previewImage}>
           {isSmUp && (
             <div className={classes.imageContainer}>
-              {!open && <img className={classes.image} alt="" src={imagePath} />}
+              {!open && (
+                <img
+                  className={classes.image}
+                  alt=""
+                  src={imagePath}
+                  style={{ border: `2px solid ${backgroundColor}` }}
+                />
+              )}
             </div>
           )}
         </TableCell>
@@ -468,7 +477,12 @@ function SubmissionRow({
           <Collapse in={open} timeout="auto" unmountOnExit className={classes.expandedRow}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6} md={4}>
-                <img className={classes.expandedImage} alt="" src={imagePath} />
+                <img
+                  className={classes.expandedImage}
+                  alt=""
+                  src={imagePath}
+                  style={{ border: `5px solid ${backgroundColor}` }}
+                />
                 {dropFields && fields}
               </Grid>
               {!dropFields && (

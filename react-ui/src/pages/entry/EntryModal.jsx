@@ -14,18 +14,19 @@ import {
   useEffect, useMemo, useRef, useState,
 } from 'react';
 import {
-  useParams,
   useLocation,
   useNavigate,
   useOutletContext,
 } from 'react-router-dom';
 
-import { useSettingsState, useSwrData } from '../../common';
+import { useSettingsState, useVoting } from '../../common';
 import {
   EntryDescriptionDrawer,
   PageWithDrawer,
   RedditLogInDialog,
 } from '../../components';
+import useEntryId from '../../utils/useEntryId';
+import useSwrContest from '../../utils/useSwrContest';
 
 import EntryAppBarMain from './EntryAppBarMain';
 import EntryAppBarRight from './EntryAppBarRight';
@@ -34,12 +35,13 @@ import NavigateIconButton from './NavigateIconButton';
 const calculateImageContainerHeight = (offset) => `calc(100vh - ${offset}px)`;
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    backgroundColor: theme.palette.common.black,
-  },
-  appBar: {
-    backgroundColor: 'inherit',
-  },
+  root: (props) => ({
+    backgroundColor: props?.backgroundColor || theme.palette.common.black,
+  }),
+  appBar: (props) => ({
+    backgroundColor: props?.backgroundColor || theme.palette.common.black,
+    color: props?.backgroundColor === '#FFFFFF' ? theme.palette.common.black : theme.palette.common.white,
+  }),
   clickActive: {
     cursor: 'pointer',
   },
@@ -73,12 +75,6 @@ const useStyles = makeStyles((theme) => ({
 
 function EntryModal() {
   /**
-   * Layout
-   */
-  const classes = useStyles();
-  const imageContainerRef = useRef(null);
-
-  /**
    * AppBar
    */
   const redditCommentButtonRef = useRef(null);
@@ -104,9 +100,8 @@ function EntryModal() {
   /**
    * Entries
    */
-  const { contestId, entryId } = useParams();
-  const apiPath = `/contests/${contestId}`;
-  const { data } = useSwrData(apiPath, false);
+  const entryId = useEntryId();
+  const { data } = useSwrContest();
   const {
     entries = [],
     winners = [],
@@ -122,8 +117,15 @@ function EntryModal() {
   };
 
   /**
-   * Navigation
+  * Layout
+  */
+  const classes = useStyles(entry);
+  const imageContainerRef = useRef(null);
+
+  /**
+   * Navigation and voting
    */
+  const { changeRating, clearRating } = useVoting(entryId, 'EntryModal');
   const navigate = useNavigate();
   const { selectedCategories = [] } = useOutletContext();
   const { state = {} } = useLocation();
@@ -159,9 +161,6 @@ function EntryModal() {
 
   const handleKeyUp = ({ key }) => {
     let indexChange = 0;
-    if (key >= '0' && key <= '5') {
-      return;
-    }
     switch (key) {
       case 'ArrowLeft':
         indexChange = -1;
@@ -179,9 +178,12 @@ function EntryModal() {
         redditCommentButtonRef.current.click();
         return;
       case 'c':
-        // clear vote?
+        clearRating();
         return;
       default:
+        if (key >= '0' && key <= '5') {
+          changeRating(parseInt(key, 10), entry?.rating, /* isKeyed= */ true);
+        }
         return;
     }
     handleNavigate(indexChange);
@@ -197,7 +199,7 @@ function EntryModal() {
     return () => {
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, []);
+  }, [handleKeyUp]);
 
   useEffect(() => {
     const allEntries = [...winners, ...entries].filter(
@@ -296,6 +298,7 @@ function EntryModal() {
         <PageWithDrawer
           handleClose={handleDrawerClose}
           isOpen={isEntryDrawerOpen}
+          isModal
           className={classes.root}
           appBar={{
             position: 'fixed',

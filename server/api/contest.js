@@ -7,13 +7,12 @@
 const { isBefore, isFuture, isPast } = require('date-fns');
 const keyBy = require('lodash/keyBy');
 const partition = require('lodash/partition');
-const shuffle = require('lodash/shuffle');
 const numeral = require('numeral');
 const { v4: uuidv4 } = require('uuid');
 
 const db = require('../db');
 const { getCategories, getVoteDates } = require('../db/queries');
-const { CONTEST_ENV_LEVEL } = require('../env');
+const { CONTEST_ENV_LEVEL, IGNORE_PENDING_DEV } = require('../env');
 const imgur = require('../imgur');
 const { createLogger } = require('../logger');
 const memcache = require('../memcache');
@@ -277,7 +276,6 @@ exports.get = async ({ params: { id }, username }, res) => {
         logger.error(`Unable to update db: ${err}`);
       }
     }
-
     const [{ now, voteStart, voteEnd }] = await getVoteDates(id);
     if (voteStart && voteEnd) {
       response.isContestMode = isBefore(now, voteEnd);
@@ -287,12 +285,12 @@ exports.get = async ({ params: { id }, username }, res) => {
 
     if (submissionStart) {
       if (isFuture(submissionStart)) {
-        res.status(404).send();
+        res.status(404).send(id === 'dev' ? { name } : {});
         return;
       }
 
       if (isFuture(submissionEnd)) {
-        res.send({ submissionWindowOpen: true });
+        res.send({ submissionWindowOpen: true, name });
         return;
       }
 
@@ -310,13 +308,14 @@ exports.get = async ({ params: { id }, username }, res) => {
       }
 
       const pendingEntries = await queryEntries('*', 'pending');
-      if (pendingEntries.length) {
+      if (pendingEntries.length && !IGNORE_PENDING_DEV) {
         res.send(votingNotOpenResponse);
         return;
       }
 
       response.entries = await queryEntries(
         `ce.category,
+         e.background_color,
          e.description,
          e.height,
          e.id,
@@ -356,7 +355,7 @@ exports.get = async ({ params: { id }, username }, res) => {
       );
       logger.debug(`${username} votes on ${id}: '${JSON.stringify(votes)}'`);
 
-      const entriesObj = keyBy(response.entries, response.entries[0].imgurId ? 'imgurId' : 'id');
+      const entriesObj = keyBy(response.entries, response.entries[0]?.imgurId ? 'imgurId' : 'id');
       votes.forEach(({ entryId, rating }) => {
         if (!entriesObj[entryId]) {
           return;
@@ -368,7 +367,25 @@ exports.get = async ({ params: { id }, username }, res) => {
     }
 
     if (response.isContestMode && !winnersThreadId) {
-      response.entries = shuffle(response.entries.map(({ rank, user, ...entry }) => entry)).sort(
+      /**
+       * Reproducible yet random hash function
+       * Concatenates username and entryId for distinct hash
+       * @param {string} entryId
+       * @returns {int}
+       */
+      const getHash = (entryId) => {
+        const seed = username + entryId;
+        let hash = 0;
+        for (let i = 0; i < seed.length; i += 1) {
+          // eslint-disable-next-line no-bitwise
+          hash = (hash << 5) - hash + seed.charCodeAt(i);
+          // eslint-disable-next-line no-bitwise
+          hash |= 0; // Convert to 32bit integer
+        }
+        return hash;
+      };
+
+      response.entries = response.entries.map(({ rank, user, ...entry }) => entry).sort(
         (a, b) => {
           if (a.rating > -1 && b.rating === undefined) {
             return 1;
@@ -376,10 +393,10 @@ exports.get = async ({ params: { id }, username }, res) => {
           if (b.rating > -1 && a.rating === undefined) {
             return -1;
           }
-          if (a.rating === undefined && b.rating === undefined) {
-            return 0;
+          if (b.rating !== a.rating) {
+            return b.rating - a.rating;
           }
-          return b.rating - a.rating;
+          return getHash(b.id) - getHash(a.id);
         },
       );
     } else if (localVoting) {
@@ -417,7 +434,6 @@ exports.get = async ({ params: { id }, username }, res) => {
         response.winners = winners.sort((a, b) => a.rank - b.rank);
       }
     }
-
     res.send(response);
   } catch (err) {
     logger.error(`Error getting /contest/${id}: ${err}`);

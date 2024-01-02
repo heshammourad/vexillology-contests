@@ -10,7 +10,11 @@ import {
 import { SWRConfig } from 'swr';
 
 import { getData } from './api';
-import { AppHelmet, CustomSnackbar, CustomThemeProvider } from './components';
+import {
+  AppHelmet,
+  CustomSnackbar,
+  CustomThemeProvider,
+} from './components';
 import {
   AuthorizeCallback,
   Contest,
@@ -22,6 +26,7 @@ import {
   Settings,
   Submission,
 } from './pages';
+import localStorageProvider from './utils/LocalStorageProvider';
 
 function App() {
   return (
@@ -31,6 +36,7 @@ function App() {
         <SWRConfig
           value={{
             fetcher: (arr) => getData(...arr),
+            provider: localStorageProvider,
             revalidateOnMount: true,
             revalidateOnFocus: false,
             revalidateOnReconnect: false,

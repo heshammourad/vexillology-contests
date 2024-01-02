@@ -1,6 +1,5 @@
 /**
  * Older contest results style where the top 20 flags were highlighted
- * ??? Check winnerPropTypes
  */
 
 import Card from '@material-ui/core/Card';

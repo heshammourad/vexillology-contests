@@ -11,6 +11,7 @@ const accessToken = require('./api/accessToken');
 const { requireAuthentication, requireModerator, processUser } = require('./api/authentication');
 const contest = require('./api/contest');
 const contests = require('./api/contests');
+const dev = require('./api/dev');
 const hallOfFame = require('./api/hallOfFame');
 const images = require('./api/images');
 const init = require('./api/init');
@@ -125,6 +126,11 @@ if (!IS_DEV && cluster.isMaster) {
     .put(checkRequiredFields('contestId', 'entryId', 'rating'), votes.put)
     .delete(checkRequiredFields('contestId', 'entryId'), votes.delete);
   apiRouter.use('/mod', modRouter);
+
+  if (IS_DEV) {
+    apiRouter.route('/dev/contest').put(requireAuthentication, dev.contest);
+    apiRouter.route('/dev/mod').put(requireAuthentication, dev.mod);
+  }
 
   app.use('/api', apiRouter);
 

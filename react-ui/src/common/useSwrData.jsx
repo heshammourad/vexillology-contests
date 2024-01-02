@@ -38,11 +38,11 @@ const getOptions = (path) => {
 // https://github.com/vercel/swr/issues/1417
 const useSwrData = (path, revalidateOnMount = true) => {
   const [getData, updateCache, clearCache] = useCache(path);
-  const [{ accessToken, isLoggedIn, refreshToken }] = useAuthState();
+  const [{ authTokens, isLoggedIn }] = useAuthState();
 
   // https://swr.vercel.app/docs/arguments
-  const uniqueKey = [path, { accessToken, refreshToken }];
-  // fetcher is set as provider in App.jsx and calls getData in index.js
+  const uniqueKey = [path, authTokens];
+  // fetcher is set as provider in App.jsx and calls getData in react-ui/src/api/index.js
   const {
     data, error, isValidating, isLoading, mutate,
   } = useSWR(uniqueKey, { ...getOptions(path), revalidateOnMount });

@@ -13,12 +13,10 @@ import DescriptionIcon from '@material-ui/icons/Description';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { useCallback, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
 
 import {
-  useComponentsState,
   useSettingsState,
-  useSwrData,
+  useVotingStatus,
 } from '../../common';
 import {
   Average,
@@ -29,6 +27,7 @@ import {
   RedditUserAttribution,
   VotingSlider,
 } from '../../components';
+import useSwrContest from '../../utils/useSwrContest';
 
 import CardImageLink from './CardImageLink';
 import useContestSizing from './useContestSizing';
@@ -87,20 +86,14 @@ const useStyles = makeStyles((theme) => ({
 function ContestGrid({
   selectedCategories,
   setDrawer,
-  votingExpired,
 }) {
-  const { contestId } = useParams();
-
-  const apiPath = `/contests/${contestId}`;
-  const { data: contest } = useSwrData(apiPath, false);
+  const { votingDisabled } = useVotingStatus();
+  const { data: contest } = useSwrContest();
 
   const classes = useStyles();
-  const [{ votingDisabled }, setComponentsState] = useComponentsState();
   const { gridDisplayWidth, winnerDisplayWidth } = useContestSizing();
 
   const [{ density = 'default' }] = useSettingsState();
-
-  const votingUnavailable = votingDisabled || votingExpired;
 
   const getGridVariables = useCallback((fullWidth) => {
     const xs = 12;
@@ -190,10 +183,8 @@ function ContestGrid({
                     })}
                   >
                     <VotingSlider
-                      disabled={votingUnavailable}
                       entryId={imgurId ?? id}
                       rating={rating}
-                      setComponentsState={setComponentsState}
                     />
                   </CardActions>
                 )}
@@ -298,12 +289,10 @@ function CardContentWrapper({
 ContestGrid.propTypes = {
   selectedCategories: PropTypes.arrayOf(PropTypes.string),
   setDrawer: PropTypes.func.isRequired,
-  votingExpired: PropTypes.bool,
 };
 
 ContestGrid.defaultProps = {
   selectedCategories: [],
-  votingExpired: true,
 };
 
 export default ContestGrid;
