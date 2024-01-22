@@ -23,7 +23,7 @@ import parseISO from 'date-fns/parseISO';
 import debounce from 'lodash/debounce';
 import pluralize from 'pluralize';
 import { useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
 import { postData } from '../../api';
 import {
@@ -443,7 +443,12 @@ function Submission() {
                   <Tab id="tab-2" label="Current Submissions" aria-controls="tabpanel-2" />
                 </Tabs>
                 <TabPanel currentTab={selectedTab} index={0}>
-                  {contestId === 'may23' ? <May23 /> : <RedditMarkdown text={prompt} />}
+                  <>
+                    {contestId === 'may23' ? <May23 /> : <RedditMarkdown text={prompt} />}
+                    <InternalLink to="rules">
+                      Please read the contest rules in full before submitting.
+                    </InternalLink>
+                  </>
                 </TabPanel>
                 <TabPanel currentTab={selectedTab} index={1}>
                   <ProtectedRoute
@@ -715,6 +720,7 @@ function Submission() {
           </>
         )}
       </PageContainer>
+      <Outlet />
     </>
   );
 }

@@ -22,6 +22,9 @@ import {
   Settings,
   Submission,
 } from './pages';
+// TODO: Remove when removing pages index file
+// eslint-disable-next-line no-restricted-imports
+import ContestRules from './pages/submission/ContestRules';
 
 function App() {
   return (
@@ -61,7 +64,9 @@ function ModalSwitch() {
           <Route path="/contests/:contestId/entry/:entryId" element={<EntryModal />} />
         </Route>
         <Route path="/mod/review" element={<ReviewSubmissions />} />
-        <Route path="/submission" element={<Submission />} />
+        <Route path="/submission" element={<Submission />}>
+          <Route path="/submission/rules" element={<ContestRules />} />
+        </Route>
         <Route
           path="/submit"
           element={<Navigate replace state={{ defaultTab: 1 }} to="/submission" />}
