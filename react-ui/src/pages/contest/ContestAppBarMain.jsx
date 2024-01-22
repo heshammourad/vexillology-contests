@@ -6,7 +6,6 @@ import Box from '@material-ui/core/Box';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 
-// eslint-disable-next-line import/no-unresolved
 import {
   RouterLinkIconButton,
   Countdown,

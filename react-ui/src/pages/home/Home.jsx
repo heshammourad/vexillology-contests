@@ -12,7 +12,6 @@ import FacebookIcon from '@material-ui/icons/Facebook';
 import TwitterIcon from '@material-ui/icons/Twitter';
 import { useLocation } from 'react-router-dom';
 
-// eslint-disable-next-line no-restricted-imports
 import { FeatureBanner, SCREENS } from '../../common/FeatureBanner';
 import {
   AppBarDivided, CustomIconButton, ExternalLink, InternalLink,
