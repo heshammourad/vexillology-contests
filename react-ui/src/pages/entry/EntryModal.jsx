@@ -41,7 +41,7 @@ const useStyles = makeStyles((theme) => ({
   }),
   appBar: (props) => ({
     backgroundColor: props?.backgroundColor || theme.palette.common.black,
-    color: props?.backgroundColor === '#FFFFFF' ? theme.palette.common.black : theme.palette.common.white,
+    color: props?.backgroundColor === '#FFFFFF' ? theme.palette.grey[700] : theme.palette.common.white,
   }),
   clickActive: {
     cursor: 'pointer',
