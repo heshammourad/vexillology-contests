@@ -4,8 +4,8 @@ npm-debug.log
 
 # Local development
 *.env
-# */react-ui/src/env.js
-# */server/env.js
+*/react-ui/src/env.js
+*/server/env.js
 *.dev
 .DS_Store
 
