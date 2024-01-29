@@ -52,7 +52,9 @@ function AccountMenu({ color }) {
   const { pathname } = useLocation();
   const classes = useStyles();
 
-  const [{ isLoggedIn, authTokens: { refreshToken }, username }, setAuthState] = useAuthState();
+  // Prettier and eslint aren't playing well together
+  // eslint-disable-next-line max-len
+  const [{ isLoggedIn, authTokens: { refreshToken } = {}, username }, setAuthState] = useAuthState();
   const sendUserToAuthUrl = useRedditLogIn();
 
   const {
