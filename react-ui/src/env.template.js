@@ -1,23 +1,13 @@
-// WARNING! All process.env values are strings, so check for 'true' or 'false'
+// Copy this file into the same folder and rename it env.personal.js
+// Change any boolean values to set your own environment
 
-const { NODE_ENV } = process.env;
-
-const IS_DEV = NODE_ENV !== 'production';
-
-/**
- * DEVELOPER VARIALBES
- */
-
-// Developer bar to quickly change database for frequent needs
-// Change mod status and create / change status of dev contest
-const VIEW_DEV_BAR = false && IS_DEV;
-// Clear sticky cache
-const START_WITHOUT_CACHE = false && IS_DEV;
-
-// END DEVELOPER VARIABLES ***************************************
-
-export {
-  IS_DEV,
-  VIEW_DEV_BAR,
-  START_WITHOUT_CACHE,
+const MY_DEV_VARIABLES = {
+  // Developer bar to quickly change database for frequent needs
+  // Change mod status and create / change status of dev contest
+  VIEW_DEV_BAR: true,
+  // Clear sticky cache
+  // Might be best compile time...
+  START_WITHOUT_CACHE: false,
 };
+
+export default MY_DEV_VARIABLES;

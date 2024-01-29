@@ -8,8 +8,8 @@ import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation } from 'react-router-dom';
 
-import { useComponentsState } from '../common';
-import useSwrInit from '../utils/useSwrInit';
+import useComponentsState from '../common/useComponentsState';
+import useSwrInit from '../data/useSwrInit';
 
 function AppHelmet() {
   const {

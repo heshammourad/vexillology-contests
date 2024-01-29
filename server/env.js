@@ -13,21 +13,32 @@ const {
 const IS_DEV = NODE_ENV !== 'production';
 
 /**
- * DEVELOPER VARIALBES
+ * DEVELOPER VARIABLES
+ * All variables should be designed to default to "false" in production mode
  */
-
-const DEV_VARIABLES = {
+const DEFAULT_DEV_VARIABLES = {
   // Triggers default reddit snoowrap, only for admin
   IS_UNAUTHENTICATED_VIEW: false,
   // Fetches the "dev" contest as the current frontpage contest
-  ALLOW_DEV_CONTEST: true,
+  ALLOW_DEV_CONTEST: false,
   // Ignore flags with pending status (so dev contest can enter voting or results status)
-  IGNORE_PENDING_DEV: true,
+  IGNORE_PENDING_DEV: false,
 };
 
-const DEV_ENV_EXPORT = Object.entries(DEV_VARIABLES).reduce((acc, [key, value]) => ({
+let devVariables = {};
+try {
+  // https://eslint.org/docs/latest/rules/global-require#when-not-to-use-it
+  // eslint-disable-next-line global-require
+  const { MY_DEV_VARIABLES } = require('./env.personal');
+  devVariables = MY_DEV_VARIABLES.default || MY_DEV_VARIABLES;
+} catch (error) {
+  // No need to handle error
+}
+
+// Ensure all DEFAULT_DEV_VARIABLE fields are in the final object and false if in production
+const DEV_VARIABLES = Object.keys(DEFAULT_DEV_VARIABLES).reduce((acc, key) => ({
   ...acc,
-  [key]: value && IS_DEV,
+  [key]: (devVariables[key] ?? false) && IS_DEV,
 }), {});
 
 // END DEVELOPER VARIABLES ***************************************
@@ -41,7 +52,7 @@ const FRONTEND_PORT = 3000;
 const BACKEND_PORT = PORT || 5000;
 
 module.exports = {
-  ...DEV_ENV_EXPORT,
+  ...DEV_VARIABLES,
   BACKEND_PORT,
   CONTEST_ENV_LEVEL: ENV_LEVEL,
   DATABASE_SSL: DATABASE_SSL ? DATABASE_SSL === 'true' : true,

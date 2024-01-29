@@ -19,14 +19,15 @@ import {
   useOutletContext,
 } from 'react-router-dom';
 
-import { useSettingsState, useVoting } from '../../common';
+import useSettingsState from '../../common/useSettingsState';
 import {
   EntryDescriptionDrawer,
   PageWithDrawer,
   RedditLogInDialog,
 } from '../../components';
-import useEntryId from '../../utils/useEntryId';
-import useSwrContest from '../../utils/useSwrContest';
+import useEntryId from '../../data/useEntryId';
+import useSwrContest from '../../data/useSwrContest';
+import useVoting from '../../data/useVoting';
 
 import EntryAppBarMain from './EntryAppBarMain';
 import EntryAppBarRight from './EntryAppBarRight';
@@ -40,7 +41,7 @@ const useStyles = makeStyles((theme) => ({
   }),
   appBar: (props) => ({
     backgroundColor: props?.backgroundColor || theme.palette.common.black,
-    color: props?.backgroundColor === '#FFFFFF' ? theme.palette.common.black : theme.palette.common.white,
+    color: props?.backgroundColor === '#FFFFFF' ? theme.palette.grey[700] : theme.palette.common.white,
   }),
   clickActive: {
     cursor: 'pointer',

@@ -6,11 +6,11 @@ import Box from '@material-ui/core/Box';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 
-import { useVotingStatus } from '../../common';
 import {
   RouterLinkIconButton,
   Countdown,
 } from '../../components';
+import useVotingStatus from '../../data/useVotingStatus';
 
 export default function ContestAppBarMain({ handleReload, contest }) {
   const { state = {} } = useLocation();

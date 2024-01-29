@@ -17,7 +17,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { Header, ListItemLink } from '../../components';
-import useSwrContests from '../../utils/useSwrContests';
+import useSwrContests from '../../data/useSwrContests';
 
 const useStyles = makeStyles((theme) => ({
   list: {

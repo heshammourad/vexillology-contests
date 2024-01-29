@@ -8,8 +8,8 @@ import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
 import { useEffect, useState } from 'react';
 
-import { useComponentsState } from '../common';
 import snackbarTypes from '../common/snackbarTypes';
+import useComponentsState from '../common/useComponentsState';
 
 const TYPES = {
   [snackbarTypes.REVIEW_SUBMISSION_ERROR]: 'Error updating submission. Please try again later.',

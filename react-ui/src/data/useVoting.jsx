@@ -4,14 +4,14 @@
  * votingUnavailable: votingDisabled || votingExpired
  */
 
-import { deleteData, putData } from '../api';
-import useContestId from '../utils/useContestId';
+import snackbarTypes from '../common/snackbarTypes';
+import useAuthState from '../common/useAuthState';
+import useComponentsState from '../common/useComponentsState';
+import useIsTouchScreen from '../common/useIsTouchScreen';
+import useSnackbarState from '../common/useSnackbarState';
 
-import snackbarTypes from './snackbarTypes';
-import useAuthState from './useAuthState';
-import useComponentsState from './useComponentsState';
-import useIsTouchScreen from './useIsTouchScreen';
-import useSnackbarState from './useSnackbarState';
+import { deleteData, putData } from './api';
+import useContestId from './useContestId';
 import useSwrMutation from './useSwrMutation';
 import useVotingStatus from './useVotingStatus';
 

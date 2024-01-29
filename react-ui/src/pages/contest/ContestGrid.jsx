@@ -14,10 +14,7 @@ import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { useCallback, useMemo } from 'react';
 
-import {
-  useSettingsState,
-  useVotingStatus,
-} from '../../common';
+import useSettingsState from '../../common/useSettingsState';
 import {
   Average,
   CategoryLabel,
@@ -27,7 +24,8 @@ import {
   RedditUserAttribution,
   VotingSlider,
 } from '../../components';
-import useSwrContest from '../../utils/useSwrContest';
+import useSwrContest from '../../data/useSwrContest';
+import useVotingStatus from '../../data/useVotingStatus';
 
 import CardImageLink from './CardImageLink';
 import useContestSizing from './useContestSizing';

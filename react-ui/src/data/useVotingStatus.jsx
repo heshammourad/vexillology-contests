@@ -8,9 +8,9 @@ import differenceInMilliseconds from 'date-fns/differenceInMilliseconds';
 import isFuture from 'date-fns/isFuture';
 import { useEffect, useState } from 'react';
 
-import useSwrContest from '../utils/useSwrContest';
+import useComponentsState from '../common/useComponentsState';
 
-import useComponentsState from './useComponentsState';
+import useSwrContest from './useSwrContest';
 
 // Max allowable value for setTimeout, should realistically only apply to demo contest
 const MAX_DELAY = 2147483647;

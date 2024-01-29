@@ -13,10 +13,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 
-import {
-  useCategoryLabelStyles,
-} from '../../common';
 import { LABEL_COLORS } from '../../common/styles';
+import useCategoryLabelStyles from '../../common/useCategoryLabelStyles';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;

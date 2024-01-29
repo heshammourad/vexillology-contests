@@ -7,8 +7,8 @@
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 
-import useAuthState from './useAuthState';
-import useCache from './useCache';
+import useAuthState from '../common/useAuthState';
+import useCache from '../common/useCache';
 
 const REVALIDATION_DELAY = 200; // ms
 
@@ -42,7 +42,7 @@ const useSwrData = (path, revalidateOnMount = true) => {
 
   // https://swr.vercel.app/docs/arguments
   const uniqueKey = [path, authTokens];
-  // fetcher is set as provider in App.jsx and calls getData in react-ui/src/api/index.js
+  // fetcher is set as provider in App.jsx and calls getData in react-ui/src/data/index.js
   const {
     data, error, isValidating, isLoading, mutate,
   } = useSWR(uniqueKey, { ...getOptions(path), revalidateOnMount });

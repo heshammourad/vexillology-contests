@@ -1,7 +1,7 @@
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 
-import { useGlobalStyles } from '../common';
+import useGlobalStyles from '../common/useGlobalStyles';
 
 const theme = createTheme({
   palette: {

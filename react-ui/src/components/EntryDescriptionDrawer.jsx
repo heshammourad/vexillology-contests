@@ -11,11 +11,9 @@ import Alert from '@mui/material/Alert';
 import differenceInDays from 'date-fns/differenceInDays';
 import PropTypes from 'prop-types';
 
-import {
-  useIsTouchScreen,
-  useVotingStatus,
-} from '../common';
-import useSwrContest from '../utils/useSwrContest';
+import useIsTouchScreen from '../common/useIsTouchScreen';
+import useSwrContest from '../data/useSwrContest';
+import useVotingStatus from '../data/useVotingStatus';
 
 import Average from './Average';
 import CategoryLabel from './CategoryLabel';

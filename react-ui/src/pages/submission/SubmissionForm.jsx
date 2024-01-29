@@ -14,15 +14,11 @@ import debounce from 'lodash/debounce';
 import PropTypes from 'prop-types';
 import { useRef, useState } from 'react';
 
-import { postData } from '../../api';
-import {
-  uploadFile,
-  useAuthState,
-  useFormState,
-  useSnackbarState,
-  useSwrMutation,
-} from '../../common';
+import { uploadFile } from '../../common/firebase';
 import snackbarTypes from '../../common/snackbarTypes';
+import useAuthState from '../../common/useAuthState';
+import useFormState from '../../common/useFormState';
+import useSnackbarState from '../../common/useSnackbarState';
 import {
   ExternalLink,
   Fieldset,
@@ -30,7 +26,9 @@ import {
   RedditMarkdown,
   SpinnerButton,
 } from '../../components';
-import useSwrSubmission from '../../utils/useSwrSubmission';
+import { postData } from '../../data/api';
+import useSwrMutation from '../../data/useSwrMutation';
+import useSwrSubmission from '../../data/useSwrSubmission';
 
 import ComplianceCheckbox from './ComplianceCheckbox';
 

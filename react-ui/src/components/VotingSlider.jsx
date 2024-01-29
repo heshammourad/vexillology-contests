@@ -9,9 +9,8 @@ import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { useEffect, useRef } from 'react';
 
-import {
-  useVoting, useVotingStatus,
-} from '../common';
+import useVoting from '../data/useVoting';
+import useVotingStatus from '../data/useVotingStatus';
 
 const MIN_SCORE = 0;
 const MAX_SCORE = 5;
