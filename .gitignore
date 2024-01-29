@@ -4,8 +4,6 @@ npm-debug.log
 
 # Local development
 *.env
-*/react-ui/src/env.personal.js
-*/server/env.personal.js
 *.dev
 .DS_Store
 

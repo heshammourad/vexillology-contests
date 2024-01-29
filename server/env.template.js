@@ -1,3 +1,6 @@
+// Copy this file into the same folder and rename it env.personal.js
+// Change any boolean values to set your own environment
+
 const MY_DEV_VARIABLES = {
   // Triggers default reddit snoowrap, only for admin
   IS_UNAUTHENTICATED_VIEW: false,
