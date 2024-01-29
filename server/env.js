@@ -28,7 +28,7 @@ const DEFAULT_DEV_VARIABLES = {
 let devVariables = {};
 try {
   // https://eslint.org/docs/latest/rules/global-require#when-not-to-use-it
-  // eslint-disable-next-line global-require
+  // eslint-disable-next-line global-require, import/no-unresolved
   const { MY_DEV_VARIABLES } = require('./env.personal');
   devVariables = MY_DEV_VARIABLES.default || MY_DEV_VARIABLES;
 } catch (error) {

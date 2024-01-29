@@ -24,7 +24,7 @@ const DEFAULT_DEV_VARIABLES = {
 let devVariables = {};
 try {
   // https://eslint.org/docs/latest/rules/global-require#when-not-to-use-it
-  // eslint-disable-next-line global-require
+  // eslint-disable-next-line global-require, import/no-unresolved
   const MY_DEV_VARIABLES = require('./env.personal');
   devVariables = MY_DEV_VARIABLES.default || MY_DEV_VARIABLES;
 } catch (error) {
@@ -32,16 +32,14 @@ try {
 }
 
 // Ensure all DEFAULT_DEV_VARIABLE fields are in the final object and false if in production
-const DEV_VARIABLES = Object.keys(DEFAULT_DEV_VARIABLES).reduce((acc, key) => ({
-  ...acc,
-  [key]: (devVariables[key] ?? false) && IS_DEV,
-}), {});
+const DEV_VARIABLES = Object.keys(DEFAULT_DEV_VARIABLES).reduce(
+  (acc, key) => ({
+    ...acc,
+    [key]: (devVariables[key] ?? false) && IS_DEV,
+  }),
+  {},
+);
 
-export const {
-  VIEW_DEV_BAR,
-  START_WITHOUT_CACHE,
-} = DEV_VARIABLES;
+export const { VIEW_DEV_BAR, START_WITHOUT_CACHE } = DEV_VARIABLES;
 
-export {
-  IS_DEV,
-};
+export { IS_DEV };
