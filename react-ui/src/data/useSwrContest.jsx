@@ -2,13 +2,15 @@
  * Get data from current contest, or override with specific contest
  */
 
-import { useEffect } from 'react';
-
 import useContestId from './useContestId';
 import useSwrAuth from './useSwrAuth';
 
-// revalidateIfStale = false
-const useSwrContest = (overrideId, revalidateOnMount = false) => {
+// Set default deduping interval to 15min to avoid refetching contest data when EntryModal is
+// opened. This allows two-thirds of voters to complete voting before the data is fetched again
+// and the order gets changed.
+const DEDUPING_INTERVAL = 900_000;
+
+const useSwrContest = ({ makeRequest = true, options = {}, overrideId } = {}) => {
   const contestId = overrideId || useContestId();
   const apiPath = `/contests/${contestId}`;
 
@@ -17,16 +19,18 @@ const useSwrContest = (overrideId, revalidateOnMount = false) => {
     error: e,
     mutate,
     ...rest
-  } = useSwrAuth(apiPath, { revalidateOnMount });
-
-  useEffect(() => {
-    mutate();
-  }, [contestId]);
+  } = useSwrAuth(makeRequest && apiPath, {
+    dedupingInterval: DEDUPING_INTERVAL,
+    ...options,
+  });
 
   const error = e?.response;
 
   return {
-    data, error, mutate, ...rest,
+    data,
+    error,
+    mutate,
+    ...rest,
   };
 
   /**

@@ -94,10 +94,10 @@ function EntryDescriptionDrawer({ entryId }) {
     <div className={classes.drawerContent}>
       <Box display="flex">
         {showRank && (
-          <div className={classes.rank}>
-            #
-            {rank}
-          </div>
+        <div className={classes.rank}>
+          #
+          {rank}
+        </div>
         )}
         <Box>
           <div className={classes.entryName}>{name}</div>
@@ -115,20 +115,17 @@ function EntryDescriptionDrawer({ entryId }) {
       )}
       {isContestMode ? (
         <>
+          <DrawerSectionHeader>Submit Vote</DrawerSectionHeader>
           {!isTouchScreen && (
             <Alert severity="info">
               You can now vote by typing 0-5 on your keyboard, or type c to clear your vote.
             </Alert>
           )}
-          <DrawerSectionHeader>Submit Vote</DrawerSectionHeader>
           {!differenceInDays(voteEndDate, new Date()) && (
             <Countdown endDate={voteEndDate} fontSize="small" />
           )}
           <Box className={classes.votingContainer} alignItems="center" display="flex">
-            <VotingSlider
-              entryId={imgurId ?? id}
-              rating={rating}
-            />
+            <VotingSlider entryId={imgurId ?? id} rating={rating} />
           </Box>
         </>
       ) : (
