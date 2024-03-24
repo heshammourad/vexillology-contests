@@ -67,6 +67,16 @@ const addEntries = async (entries) => {
 // eslint-disable-next-line max-len
 const findMissingEntries = (contest, imagesData) => contest.entries.filter((entry) => !imagesData.find((image) => image.id === entry.imgurId));
 
+const getVoteData = async (contestId) => {
+  const voteData = await db.select(
+    `SELECT entry_id, rank, category_rank, average
+     FROM contests_summary cs, entries e
+     WHERE cs.entry_id = e.id AND e.submission_status = 'approved' AND contest_id = $1`,
+    [contestId],
+  );
+  return voteData;
+} 
+
 exports.get = async ({ params: { id }, username }, res) => {
   try {
     const contestResults = await db.select(
@@ -400,12 +410,12 @@ exports.get = async ({ params: { id }, username }, res) => {
         },
       );
     } else if (localVoting) {
-      const voteData = await db.select(
-        `SELECT entry_id, rank, category_rank, average
-         FROM contests_summary cs, entries e
-         WHERE cs.entry_id = e.id AND e.submission_status = 'approved' AND contest_id = $1`,
-        [id],
-      );
+      let voteData = await getVoteData(id);
+      if (!voteData.length) {
+        // The contest is over, but the materialized view has not been updated.
+        await db.any('REFRESH MATERIALIZED VIEW contests_summary');
+        voteData = await getVoteData(id);
+      }
       const map = new Map();
       voteData.forEach(({
         average, categoryRank, entryId, rank,
