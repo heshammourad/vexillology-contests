@@ -20,6 +20,7 @@ import {
   ExternalLink,
   HtmlWrapper,
   LazyLoadCardImage,
+  RedditMarkdown,
   RedditUserAttribution,
 } from '../../components';
 import flair from '../../images/flair.png';
@@ -27,7 +28,7 @@ import flair from '../../images/flair.png';
 // The first year available in /images/flair.png.
 const FLAIR_START_YEAR = 2015;
 // The last year available in /images/flair.png.
-const FLAIR_END_YEAR = 2022;
+const FLAIR_END_YEAR = 2023;
 const FLAIR_WIDTH = 25;
 
 const useStyles = makeStyles((theme) => {
@@ -99,6 +100,7 @@ function HallOfFameCard({
     entryName,
     height,
     imagePath,
+    markdown,
     redditThreadId,
     user,
     width,
@@ -171,7 +173,7 @@ function HallOfFameCard({
       </Box>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <Typography className={classes.description} component="div" variant="caption">
-          <HtmlWrapper html={description} />
+          {markdown ? <RedditMarkdown text={description} /> : <HtmlWrapper html={description} />}
         </Typography>
       </Collapse>
     </Card>
@@ -186,6 +188,7 @@ HallOfFameCard.propTypes = {
     entryName: PropTypes.string,
     height: PropTypes.number,
     imagePath: PropTypes.string,
+    markdown: PropTypes.bool,
     redditThreadId: PropTypes.string,
     user: PropTypes.string,
     width: PropTypes.number,
