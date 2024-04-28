@@ -6,7 +6,7 @@ import Box from '@material-ui/core/Box';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 
-import { RouterLinkIconButton, Countdown } from '../../components';
+import { Countdown, RouterLinkIconButton } from '../../components';
 import useVotingStatus from '../../data/useVotingStatus';
 
 export default function ContestAppBarMain({ handleReload, contest }) {
