@@ -2,8 +2,7 @@ import PropTypes from 'prop-types';
 
 import useSwrStaticContent from '../data/useSwrStaticContent';
 
-import HtmlWrapper from './HtmlWrapper';
-import RedditMarkdown from './RedditMarkdown';
+import FormattedContent from './FormattedContent';
 
 /**
  * Renders static content from Firebase.
@@ -19,11 +18,7 @@ function StaticContent({ className, id }) {
 
   const { content, markdown } = data;
 
-  return markdown ? (
-    <RedditMarkdown {...{ className, text: content }} />
-  ) : (
-    <HtmlWrapper {...{ className, html: content }} />
-  );
+  return <FormattedContent {...{ className, content, markdown }} />;
 }
 
 StaticContent.propTypes = {

@@ -23,7 +23,7 @@ import {
   ExternalLink,
   Fieldset,
   ProtectedRoute,
-  RedditMarkdown,
+  FormattedContent,
   SpinnerButton,
 } from '../../components';
 import { postData } from '../../data/api';
@@ -91,14 +91,14 @@ const useStyles = makeStyles((theme) => ({
     visibility: 'visible',
   },
   flagPreviewContainer: {
-    maxHeight: 300 + (BACKGROUND_PADDING * 2),
+    maxHeight: 300 + BACKGROUND_PADDING * 2,
     width: 'fit-content',
     padding: BACKGROUND_PADDING,
   },
   flagPreviewContainerEmpty: {
     height: '50vw',
-    maxHeight: 300 + (BACKGROUND_PADDING * 2),
-    maxWidth: 600 + (BACKGROUND_PADDING * 2),
+    maxHeight: 300 + BACKGROUND_PADDING * 2,
+    maxWidth: 600 + BACKGROUND_PADDING * 2,
     width: '100%',
   },
   previewDescription: {
@@ -129,10 +129,7 @@ function SubmissionForm({
 }) {
   const {
     data: {
-      categories,
-      firebaseToken,
-      id: contestId,
-      backgroundColors = [],
+      categories, firebaseToken, id: contestId, backgroundColors = [],
     },
   } = useSwrSubmission();
   const { isMutating, trigger } = useSwrMutation(API_PATH, postData);
@@ -362,19 +359,10 @@ function SubmissionForm({
   const classes = useStyles();
 
   return (
-    <ProtectedRoute
-      message="You must log in with Reddit to submit a flag"
-      showCancel={false}
-    >
+    <ProtectedRoute message="You must log in with Reddit to submit a flag" showCancel={false}>
       <form id="submission-form">
         <Fieldset disabled={disableSubmitting || submissionExpired}>
-          <TextField
-            id="username"
-            variant="filled"
-            label="Username"
-            disabled
-            value={username}
-          />
+          <TextField id="username" variant="filled" label="Username" disabled value={username} />
           <TextField
             id="name"
             name="name"
@@ -407,16 +395,9 @@ function SubmissionForm({
               InputProps={{ readOnly: true }}
               value={formState.file.value?.name ?? ''}
               error={!!formState.file.error}
-              helperText={
-                formState.file.error
-                || 'Upload a JPEG or PNG image (1MB max filesize)'
-              }
+              helperText={formState.file.error || 'Upload a JPEG or PNG image (1MB max filesize)'}
             />
-            <Button
-              className={classes.chooseFileButton}
-              color="secondary"
-              onClick={openFilePicker}
-            >
+            <Button className={classes.chooseFileButton} color="secondary" onClick={openFilePicker}>
               Choose file
             </Button>
           </div>
@@ -435,8 +416,7 @@ function SubmissionForm({
                 ref={flagPreviewRef}
                 alt=""
                 className={clsx(classes.flagPreview, {
-                  [classes.flagPreviewActive]:
-                    !!formState.file.value && !!fileDimensions?.width,
+                  [classes.flagPreviewActive]: !!formState.file.value && !!fileDimensions?.width,
                 })}
                 onLoad={handleImageLoad}
               />
@@ -446,10 +426,7 @@ function SubmissionForm({
             <Typography variant="caption">Background color</Typography>
             <Stack direction="row" spacing={2}>
               {backgroundColors.map((color) => (
-                <Button
-                  key={color}
-                  onClick={() => setBackgroundColor(color)}
-                >
+                <Button key={color} onClick={() => setBackgroundColor(color)}>
                   <Box
                     sx={{
                       height: BACKGROUND_BOX_SIZE,
@@ -501,13 +478,10 @@ function SubmissionForm({
               helperText={
                 formState.description.error || (
                   <div>
-                    This should be a 1-4 sentence description of your flag that
-                    explains any design choices you made. You can use
+                    This should be a 1-4 sentence description of your flag that explains any design
+                    choices you made. You can use
                     {' '}
-                    <ExternalLink
-                      color="secondary"
-                      href="https://www.reddit.com/wiki/markdown"
-                    >
+                    <ExternalLink color="secondary" href="https://www.reddit.com/wiki/markdown">
                       Reddit Markdown
                     </ExternalLink>
                     {' '}
@@ -520,11 +494,12 @@ function SubmissionForm({
               onBlur={handleFieldBlur}
               onChange={handleFieldChange}
             />
-            <RedditMarkdown
+            <FormattedContent
               className={clsx(classes.descriptionPreview, {
                 [classes.descriptionEntry]: !previewDescription,
               })}
-              text={formState.description.value}
+              content={formState.description.value}
+              markdown
             />
           </div>
           <Button
@@ -534,12 +509,7 @@ function SubmissionForm({
           >
             {previewDescription ? 'Hide Preview' : 'Preview Description'}
           </Button>
-          <FormControl
-            required
-            component="fieldset"
-            color="secondary"
-            error={getComplianceError()}
-          >
+          <FormControl required component="fieldset" color="secondary" error={getComplianceError()}>
             <FormLabel className={classes.complianceLegend} component="legend">
               Contest Compliance
             </FormLabel>
@@ -590,8 +560,8 @@ function SubmissionForm({
               />
             </FormGroup>
             <FormHelperText>
-              Check each box to indicate that your flag complies with that rule. If
-              your flag does not comply with the rules, fix it and submit again.
+              Check each box to indicate that your flag complies with that rule. If your flag does
+              not comply with the rules, fix it and submit again.
             </FormHelperText>
           </FormControl>
           <SpinnerButton

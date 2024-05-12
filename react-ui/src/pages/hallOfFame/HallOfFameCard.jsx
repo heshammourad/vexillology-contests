@@ -18,7 +18,7 @@ import { useState } from 'react';
 import {
   CustomIconButton,
   ExternalLink,
-  HtmlWrapper,
+  FormattedContent,
   LazyLoadCardImage,
   RedditUserAttribution,
 } from '../../components';
@@ -171,7 +171,7 @@ function HallOfFameCard({
       </Box>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <Typography className={classes.description} component="div" variant="caption">
-          <HtmlWrapper html={description} />
+          <FormattedContent content={description} />
         </Typography>
       </Collapse>
     </Card>

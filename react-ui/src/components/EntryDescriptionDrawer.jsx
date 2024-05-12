@@ -21,9 +21,8 @@ import Countdown from './Countdown';
 import DrawerSectionHeader from './DrawerSectionHeader';
 import FiveStar from './FiveStar';
 import FmpIcon from './FmpIcon';
-import HtmlWrapper from './HtmlWrapper';
+import FormattedContent from './FormattedContent';
 import ListItemButton from './ListItemButton';
-import RedditMarkdown from './RedditMarkdown';
 import RedditUserAttribution from './RedditUserAttribution';
 import VotingSlider from './VotingSlider';
 
@@ -94,10 +93,10 @@ function EntryDescriptionDrawer({ entryId }) {
     <div className={classes.drawerContent}>
       <Box display="flex">
         {showRank && (
-          <div className={classes.rank}>
-            #
-            {rank}
-          </div>
+        <div className={classes.rank}>
+          #
+          {rank}
+        </div>
         )}
         <Box>
           <div className={classes.entryName}>{name}</div>
@@ -125,10 +124,7 @@ function EntryDescriptionDrawer({ entryId }) {
             <Countdown endDate={voteEndDate} fontSize="small" />
           )}
           <Box className={classes.votingContainer} alignItems="center" display="flex">
-            <VotingSlider
-              entryId={imgurId ?? id}
-              rating={rating}
-            />
+            <VotingSlider entryId={imgurId ?? id} rating={rating} />
           </Box>
         </>
       ) : (
@@ -143,7 +139,7 @@ function EntryDescriptionDrawer({ entryId }) {
         </Box>
       )}
       <DrawerSectionHeader>Description</DrawerSectionHeader>
-      {markdown ? <RedditMarkdown text={description} /> : <HtmlWrapper html={description} />}
+      <FormattedContent content={description} markdown={markdown} />
       <DrawerSectionHeader>Links</DrawerSectionHeader>
       <List>
         {!localVoting && (
