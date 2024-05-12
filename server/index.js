@@ -18,6 +18,7 @@ const init = require('./api/init');
 const reviewSubmissions = require('./api/reviewSubmissions');
 const revokeToken = require('./api/revokeToken');
 const settings = require('./api/settings');
+const staticContent = require('./api/staticContent');
 const submission = require('./api/submission');
 const { checkRequiredFields } = require('./api/validation');
 const votes = require('./api/votes');
@@ -111,6 +112,7 @@ if (!IS_DEV && cluster.isMaster) {
   apiRouter.get('/init', processUser(true), init.get);
   apiRouter.get('/revokeToken/:refreshToken', revokeToken.get);
   apiRouter.route('/settings').all(requireAuthentication).get(settings.get).put(settings.put);
+  apiRouter.get('/staticContent/:id', staticContent.get);
   apiRouter
     .route('/submission')
     .get(processUser(false), submission.get)
