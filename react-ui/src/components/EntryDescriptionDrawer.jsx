@@ -21,9 +21,8 @@ import Countdown from './Countdown';
 import DrawerSectionHeader from './DrawerSectionHeader';
 import FiveStar from './FiveStar';
 import FmpIcon from './FmpIcon';
-import HtmlWrapper from './HtmlWrapper';
+import FormattedContent from './FormattedContent';
 import ListItemButton from './ListItemButton';
-import RedditMarkdown from './RedditMarkdown';
 import RedditUserAttribution from './RedditUserAttribution';
 import VotingSlider from './VotingSlider';
 
@@ -140,7 +139,7 @@ function EntryDescriptionDrawer({ entryId }) {
         </Box>
       )}
       <DrawerSectionHeader>Description</DrawerSectionHeader>
-      {markdown ? <RedditMarkdown text={description} /> : <HtmlWrapper html={description} />}
+      <FormattedContent content={description} markdown={markdown} />
       <DrawerSectionHeader>Links</DrawerSectionHeader>
       <List>
         {!localVoting && (

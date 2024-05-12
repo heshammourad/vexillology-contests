@@ -23,7 +23,7 @@ import {
   ExternalLink,
   Fieldset,
   ProtectedRoute,
-  RedditMarkdown,
+  FormattedContent,
   SpinnerButton,
 } from '../../components';
 import { postData } from '../../data/api';
@@ -157,7 +157,9 @@ function SubmissionForm({
   ]);
   const [{ username }] = useAuthState();
   const updateSnackbarState = useSnackbarState();
-  const [backgroundColor, setBackgroundColor] = useState(backgroundColors[0] || '#000000');
+  const [backgroundColor, setBackgroundColor] = useState(
+    backgroundColors[0] || '#000000',
+  );
   const [fileDimensions, setFileDimensions] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef(null);
@@ -272,7 +274,11 @@ function SubmissionForm({
     },
   }) => {
     const field = id ?? name;
-    updateFormState(field, 'value', field.startsWith('compliance') ? checked : value);
+    updateFormState(
+      field,
+      'value',
+      field.startsWith('compliance') ? checked : value,
+    );
     validateFormDebounced();
   };
 
@@ -381,10 +387,19 @@ function SubmissionForm({
   const classes = useStyles();
 
   return (
-    <ProtectedRoute message="You must log in with Reddit to submit a flag" showCancel={false}>
+    <ProtectedRoute
+      message="You must log in with Reddit to submit a flag"
+      showCancel={false}
+    >
       <form id="submission-form">
         <Fieldset disabled={disableEditing || submissionExpired}>
-          <TextField id="username" variant="filled" label="Username" disabled value={username} />
+          <TextField
+            id="username"
+            variant="filled"
+            label="Username"
+            disabled
+            value={username}
+          />
           <TextField
             id="name"
             name="name"
@@ -429,9 +444,16 @@ function SubmissionForm({
               InputProps={{ readOnly: true }}
               value={formState.file.value?.name ?? ''}
               error={!!formState.file.error}
-              helperText={formState.file.error || 'Upload a JPEG or PNG image (1MB max filesize)'}
+              helperText={
+                formState.file.error
+                || 'Upload a JPEG or PNG image (1MB max filesize)'
+              }
             />
-            <Button className={classes.chooseFileButton} color="secondary" onClick={openFilePicker}>
+            <Button
+              className={classes.chooseFileButton}
+              color="secondary"
+              onClick={openFilePicker}
+            >
               Choose file
             </Button>
           </div>
@@ -450,7 +472,8 @@ function SubmissionForm({
                 ref={flagPreviewRef}
                 alt=""
                 className={clsx(classes.flagPreview, {
-                  [classes.flagPreviewActive]: !!formState.file.value && !!fileDimensions?.width,
+                  [classes.flagPreviewActive]:
+                    !!formState.file.value && !!fileDimensions?.width,
                 })}
                 onLoad={handleImageLoad}
               />
@@ -513,15 +536,18 @@ function SubmissionForm({
                 <div className={classes.flex}>
                   <span>
                     {formState.description.error || (
-                    <>
-                      Explains any design choices you made. You can use
-                      {' '}
-                      <ExternalLink color="secondary" href="https://www.reddit.com/wiki/markdown">
-                        Reddit Markdown
-                      </ExternalLink>
-                      {' '}
-                      in this field.
-                    </>
+                      <>
+                        Explains any design choices you made. You can use
+                        {' '}
+                        <ExternalLink
+                          color="secondary"
+                          href="https://www.reddit.com/wiki/markdown"
+                        >
+                          Reddit Markdown
+                        </ExternalLink>
+                        {' '}
+                        in this field.
+                      </>
                     )}
                   </span>
                   <span className={classes.characterCounter}>
@@ -537,11 +563,12 @@ function SubmissionForm({
               onChange={handleFieldChange}
               inputProps={{ maxLength: CHAR_LIMIT_DESCRIPTION }}
             />
-            <RedditMarkdown
+            <FormattedContent
               className={clsx(classes.descriptionPreview, {
                 [classes.descriptionEntry]: !previewDescription,
               })}
-              text={formState.description.value}
+              content={formState.description.value}
+              markdown
             />
           </div>
           <Button
@@ -551,7 +578,12 @@ function SubmissionForm({
           >
             {previewDescription ? 'Hide Preview' : 'Preview Description'}
           </Button>
-          <FormControl required component="fieldset" color="secondary" error={getComplianceError()}>
+          <FormControl
+            required
+            component="fieldset"
+            color="secondary"
+            error={getComplianceError()}
+          >
             <FormLabel className={classes.complianceLegend} component="legend">
               Contest Compliance
             </FormLabel>
@@ -602,8 +634,9 @@ function SubmissionForm({
               />
             </FormGroup>
             <FormHelperText>
-              Check each box to indicate that your flag complies with that rule. If your flag does
-              not comply with the rules, fix it and submit again.
+              Check each box to indicate that your flag complies with that rule.
+              If your flag does not comply with the rules, fix it and submit
+              again.
             </FormHelperText>
           </FormControl>
           <SpinnerButton
