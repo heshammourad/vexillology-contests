@@ -316,7 +316,10 @@ function EntryModal() {
                 }}
               />
             )),
-            children: <EntryAppBarMain />,
+            children: <EntryAppBarMain
+              entryPosition={entryIndex + 1}
+              numberOfEntries={entries.length}
+            />,
           }}
           drawer={{ heading: 'Info', children: <EntryDescriptionDrawer {...{ entryId }} /> }}
         >
