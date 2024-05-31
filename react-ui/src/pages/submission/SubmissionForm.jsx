@@ -37,7 +37,7 @@ const MAX_FILE_SIZE = 1024 * 1024; // 1MB
 const BACKGROUND_PADDING = 20;
 const BACKGROUND_BOX_SIZE = 75;
 const CHAR_LIMIT_NAME = 80;
-const CHAR_LIMIT_DESCRIPTION = 600;
+const CHAR_LIMIT_DESCRIPTION = 1200;
 
 const useStyles = makeStyles((theme) => ({
   chooseFileButton: {
