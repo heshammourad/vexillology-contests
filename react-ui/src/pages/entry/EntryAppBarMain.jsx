@@ -25,6 +25,7 @@ export default function EntryAppBarMain({ entryPosition, numberOfEntries }) {
         to={`/contests/${contestId}`}
         icon="close"
       />
+      {!!entryPosition && !!numberOfEntries && (
       <Typography sx={{ paddingLeft: 2 }}>
         Flag
         {' '}
@@ -34,6 +35,7 @@ export default function EntryAppBarMain({ entryPosition, numberOfEntries }) {
         {' '}
         {numberOfEntries}
       </Typography>
+      )}
     </>
   );
 }
@@ -44,6 +46,6 @@ EntryAppBarMain.propTypes = {
 };
 
 EntryAppBarMain.defaultProps = {
-  entryPosition: '???',
-  numberOfEntries: '???',
+  entryPosition: undefined,
+  numberOfEntries: undefined,
 };
