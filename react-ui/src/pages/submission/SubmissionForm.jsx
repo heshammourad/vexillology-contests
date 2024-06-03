@@ -391,15 +391,15 @@ function SubmissionForm({
             variant="filled"
             helperText={(
               <div className={classes.flex}>
-                <Typography>
+                <span>
                   {formState.name.error || ''}
                   A concise name for your flag.
-                </Typography>
-                <Typography className={classes.alignRight}>
+                </span>
+                <span className={classes.alignRight}>
                   {formState.name.value.length}
                   /
                   {CHAR_LIMIT_NAME}
-                </Typography>
+                </span>
               </div>
             )}
             label="Flag Name"
@@ -511,8 +511,7 @@ function SubmissionForm({
               label={`Description${previewDescription ? ' Preview' : ''}`}
               helperText={(
                 <div className={classes.flex}>
-
-                  <Typography>
+                  <span>
                     {formState.description.error || ''}
                     Explains any design choices you made. You can use
                     {' '}
@@ -521,12 +520,12 @@ function SubmissionForm({
                     </ExternalLink>
                     {' '}
                     in this field.
-                  </Typography>
-                  <Typography className={classes.alignRight}>
+                  </span>
+                  <span className={classes.alignRight}>
                     {formState.description.value.length}
                     /
                     {CHAR_LIMIT_DESCRIPTION}
-                  </Typography>
+                  </span>
                 </div>
               )}
               error={!!formState.description.error}
