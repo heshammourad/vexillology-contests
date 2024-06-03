@@ -40,6 +40,10 @@ const CHAR_LIMIT_NAME = 80;
 const CHAR_LIMIT_DESCRIPTION = 1200;
 
 const useStyles = makeStyles((theme) => ({
+  alignRight: {
+    marginLeft: 'auto',
+    paddingLeft: theme.spacing(2),
+  },
   chooseFileButton: {
     flexShrink: 1,
     height: 56,
@@ -102,6 +106,9 @@ const useStyles = makeStyles((theme) => ({
     maxHeight: 300 + BACKGROUND_PADDING * 2,
     maxWidth: 600 + BACKGROUND_PADDING * 2,
     width: '100%',
+  },
+  flex: {
+    display: 'flex',
   },
   previewDescription: {
     '& textarea': {
@@ -171,13 +178,23 @@ function SubmissionForm({
       let errorValue = null;
       switch (field) {
         case 'category':
-          if (!categories.length) {
-            break;
+          if (categories.length && !formState[field].value) {
+            errorValue = 'This is a required question. ';
           }
-        // Fall through
+          break;
         case 'description':
+          if (!formState[field].value) {
+            errorValue = 'This is a required question. ';
+          } else if (formState[field].value.length > CHAR_LIMIT_DESCRIPTION) {
+            errorValue = `Description exceeds max length of ${CHAR_LIMIT_DESCRIPTION}. `;
+          }
+          break;
         case 'name':
-          errorValue = formState[field].value ? null : 'This is a required question';
+          if (!formState[field].value) {
+            errorValue = 'This is a required question.';
+          } else if (formState[field].value.length > CHAR_LIMIT_NAME) {
+            errorValue = `Name exceeds max length of ${CHAR_LIMIT_NAME}. `;
+          }
           break;
         default:
           // DO NOTHING
@@ -357,9 +374,8 @@ function SubmissionForm({
   };
 
   const nameCharRemaining = CHAR_LIMIT_NAME - formState.name.value.length;
-  const descriptionCharRemaining = CHAR_LIMIT_DESCRIPTION - formState.description.value.length;
   const disableEditing = submitting || isMutating;
-  const disableSubmitting = disableEditing || nameCharRemaining < 0 || descriptionCharRemaining < 0;
+  const disableSubmitting = disableEditing;
 
   const classes = useStyles();
 
@@ -374,21 +390,15 @@ function SubmissionForm({
             color="secondary"
             variant="filled"
             helperText={(
-              <div>
-                <Typography display="inline">
-                  {formState.name.error || 'A concise name for your flag'}
-                  .
-                  {' '}
+              <div className={classes.flex}>
+                <Typography>
+                  {formState.name.error || ''}
+                  A concise name for your flag.
                 </Typography>
-                <Typography display="inline">
-                  Character limit:
-                  {' '}
+                <Typography className={classes.alignRight}>
+                  {formState.name.value.length}
+                  /
                   {CHAR_LIMIT_NAME}
-                  {' '}
-                  (remaining:
-                  {' '}
-                  {nameCharRemaining}
-                  )
                 </Typography>
               </div>
             )}
@@ -398,6 +408,7 @@ function SubmissionForm({
             value={formState.name.value}
             onBlur={handleFieldBlur}
             onChange={handleFieldChange}
+            inputProps={{ maxLength: CHAR_LIMIT_NAME }}
           />
           <div className={classes.file}>
             <input
@@ -499,29 +510,22 @@ function SubmissionForm({
               })}
               label={`Description${previewDescription ? ' Preview' : ''}`}
               helperText={(
-                <div>
-                  {formState.description.error ? (
-                    <Typography display="inline">{formState.description.error}</Typography>
-                  ) : (
-                    <Typography display="inline">
-                      Explains any design choices you made. You can use
-                      {' '}
-                      <ExternalLink color="secondary" href="https://www.reddit.com/wiki/markdown">
-                        Reddit Markdown
-                      </ExternalLink>
-                      {' '}
-                      in this field.
-                    </Typography>
-                  )}
-                  <Typography display="inline">
-                    Character limit:
+                <div className={classes.flex}>
+
+                  <Typography>
+                    {formState.description.error || ''}
+                    Explains any design choices you made. You can use
                     {' '}
+                    <ExternalLink color="secondary" href="https://www.reddit.com/wiki/markdown">
+                      Reddit Markdown
+                    </ExternalLink>
+                    {' '}
+                    in this field.
+                  </Typography>
+                  <Typography className={classes.alignRight}>
+                    {formState.description.value.length}
+                    /
                     {CHAR_LIMIT_DESCRIPTION}
-                    {' '}
-                    (remaining:
-                    {' '}
-                    {descriptionCharRemaining}
-                    )
                   </Typography>
                 </div>
               )}
@@ -529,6 +533,7 @@ function SubmissionForm({
               value={formState.description.value}
               onBlur={handleFieldBlur}
               onChange={handleFieldChange}
+              inputProps={{ maxLength: CHAR_LIMIT_DESCRIPTION }}
             />
             <RedditMarkdown
               className={clsx(classes.descriptionPreview, {

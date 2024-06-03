@@ -1,7 +1,7 @@
 /**
  * Entry-specific content for top app bar
  */
-import { Typography } from '@mui/material';
+import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
 import { useParams, useLocation, useOutletContext } from 'react-router-dom';
 
