@@ -16,7 +16,7 @@
     "clsx": "^1.2.1",
     "cross-env": "^7.0.3",
     "date-fns": "^2.29.3",
-    "firebase": "^9.16.0",
+    "firebase": "^10.12.2",
     "lodash": "^4.17.21",
     "nanoid": "^4.0.0",
     "pluralize": "^8.0.0",
