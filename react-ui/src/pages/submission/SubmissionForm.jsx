@@ -36,8 +36,14 @@ const API_PATH = '/submission';
 const MAX_FILE_SIZE = 1024 * 1024; // 1MB
 const BACKGROUND_PADDING = 20;
 const BACKGROUND_BOX_SIZE = 75;
+const CHAR_LIMIT_NAME = 80;
+const CHAR_LIMIT_DESCRIPTION = 1200;
 
 const useStyles = makeStyles((theme) => ({
+  characterCounter: {
+    marginLeft: 'auto',
+    paddingLeft: theme.spacing(2),
+  },
   chooseFileButton: {
     flexShrink: 1,
     height: 56,
@@ -91,15 +97,18 @@ const useStyles = makeStyles((theme) => ({
     visibility: 'visible',
   },
   flagPreviewContainer: {
-    maxHeight: 300 + (BACKGROUND_PADDING * 2),
+    maxHeight: 300 + BACKGROUND_PADDING * 2,
     width: 'fit-content',
     padding: BACKGROUND_PADDING,
   },
   flagPreviewContainerEmpty: {
     height: '50vw',
-    maxHeight: 300 + (BACKGROUND_PADDING * 2),
-    maxWidth: 600 + (BACKGROUND_PADDING * 2),
+    maxHeight: 300 + BACKGROUND_PADDING * 2,
+    maxWidth: 600 + BACKGROUND_PADDING * 2,
     width: '100%',
+  },
+  flex: {
+    display: 'flex',
   },
   previewDescription: {
     '& textarea': {
@@ -129,10 +138,7 @@ function SubmissionForm({
 }) {
   const {
     data: {
-      categories,
-      firebaseToken,
-      id: contestId,
-      backgroundColors = [],
+      categories, firebaseToken, id: contestId, backgroundColors = [],
     },
   } = useSwrSubmission();
   const { isMutating, trigger } = useSwrMutation(API_PATH, postData);
@@ -170,15 +176,26 @@ function SubmissionForm({
     );
     fieldsToValidate.forEach((field) => {
       let errorValue = null;
+      const fieldValue = formState[field].value;
       switch (field) {
         case 'category':
-          if (!categories.length) {
-            break;
+          if (categories.length && !fieldValue) {
+            errorValue = 'This is a required question.';
           }
-        // Fall through
+          break;
         case 'description':
+          if (!fieldValue) {
+            errorValue = 'This is a required question.';
+          } else if (fieldValue.length > CHAR_LIMIT_DESCRIPTION) {
+            errorValue = `Description exceeds max length of ${CHAR_LIMIT_DESCRIPTION}.`;
+          }
+          break;
         case 'name':
-          errorValue = formState[field].value ? null : 'This is a required question';
+          if (!fieldValue) {
+            errorValue = 'This is a required question.';
+          } else if (fieldValue.length > CHAR_LIMIT_NAME) {
+            errorValue = `Name exceeds max length of ${CHAR_LIMIT_NAME}.`;
+          }
           break;
         default:
           // DO NOTHING
@@ -357,36 +374,41 @@ function SubmissionForm({
     }
   };
 
-  const disableSubmitting = submitting || isMutating;
+  const nameCharRemaining = CHAR_LIMIT_NAME - formState.name.value.length;
+  const disableEditing = submitting || isMutating;
+  const disableSubmitting = disableEditing;
 
   const classes = useStyles();
 
   return (
-    <ProtectedRoute
-      message="You must log in with Reddit to submit a flag"
-      showCancel={false}
-    >
+    <ProtectedRoute message="You must log in with Reddit to submit a flag" showCancel={false}>
       <form id="submission-form">
-        <Fieldset disabled={disableSubmitting || submissionExpired}>
-          <TextField
-            id="username"
-            variant="filled"
-            label="Username"
-            disabled
-            value={username}
-          />
+        <Fieldset disabled={disableEditing || submissionExpired}>
+          <TextField id="username" variant="filled" label="Username" disabled value={username} />
           <TextField
             id="name"
             name="name"
             color="secondary"
             variant="filled"
-            helperText={formState.name.error || 'A concise name for your flag'}
+            helperText={(
+              <div className={classes.flex}>
+                <span>
+                  {formState.name.error || 'A concise name for your flag.'}
+                </span>
+                <span className={classes.characterCounter}>
+                  {formState.name.value.length}
+                  /
+                  {CHAR_LIMIT_NAME}
+                </span>
+              </div>
+            )}
             label="Flag Name"
             required
-            error={!!formState.name.error}
+            error={!!formState.name.error || nameCharRemaining < 0}
             value={formState.name.value}
             onBlur={handleFieldBlur}
             onChange={handleFieldChange}
+            inputProps={{ maxLength: CHAR_LIMIT_NAME }}
           />
           <div className={classes.file}>
             <input
@@ -407,16 +429,9 @@ function SubmissionForm({
               InputProps={{ readOnly: true }}
               value={formState.file.value?.name ?? ''}
               error={!!formState.file.error}
-              helperText={
-                formState.file.error
-                || 'Upload a JPEG or PNG image (1MB max filesize)'
-              }
+              helperText={formState.file.error || 'Upload a JPEG or PNG image (1MB max filesize)'}
             />
-            <Button
-              className={classes.chooseFileButton}
-              color="secondary"
-              onClick={openFilePicker}
-            >
+            <Button className={classes.chooseFileButton} color="secondary" onClick={openFilePicker}>
               Choose file
             </Button>
           </div>
@@ -435,8 +450,7 @@ function SubmissionForm({
                 ref={flagPreviewRef}
                 alt=""
                 className={clsx(classes.flagPreview, {
-                  [classes.flagPreviewActive]:
-                    !!formState.file.value && !!fileDimensions?.width,
+                  [classes.flagPreviewActive]: !!formState.file.value && !!fileDimensions?.width,
                 })}
                 onLoad={handleImageLoad}
               />
@@ -446,10 +460,7 @@ function SubmissionForm({
             <Typography variant="caption">Background color</Typography>
             <Stack direction="row" spacing={2}>
               {backgroundColors.map((color) => (
-                <Button
-                  key={color}
-                  onClick={() => setBackgroundColor(color)}
-                >
+                <Button key={color} onClick={() => setBackgroundColor(color)}>
                   <Box
                     sx={{
                       height: BACKGROUND_BOX_SIZE,
@@ -498,27 +509,33 @@ function SubmissionForm({
                 [classes.previewDescription]: previewDescription,
               })}
               label={`Description${previewDescription ? ' Preview' : ''}`}
-              helperText={
-                formState.description.error || (
-                  <div>
-                    This should be a 1-4 sentence description of your flag that
-                    explains any design choices you made. You can use
-                    {' '}
-                    <ExternalLink
-                      color="secondary"
-                      href="https://www.reddit.com/wiki/markdown"
-                    >
-                      Reddit Markdown
-                    </ExternalLink>
-                    {' '}
-                    in this field.
-                  </div>
-                )
-              }
+              helperText={(
+                <div className={classes.flex}>
+                  <span>
+                    {formState.description.error || (
+                    <>
+                      Explains any design choices you made. You can use
+                      {' '}
+                      <ExternalLink color="secondary" href="https://www.reddit.com/wiki/markdown">
+                        Reddit Markdown
+                      </ExternalLink>
+                      {' '}
+                      in this field.
+                    </>
+                    )}
+                  </span>
+                  <span className={classes.characterCounter}>
+                    {formState.description.value.length}
+                    /
+                    {CHAR_LIMIT_DESCRIPTION}
+                  </span>
+                </div>
+              )}
               error={!!formState.description.error}
               value={formState.description.value}
               onBlur={handleFieldBlur}
               onChange={handleFieldChange}
+              inputProps={{ maxLength: CHAR_LIMIT_DESCRIPTION }}
             />
             <RedditMarkdown
               className={clsx(classes.descriptionPreview, {
@@ -534,12 +551,7 @@ function SubmissionForm({
           >
             {previewDescription ? 'Hide Preview' : 'Preview Description'}
           </Button>
-          <FormControl
-            required
-            component="fieldset"
-            color="secondary"
-            error={getComplianceError()}
-          >
+          <FormControl required component="fieldset" color="secondary" error={getComplianceError()}>
             <FormLabel className={classes.complianceLegend} component="legend">
               Contest Compliance
             </FormLabel>
@@ -590,8 +602,8 @@ function SubmissionForm({
               />
             </FormGroup>
             <FormHelperText>
-              Check each box to indicate that your flag complies with that rule. If
-              your flag does not comply with the rules, fix it and submit again.
+              Check each box to indicate that your flag complies with that rule. If your flag does
+              not comply with the rules, fix it and submit again.
             </FormHelperText>
           </FormControl>
           <SpinnerButton
