@@ -40,7 +40,7 @@ const CHAR_LIMIT_NAME = 80;
 const CHAR_LIMIT_DESCRIPTION = 1200;
 
 const useStyles = makeStyles((theme) => ({
-  alignRight: {
+  characterCounter: {
     marginLeft: 'auto',
     paddingLeft: theme.spacing(2),
   },
@@ -176,24 +176,25 @@ function SubmissionForm({
     );
     fieldsToValidate.forEach((field) => {
       let errorValue = null;
+      const fieldValue = formState[field].value;
       switch (field) {
         case 'category':
-          if (categories.length && !formState[field].value) {
-            errorValue = 'This is a required question. ';
+          if (categories.length && !fieldValue) {
+            errorValue = 'This is a required question.';
           }
           break;
         case 'description':
-          if (!formState[field].value) {
-            errorValue = 'This is a required question. ';
-          } else if (formState[field].value.length > CHAR_LIMIT_DESCRIPTION) {
-            errorValue = `Description exceeds max length of ${CHAR_LIMIT_DESCRIPTION}. `;
+          if (!fieldValue) {
+            errorValue = 'This is a required question.';
+          } else if (fieldValue.length > CHAR_LIMIT_DESCRIPTION) {
+            errorValue = `Description exceeds max length of ${CHAR_LIMIT_DESCRIPTION}.`;
           }
           break;
         case 'name':
-          if (!formState[field].value) {
+          if (!fieldValue) {
             errorValue = 'This is a required question.';
-          } else if (formState[field].value.length > CHAR_LIMIT_NAME) {
-            errorValue = `Name exceeds max length of ${CHAR_LIMIT_NAME}. `;
+          } else if (fieldValue.length > CHAR_LIMIT_NAME) {
+            errorValue = `Name exceeds max length of ${CHAR_LIMIT_NAME}.`;
           }
           break;
         default:
@@ -392,10 +393,9 @@ function SubmissionForm({
             helperText={(
               <div className={classes.flex}>
                 <span>
-                  {formState.name.error || ''}
-                  A concise name for your flag.
+                  {formState.name.error || 'A concise name for your flag.'}
                 </span>
-                <span className={classes.alignRight}>
+                <span className={classes.characterCounter}>
                   {formState.name.value.length}
                   /
                   {CHAR_LIMIT_NAME}
@@ -512,16 +512,19 @@ function SubmissionForm({
               helperText={(
                 <div className={classes.flex}>
                   <span>
-                    {formState.description.error || ''}
-                    Explains any design choices you made. You can use
-                    {' '}
-                    <ExternalLink color="secondary" href="https://www.reddit.com/wiki/markdown">
-                      Reddit Markdown
-                    </ExternalLink>
-                    {' '}
-                    in this field.
+                    {formState.description.error || (
+                    <>
+                      Explains any design choices you made. You can use
+                      {' '}
+                      <ExternalLink color="secondary" href="https://www.reddit.com/wiki/markdown">
+                        Reddit Markdown
+                      </ExternalLink>
+                      {' '}
+                      in this field.
+                    </>
+                    )}
                   </span>
-                  <span className={classes.alignRight}>
+                  <span className={classes.characterCounter}>
                     {formState.description.value.length}
                     /
                     {CHAR_LIMIT_DESCRIPTION}
