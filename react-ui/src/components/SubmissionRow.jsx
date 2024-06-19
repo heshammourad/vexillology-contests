@@ -452,7 +452,7 @@ function SubmissionRow({
                   className={classes.image}
                   alt=""
                   src={imagePath}
-                  style={{ border: `2px solid ${backgroundColor}` }}
+                  style={{ border: `2px solid ${backgroundColor}`, backgroundColor }}
                 />
               )}
             </div>
@@ -483,7 +483,7 @@ function SubmissionRow({
                   className={classes.expandedImage}
                   alt=""
                   src={imagePath}
-                  style={{ border: `5px solid ${backgroundColor}` }}
+                  style={{ border: `5px solid ${backgroundColor}`, backgroundColor }}
                 />
                 {dropFields && fields}
               </Grid>
