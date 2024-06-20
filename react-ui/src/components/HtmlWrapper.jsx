@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 
 const useStyles = makeStyles({
   description: {
-    overflowWrap: 'break-word',
+    overflowWrap: 'anywhere',
     '& p': {
       marginTop: 0,
     },
