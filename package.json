@@ -28,6 +28,8 @@
     "numeral": "^2.0.6",
     "pg-connection-string": "^2.5.0",
     "pg-promise": "^10.12.1",
+    "plotly.js": "^2.33.0",
+    "react-plotly.js": "^2.6.0",
     "snoowrap": "^1.23.0",
     "uuid": "^9.0.0",
     "winston": "^3.8.2"
