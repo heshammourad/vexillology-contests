@@ -8,7 +8,7 @@ import Plot from 'react-plotly.js';
  * Compare suer activity across each flag
  */
 function CompareAverages({
-  username, votes, entryAvg,
+  username, votes, entryAvg, entryUserLookup,
 }) {
   // Just number the X axis
   const xAxis = Array.from({ length: entryAvg.length }, (_, index) => index + 1);
@@ -37,17 +37,33 @@ function CompareAverages({
     return array;
   }, [userVotes, entryAvg]);
 
+  const text = useMemo(() => entryData.map((e, i) => {
+    const rounded = Math.round(e * 100) / 100;
+    if (userData[i]) {
+      return `Flag average: ${rounded}<br />User Score: ${userData[i]}<br />Delta: ${Math.round((e - userData[i]) * 100) / 100}`;
+    }
+    return `Flag average: ${rounded}<br />User Score: None`;
+  }), [userData, entryData]);
+
+  const userColors = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 'red' : 'green')), [username, entryUserLookup]);
+  const userSizes = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 11 : 8)), [username, entryUserLookup]);
+
   const trace1 = {
     x: xAxis,
     y: userData,
-    name: 'User vote',
+    name: `User vote (${userVotes.length})`,
     type: 'scatter',
     mode: 'markers',
     marker: {
-      size: 8,
-      color: 'green',
+      size: userSizes,
+      color: userColors,
     },
+    text,
+    hovertemplate: '%{text}',
   };
+
+  const entryColors = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 'red' : 'gray')), [username, entryUserLookup]);
+  const entrySizes = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 11 : 6)), [username, entryUserLookup]);
 
   const trace2 = {
     x: xAxis,
@@ -56,13 +72,15 @@ function CompareAverages({
     type: 'scatter',
     mode: 'markers',
     marker: {
-      size: 6,
+      size: entrySizes,
       symbol: 'circle-open',
       line: {
         width: 2,
       },
-      color: 'gray',
+      color: entryColors,
     },
+    text,
+    hovertemplate: '%{text}',
   };
 
   const data = [trace1, trace2];
@@ -70,7 +88,7 @@ function CompareAverages({
   const layout = {
     title: 'User to Average',
     xaxis: { title: 'Flag' },
-    yaxis: { title: 'Score' },
+    yaxis: { title: 'Score', range: [-0.5, 5.5] },
   };
 
   return (
@@ -86,6 +104,7 @@ export default CompareAverages;
 
 CompareAverages.propTypes = {
   entryAvg: PropTypes.arrayOf(object).isRequired,
+  entryUserLookup: PropTypes.arrayOf(object).isRequired,
   username: PropTypes.string,
   votes: PropTypes.arrayOf(object).isRequired,
 };

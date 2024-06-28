@@ -1,4 +1,5 @@
 import Box from '@material-ui/core/Box';
+import Container from '@material-ui/core/Container';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import { makeStyles } from '@material-ui/core/styles';
@@ -28,6 +29,10 @@ const useStyles = makeStyles((theme) => ({
     marginTop: 20,
     marginBottom: 20,
   },
+  sideBySide: {
+    display: 'flex',
+    flexDirection: 'row',
+  },
 }));
 
 /**
@@ -48,7 +53,10 @@ function AnalyzeVotes() {
   } = useSwrModAnalyze(contestId);
   const { state } = useLocation();
 
-  const [username, setUsername] = useState('ethyl3517');
+  const [username, setUsername] = useState('');
+
+  // eslint-disable-next-line max-len
+  const entryUserLookup = useMemo(() => userEntries.reduce((acc, curr) => ({ ...acc, [curr.id]: curr.user }), {}), [userEntries]);
 
   // const averagesByUser = useMemo(() => userAvg.reduce((acc, curr) => ({ ...acc, [curr.username]: curr.average }), {}), [userAvg]);
   // const averagesByEntry = useMemo(() => entryAvg.reduce((acc, curr) => ({ ...acc, [curr.entryId]: curr.average }), {}), [entryAvg]);
@@ -89,21 +97,28 @@ function AnalyzeVotes() {
             ))}
           </Select>
 
-          <Box>
-            <DeviationFromMean {...{
-              username, votes, userAvg, entryAvg, setUsername,
-            }}
-            />
-          </Box>
-          <Box>
-            <CompareAverages {...{
-              username, votes, entryAvg,
-            }}
-            />
-          </Box>
-
+          <p>
+            User:
+            {' '}
+            {username}
+          </p>
         </PageContainer>
+
       </ProtectedRoute>
+      <Container className={classes.sideBySide}>
+        <Box>
+          <DeviationFromMean {...{
+            username, votes, userAvg, entryAvg, setUsername,
+          }}
+          />
+        </Box>
+        <Box>
+          <CompareAverages {...{
+            username, votes, entryAvg, entryUserLookup,
+          }}
+          />
+        </Box>
+      </Container>
     </>
   );
 }

@@ -13,7 +13,8 @@ function DeviationFromMean({
   const usernames = useMemo(() => userAvg.map((ua) => ua.username), [userAvg]);
   const xAxis = useMemo(() => userAvg.map((ua) => ua.average), [userAvg]);
 
-  const colors = useMemo(() => userAvg.map((ua) => ua.username === username), [username, userAvg]);
+  const colors = useMemo(() => userAvg.map((ua) => (ua.username === username ? 'red' : 'black')), [username, userAvg]);
+  const sizes = useMemo(() => userAvg.map((ua) => (ua.username === username ? 12 : 6)), [username, userAvg]);
 
   const yAxis = useMemo(() => {
     // STANDARD DEVIATION
@@ -50,9 +51,11 @@ function DeviationFromMean({
     type: 'scatter',
     mode: 'markers',
     marker: {
-      size: 6,
-      color: 'black',
+      size: sizes,
+      color: colors,
     },
+    text: usernames,
+    hovertemplate: 'User: %{text}<br />Avg: %{x:.2f}<br />Z-score:%{y:.2f}',
   };
 
   const data = [trace1];
