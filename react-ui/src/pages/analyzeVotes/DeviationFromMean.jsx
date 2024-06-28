@@ -60,9 +60,9 @@ function DeviationFromMean({
   const data = [trace1];
 
   const layout = {
-    title: 'Deviation From Mean',
+    title: 'Overly negative and positive users',
     xaxis: { title: 'User average' },
-    yaxis: { title: 'Average Z-score' },
+    yaxis: { title: 'Negativity / positivity (z̄ score)' },
   };
 
   return (

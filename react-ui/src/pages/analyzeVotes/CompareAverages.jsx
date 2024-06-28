@@ -51,7 +51,7 @@ function CompareAverages({
   const trace1 = {
     x: xAxis,
     y: userData,
-    name: `User vote (${userVotes.length})`,
+    name: 'User votes',
     type: 'scatter',
     mode: 'markers',
     marker: {
@@ -86,7 +86,7 @@ function CompareAverages({
   const data = [trace1, trace2];
 
   const layout = {
-    title: 'User to Average',
+    title: `${username}'s votes compared to average (${userVotes.length}/${entryData.length})`,
     xaxis: { title: 'Flag' },
     yaxis: { title: 'Score', range: [-0.5, 5.5] },
   };
