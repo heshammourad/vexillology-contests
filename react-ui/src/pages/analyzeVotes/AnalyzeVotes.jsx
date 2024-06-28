@@ -2,11 +2,13 @@ import Box from '@material-ui/core/Box';
 import Container from '@material-ui/core/Container';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
+import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
-import { useMemo, useState } from 'react';
-import Plot from 'react-plotly.js';
+import {
+  useCallback, useEffect, useMemo, useState,
+} from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import {
@@ -23,15 +25,16 @@ import DeviationFromMean from './DeviationFromMean';
 
 const useStyles = makeStyles((theme) => ({
   selector: {
-    minWidth: '50%',
+    minWidth: '60%',
     paddingTop: 4,
     paddingBottom: 4,
-    marginTop: 20,
-    marginBottom: 20,
+    marginLeft: 8,
   },
   sideBySide: {
     display: 'flex',
     flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
   },
 }));
 
@@ -54,9 +57,29 @@ function AnalyzeVotes() {
   const { state } = useLocation();
 
   const [username, setUsername] = useState('');
+  const usernames = useMemo(() => userAvg.map((ua) => ua.username), [userAvg]);
 
   // eslint-disable-next-line max-len
   const entryUserLookup = useMemo(() => userEntries.reduce((acc, curr) => ({ ...acc, [curr.id]: curr.user }), {}), [userEntries]);
+
+  const handleKeyUp = useCallback(({ key }) => {
+    if (key === 'ArrowLeft' || key === 'ArrowRight') {
+      setUsername((prev) => {
+        const index = usernames.indexOf(prev);
+        if (key === 'ArrowLeft') {
+          return usernames[index - 1] || usernames[usernames.length - 1];
+        }
+        return usernames[index + 1] || usernames[0];
+      });
+    }
+  }, [usernames]);
+
+  useEffect(() => {
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [handleKeyUp]);
 
   // const averagesByUser = useMemo(() => userAvg.reduce((acc, curr) => ({ ...acc, [curr.username]: curr.average }), {}), [userAvg]);
   // const averagesByEntry = useMemo(() => entryAvg.reduce((acc, curr) => ({ ...acc, [curr.entryId]: curr.average }), {}), [entryAvg]);
@@ -74,41 +97,60 @@ function AnalyzeVotes() {
       </Header>
       <ProtectedRoute errorStatus={error?.response?.status}>
         <PageContainer>
-          <Select
-            className={classes.selector}
-            value={contest}
-            renderValue={(selected) => {
-              if (!selected) {
-                return <em>Loading...</em>;
-              }
+          <Box className={classes.sideBySide}>
+            <Typography>Contest: </Typography>
+            <Select
+              className={classes.selector}
+              value={contest}
+              renderValue={(selected) => {
+                if (!selected) {
+                  return <em>Loading...</em>;
+                }
 
-              return selected.name;
-            }}
-            onChange={(event) => navigate(`/mod/analyze/${event.target.value.id}`)}
-          >
-            {contests.map((c) => (
-              <MenuItem key={c.id} value={c}>
-                {c.name}
-                {' '}
-                (
-                {format(parseISO(c.date), 'MMM yy')}
-                )
-              </MenuItem>
-            ))}
-          </Select>
+                return selected.name;
+              }}
+              onChange={(event) => navigate(`/mod/analyze/${event.target.value.id}`)}
+            >
+              {contests.map((c) => (
+                <MenuItem key={c.id} value={c}>
+                  {c.name}
+                  {' '}
+                  (
+                  {format(parseISO(c.date), 'MMM yy')}
+                  )
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
 
-          <p>
-            User:
-            {' '}
-            {username}
-          </p>
+          <Box className={classes.sideBySide}>
+            <Typography>User: </Typography>
+            <Select
+              className={classes.selector}
+              value={username}
+              renderValue={(selected) => {
+                if (!selected) {
+                  return <em>Loading...</em>;
+                }
+
+                return selected;
+              }}
+              onChange={(event) => setUsername(event.target.value)}
+            >
+              {usernames.map((u) => (
+                <MenuItem key={u} value={u}>
+                  {u}
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
         </PageContainer>
 
       </ProtectedRoute>
       <Container className={classes.sideBySide}>
         <Box>
           <DeviationFromMean {...{
-            username, votes, userAvg, entryAvg, setUsername,
+            username, votes, userAvg, entryAvg, setUsername, usernames,
           }}
           />
         </Box>

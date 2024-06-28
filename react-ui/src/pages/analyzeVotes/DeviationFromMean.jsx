@@ -8,9 +8,8 @@ import Plot from 'react-plotly.js';
  * Compare suer activity across each flag
  */
 function DeviationFromMean({
-  username, votes, userAvg, entryAvg, setUsername,
+  username, votes, userAvg, entryAvg, setUsername, usernames,
 }) {
-  const usernames = useMemo(() => userAvg.map((ua) => ua.username), [userAvg]);
   const xAxis = useMemo(() => userAvg.map((ua) => ua.average), [userAvg]);
 
   const colors = useMemo(() => userAvg.map((ua) => (ua.username === username ? 'red' : 'black')), [username, userAvg]);
@@ -81,6 +80,7 @@ DeviationFromMean.propTypes = {
   entryAvg: PropTypes.arrayOf(object).isRequired,
   userAvg: PropTypes.arrayOf(object).isRequired,
   username: PropTypes.string,
+  usernames: PropTypes.arrayOf(object).isRequired,
   votes: PropTypes.arrayOf(object).isRequired,
   setUsername: PropTypes.func.isRequired,
 };
