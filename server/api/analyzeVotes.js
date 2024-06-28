@@ -21,7 +21,7 @@ exports.get = async ({ params: { id } }, res) => {
       FROM votes
       WHERE contest_id = $1
       GROUP BY username
-      ORDER BY username ASC`,
+      ORDER BY average ASC`,
       [id],
     );
 
