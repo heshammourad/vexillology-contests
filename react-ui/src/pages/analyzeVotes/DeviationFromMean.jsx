@@ -1,15 +1,17 @@
 /* eslint-disable max-len */
 /* eslint-disable react/forbid-prop-types */
 import PropTypes, { object } from 'prop-types';
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import Plot from 'react-plotly.js';
 
 /**
  * Compare suer activity across each flag
  */
 function DeviationFromMean({
-  username, votes, userAvg, entryAvg, setUsername, usernames,
+  username, votes, userAvg, entryAvg, setUsername,
 }) {
+  const usernamesByAvg = useMemo(() => userAvg.sort((a, b) => a.average - b.average).map((ua) => ua.username), [userAvg]);
+
   const xAxis = useMemo(() => userAvg.map((ua) => ua.average), [userAvg]);
 
   const colors = useMemo(() => userAvg.map((ua) => (ua.username === username ? 'red' : 'black')), [username, userAvg]);
@@ -44,6 +46,25 @@ function DeviationFromMean({
     return userAvg.map((ua) => userZScores[ua.username].reduce((a, b) => a + b, 0) / userZScores[ua.username].length);
   }, [votes, userAvg, entryAvg]);
 
+  const handleKeyUp = useCallback(({ key }) => {
+    if (key === 'ArrowLeft' || key === 'ArrowRight') {
+      setUsername((prev) => {
+        const index = usernamesByAvg.indexOf(prev);
+        if (key === 'ArrowLeft') {
+          return usernamesByAvg[index - 1] || usernamesByAvg[usernamesByAvg.length - 1];
+        }
+        return usernamesByAvg[index + 1] || usernamesByAvg[0];
+      });
+    }
+  }, [usernamesByAvg]);
+
+  useEffect(() => {
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [handleKeyUp]);
+
   const trace1 = {
     x: xAxis,
     y: yAxis,
@@ -53,7 +74,7 @@ function DeviationFromMean({
       size: sizes,
       color: colors,
     },
-    text: usernames,
+    text: usernamesByAvg,
     hovertemplate: 'User: %{text}<br />Avg: %{x:.2f}<br />Z-score:%{y:.2f}',
   };
 
@@ -69,7 +90,7 @@ function DeviationFromMean({
     <Plot
       data={data}
       layout={layout}
-      onClick={(e) => setUsername(usernames[e.points[0].pointIndex])}
+      onClick={(e) => setUsername(usernamesByAvg[e.points[0].pointIndex])}
     />
   );
 }
@@ -80,7 +101,6 @@ DeviationFromMean.propTypes = {
   entryAvg: PropTypes.arrayOf(object).isRequired,
   userAvg: PropTypes.arrayOf(object).isRequired,
   username: PropTypes.string,
-  usernames: PropTypes.arrayOf(object).isRequired,
   votes: PropTypes.arrayOf(object).isRequired,
   setUsername: PropTypes.func.isRequired,
 };

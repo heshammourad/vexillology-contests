@@ -1,3 +1,4 @@
+/* eslint-disable react/forbid-prop-types */
 import Box from '@material-ui/core/Box';
 import Container from '@material-ui/core/Container';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -6,6 +7,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
+import PropTypes, { object, string } from 'prop-types';
 import {
   useCallback, useEffect, useMemo, useState,
 } from 'react';
@@ -21,7 +23,9 @@ import useSwrContests from '../../data/useSwrContests';
 import useSwrModAnalyze from '../../data/useSwrModAnalyze';
 
 import CompareAverages from './CompareAverages';
+import CompareVotes from './CompareVotes';
 import DeviationFromMean from './DeviationFromMean';
+import PearsonsCorrelation from './PearsonsCorrelation';
 
 const useStyles = makeStyles((theme) => ({
   selector: {
@@ -37,6 +41,50 @@ const useStyles = makeStyles((theme) => ({
     marginTop: 12,
   },
 }));
+
+function UserSelector({
+  username, noVotes, setUsername, usernames, title,
+}) {
+  const classes = useStyles(0);
+  const arrows = title === 'User: ' ? 'left-right' : 'up-down';
+
+  return (
+    <Box className={classes.sideBySide}>
+      <Typography>{title}</Typography>
+      <Select
+        className={classes.selector}
+        value={username}
+        disabled={noVotes}
+        renderValue={(selected) => {
+          if (noVotes) {
+            return <em>No votes recorded</em>;
+          }
+
+          if (!selected) {
+            return <em>Loading...</em>;
+          }
+
+          return selected;
+        }}
+        onChange={(event) => setUsername(event.target.value)}
+      >
+        {usernames.map((u) => (
+          <MenuItem key={u} value={u}>
+            {u}
+          </MenuItem>
+        ))}
+      </Select>
+      <Typography style={{ marginLeft: 10 }}>
+        {' '}
+        or use
+        {' '}
+        {arrows}
+        {' '}
+        arrows
+      </Typography>
+    </Box>
+  );
+}
 
 /**
  * The page for moderators to review contest submissions.
@@ -57,38 +105,28 @@ function AnalyzeVotes() {
   const { state } = useLocation();
 
   const [username, setUsername] = useState('');
-  const usernames = useMemo(() => userAvg.map((ua) => ua.username), [userAvg]);
+  const [username2, setUsername2] = useState('');
+
+  const usernamesAlpha = useMemo(() => userAvg.map((ua) => ua.username), [userAvg]);
+
+  useEffect(() => {
+    if (!usernamesAlpha.length) { return; }
+    setUsername((prev) => {
+      if (prev) {
+        if (usernamesAlpha.includes(prev)) { return prev; }
+      }
+      return usernamesAlpha[0];
+    });
+    setUsername2((prev) => {
+      if (prev) {
+        if (usernamesAlpha.includes(prev)) { return prev; }
+      }
+      return usernamesAlpha[usernamesAlpha.length - 1];
+    });
+  }, [usernamesAlpha]);
 
   // eslint-disable-next-line max-len
   const entryUserLookup = useMemo(() => userEntries.reduce((acc, curr) => ({ ...acc, [curr.id]: curr.user }), {}), [userEntries]);
-
-  const handleKeyUp = useCallback(({ key }) => {
-    if (key === 'ArrowLeft' || key === 'ArrowRight') {
-      setUsername((prev) => {
-        const index = usernames.indexOf(prev);
-        if (key === 'ArrowLeft') {
-          return usernames[index - 1] || usernames[usernames.length - 1];
-        }
-        return usernames[index + 1] || usernames[0];
-      });
-    }
-  }, [usernames]);
-
-  useEffect(() => {
-    window.addEventListener('keyup', handleKeyUp);
-    return () => {
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, [handleKeyUp]);
-
-  // const averagesByUser = useMemo(() => userAvg.reduce((acc, curr) => ({ ...acc, [curr.username]: curr.average }), {}), [userAvg]);
-  // const averagesByEntry = useMemo(() => entryAvg.reduce((acc, curr) => ({ ...acc, [curr.entryId]: curr.average }), {}), [entryAvg]);
-
-  // const sortedEntries = useMemo(() => userEntries
-  //   .sort((a, b) => (b.user - a.user) || b.id - a.id), [userEntries]);
-
-  // const entryPositionLookup = useMemo(() => sortedEntries
-  //   .reduce((acc, curr, i) => ({ ...acc, [curr.id]: i }), {}), [sortedEntries]);
 
   return (
     <>
@@ -123,46 +161,62 @@ function AnalyzeVotes() {
             </Select>
           </Box>
 
-          <Box className={classes.sideBySide}>
-            <Typography>User: </Typography>
-            <Select
-              className={classes.selector}
-              value={username}
-              renderValue={(selected) => {
-                if (!selected) {
-                  return <em>Loading...</em>;
-                }
+          <UserSelector
+            title="User: "
+            noVotes={!userAvg.length}
+            username={username}
+            setUsername={setUsername}
+            usernames={usernamesAlpha}
+          />
 
-                return selected;
+          <Container className={classes.sideBySide}>
+            <Box>
+              <DeviationFromMean {...{
+                username, votes, userAvg, entryAvg, setUsername,
               }}
-              onChange={(event) => setUsername(event.target.value)}
-            >
-              {usernames.map((u) => (
-                <MenuItem key={u} value={u}>
-                  {u}
-                </MenuItem>
-              ))}
-            </Select>
-          </Box>
+              />
+            </Box>
+            <Box>
+              <CompareAverages {...{
+                username, votes, entryAvg, entryUserLookup,
+              }}
+              />
+            </Box>
+          </Container>
+          <UserSelector
+            title="User 2: "
+            noVotes={!userAvg.length}
+            username={username2}
+            setUsername={setUsername2}
+            usernames={usernamesAlpha}
+          />
+          <Container className={classes.sideBySide}>
+            <Box>
+              <PearsonsCorrelation {...{
+                username, username2, votes, entryAvg, setUsername2,
+              }}
+              />
+            </Box>
+            <Box>
+              <CompareVotes {...{
+                username, votes, entryAvg, entryUserLookup, username2,
+              }}
+              />
+            </Box>
+          </Container>
         </PageContainer>
 
       </ProtectedRoute>
-      <Container className={classes.sideBySide}>
-        <Box>
-          <DeviationFromMean {...{
-            username, votes, userAvg, entryAvg, setUsername, usernames,
-          }}
-          />
-        </Box>
-        <Box>
-          <CompareAverages {...{
-            username, votes, entryAvg, entryUserLookup,
-          }}
-          />
-        </Box>
-      </Container>
     </>
   );
 }
 
 export default AnalyzeVotes;
+
+UserSelector.propTypes = {
+  usernames: PropTypes.arrayOf(string).isRequired,
+  username: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  setUsername: PropTypes.func.isRequired,
+  noVotes: PropTypes.bool.isRequired,
+};
