@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import Plot from 'react-plotly.js';
 
 import MARKERS from './markers';
-import { createScatter, splitter } from './splitter';
+import { createScatter, roundTwoDecimals, splitter } from './splitter';
 
 /**
  * Compare user activity across each flag
@@ -35,7 +35,7 @@ function CompareAverages({
    * EXTRACT USER RATINGS IN SAME ORDER AS FLAGS
    */
   const userData = useMemo(() => {
-    const array = new Array(Object.keys(entryPositionLookup).length);
+    const array = (new Array(Object.keys(entryPositionLookup).length));
     votes.forEach((vote) => {
       if (vote.username === username) {
         array[entryPositionLookup[vote.entryId]] = vote.rating;
@@ -45,7 +45,7 @@ function CompareAverages({
     return array;
   }, [entryPositionLookup, username]);
 
-  const [userUnselected, userSelected] = splitter(userData, userFlagPositions);
+  const [userUnselected, userSelected] = splitter(userData, userFlagPositions, true);
 
   /**
    * EXTRACT AVERAGE SCORE IN SAME ORDER AS FLAGS
@@ -55,11 +55,10 @@ function CompareAverages({
   const [entryUnselected, entrySelected] = splitter(entryData, userFlagPositions);
 
   const text = useMemo(() => entryData.map((e, i) => {
-    const rounded = Math.round(e * 100) / 100;
     if (typeof userData[i] === 'number') {
-      return `Flag average: ${rounded}<br />User Score: ${userData[i]}<br />Delta: ${Math.round((userData[i] - e) * 100) / 100}`;
+      return `User score: ${userData[i]}<br />Flag average: ${roundTwoDecimals(e)}<br />Difference: ${roundTwoDecimals(userData[i] - e)}`;
     }
-    return `Flag average: ${rounded}<br />User Score: None`;
+    return `User Score: None<br />Flag average: ${roundTwoDecimals(e)}`;
   }), [userData, entryData]);
 
   const [textUnselected, textSelected] = splitter(text, userFlagPositions);

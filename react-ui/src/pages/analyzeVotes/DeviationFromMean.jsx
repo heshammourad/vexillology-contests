@@ -4,20 +4,56 @@ import PropTypes, { object } from 'prop-types';
 import { useCallback, useEffect, useMemo } from 'react';
 import Plot from 'react-plotly.js';
 
+import MARKERS from './markers';
+import {
+  createScatter, roundTwoDecimals, splitter, trimUsername,
+} from './splitter';
+
 /**
  * Compare suer activity across each flag
  */
 function DeviationFromMean({
   username, votes, userAvg, entryAvg, setUsername,
 }) {
+  /**
+   * LEFT RIGHT ARROW KEYS
+   */
   const usernamesByAvg = useMemo(() => userAvg.sort((a, b) => a.average - b.average).map((ua) => ua.username), [userAvg]);
 
-  const xAxis = useMemo(() => userAvg.map((ua) => ua.average), [userAvg]);
+  const handleKeyUp = useCallback(({ key }) => {
+    if (key === 'ArrowLeft' || key === 'ArrowRight') {
+      setUsername((prev) => {
+        const index = usernamesByAvg.indexOf(prev);
+        if (key === 'ArrowLeft') {
+          return usernamesByAvg[index - 1] || usernamesByAvg[usernamesByAvg.length - 1];
+        }
+        return usernamesByAvg[index + 1] || usernamesByAvg[0];
+      });
+    }
+  }, [usernamesByAvg]);
 
-  const colors = useMemo(() => userAvg.map((ua) => (ua.username === username ? 'red' : 'black')), [username, userAvg]);
-  const sizes = useMemo(() => userAvg.map((ua) => (ua.username === username ? 12 : 6)), [username, userAvg]);
+  useEffect(() => {
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [handleKeyUp]);
 
-  const yAxis = useMemo(() => {
+  /**
+   * POSITIONS OF EACH USER
+   */
+  const userPosition = useMemo(() => [userAvg.findIndex((ua) => ua.username === username)], [userAvg, username]);
+
+  /**
+   * AVERAGE FOR EACH USER, ORDERED BY AVERAGE FOR EACH USER
+   */
+  const averagesData = useMemo(() => userAvg.map((ua) => ua.average), [userAvg]);
+  const [averagesUnselected, averagesSelected] = splitter(averagesData, userPosition);
+
+  /**
+   * Z SCORE FOR EACH USER, ORDERED BY AVERAGE FOR EACH USER
+   */
+  const zScoreData = useMemo(() => {
     // STANDARD DEVIATION
     const entryRatings = {};
     const entryAverageLookup = entryAvg.reduce((acc, curr) => ({ ...acc, [curr.entryId]: curr.average }), {});
@@ -45,40 +81,15 @@ function DeviationFromMean({
 
     return userAvg.map((ua) => userZScores[ua.username].reduce((a, b) => a + b, 0) / userZScores[ua.username].length);
   }, [votes, userAvg, entryAvg]);
+  const [zScoreUnselected, zScoreSelected] = splitter(zScoreData, userPosition);
 
-  const handleKeyUp = useCallback(({ key }) => {
-    if (key === 'ArrowLeft' || key === 'ArrowRight') {
-      setUsername((prev) => {
-        const index = usernamesByAvg.indexOf(prev);
-        if (key === 'ArrowLeft') {
-          return usernamesByAvg[index - 1] || usernamesByAvg[usernamesByAvg.length - 1];
-        }
-        return usernamesByAvg[index + 1] || usernamesByAvg[0];
-      });
-    }
-  }, [usernamesByAvg]);
+  const text = useMemo(() => averagesData.map((a, i) => `User: ${trimUsername(usernamesByAvg[i], 20)}<br />Avg: ${roundTwoDecimals(a)}<br />Z-score: ${roundTwoDecimals(zScoreData[i])}`), [averagesData, usernamesByAvg, zScoreData]);
+  const [textSelected, textUnselected] = splitter(text, userPosition);
 
-  useEffect(() => {
-    window.addEventListener('keyup', handleKeyUp);
-    return () => {
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, [handleKeyUp]);
+  const traceSelected = createScatter(trimUsername(username, 8), averagesSelected, zScoreSelected, MARKERS.general.selected, textSelected);
+  const traceUnselected = createScatter('Other users', averagesUnselected, zScoreUnselected, MARKERS.general.unselected, textUnselected);
 
-  const trace1 = {
-    x: xAxis,
-    y: yAxis,
-    type: 'scatter',
-    mode: 'markers',
-    marker: {
-      size: sizes,
-      color: colors,
-    },
-    text: usernamesByAvg,
-    hovertemplate: 'User: %{text}<br />Avg: %{x:.2f}<br />Z-score:%{y:.2f}',
-  };
-
-  const data = [trace1];
+  const data = [traceSelected, traceUnselected];
 
   const layout = {
     title: 'How positive are users?',

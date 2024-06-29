@@ -3,8 +3,8 @@ const SMALL = 6;
 
 const MARKERS = {
   general: {
-    selected: { size: LARGE, color: 'black' },
-    unselected: { size: SMALL, color: 'red' },
+    selected: { size: LARGE, color: 'red' },
+    unselected: { size: SMALL, color: 'black' },
   },
   user1: {
     selected: { size: LARGE, color: 'red' },
