@@ -48,7 +48,7 @@ function CompareAverages({
   const userColors = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 'red' : 'green')), [username, entryUserLookup]);
   const userSizes = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 11 : 8)), [username, entryUserLookup]);
 
-  const trace1 = {
+  const scatterUser = {
     x: xAxis,
     y: userData,
     name: `${username.length < MAX_LEGEND_CHARS ? username : username.substring(0, MAX_LEGEND_CHARS)}... votes`,
@@ -62,10 +62,10 @@ function CompareAverages({
     hovertemplate: '%{text}',
   };
 
-  const user2Colors = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username2 ? 'purple' : 'blue')), [username2, entryUserLookup]);
+  const user2Colors = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username2 ? 'orange' : 'blue')), [username2, entryUserLookup]);
   const user2Sizes = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username2 ? 11 : 8)), [username2, entryUserLookup]);
 
-  const trace3 = {
+  const scatterUser2 = {
     x: xAxis,
     y: user2Data,
     name: `${username2.length < MAX_LEGEND_CHARS ? username2 : username2.substring(0, MAX_LEGEND_CHARS)}... votes`,
@@ -80,11 +80,11 @@ function CompareAverages({
     hovertemplate: '%{text}',
   };
 
-  const entryColors = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username || entryUserLookup[ea.entryId] === username2 ? 'red' : 'gray')), [username, username2, entryUserLookup]);
+  const entryColors = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 'red' : entryUserLookup[ea.entryId] === username2 ? 'orange' : 'gray')), [username, username2, entryUserLookup]);
   const entrySizes = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username || entryUserLookup[ea.entryId] === username2 ? 11 : 6)), [username, username2, entryUserLookup]);
   const entrySymbols = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username2 ? 'diamond-open' : 'circle-open')), [username2, entryUserLookup]);
 
-  const trace2 = {
+  const scatterEntries = {
     x: xAxis,
     y: entryData,
     name: 'Flag average',
@@ -102,7 +102,47 @@ function CompareAverages({
     hovertemplate: '%{text}',
   };
 
-  const data = [trace1, trace3, trace2];
+  const userFlags = useMemo(() => {
+    const flags = [];
+    entryAvg.forEach((ea) => {
+      if (entryUserLookup[ea.entryId] === username) {
+        // Note sure why this needs to be plus one...
+        flags.push(entryPositionLookup[ea.entryId] + 1);
+      }
+    });
+    return flags;
+  }, [username, entryAvg]);
+
+  const barUserFlag = {
+    x: userFlags,
+    y: userFlags.map(() => 5),
+    width: 1,
+    name: 'User flags',
+    type: 'bar',
+    marker: { color: 'red', opacity: 0.4 },
+  };
+
+  const user2Flags = useMemo(() => {
+    const flags = [];
+    entryAvg.forEach((ea) => {
+      if (entryUserLookup[ea.entryId] === username2) {
+        // Note sure why this needs to be plus one...
+        flags.push(entryPositionLookup[ea.entryId] + 1);
+      }
+    });
+    return flags;
+  }, [username2, entryAvg]);
+
+  const barUser2Flag = {
+    x: user2Flags,
+    y: user2Flags.map(() => 5),
+    width: 1,
+    name: 'User 2 flags',
+    type: 'bar',
+    marker: { color: 'orange', opacity: 0.4 },
+  };
+
+  const data = [scatterUser, scatterUser2, scatterEntries, barUserFlag, barUser2Flag];
 
   const layout = {
     title: `${username}'s and ${username2}'s votes`,

@@ -40,7 +40,7 @@ function CompareAverages({
   const userColors = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 'red' : 'green')), [username, entryUserLookup]);
   const userSizes = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 11 : 8)), [username, entryUserLookup]);
 
-  const trace1 = {
+  const scatterUser = {
     x: xAxis,
     y: userData,
     name: 'User votes',
@@ -57,7 +57,7 @@ function CompareAverages({
   const entryColors = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 'red' : 'gray')), [username, entryUserLookup]);
   const entrySizes = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 11 : 6)), [username, entryUserLookup]);
 
-  const trace2 = {
+  const scatterAverage = {
     x: xAxis,
     y: entryData,
     name: 'Flag average',
@@ -75,7 +75,27 @@ function CompareAverages({
     hovertemplate: '%{text}',
   };
 
-  const data = [trace1, trace2];
+  const userFlags = useMemo(() => {
+    const flags = [];
+    entryAvg.forEach((ea) => {
+      if (entryUserLookup[ea.entryId] === username) {
+        // Note sure why this needs to be plus one...
+        flags.push(entryPositionLookup[ea.entryId] + 1);
+      }
+    });
+    return flags;
+  }, [username, entryAvg]);
+
+  const barUserFlag = {
+    x: userFlags,
+    y: userFlags.map(() => 5),
+    width: 1,
+    name: 'User flags',
+    type: 'bar',
+    marker: { color: 'red', opacity: 0.4 },
+  };
+
+  const data = [scatterUser, scatterAverage, barUserFlag];
 
   const layout = {
     title: `${username}'s votes compared to average (${userVotes}/${entryData.length})`,
