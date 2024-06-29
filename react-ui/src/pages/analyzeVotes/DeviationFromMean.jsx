@@ -81,7 +81,7 @@ function DeviationFromMean({
   const data = [trace1];
 
   const layout = {
-    title: 'Overly negative and positive users',
+    title: 'How positive are users?',
     xaxis: { title: 'User average' },
     yaxis: { title: 'Negativity / positivity (z̄ score)' },
   };

@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 /* eslint-disable react/forbid-prop-types */
-import PropTypes, { object, string } from 'prop-types';
+import PropTypes from 'prop-types';
 import { useCallback, useEffect, useMemo } from 'react';
 import Plot from 'react-plotly.js';
 
@@ -8,11 +8,8 @@ import Plot from 'react-plotly.js';
  * Compare suer activity across each flag
  */
 function PearsonsCorrelation({
-  username, username2, votes, entryAvg, setUsername2,
+  username, username2, votes, entryPositionLookup, setUsername2,
 }) {
-  const entryPositionLookup = useMemo(() => entryAvg
-    .reduce((acc, curr, i) => ({ ...acc, [curr.entryId]: i }), {}), [entryAvg]);
-
   const votesByUserAllEntries = useMemo(() => {
     const numberOfEntries = Object.keys(entryPositionLookup).length;
     const temp = {};
@@ -53,7 +50,7 @@ function PearsonsCorrelation({
     });
   }, [username, votesByUserAllEntries]);
 
-  const usersByPearsons = useMemo(() => pearsons.sort((a, b) => b.pearsons - a.pearsons).map((o) => o.username), [pearsons]);
+  const usersByPearsons = useMemo(() => pearsons.sort((a, b) => a.pearsons - b.pearsons).map((o) => o.username), [pearsons]);
 
   const handleKeyUp = useCallback((event) => {
     const { key } = event;
@@ -114,10 +111,10 @@ function PearsonsCorrelation({
 export default PearsonsCorrelation;
 
 PearsonsCorrelation.propTypes = {
-  entryAvg: PropTypes.arrayOf(object).isRequired,
+  entryPositionLookup: PropTypes.object.isRequired,
   username: PropTypes.string,
   username2: PropTypes.string,
-  votes: PropTypes.arrayOf(object).isRequired,
+  votes: PropTypes.arrayOf(PropTypes.object).isRequired,
   setUsername2: PropTypes.func.isRequired,
 };
 

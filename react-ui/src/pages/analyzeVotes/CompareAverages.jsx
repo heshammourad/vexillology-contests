@@ -8,34 +8,26 @@ import Plot from 'react-plotly.js';
  * Compare suer activity across each flag
  */
 function CompareAverages({
-  username, votes, entryAvg, entryUserLookup,
+  username, votes, entryAvg, entryUserLookup, entryPositionLookup,
 }) {
   // Just number the X axis
   const xAxis = Array.from({ length: entryAvg.length }, (_, index) => index + 1);
 
-  // Sort user votes from 0 > 5
-  const userVotes = useMemo(() => votes.filter((v) => v.username === username).sort((a, b) => a.rating - b.rating), [votes, username]);
-  // Isolate ratings from user votes into separate array
-  const userData = useMemo(() => userVotes.map((v) => v.rating), [userVotes]);
-
-  // Sort entry averages to match userData
-  const entryData = useMemo(() => {
-    const entryLookup = userVotes.reduce((acc, curr, i) => ({ ...acc, [curr.entryId]: i }), {});
-    const array = new Array(entryAvg.length);
-    let unvotedIndex = userVotes.length;
-
-    entryAvg.forEach((e) => {
-      const index = entryLookup[e.entryId];
-      if (typeof index === 'number') {
-        array[index] = e.average;
-      } else {
-        array[unvotedIndex] = e.average;
-        unvotedIndex += 1;
+  const userData = useMemo(() => {
+    const array = new Array(Object.keys(entryPositionLookup).length);
+    votes.forEach((vote) => {
+      if (vote.username === username) {
+        array[entryPositionLookup[vote.entryId]] = vote.rating;
       }
     });
 
     return array;
-  }, [userVotes, entryAvg]);
+  }, [entryPositionLookup, username]);
+
+  const userVotes = useMemo(() => userData.reduce((acc, curr) => (typeof curr === 'number' ? acc + 1 : acc), 0), [userData]);
+
+  // Sort entry averages to match userData
+  const entryData = useMemo(() => entryAvg.map((ea) => ea.average), [entryAvg]);
 
   const text = useMemo(() => entryData.map((e, i) => {
     const rounded = Math.round(e * 100) / 100;
@@ -86,7 +78,7 @@ function CompareAverages({
   const data = [trace1, trace2];
 
   const layout = {
-    title: `${username}'s votes compared to average (${userVotes.length}/${entryData.length})`,
+    title: `${username}'s votes compared to average (${userVotes}/${entryData.length})`,
     xaxis: { title: 'Flag' },
     yaxis: { title: 'Score', range: [-0.5, 5.5] },
   };
@@ -104,7 +96,8 @@ export default CompareAverages;
 
 CompareAverages.propTypes = {
   entryAvg: PropTypes.arrayOf(object).isRequired,
-  entryUserLookup: PropTypes.arrayOf(object).isRequired,
+  entryUserLookup: PropTypes.object.isRequired,
+  entryPositionLookup: PropTypes.object.isRequired,
   username: PropTypes.string.isRequired,
   votes: PropTypes.arrayOf(object).isRequired,
 };

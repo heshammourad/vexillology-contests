@@ -7,9 +7,9 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
-import PropTypes, { object, string } from 'prop-types';
+import PropTypes from 'prop-types';
 import {
-  useCallback, useEffect, useMemo, useState,
+  useEffect, useMemo, useState,
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -27,7 +27,7 @@ import CompareVotes from './CompareVotes';
 import DeviationFromMean from './DeviationFromMean';
 import PearsonsCorrelation from './PearsonsCorrelation';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   selector: {
     minWidth: '60%',
     paddingTop: 4,
@@ -109,6 +109,9 @@ function AnalyzeVotes() {
 
   const usernamesAlpha = useMemo(() => userAvg.map((ua) => ua.username), [userAvg]);
 
+  const entryPositionLookup = useMemo(() => entryAvg
+    .reduce((acc, curr, i) => ({ ...acc, [curr.entryId]: i }), {}), [entryAvg]);
+
   useEffect(() => {
     if (!usernamesAlpha.length) { return; }
     setUsername((prev) => {
@@ -178,7 +181,7 @@ function AnalyzeVotes() {
             </Box>
             <Box>
               <CompareAverages {...{
-                username, votes, entryAvg, entryUserLookup,
+                username, votes, entryAvg, entryUserLookup, entryPositionLookup,
               }}
               />
             </Box>
@@ -193,13 +196,13 @@ function AnalyzeVotes() {
           <Container className={classes.sideBySide}>
             <Box>
               <PearsonsCorrelation {...{
-                username, username2, votes, entryAvg, setUsername2,
+                username, username2, votes, entryPositionLookup, setUsername2,
               }}
               />
             </Box>
             <Box>
               <CompareVotes {...{
-                username, votes, entryAvg, entryUserLookup, username2,
+                username, votes, entryAvg, entryUserLookup, username2, entryPositionLookup,
               }}
               />
             </Box>
@@ -214,7 +217,7 @@ function AnalyzeVotes() {
 export default AnalyzeVotes;
 
 UserSelector.propTypes = {
-  usernames: PropTypes.arrayOf(string).isRequired,
+  usernames: PropTypes.arrayOf(PropTypes.string).isRequired,
   username: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   setUsername: PropTypes.func.isRequired,
