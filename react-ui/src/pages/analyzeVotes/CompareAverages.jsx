@@ -10,9 +10,9 @@ import Plot from 'react-plotly.js';
 function CompareAverages({
   username, votes, entryAvg, entryUserLookup, entryPositionLookup,
 }) {
-  // Just number the X axis
-  const xAxis = Array.from({ length: entryAvg.length }, (_, index) => index + 1);
-
+  /**
+   * EXTRACT USER RATINGS IN SAME ORDER AS FLAGS
+   */
   const userData = useMemo(() => {
     const array = new Array(Object.keys(entryPositionLookup).length);
     votes.forEach((vote) => {
@@ -24,58 +24,15 @@ function CompareAverages({
     return array;
   }, [entryPositionLookup, username]);
 
-  const userVotes = useMemo(() => userData.reduce((acc, curr) => (typeof curr === 'number' ? acc + 1 : acc), 0), [userData]);
-
-  // Sort entry averages to match userData
+  /**
+   * EXTRACT AVERAGE SCORE IN SAME ORDER AS FLAGS
+   */
   const entryData = useMemo(() => entryAvg.map((ea) => ea.average), [entryAvg]);
 
-  const text = useMemo(() => entryData.map((e, i) => {
-    const rounded = Math.round(e * 100) / 100;
-    if (userData[i]) {
-      return `Flag average: ${rounded}<br />User Score: ${userData[i]}<br />Delta: ${Math.round((e - userData[i]) * 100) / 100}`;
-    }
-    return `Flag average: ${rounded}<br />User Score: None`;
-  }), [userData, entryData]);
-
-  const userColors = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 'red' : 'green')), [username, entryUserLookup]);
-  const userSizes = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 11 : 8)), [username, entryUserLookup]);
-
-  const scatterUser = {
-    x: xAxis,
-    y: userData,
-    name: 'User votes',
-    type: 'scatter',
-    mode: 'markers',
-    marker: {
-      size: userSizes,
-      color: userColors,
-    },
-    text,
-    hovertemplate: '%{text}',
-  };
-
-  const entryColors = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 'red' : 'gray')), [username, entryUserLookup]);
-  const entrySizes = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 11 : 6)), [username, entryUserLookup]);
-
-  const scatterAverage = {
-    x: xAxis,
-    y: entryData,
-    name: 'Flag average',
-    type: 'scatter',
-    mode: 'markers',
-    marker: {
-      size: entrySizes,
-      symbol: 'circle-open',
-      line: {
-        width: 2,
-      },
-      color: entryColors,
-    },
-    text,
-    hovertemplate: '%{text}',
-  };
-
-  const userFlags = useMemo(() => {
+  /**
+   * POSITIONS OF USER_SUBMITTED FLAGS
+   */
+  const userFlagPositions = useMemo(() => {
     const flags = [];
     entryAvg.forEach((ea) => {
       if (entryUserLookup[ea.entryId] === username) {
@@ -86,16 +43,129 @@ function CompareAverages({
     return flags;
   }, [username, entryAvg]);
 
+  /**
+   * X-AXIS
+   */
+  const xAxis = Array.from({ length: entryAvg.length }, (_, index) => index + 1);
+  const notUserFlagPositions = useMemo(() => xAxis.filter((_, i) => !userFlagPositions.includes(i)), [xAxis, userFlagPositions]);
+
+  /**
+   * SPLIT USER RATINGS INTO USER-FLAG and NOT-USER_FLAG
+   */
+
+  const [userRatingsUserFlags, userRatingsNotUserFlags] = useMemo(() => {
+    if (!userFlagPositions.length) {
+      return [[], userData];
+    }
+    return userData.reduce((acc, curr, index) => {
+      if (userFlagPositions.includes(index)) {
+        return [[...acc[0], curr], acc[1]];
+      }
+      return [acc[0], [...acc[1], curr]];
+    }, [[], []]);
+  }, [userData, userFlagPositions]);
+
+  const traceUserRatingsUserFlags = {
+    x: userFlagPositions,
+    y: userRatingsUserFlags,
+    name: 'User votes',
+    type: 'scatter',
+    mode: 'markers',
+    marker: {
+      size: 11,
+      color: 'red',
+    },
+    // text,
+    // hovertemplate: '%{text}',
+  };
+
+  const traceUserRatingsNotUserFlags = {
+    x: notUserFlagPositions,
+    y: userRatingsNotUserFlags,
+    name: 'User on self',
+    type: 'scatter',
+    mode: 'markers',
+    marker: {
+      size: 6,
+      color: 'green',
+    },
+    // text,
+    // hovertemplate: '%{text}',
+  };
+
+  /**
+   * SPLIT AVERAGE RATINGS INTO USER-FLAG and NOT-USER_FLAG
+   */
+
+  const [averageUserFlags, aerageNotUserFlags] = useMemo(() => {
+    if (!userFlagPositions.length) {
+      return [[], entryData];
+    }
+    return entryData.reduce((acc, curr, index) => {
+      if (userFlagPositions.includes(index)) {
+        return [[...acc[0], curr], acc[1]];
+      }
+      return [acc[0], [...acc[1], curr]];
+    }, [[], []]);
+  }, [entryData, userFlagPositions]);
+
+  const traceAverageUserFlags = {
+    x: userFlagPositions,
+    y: averageUserFlags,
+    name: 'Average rating',
+    type: 'scatter',
+    mode: 'markers',
+    marker: {
+      size: 11,
+      color: 'red',
+      symbol: 'circle-open',
+    },
+    // text,
+    // hovertemplate: '%{text}',
+  };
+
+  const traceAverageNotUserFlags = {
+    x: notUserFlagPositions,
+    y: aerageNotUserFlags,
+    name: 'Average on self',
+    type: 'scatter',
+    mode: 'markers',
+    marker: {
+      size: 6,
+      color: 'gray',
+      symbol: 'circle-open',
+    },
+    // text,
+    // hovertemplate: '%{text}',
+  };
+
+  /**
+   * CREATE UNDERLYING BAR CHART TO HIGHLIGHT USER FLAGS
+   */
+
   const barUserFlag = {
-    x: userFlags,
-    y: userFlags.map(() => 5),
+    x: userFlagPositions,
+    y: userFlagPositions.map(() => 5),
     width: 1,
     name: 'User flags',
     type: 'bar',
     marker: { color: 'red', opacity: 0.4 },
   };
 
-  const data = [scatterUser, scatterAverage, barUserFlag];
+  // const text = useMemo(() => entryData.map((e, i) => {
+  //   const rounded = Math.round(e * 100) / 100;
+  //   if (userData[i]) {
+  //     return `Flag average: ${rounded}<br />User Score: ${userData[i]}<br />Delta: ${Math.round((e - userData[i]) * 100) / 100}`;
+  //   }
+  //   return `Flag average: ${rounded}<br />User Score: None`;
+  // }), [userData, entryData]);
+
+  const data = [traceUserRatingsUserFlags, traceAverageUserFlags, traceUserRatingsNotUserFlags, traceAverageNotUserFlags, barUserFlag];
+
+  /**
+   * COUNT NUMBER OF RATINGS FROM USER
+   */
+  const userVotes = useMemo(() => userData.reduce((acc, curr) => (typeof curr === 'number' ? acc + 1 : acc), 0), [userData]);
 
   const layout = {
     title: `${username}'s votes compared to average (${userVotes}/${entryData.length})`,
