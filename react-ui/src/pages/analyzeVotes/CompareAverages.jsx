@@ -4,12 +4,33 @@ import PropTypes, { object } from 'prop-types';
 import { useMemo } from 'react';
 import Plot from 'react-plotly.js';
 
+import MARKERS from './markers';
+import { createScatter, splitter } from './splitter';
+
 /**
- * Compare suer activity across each flag
+ * Compare user activity across each flag
  */
 function CompareAverages({
   username, votes, entryAvg, entryUserLookup, entryPositionLookup,
 }) {
+  const xAxis = Array.from({ length: entryAvg.length }, (_, index) => index + 1);
+
+  /**
+   * POSITIONS OF USER_SUBMITTED FLAGS
+   */
+  const userFlagPositions = useMemo(() => {
+    const flags = [];
+    entryAvg.forEach((ea) => {
+      if (entryUserLookup[ea.entryId] === username) {
+        // Note sure why this needs to be plus one...
+        flags.push(entryPositionLookup[ea.entryId]);
+      }
+    });
+    return flags;
+  }, [username, entryAvg]);
+
+  const [xAxisUnselected, xAxisSelected] = splitter(xAxis, userFlagPositions);
+
   /**
    * EXTRACT USER RATINGS IN SAME ORDER AS FLAGS
    */
@@ -24,143 +45,32 @@ function CompareAverages({
     return array;
   }, [entryPositionLookup, username]);
 
+  const [userUnselected, userSelected] = splitter(userData, userFlagPositions);
+
   /**
    * EXTRACT AVERAGE SCORE IN SAME ORDER AS FLAGS
    */
   const entryData = useMemo(() => entryAvg.map((ea) => ea.average), [entryAvg]);
 
-  /**
-   * POSITIONS OF USER_SUBMITTED FLAGS
-   */
-  const userFlagPositions = useMemo(() => {
-    const flags = [];
-    entryAvg.forEach((ea) => {
-      if (entryUserLookup[ea.entryId] === username) {
-        // Note sure why this needs to be plus one...
-        flags.push(entryPositionLookup[ea.entryId] + 1);
-      }
-    });
-    return flags;
-  }, [username, entryAvg]);
+  const [entryUnselected, entrySelected] = splitter(entryData, userFlagPositions);
 
-  /**
-   * X-AXIS
-   */
-  const xAxis = Array.from({ length: entryAvg.length }, (_, index) => index + 1);
-  const notUserFlagPositions = useMemo(() => xAxis.filter((_, i) => !userFlagPositions.includes(i)), [xAxis, userFlagPositions]);
-
-  /**
-   * SPLIT USER RATINGS INTO USER-FLAG and NOT-USER_FLAG
-   */
-
-  const [userRatingsUserFlags, userRatingsNotUserFlags] = useMemo(() => {
-    if (!userFlagPositions.length) {
-      return [[], userData];
+  const text = useMemo(() => entryData.map((e, i) => {
+    const rounded = Math.round(e * 100) / 100;
+    if (typeof userData[i] === 'number') {
+      return `Flag average: ${rounded}<br />User Score: ${userData[i]}<br />Delta: ${Math.round((userData[i] - e) * 100) / 100}`;
     }
-    return userData.reduce((acc, curr, index) => {
-      if (userFlagPositions.includes(index)) {
-        return [[...acc[0], curr], acc[1]];
-      }
-      return [acc[0], [...acc[1], curr]];
-    }, [[], []]);
-  }, [userData, userFlagPositions]);
+    return `Flag average: ${rounded}<br />User Score: None`;
+  }), [userData, entryData]);
 
-  const traceUserRatingsUserFlags = {
-    x: userFlagPositions,
-    y: userRatingsUserFlags,
-    name: 'User votes',
-    type: 'scatter',
-    mode: 'markers',
-    marker: {
-      size: 11,
-      color: 'red',
-    },
-    // text,
-    // hovertemplate: '%{text}',
-  };
+  const [textUnselected, textSelected] = splitter(text, userFlagPositions);
 
-  const traceUserRatingsNotUserFlags = {
-    x: notUserFlagPositions,
-    y: userRatingsNotUserFlags,
-    name: 'User on self',
-    type: 'scatter',
-    mode: 'markers',
-    marker: {
-      size: 6,
-      color: 'green',
-    },
-    // text,
-    // hovertemplate: '%{text}',
-  };
+  const traceUserSelected = createScatter('User score (self)', xAxisSelected, userSelected, MARKERS.user1.selected, textSelected);
+  const traceUserUnselected = createScatter('User score', xAxisUnselected, userUnselected, MARKERS.user1.unselected, textUnselected);
+  const traceEntrySelected = createScatter('Average rating (self)', xAxisSelected, entrySelected, MARKERS.average.selected, textSelected);
+  const traceEntryUnselected = createScatter('Average rating', xAxisUnselected, entryUnselected, MARKERS.average.unselected, textUnselected);
+  const traceBarSelected = createScatter('Self submissions', xAxisSelected, xAxisSelected.map(() => 5), MARKERS.bar, undefined, true);
 
-  /**
-   * SPLIT AVERAGE RATINGS INTO USER-FLAG and NOT-USER_FLAG
-   */
-
-  const [averageUserFlags, aerageNotUserFlags] = useMemo(() => {
-    if (!userFlagPositions.length) {
-      return [[], entryData];
-    }
-    return entryData.reduce((acc, curr, index) => {
-      if (userFlagPositions.includes(index)) {
-        return [[...acc[0], curr], acc[1]];
-      }
-      return [acc[0], [...acc[1], curr]];
-    }, [[], []]);
-  }, [entryData, userFlagPositions]);
-
-  const traceAverageUserFlags = {
-    x: userFlagPositions,
-    y: averageUserFlags,
-    name: 'Average rating',
-    type: 'scatter',
-    mode: 'markers',
-    marker: {
-      size: 11,
-      color: 'red',
-      symbol: 'circle-open',
-    },
-    // text,
-    // hovertemplate: '%{text}',
-  };
-
-  const traceAverageNotUserFlags = {
-    x: notUserFlagPositions,
-    y: aerageNotUserFlags,
-    name: 'Average on self',
-    type: 'scatter',
-    mode: 'markers',
-    marker: {
-      size: 6,
-      color: 'gray',
-      symbol: 'circle-open',
-    },
-    // text,
-    // hovertemplate: '%{text}',
-  };
-
-  /**
-   * CREATE UNDERLYING BAR CHART TO HIGHLIGHT USER FLAGS
-   */
-
-  const barUserFlag = {
-    x: userFlagPositions,
-    y: userFlagPositions.map(() => 5),
-    width: 1,
-    name: 'User flags',
-    type: 'bar',
-    marker: { color: 'red', opacity: 0.4 },
-  };
-
-  // const text = useMemo(() => entryData.map((e, i) => {
-  //   const rounded = Math.round(e * 100) / 100;
-  //   if (userData[i]) {
-  //     return `Flag average: ${rounded}<br />User Score: ${userData[i]}<br />Delta: ${Math.round((e - userData[i]) * 100) / 100}`;
-  //   }
-  //   return `Flag average: ${rounded}<br />User Score: None`;
-  // }), [userData, entryData]);
-
-  const data = [traceUserRatingsUserFlags, traceAverageUserFlags, traceUserRatingsNotUserFlags, traceAverageNotUserFlags, barUserFlag];
+  const data = [traceUserSelected, traceUserUnselected, traceEntrySelected, traceEntryUnselected, traceBarSelected];
 
   /**
    * COUNT NUMBER OF RATINGS FROM USER
