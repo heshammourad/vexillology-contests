@@ -178,14 +178,19 @@ function AnalyzeVotes() {
                 username, votes, userAvg, entryAvg, setUsername,
               }}
               />
+              <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
+
             </Box>
             <Box>
               <CompareAverages {...{
                 username, votes, entryAvg, entryUserLookup, entryPositionLookup,
               }}
               />
+              <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
+
             </Box>
           </Container>
+
           <UserSelector
             title="User 2: "
             noVotes={!userAvg.length}
@@ -199,13 +204,17 @@ function AnalyzeVotes() {
                 username, username2, votes, entryPositionLookup, setUsername2,
               }}
               />
+              <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
+
             </Box>
             <Box>
               <CompareVotes {...{
                 username, votes, entryAvg, entryUserLookup, username2, entryPositionLookup,
               }}
               />
+              <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
             </Box>
+
           </Container>
         </PageContainer>
 

@@ -5,7 +5,9 @@ import { useMemo } from 'react';
 import Plot from 'react-plotly.js';
 
 import MARKERS from './markers';
-import { createScatter, roundTwoDecimals, splitter } from './splitter';
+import {
+  createScatter, roundTwoDecimals, splitter, trimUsername,
+} from './splitter';
 
 /**
  * Compare user activity across each flag
@@ -63,11 +65,12 @@ function CompareAverages({
 
   const [textUnselected, textSelected] = splitter(text, userFlagPositions);
 
-  const traceUserSelected = createScatter('User score (self)', xAxisSelected, userSelected, MARKERS.user1.selected, textSelected);
-  const traceUserUnselected = createScatter('User score', xAxisUnselected, userUnselected, MARKERS.user1.unselected, textUnselected);
+  const usernameTrim = trimUsername(username);
+  const traceUserSelected = createScatter(`${usernameTrim} score (self)`, xAxisSelected, userSelected, MARKERS.user1.selected, textSelected);
+  const traceUserUnselected = createScatter(`${usernameTrim} score`, xAxisUnselected, userUnselected, MARKERS.user1.unselected, textUnselected);
   const traceEntrySelected = createScatter('Average rating (self)', xAxisSelected, entrySelected, MARKERS.average.selected, textSelected);
   const traceEntryUnselected = createScatter('Average rating', xAxisUnselected, entryUnselected, MARKERS.average.unselected, textUnselected);
-  const traceBarSelected = createScatter('Self submissions', xAxisSelected, xAxisSelected.map(() => 5), MARKERS.bar, undefined, true);
+  const traceBarSelected = createScatter('Self submissions', xAxisSelected, xAxisSelected.map(() => 5), MARKERS.bar.user, undefined, true);
 
   const data = [traceUserSelected, traceUserUnselected, traceEntrySelected, traceEntryUnselected, traceBarSelected];
 

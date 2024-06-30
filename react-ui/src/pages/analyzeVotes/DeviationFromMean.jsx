@@ -10,37 +10,18 @@ import {
 } from './splitter';
 
 /**
- * Compare suer activity across each flag
+ * Compare user activity across each flag
  */
 function DeviationFromMean({
   username, votes, userAvg, entryAvg, setUsername,
 }) {
   /**
-   * LEFT RIGHT ARROW KEYS
+   * HELPER ARRAY(S)
    */
   const usernamesByAvg = useMemo(() => userAvg.sort((a, b) => a.average - b.average).map((ua) => ua.username), [userAvg]);
 
-  const handleKeyUp = useCallback(({ key }) => {
-    if (key === 'ArrowLeft' || key === 'ArrowRight') {
-      setUsername((prev) => {
-        const index = usernamesByAvg.indexOf(prev);
-        if (key === 'ArrowLeft') {
-          return usernamesByAvg[index - 1] || usernamesByAvg[usernamesByAvg.length - 1];
-        }
-        return usernamesByAvg[index + 1] || usernamesByAvg[0];
-      });
-    }
-  }, [usernamesByAvg]);
-
-  useEffect(() => {
-    window.addEventListener('keyup', handleKeyUp);
-    return () => {
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, [handleKeyUp]);
-
   /**
-   * POSITIONS OF EACH USER
+   * POSITION OF USER
    */
   const userPosition = useMemo(() => [userAvg.findIndex((ua) => ua.username === username)], [userAvg, username]);
 
@@ -84,7 +65,7 @@ function DeviationFromMean({
   const [zScoreUnselected, zScoreSelected] = splitter(zScoreData, userPosition);
 
   const text = useMemo(() => averagesData.map((a, i) => `User: ${trimUsername(usernamesByAvg[i], 20)}<br />Avg: ${roundTwoDecimals(a)}<br />Z-score: ${roundTwoDecimals(zScoreData[i])}`), [averagesData, usernamesByAvg, zScoreData]);
-  const [textSelected, textUnselected] = splitter(text, userPosition);
+  const [textUnselected, textSelected] = splitter(text, userPosition);
 
   const traceSelected = createScatter(trimUsername(username, 8), averagesSelected, zScoreSelected, MARKERS.general.selected, textSelected);
   const traceUnselected = createScatter('Other users', averagesUnselected, zScoreUnselected, MARKERS.general.unselected, textUnselected);
@@ -96,6 +77,28 @@ function DeviationFromMean({
     xaxis: { title: 'User average' },
     yaxis: { title: 'Negativity / positivity (z̄ score)' },
   };
+
+  /**
+   * NAVIGATION
+   */
+  const handleKeyUp = useCallback(({ key }) => {
+    if (key === 'ArrowLeft' || key === 'ArrowRight') {
+      setUsername((prev) => {
+        const index = usernamesByAvg.indexOf(prev);
+        if (key === 'ArrowLeft') {
+          return usernamesByAvg[index - 1] || usernamesByAvg[usernamesByAvg.length - 1];
+        }
+        return usernamesByAvg[index + 1] || usernamesByAvg[0];
+      });
+    }
+  }, [usernamesByAvg]);
+
+  useEffect(() => {
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [handleKeyUp]);
 
   return (
     <Plot

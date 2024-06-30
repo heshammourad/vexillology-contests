@@ -4,19 +4,51 @@ import PropTypes, { object } from 'prop-types';
 import { useMemo } from 'react';
 import Plot from 'react-plotly.js';
 
-const MAX_LEGEND_CHARS = 6;
+import MARKERS from './markers';
+import {
+  createScatter, roundTwoDecimals, splitter, trimUsername,
+} from './splitter';
 
 /**
- * Compare suer activity across each flag
+ * Compare user activity across each flag
  */
-function CompareAverages({
-  username, votes, entryAvg, entryUserLookup, entryPositionLookup, username2,
+function CompareVotes({
+  username, username2, votes, entryAvg, entryUserLookup, entryPositionLookup,
 }) {
-  // Just number the X axis
   const xAxis = Array.from({ length: entryAvg.length }, (_, index) => index + 1);
 
+  /**
+   * POSITIONS OF USER_SUBMITTED FLAGS
+   */
+  const userFlagPositions = useMemo(() => {
+    const flags = [];
+    entryAvg.forEach((ea) => {
+      if (entryUserLookup[ea.entryId] === username) {
+        // Note sure why this needs to be plus one...
+        flags.push(entryPositionLookup[ea.entryId]);
+      }
+    });
+    return flags;
+  }, [username, entryAvg]);
+  const user2FlagPositions = useMemo(() => {
+    const flags = [];
+    entryAvg.forEach((ea) => {
+      if (entryUserLookup[ea.entryId] === username2) {
+        // Note sure why this needs to be plus one...
+        flags.push(entryPositionLookup[ea.entryId]);
+      }
+    });
+    return flags;
+  }, [username2, entryAvg]);
+
+  const [xAxisUnselected, xAxisSelected] = splitter(xAxis, userFlagPositions);
+  const [xAxis2Unselected, xAxis2Selected] = splitter(xAxis, user2FlagPositions);
+
+  /**
+   * EXTRACT USER RATINGS IN SAME ORDER AS FLAGS
+   */
   const userData = useMemo(() => {
-    const array = new Array(Object.keys(entryPositionLookup).length);
+    const array = (new Array(Object.keys(entryPositionLookup).length));
     votes.forEach((vote) => {
       if (vote.username === username) {
         array[entryPositionLookup[vote.entryId]] = vote.rating;
@@ -26,8 +58,9 @@ function CompareAverages({
     return array;
   }, [entryPositionLookup, username]);
 
+  const [userUnselected, userSelected] = splitter(userData, userFlagPositions, true);
   const user2Data = useMemo(() => {
-    const array = new Array(Object.keys(entryPositionLookup).length);
+    const array = (new Array(Object.keys(entryPositionLookup).length));
     votes.forEach((vote) => {
       if (vote.username === username2) {
         array[entryPositionLookup[vote.entryId]] = vote.rating;
@@ -37,115 +70,48 @@ function CompareAverages({
     return array;
   }, [entryPositionLookup, username2]);
 
-  // Sort entry averages to match userData
+  const [user2Unselected, user2Selected] = splitter(user2Data, user2FlagPositions, true);
+
+  /**
+   * EXTRACT AVERAGE SCORE IN SAME ORDER AS FLAGS
+   */
   const entryData = useMemo(() => entryAvg.map((ea) => ea.average), [entryAvg]);
 
+  const [entryUnselected] = splitter(entryData, [...userFlagPositions, ...user2FlagPositions]);
+  const [discard, entrySelected] = splitter(entryData, userFlagPositions);
+  const [discard2, entry2Selected] = splitter(entryData, user2FlagPositions);
+
+  // const text = useMemo(() => entryData.map((e, i) => {
+  //   const rounded = Math.round(e * 100) / 100;
+  //   return `Flag average: ${rounded}<br />User Score: ${userData[i] || 'None'}<br />User 2 Score: ${user2Data[i] || 'None'}`;
+  // }), [userData, user2Data, entryData]);
+
   const text = useMemo(() => entryData.map((e, i) => {
-    const rounded = Math.round(e * 100) / 100;
-    return `Flag average: ${rounded}<br />User Score: ${userData[i] || 'None'}<br />User 2 Score: ${user2Data[i] || 'None'}`;
+    if (typeof userData[i] === 'number') {
+      return `User score: ${userData[i]}<br />User 2 score: ${user2Data[i]}<br />Flag average: ${roundTwoDecimals(e)}`;
+    }
+    return `User Score: None<br />Flag average: ${roundTwoDecimals(e)}`;
   }), [userData, user2Data, entryData]);
 
-  const userColors = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 'red' : 'green')), [username, entryUserLookup]);
-  const userSizes = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 11 : 8)), [username, entryUserLookup]);
+  const [textUnselected, textSelected] = splitter(text, userFlagPositions);
 
-  const scatterUser = {
-    x: xAxis,
-    y: userData,
-    name: `${username.length < MAX_LEGEND_CHARS ? username : username.substring(0, MAX_LEGEND_CHARS)}... votes`,
-    type: 'scatter',
-    mode: 'markers',
-    marker: {
-      size: userSizes,
-      color: userColors,
-    },
-    text,
-    hovertemplate: '%{text}',
-  };
+  const usernameTrim = trimUsername(username);
+  const username2Trim = trimUsername(username2);
 
-  const user2Colors = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username2 ? 'orange' : 'blue')), [username2, entryUserLookup]);
-  const user2Sizes = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username2 ? 11 : 8)), [username2, entryUserLookup]);
+  const traceUserSelected = createScatter(`${usernameTrim} score (self)`, xAxisSelected, userSelected, MARKERS.user1.selected, textSelected);
+  const traceUserUnselected = createScatter(`${usernameTrim} score`, xAxisUnselected, userUnselected, MARKERS.user1.unselected, textUnselected);
+  const traceUser2Selected = createScatter(`${username2Trim} score (self)`, xAxis2Selected, user2Selected, MARKERS.user2.selected, textSelected);
+  const traceUser2Unselected = createScatter(`${username2Trim} score`, xAxis2Unselected, user2Unselected, MARKERS.user2.unselected, textUnselected);
+  const traceEntrySelected = createScatter('Average rating (self)', xAxisSelected, entrySelected, MARKERS.average.selected, textSelected);
+  const traceEntry2Selected = createScatter('Average rating (self)', xAxis2Selected, entry2Selected, MARKERS.average.selected2, textSelected);
+  const traceEntryUnselected = createScatter('Average rating', xAxisUnselected, entryUnselected, MARKERS.average.unselected, textUnselected);
+  const traceBarSelected = createScatter(`${usernameTrim} submission(s)`, xAxisSelected, xAxisSelected.map(() => 5), MARKERS.bar.user, undefined, true);
+  const traceBar2Selected = createScatter(`${username2Trim} submission(s)`, xAxis2Selected, xAxis2Selected.map(() => 5), MARKERS.bar.user2, undefined, true);
 
-  const scatterUser2 = {
-    x: xAxis,
-    y: user2Data,
-    name: `${username2.length < MAX_LEGEND_CHARS ? username2 : username2.substring(0, MAX_LEGEND_CHARS)}... votes`,
-    type: 'scatter',
-    mode: 'markers',
-    marker: {
-      size: user2Sizes,
-      color: user2Colors,
-      symbol: 'diamond',
-    },
-    text,
-    hovertemplate: '%{text}',
-  };
-
-  const entryColors = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username ? 'red' : entryUserLookup[ea.entryId] === username2 ? 'orange' : 'gray')), [username, username2, entryUserLookup]);
-  const entrySizes = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username || entryUserLookup[ea.entryId] === username2 ? 11 : 6)), [username, username2, entryUserLookup]);
-  const entrySymbols = useMemo(() => entryAvg.map((ea) => (entryUserLookup[ea.entryId] === username2 ? 'diamond-open' : 'circle-open')), [username2, entryUserLookup]);
-
-  const scatterEntries = {
-    x: xAxis,
-    y: entryData,
-    name: 'Flag average',
-    type: 'scatter',
-    mode: 'markers',
-    marker: {
-      size: entrySizes,
-      symbol: entrySymbols,
-      line: {
-        width: 2,
-      },
-      color: entryColors,
-    },
-    text,
-    hovertemplate: '%{text}',
-  };
-
-  const userFlags = useMemo(() => {
-    const flags = [];
-    entryAvg.forEach((ea) => {
-      if (entryUserLookup[ea.entryId] === username) {
-        // Note sure why this needs to be plus one...
-        flags.push(entryPositionLookup[ea.entryId] + 1);
-      }
-    });
-    return flags;
-  }, [username, entryAvg]);
-
-  const barUserFlag = {
-    x: userFlags,
-    y: userFlags.map(() => 5),
-    width: 1,
-    name: 'User flags',
-    type: 'bar',
-    marker: { color: 'red', opacity: 0.4 },
-  };
-
-  const user2Flags = useMemo(() => {
-    const flags = [];
-    entryAvg.forEach((ea) => {
-      if (entryUserLookup[ea.entryId] === username2) {
-        // Note sure why this needs to be plus one...
-        flags.push(entryPositionLookup[ea.entryId] + 1);
-      }
-    });
-    return flags;
-  }, [username2, entryAvg]);
-
-  const barUser2Flag = {
-    x: user2Flags,
-    y: user2Flags.map(() => 5),
-    width: 1,
-    name: 'User 2 flags',
-    type: 'bar',
-    marker: { color: 'orange', opacity: 0.4 },
-  };
-
-  const data = [scatterUser, scatterUser2, scatterEntries, barUserFlag, barUser2Flag];
+  const data = [traceUserSelected, traceUserUnselected, traceUser2Selected, traceUser2Unselected, traceEntrySelected, traceEntryUnselected, traceEntry2Selected, traceBarSelected, traceBar2Selected];
 
   const layout = {
-    title: `${username}'s and ${username2}'s votes`,
+    title: `${username}'s votes to ${username2}'s`,
     xaxis: { title: 'Flag' },
     yaxis: { title: 'Score', range: [-0.5, 5.5] },
   };
@@ -159,13 +125,12 @@ function CompareAverages({
   );
 }
 
-export default CompareAverages;
+export default CompareVotes;
 
-CompareAverages.propTypes = {
+CompareVotes.propTypes = {
   entryAvg: PropTypes.arrayOf(object).isRequired,
   entryUserLookup: PropTypes.object.isRequired,
   entryPositionLookup: PropTypes.object.isRequired,
   username: PropTypes.string.isRequired,
-  username2: PropTypes.string.isRequired,
   votes: PropTypes.arrayOf(object).isRequired,
 };
