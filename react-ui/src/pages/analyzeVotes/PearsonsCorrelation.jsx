@@ -55,10 +55,11 @@ function PearsonsCorrelation({
       const den = Math.sqrt((sum1Sq - ((sum1 * sum1) / n)) * (sum2Sq - ((sum2 * sum2) / n)));
 
       // Should this be null and filtered?
-      if (den === 0) { return { username: u, pearsons: 0 }; }
+      if (n === 0 || den === 0) { return { username: u, pearsons: undefined }; }
 
       return { username: u, pearsons: num / den };
-    }).sort((a, b) => a.pearsons - b.pearsons);
+    }).filter((p) => p.pearsons !== undefined)
+      .sort((a, b) => a.pearsons - b.pearsons);
   }, [username, votes, entryPositionLookup]);
 
   /**
