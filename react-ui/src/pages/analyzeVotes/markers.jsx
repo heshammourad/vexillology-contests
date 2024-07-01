@@ -6,42 +6,37 @@ const MARKERS = {
     selected: { size: LARGE, color: 'red' },
     unselected: { size: SMALL, color: 'black' },
   },
-  user1: {
-    selected: { size: LARGE, color: 'red' },
-    unselected: { size: SMALL, color: 'green' },
+  user: {
+    submitted: { size: LARGE, color: 'green' },
+    none: { size: SMALL, color: 'green' },
+    shared: { size: SMALL, color: 'green' },
+    unshared: { size: SMALL, color: 'green', opacity: 0.3 },
   },
   user2: {
-    selected: { size: LARGE, color: 'blueviolet', symbol: 'diamond' },
-    unselected: { size: SMALL, color: 'blue', symbol: 'diamond' },
+    submitted: { size: LARGE, color: 'blueviolet', symbol: 'diamond' },
+    shared: { size: SMALL, color: 'blueviolet', symbol: 'diamond' },
+    unshared: {
+      size: SMALL, color: 'blueviolet', symbol: 'diamond', opacity: 0.3,
+    },
   },
   average: {
-    selected: {
+    submitted: {
       size: LARGE,
-      color: 'red',
-      symbol: 'circle-open',
-      line: {
-        width: 2,
-      },
+      color: 'gray',
     },
-    selected2: {
+    submitted2: {
       size: LARGE,
-      color: 'blueviolet',
-      symbol: 'diamond-open',
-      line: {
-        width: 2,
-      },
+      color: 'gray',
+      symbol: 'diamond',
     },
-    unselected: {
+    none: {
       size: SMALL,
       color: 'gray',
-      symbol: 'circle-open',
-      line: {
-        width: 2,
-      },
+      opacity: 0.5,
     },
   },
   bar: {
-    user: { color: 'red', opacity: 0.4 },
+    user: { color: 'green', opacity: 0.3 },
     user2: { color: 'blueviolet', opacity: 0.4 },
   },
 };

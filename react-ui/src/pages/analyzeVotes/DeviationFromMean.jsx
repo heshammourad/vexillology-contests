@@ -4,10 +4,12 @@ import PropTypes, { object } from 'prop-types';
 import { useCallback, useEffect, useMemo } from 'react';
 import Plot from 'react-plotly.js';
 
-import MARKERS from './markers';
 import {
-  createScatter, roundTwoDecimals, splitter, trimUsername,
-} from './splitter';
+  roundTwoDecimals, createTraces, trimUsername,
+} from './functions';
+import MARKERS from './markers';
+
+const GROUP = { selected: 0, none: 1 };
 
 /**
  * Compare user activity across each flag
@@ -16,61 +18,49 @@ function DeviationFromMean({
   username, votes, userAvg, entryAvg, setUsername,
 }) {
   /**
-   * HELPER ARRAY(S)
+   * Z SCORE FOR EACH USER
    */
-  const usernamesByAvg = useMemo(() => userAvg.sort((a, b) => a.average - b.average).map((ua) => ua.username), [userAvg]);
-
-  /**
-   * POSITION OF USER
-   */
-  const userPosition = useMemo(() => [userAvg.findIndex((ua) => ua.username === username)], [userAvg, username]);
-
-  /**
-   * AVERAGE FOR EACH USER, ORDERED BY AVERAGE FOR EACH USER
-   */
-  const averagesData = useMemo(() => userAvg.map((ua) => ua.average), [userAvg]);
-  const [averagesUnselected, averagesSelected] = splitter(averagesData, userPosition);
-
-  /**
-   * Z SCORE FOR EACH USER, ORDERED BY AVERAGE FOR EACH USER
-   */
-  const zScoreData = useMemo(() => {
-    // STANDARD DEVIATION
-    const entryRatings = {};
-    const entryAverageLookup = entryAvg.reduce((acc, curr) => ({ ...acc, [curr.entryId]: curr.average }), {});
-
-    votes.forEach((v) => {
-      if (!entryRatings[v.entryId]) {
-        entryRatings[v.entryId] = [];
+  const zScoresByUser = useMemo(() => {
+    const allVotesByEntry = votes.reduce((acc, vote) => {
+      if (!acc[vote.entryId]) {
+        acc[vote.entryId] = [];
       }
-      entryRatings[v.entryId].push(v.rating);
-    });
+      acc[vote.entryId].push(vote.rating);
+      return acc;
+    }, {});
 
-    const entryDeviationLookup = Object.keys(entryRatings).reduce((acc, entryId) => {
-      const differences = entryRatings[entryId].map((rating) => (rating - entryAverageLookup[entryId]) ** 2);
+    // Entry average
+    const averagesByEntry = entryAvg.reduce((acc, curr) => ({ ...acc, [curr.entryId]: curr.average }), {});
+    // Entry standard deviation
+    const deviationByEntry = Object.keys(allVotesByEntry).reduce((acc, entryId) => {
+      const differences = allVotesByEntry[entryId].map((rating) => (rating - averagesByEntry[entryId]) ** 2);
       const sd = Math.sqrt(differences.reduce((a, b) => a + b, 0) / differences.length);
       return { ...acc, [entryId]: sd };
     }, {});
 
-    const userZScores = {};
-    votes.forEach((v) => {
-      if (!userZScores[v.username]) {
-        userZScores[v.username] = [];
+    return votes.reduce((acc, vote) => {
+      if (!acc[vote.username]) {
+        acc[vote.username] = [];
       }
-      userZScores[v.username].push((v.rating - entryAverageLookup[v.entryId]) / entryDeviationLookup[v.entryId]);
-    });
-
-    return userAvg.map((ua) => userZScores[ua.username].reduce((a, b) => a + b, 0) / userZScores[ua.username].length);
+      acc[vote.username].push((vote.rating - averagesByEntry[vote.entryId]) / deviationByEntry[vote.entryId]);
+      return acc;
+    }, {});
   }, [votes, userAvg, entryAvg]);
-  const [zScoreUnselected, zScoreSelected] = splitter(zScoreData, userPosition);
 
-  const text = useMemo(() => averagesData.map((a, i) => `User: ${trimUsername(usernamesByAvg[i], 20)}<br />Avg: ${roundTwoDecimals(a)}<br />Z-score: ${roundTwoDecimals(zScoreData[i])}`), [averagesData, usernamesByAvg, zScoreData]);
-  const [textUnselected, textSelected] = splitter(text, userPosition);
+  const dataPoints = userAvg.map((ua) => {
+    const zScore = zScoresByUser[ua.username].reduce((a, b) => a + b, 0) / zScoresByUser[ua.username].length;
+    return {
+      x: ua.average,
+      y: zScore,
+      group: ua.username === username ? GROUP.selected : GROUP.none,
+      text: `User: ${trimUsername(ua.username, 20)}<br />Avg: ${roundTwoDecimals(ua.average)}<br />Z-score: ${roundTwoDecimals(zScore)}`,
+    };
+  });
 
-  const traceSelected = createScatter(trimUsername(username, 8), averagesSelected, zScoreSelected, MARKERS.general.selected, textSelected);
-  const traceUnselected = createScatter('Other users', averagesUnselected, zScoreUnselected, MARKERS.general.unselected, textUnselected);
-
-  const data = [traceSelected, traceUnselected];
+  const data = createTraces(dataPoints, [
+    { name: trimUsername(username), marker: MARKERS.general.selected },
+    { name: 'Other users', marker: MARKERS.general.unselected },
+  ]);
 
   const layout = {
     title: 'How positive are users?',
@@ -81,6 +71,8 @@ function DeviationFromMean({
   /**
    * NAVIGATION
    */
+  const usernamesByAvg = useMemo(() => userAvg.sort((a, b) => a.average - b.average).map((ua) => ua.username), [userAvg]);
+
   const handleKeyUp = useCallback(({ key }) => {
     if (key === 'ArrowLeft' || key === 'ArrowRight') {
       setUsername((prev) => {

@@ -22,10 +22,10 @@ import useContestId from '../../data/useContestId';
 import useSwrContests from '../../data/useSwrContests';
 import useSwrModAnalyze from '../../data/useSwrModAnalyze';
 
-import CompareAverages from './CompareAverages';
-import CompareVotes from './CompareVotes';
 import DeviationFromMean from './DeviationFromMean';
 import PearsonsCorrelation from './PearsonsCorrelation';
+import UserVsAverage from './UserVsAverage';
+import UserVsUser from './UserVsUser';
 
 const useStyles = makeStyles(() => ({
   selector: {
@@ -46,7 +46,7 @@ function UserSelector({
   username, noVotes, setUsername, usernames, title,
 }) {
   const classes = useStyles(0);
-  const arrows = title === 'User: ' ? 'left-right' : 'up-down';
+  const arrows = title === 'User 1: ' ? 'left-right' : 'up-down';
 
   return (
     <Box className={classes.sideBySide}>
@@ -182,7 +182,7 @@ function AnalyzeVotes() {
 
             </Box>
             <Box>
-              <CompareAverages {...{
+              <UserVsAverage {...{
                 username, votes, entryAvg, entryUserLookup, entryPositionLookup,
               }}
               />
@@ -208,7 +208,7 @@ function AnalyzeVotes() {
 
             </Box>
             <Box>
-              <CompareVotes {...{
+              <UserVsUser {...{
                 username, votes, entryAvg, entryUserLookup, username2, entryPositionLookup,
               }}
               />

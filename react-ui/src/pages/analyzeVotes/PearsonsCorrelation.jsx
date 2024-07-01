@@ -4,10 +4,12 @@ import PropTypes from 'prop-types';
 import { useCallback, useEffect, useMemo } from 'react';
 import Plot from 'react-plotly.js';
 
-import MARKERS from './markers';
 import {
-  createScatter, roundTwoDecimals, splitter, trimUsername,
-} from './splitter';
+  roundTwoDecimals, createTraces, trimUsername,
+} from './functions';
+import MARKERS from './markers';
+
+const GROUP = { selected: 0, none: 1 };
 
 /**
  * Compare user similarity
@@ -19,35 +21,34 @@ function PearsonsCorrelation({
    * CALCULATE PEARSONS
    */
   const pearsons = useMemo(() => {
-    // ERROR
+    // USER DOES NOT EXISTS
     if (!username) { return []; }
 
-    // {[username]: rating[]}
     const numberOfEntries = Object.keys(entryPositionLookup).length;
-    const votesByUserAllEntries = {};
-    votes.forEach((vote) => {
-      if (!votesByUserAllEntries[vote.username]) {
-        votesByUserAllEntries[vote.username] = new Array(numberOfEntries);
+    const allVotesByUser = votes.reduce((acc, vote) => {
+      if (!acc[vote.username]) {
+        acc[vote.username] = new Array(numberOfEntries);
       }
-      votesByUserAllEntries[vote.username][entryPositionLookup[vote.entryId]] = vote.rating;
-    });
+      acc[vote.username][entryPositionLookup[vote.entryId]] = vote.rating;
+      return acc;
+    }, {});
 
-    // ERROR
-    if (!votesByUserAllEntries[username]) { return []; }
+    const userVotes = allVotesByUser[username];
+    // USER DID NOT VOTE
+    if (!userVotes) { return []; }
 
-    const userVotes = votesByUserAllEntries[username];
-    return Object.keys(votesByUserAllEntries).filter((u) => u !== username).map((u) => {
-      const user2Votes = votesByUserAllEntries[u];
+    return Object.keys(allVotesByUser).filter((u) => u !== username).map((u) => {
+      const otherUser = allVotesByUser[u];
       let sum1 = 0; let sum2 = 0; let sum1Sq = 0; let sum2Sq = 0; let sumProduct = 0;
       let n = 0;
       userVotes.forEach((vote, index) => {
-        const vote2 = user2Votes[index];
-        if (typeof vote === 'number' && typeof vote2 === 'number') {
+        const othersVote = otherUser[index];
+        if (vote > -1 && othersVote > -1) {
           sum1 += vote;
-          sum2 += vote2;
+          sum2 += othersVote;
           sum1Sq += vote * vote;
-          sum2Sq += vote2 * vote2;
-          sumProduct += vote * vote2;
+          sum2Sq += othersVote * othersVote;
+          sumProduct += vote * othersVote;
           n += 1;
         }
       });
@@ -55,43 +56,32 @@ function PearsonsCorrelation({
       const den = Math.sqrt((sum1Sq - ((sum1 * sum1) / n)) * (sum2Sq - ((sum2 * sum2) / n)));
 
       // Should this be null and filtered?
-      if (n === 0 || den === 0) { return { username: u, pearsons: undefined }; }
+      if (n === 0 || den === 0) { return { username: u, correlation: undefined }; }
 
-      return { username: u, pearsons: num / den };
-    }).filter((p) => p.pearsons !== undefined)
-      .sort((a, b) => a.pearsons - b.pearsons);
+      return { username: u, correlation: num / den };
+    }).filter((p) => p.correlation !== undefined)
+      .sort((a, b) => a.correlation - b.correlation);
   }, [username, votes, entryPositionLookup]);
 
-  /**
-   * SPLIT INTO AXES
-   */
-  const xAxis = Array.from({ length: pearsons.length }, (_, index) => index + 1);
-  const yAxis = useMemo(() => pearsons.map((p) => p.pearsons), [pearsons]);
-  const usernames = useMemo(() => pearsons.map((p) => p.username), [pearsons]);
+  const userPoints = pearsons.map((p, i) => ({
+    x: i,
+    y: p.correlation,
+    group: p.username === username2 ? GROUP.selected : GROUP.none,
+    text: `User 2: ${trimUsername(p.username)}<br />Pearsons: ${roundTwoDecimals(p.correlation)}`,
+  }));
 
-  /**
-   * POSITION OF USER 2
-   */
-  const user2Position = useMemo(() => [usernames.indexOf(username2)], [usernames, username2]);
+  const data = createTraces(userPoints, [
+    { name: trimUsername(username2, 20), marker: MARKERS.general.selected },
+    { name: 'Other users', marker: MARKERS.general.unselected },
+  ]);
 
-  const [pearsonsUnselected, pearsonsSelected] = splitter(yAxis, user2Position);
-  const [xAxisUnselected, xAxisSelected] = splitter(xAxis, user2Position);
-  // hovertemplate: 'User: %{text}<br />Pearsons: %{y:.2f}',
-  const text = useMemo(() => pearsons.map((p) => `User 2: ${trimUsername(p.username, 20)}<br />Pearsons: ${roundTwoDecimals(p.pearsons)}`), [pearsons]);
-  const [textUnselected, textSelected] = splitter(text, user2Position);
-
-  const traceSelected = createScatter(trimUsername(username2, 8), xAxisSelected, pearsonsSelected, MARKERS.general.selected, textSelected);
-  const traceUnselected = createScatter('Other users', xAxisUnselected, pearsonsUnselected, MARKERS.general.unselected, textUnselected);
-  // const text = useMemo(() => pearsons.map((p) => p.username), [pearsons]);
-  // const sizes = useMemo(() => pearsons.map((p) => (p.username === username2 ? 12 : 6)), [pearsons, username2]);
-  // const colors = useMemo(() => pearsons.map((p) => (p.username === username2 ? 'red' : 'black')), [pearsons, username2]);
-
-  const data = [traceSelected, traceUnselected];
   const layout = {
     title: `How similar is ${username} to others?`,
     xaxis: { title: 'User' },
     yaxis: { title: 'Similarity (Pearsons)' },
   };
+
+  const usernames = useMemo(() => pearsons.map((p) => p.username), [pearsons]);
 
   const handleKeyUp = useCallback((event) => {
     const { key } = event;
