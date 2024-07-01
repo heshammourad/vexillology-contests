@@ -24,6 +24,7 @@ import {
   HallOfFame,
   Home,
   ReviewSubmissions,
+  AnalyzeVotes,
   Settings,
   Submission,
 } from './pages';
@@ -67,6 +68,8 @@ function ModalSwitch() {
           <Route path="/contests/:contestId/entry/:entryId" element={<EntryModal />} />
         </Route>
         <Route path="/mod/review" element={<ReviewSubmissions />} />
+        <Route path="/mod/analyze" element={<AnalyzeVotes />} />
+        <Route path="/mod/analyze/:contestId" element={<AnalyzeVotes />} />
         <Route path="/submission" element={<Submission />} />
         <Route
           path="/submit"
