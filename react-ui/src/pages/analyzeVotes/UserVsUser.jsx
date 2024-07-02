@@ -59,13 +59,13 @@ function UserVsUser({
       userPoints[i].group = USER_GROUP.submitted;
       entryPoints[i].group = ENTRY_GROUP.user;
       userBarPoints.push({
-        x: i, y: 5, group: 0,
+        x: i, y: 5, group: 0, text: 'User 1 entry',
       });
     } else if (entryUserLookup[ea.entryId] === username2) {
       user2Points[i].group = USER_GROUP.submitted;
       entryPoints[i].group = ENTRY_GROUP.user2;
       user2BarPoints.push({
-        x: i, y: 5, group: 0,
+        x: i, y: 5, group: 0, text: 'User 2 entry',
       });
     }
     const text = `User score: ${userPoints[i].y ?? 'None'}<br />User 2 score: ${user2Points[i].y ?? 'None'}<br />Flag average: ${roundTwoDecimals(ea.average)}`;

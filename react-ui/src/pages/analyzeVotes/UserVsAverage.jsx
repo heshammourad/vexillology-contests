@@ -43,7 +43,7 @@ function UserVsAverage({
       userPoints[i].group = USER_GROUP.submitted;
       entryPoints[i].group = ENTRY_GROUP.user;
       userBarPoints.push({
-        x: i, y: 5, group: 0,
+        x: i, y: 5, group: 0, text: 'User 1 entry',
       });
     }
     const text = `User score: ${userPoints[i].y ?? 'None'}<br />Flag average: ${roundTwoDecimals(ea.average)}`;
