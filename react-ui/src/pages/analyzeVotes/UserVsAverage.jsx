@@ -62,7 +62,6 @@ function UserVsAverage({
   ]);
 
   const userBarTraces = createTraces(userBarPoints, [{ name: 'User 1 entry', marker: MARKERS.bar.user }], { type: 'bar', width: 1 });
-
   const data = [...userTraces, ...entryTraces, ...userBarTraces];
   const userVotes = userPoints.reduce((acc, curr) => (curr.y > -1 ? acc + 1 : acc), 0);
 

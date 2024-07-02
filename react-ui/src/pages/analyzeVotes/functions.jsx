@@ -2,11 +2,12 @@ export function createTraces(points, groupDetails, plotDetails = {
   mode: 'markers', type: 'scatter',
 }) {
   const initial = groupDetails.map((details) => ({
-    x: [], y: [], text: [], hovertemplate: '%{text}', ...details, ...plotDetails,
+    x: [], y: [], text: [], hovertemplate: '%{text}', ids: [], ...details, ...plotDetails,
   }));
-  return points.reduce((traces, point) => {
+  return points.reduce((traces, point, i) => {
     traces[point.group].x.push(point.x);
     traces[point.group].y.push(point.y);
+    traces[point.group].ids.push(point.id || i);
     traces[point.group].text.push(point.text);
     return traces;
   }, initial);

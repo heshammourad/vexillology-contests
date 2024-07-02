@@ -67,6 +67,7 @@ function PearsonsCorrelation({
   const userPoints = pearsons.map((p, i) => ({
     x: i,
     y: p.correlation,
+    id: p.username,
     group: p.username === username2 ? GROUP.selected : (p.group || GROUP.none),
     text: `User 2: ${trimUsername(p.username)}<br />Pearsons: ${roundTwoDecimals(p.correlation)}`,
   }));
@@ -110,7 +111,7 @@ function PearsonsCorrelation({
     <Plot
       data={data}
       layout={layout}
-      onClick={(e) => setUsername2(usernames[e.points[0].pointIndex])}
+      onClick={(e) => setUsername2(e.points[0].id)}
     />
   );
 }

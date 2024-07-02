@@ -54,6 +54,7 @@ function DeviationFromMean({
     return {
       x: ua.average,
       y: zScore,
+      id: ua.username,
       group,
       text: `User: ${trimUsername(ua.username, 20)}<br />Avg: ${roundTwoDecimals(ua.average)}<br />Z-score: ${roundTwoDecimals(zScore)}`,
     };
@@ -99,7 +100,7 @@ function DeviationFromMean({
     <Plot
       data={data}
       layout={layout}
-      onClick={(e) => setUsername(usernamesByAvg[e.points[0].pointIndex])}
+      onClick={(e) => setUsername(e.points[0].id)}
     />
   );
 }
