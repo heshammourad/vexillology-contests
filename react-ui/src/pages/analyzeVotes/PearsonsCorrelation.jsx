@@ -9,13 +9,13 @@ import {
 } from './functions';
 import MARKERS from './markers';
 
-const GROUP = { selected: 0, none: 1 };
+const GROUP = { selected: 0, none: 1, few: 2 };
 
 /**
  * Compare user similarity
  */
 function PearsonsCorrelation({
-  username, username2, votes, entryPositionLookup, setUsername2,
+  username, username2, votes, entryPositionLookup, setUsername2, voteMinimum,
 }) {
   /**
    * CALCULATE PEARSONS
@@ -41,38 +41,40 @@ function PearsonsCorrelation({
       const otherUser = allVotesByUser[u];
       let sum1 = 0; let sum2 = 0; let sum1Sq = 0; let sum2Sq = 0; let sumProduct = 0;
       let n = 0;
-      userVotes.forEach((vote, index) => {
-        const othersVote = otherUser[index];
-        if (vote > -1 && othersVote > -1) {
+      let numVotes = 0;
+      otherUser.forEach((vote, index) => {
+        const userVote = userVotes[index];
+        if (vote > -1 && userVote > -1) {
           sum1 += vote;
-          sum2 += othersVote;
+          sum2 += userVote;
           sum1Sq += vote * vote;
-          sum2Sq += othersVote * othersVote;
-          sumProduct += vote * othersVote;
+          sum2Sq += userVote * userVote;
+          sumProduct += vote * userVote;
           n += 1;
         }
+        if (vote > -1) { numVotes += 1; }
       });
       const num = sumProduct - ((sum1 * sum2) / n);
       const den = Math.sqrt((sum1Sq - ((sum1 * sum1) / n)) * (sum2Sq - ((sum2 * sum2) / n)));
 
-      // Should this be null and filtered?
       if (n === 0 || den === 0) { return { username: u, correlation: undefined }; }
 
-      return { username: u, correlation: num / den };
+      return { username: u, correlation: num / den, group: numVotes < voteMinimum ? GROUP.few : undefined };
     }).filter((p) => p.correlation !== undefined)
       .sort((a, b) => a.correlation - b.correlation);
-  }, [username, votes, entryPositionLookup]);
+  }, [username, votes, entryPositionLookup, voteMinimum]);
 
   const userPoints = pearsons.map((p, i) => ({
     x: i,
     y: p.correlation,
-    group: p.username === username2 ? GROUP.selected : GROUP.none,
+    group: p.username === username2 ? GROUP.selected : (p.group || GROUP.none),
     text: `User 2: ${trimUsername(p.username)}<br />Pearsons: ${roundTwoDecimals(p.correlation)}`,
   }));
 
   const data = createTraces(userPoints, [
     { name: trimUsername(username2, 20), marker: MARKERS.general.selected },
     { name: 'Other users', marker: MARKERS.general.unselected },
+    { name: `<${voteMinimum} votes`, marker: MARKERS.general.few },
   ]);
 
   const layout = {
@@ -121,6 +123,7 @@ PearsonsCorrelation.propTypes = {
   username2: PropTypes.string,
   votes: PropTypes.arrayOf(PropTypes.object).isRequired,
   setUsername2: PropTypes.func.isRequired,
+  voteMinimum: PropTypes.number.isRequired,
 };
 
 PearsonsCorrelation.defaultProps = {

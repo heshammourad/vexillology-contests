@@ -1,8 +1,10 @@
 /* eslint-disable react/forbid-prop-types */
 import Box from '@material-ui/core/Box';
 import Container from '@material-ui/core/Container';
+import Input from '@material-ui/core/Input';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
+import Slider from '@material-ui/core/Slider';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import format from 'date-fns/format';
@@ -104,13 +106,33 @@ function AnalyzeVotes() {
   } = useSwrModAnalyze(contestId);
   const { state } = useLocation();
 
+  const [voteMinimum, setVoteMinimum] = useState(0);
   const [username, setUsername] = useState('');
   const [username2, setUsername2] = useState('');
 
   const usernamesAlpha = useMemo(() => userAvg.map((ua) => ua.username), [userAvg]);
 
-  const entryPositionLookup = useMemo(() => entryAvg
-    .reduce((acc, curr, i) => ({ ...acc, [curr.entryId]: i }), {}), [entryAvg]);
+  const handleMinimumSlider = (event, newValue) => {
+    setVoteMinimum(newValue);
+  };
+
+  const handleMinimumInput = (event) => {
+    setVoteMinimum(event.target.value === '' ? 0 : Number(event.target.value));
+  };
+
+  const handleMinimumBlur = () => {
+    if (voteMinimum < 0) {
+      setVoteMinimum(0);
+    } else if (voteMinimum > 100) {
+      setVoteMinimum(100);
+    }
+  };
+
+  useEffect(() => {
+    setVoteMinimum((prev) => (
+      prev > Object.keys(entryAvg.length).length ? Object.keys(entryAvg.length).length : prev
+    ));
+  }, [entryAvg]);
 
   useEffect(() => {
     if (!usernamesAlpha.length) { return; }
@@ -127,6 +149,9 @@ function AnalyzeVotes() {
       return usernamesAlpha[usernamesAlpha.length - 1];
     });
   }, [usernamesAlpha]);
+
+  const entryPositionLookup = useMemo(() => entryAvg
+    .reduce((acc, curr, i) => ({ ...acc, [curr.entryId]: i }), {}), [entryAvg]);
 
   // eslint-disable-next-line max-len
   const entryUserLookup = useMemo(() => userEntries.reduce((acc, curr) => ({ ...acc, [curr.id]: curr.user }), {}), [userEntries]);
@@ -164,6 +189,25 @@ function AnalyzeVotes() {
             </Select>
           </Box>
 
+          <Box className={classes.sideBySide}>
+            <Typography style={{ flexShrink: 0, marginRight: 20 }}>Min votes:</Typography>
+            <Slider value={voteMinimum} onChange={handleMinimumSlider} />
+            <Input
+              value={voteMinimum}
+              size="small"
+              onChange={handleMinimumInput}
+              onBlur={handleMinimumBlur}
+              inputProps={{
+                step: 1,
+                min: 0,
+                max: Object.keys(entryAvg).length,
+                type: 'number',
+                'aria-labelledby': 'input-slider',
+              }}
+              style={{ width: '60px', marginLeft: 20 }}
+            />
+          </Box>
+
           <UserSelector
             title="User: "
             noVotes={!userAvg.length}
@@ -172,10 +216,10 @@ function AnalyzeVotes() {
             usernames={usernamesAlpha}
           />
 
-          <Container className={classes.sideBySide}>
+          <Box className={classes.sideBySide}>
             <Box>
               <DeviationFromMean {...{
-                username, votes, userAvg, entryAvg, setUsername,
+                username, votes, userAvg, entryAvg, setUsername, voteMinimum,
               }}
               />
               <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
@@ -189,7 +233,7 @@ function AnalyzeVotes() {
               <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
 
             </Box>
-          </Container>
+          </Box>
 
           <UserSelector
             title="User 2: "
@@ -198,10 +242,10 @@ function AnalyzeVotes() {
             setUsername={setUsername2}
             usernames={usernamesAlpha}
           />
-          <Container className={classes.sideBySide}>
+          <Box className={classes.sideBySide}>
             <Box>
               <PearsonsCorrelation {...{
-                username, username2, votes, entryPositionLookup, setUsername2,
+                username, username2, votes, entryPositionLookup, setUsername2, voteMinimum,
               }}
               />
               <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
@@ -215,7 +259,7 @@ function AnalyzeVotes() {
               <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
             </Box>
 
-          </Container>
+          </Box>
         </PageContainer>
 
       </ProtectedRoute>

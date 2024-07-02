@@ -5,6 +5,7 @@ const MARKERS = {
   general: {
     selected: { size: LARGE, color: 'red' },
     unselected: { size: SMALL, color: 'black' },
+    few: { size: SMALL, color: 'black', opacity: 0.3 },
   },
   user: {
     submitted: { size: LARGE, color: 'green' },

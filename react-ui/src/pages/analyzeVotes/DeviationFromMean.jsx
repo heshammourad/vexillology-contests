@@ -9,13 +9,13 @@ import {
 } from './functions';
 import MARKERS from './markers';
 
-const GROUP = { selected: 0, none: 1 };
+const GROUP = { selected: 0, none: 1, few: 2 };
 
 /**
  * Compare user activity across each flag
  */
 function DeviationFromMean({
-  username, votes, userAvg, entryAvg, setUsername,
+  username, votes, userAvg, entryAvg, setUsername, voteMinimum,
 }) {
   /**
    * Z SCORE FOR EACH USER
@@ -49,10 +49,12 @@ function DeviationFromMean({
 
   const dataPoints = userAvg.map((ua) => {
     const zScore = zScoresByUser[ua.username].reduce((a, b) => a + b, 0) / zScoresByUser[ua.username].length;
+    let group = GROUP.none;
+    if (ua.username === username) { group = GROUP.selected; } else if (zScoresByUser[ua.username].length < voteMinimum) { group = GROUP.few; }
     return {
       x: ua.average,
       y: zScore,
-      group: ua.username === username ? GROUP.selected : GROUP.none,
+      group,
       text: `User: ${trimUsername(ua.username, 20)}<br />Avg: ${roundTwoDecimals(ua.average)}<br />Z-score: ${roundTwoDecimals(zScore)}`,
     };
   });
@@ -60,6 +62,7 @@ function DeviationFromMean({
   const data = createTraces(dataPoints, [
     { name: trimUsername(username), marker: MARKERS.general.selected },
     { name: 'Other users', marker: MARKERS.general.unselected },
+    { name: `<${voteMinimum} votes`, marker: MARKERS.general.few },
   ]);
 
   const layout = {
@@ -109,6 +112,7 @@ DeviationFromMean.propTypes = {
   username: PropTypes.string,
   votes: PropTypes.arrayOf(object).isRequired,
   setUsername: PropTypes.func.isRequired,
+  voteMinimum: PropTypes.number.isRequired,
 };
 
 DeviationFromMean.defaultProps = {
