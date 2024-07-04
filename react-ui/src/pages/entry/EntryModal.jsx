@@ -318,7 +318,7 @@ function EntryModal() {
             )),
             children: <EntryAppBarMain
               entryPosition={entryIndex + 1}
-              numberOfEntries={entries.length}
+              numberOfEntries={entries.length + winners.length}
             />,
           }}
           drawer={{ heading: 'Info', children: <EntryDescriptionDrawer {...{ entryId }} /> }}
