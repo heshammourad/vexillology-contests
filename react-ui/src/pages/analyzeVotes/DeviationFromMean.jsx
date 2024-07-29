@@ -50,7 +50,11 @@ function DeviationFromMean({
   const dataPoints = userAvg.map((ua) => {
     const zScore = zScoresByUser[ua.username].reduce((a, b) => a + b, 0) / zScoresByUser[ua.username].length;
     let group = GROUP.none;
-    if (ua.username === username) { group = GROUP.selected; } else if (zScoresByUser[ua.username].length < voteMinimum) { group = GROUP.few; }
+    if (ua.username === username) {
+      group = GROUP.selected;
+    } else if (zScoresByUser[ua.username].length < voteMinimum) {
+      group = GROUP.few;
+    }
     return {
       x: ua.average,
       y: zScore,

@@ -37,31 +37,36 @@ function PearsonsCorrelation({
     // USER DID NOT VOTE
     if (!userVotes) { return []; }
 
-    return Object.keys(allVotesByUser).filter((u) => u !== username).map((u) => {
+    const validPearsons = [];
+
+    Object.keys(allVotesByUser).filter((u) => u !== username).forEach((u) => {
       const otherUser = allVotesByUser[u];
       let sum1 = 0; let sum2 = 0; let sum1Sq = 0; let sum2Sq = 0; let sumProduct = 0;
       let n = 0;
       let numVotes = 0;
       otherUser.forEach((vote, index) => {
         const userVote = userVotes[index];
-        if (vote > -1 && userVote > -1) {
-          sum1 += vote;
-          sum2 += userVote;
-          sum1Sq += vote * vote;
-          sum2Sq += userVote * userVote;
-          sumProduct += vote * userVote;
-          n += 1;
+        if (vote > -1) {
+          numVotes += 1;
+          if (userVote > -1) {
+            sum1 += vote;
+            sum2 += userVote;
+            sum1Sq += vote * vote;
+            sum2Sq += userVote * userVote;
+            sumProduct += vote * userVote;
+            n += 1;
+          }
         }
-        if (vote > -1) { numVotes += 1; }
       });
       const num = sumProduct - ((sum1 * sum2) / n);
       const den = Math.sqrt((sum1Sq - ((sum1 * sum1) / n)) * (sum2Sq - ((sum2 * sum2) / n)));
 
-      if (n === 0 || den === 0) { return { username: u, correlation: undefined }; }
+      if (n !== 0 && den !== 0) {
+        validPearsons.push({ username: u, correlation: num / den, group: numVotes < voteMinimum ? GROUP.few : undefined });
+      }
+    });
 
-      return { username: u, correlation: num / den, group: numVotes < voteMinimum ? GROUP.few : undefined };
-    }).filter((p) => p.correlation !== undefined)
-      .sort((a, b) => a.correlation - b.correlation);
+    return validPearsons.sort((a, b) => a.correlation - b.correlation);
   }, [username, votes, entryPositionLookup, voteMinimum]);
 
   const userPoints = pearsons.map((p, i) => ({
@@ -86,7 +91,7 @@ function PearsonsCorrelation({
 
   const usernames = useMemo(() => pearsons.map((p) => p.username), [pearsons]);
 
-  const handleKeyUp = useCallback((event) => {
+  const handleKeyDown = useCallback((event) => {
     const { key } = event;
     if (key === 'ArrowUp' || key === 'ArrowDown') {
       event.preventDefault();
@@ -101,11 +106,11 @@ function PearsonsCorrelation({
   }, [setUsername2, usernames]);
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyUp);
+    window.addEventListener('keydown', handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyUp);
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [handleKeyUp]);
+  }, [handleKeyDown]);
 
   return (
     <Plot

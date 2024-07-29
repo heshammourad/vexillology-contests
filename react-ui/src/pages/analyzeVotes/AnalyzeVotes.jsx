@@ -1,6 +1,5 @@
 /* eslint-disable react/forbid-prop-types */
 import Box from '@material-ui/core/Box';
-import Container from '@material-ui/core/Container';
 import Input from '@material-ui/core/Input';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
@@ -29,7 +28,7 @@ import PearsonsCorrelation from './PearsonsCorrelation';
 import UserVsAverage from './UserVsAverage';
 import UserVsUser from './UserVsUser';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles({
   selector: {
     minWidth: '60%',
     paddingTop: 4,
@@ -42,12 +41,12 @@ const useStyles = makeStyles(() => ({
     alignItems: 'center',
     marginTop: 12,
   },
-}));
+});
 
 function UserSelector({
   username, noVotes, setUsername, usernames, title,
 }) {
-  const classes = useStyles(0);
+  const classes = useStyles();
   const arrows = title === 'User 1: ' ? 'left-right' : 'up-down';
 
   return (
@@ -77,12 +76,7 @@ function UserSelector({
         ))}
       </Select>
       <Typography style={{ marginLeft: 10 }}>
-        {' '}
-        or use
-        {' '}
-        {arrows}
-        {' '}
-        arrows
+        {` or use ${arrows} arrows`}
       </Typography>
     </Box>
   );
@@ -110,6 +104,7 @@ function AnalyzeVotes() {
   const [username, setUsername] = useState('');
   const [username2, setUsername2] = useState('');
 
+  const numberOfEntries = Object.keys(entryAvg).length;
   const usernamesAlpha = useMemo(() => userAvg.map((ua) => ua.username), [userAvg]);
 
   const handleMinimumSlider = (event, newValue) => {
@@ -123,16 +118,14 @@ function AnalyzeVotes() {
   const handleMinimumBlur = () => {
     if (voteMinimum < 0) {
       setVoteMinimum(0);
-    } else if (voteMinimum > 100) {
-      setVoteMinimum(100);
+    } else if (voteMinimum > numberOfEntries) {
+      setVoteMinimum(numberOfEntries);
     }
   };
 
   useEffect(() => {
-    setVoteMinimum((prev) => (
-      prev > Object.keys(entryAvg.length).length ? Object.keys(entryAvg.length).length : prev
-    ));
-  }, [entryAvg]);
+    setVoteMinimum((prev) => Math.min(prev, numberOfEntries));
+  }, [numberOfEntries]);
 
   useEffect(() => {
     if (!usernamesAlpha.length) { return; }
@@ -164,7 +157,7 @@ function AnalyzeVotes() {
       <ProtectedRoute errorStatus={error?.response?.status}>
         <PageContainer>
           <Box className={classes.sideBySide}>
-            <Typography>Contest: </Typography>
+            <Typography>Contest:&nbsp;</Typography>
             <Select
               className={classes.selector}
               value={contest}
@@ -179,11 +172,7 @@ function AnalyzeVotes() {
             >
               {contests.map((c) => (
                 <MenuItem key={c.id} value={c}>
-                  {c.name}
-                  {' '}
-                  (
-                  {format(parseISO(c.date), 'MMM yy')}
-                  )
+                  {`${c.name} ${format(parseISO(c.date), 'MMM yy')}`}
                 </MenuItem>
               ))}
             </Select>
@@ -191,7 +180,13 @@ function AnalyzeVotes() {
 
           <Box className={classes.sideBySide}>
             <Typography style={{ flexShrink: 0, marginRight: 20 }}>Min votes:</Typography>
-            <Slider value={voteMinimum} onChange={handleMinimumSlider} />
+            <Slider
+              value={voteMinimum}
+              onChange={handleMinimumSlider}
+              step={1}
+              min={0}
+              max={numberOfEntries}
+            />
             <Input
               value={voteMinimum}
               size="small"
@@ -200,7 +195,7 @@ function AnalyzeVotes() {
               inputProps={{
                 step: 1,
                 min: 0,
-                max: Object.keys(entryAvg).length,
+                max: numberOfEntries,
                 type: 'number',
                 'aria-labelledby': 'input-slider',
               }}
