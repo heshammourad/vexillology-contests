@@ -11,11 +11,14 @@ import MARKERS from './markers';
 const USER_GROUP = { none: 0, submitted: 1, shared: 2 };
 const ENTRY_GROUP = { none: 0, user: 1, user2: 2 };
 
+/**
+ * Display user votes vs user2 votes across entire contest
+ */
 function UserVsUser({
   username, username2, votes, entryAvg, entryUserLookup, entryPositionLookup,
 }) {
   /**
-   * CREATE TRACES
+   * CREATE DATA POINTS FOR TRACES
    */
   const userPoints = Array.from({ length: entryAvg.length }, (_, i) => ({
     x: i, y: undefined, group: USER_GROUP.none,
@@ -30,18 +33,19 @@ function UserVsUser({
   const user2BarPoints = [];
 
   /**
-   * ADD VOTES TO USER TRACES
+   * ADD RATINGS (y-value) TO USER DATA POINTS
    */
   votes.forEach((vote) => {
-    if (vote.username === username) {
+    // TEMP FIX. Sometimes throws TypeError (11vfqjf/mar23), even though user2Points and entryPositionLookup are both derived from entryAvg
+    if (vote.username === username && userPoints[entryPositionLookup[vote.entryId]]) {
       userPoints[entryPositionLookup[vote.entryId]].y = vote.rating;
-    } else if (vote.username === username2) {
+    } else if (vote.username === username2 && user2Points[entryPositionLookup[vote.entryId]]) {
       user2Points[entryPositionLookup[vote.entryId]].y = vote.rating;
     }
   });
 
   /**
-   * MARK USER VOTES WHERE BOTH USERS VOTED ON THE SAME FLAG
+   * MARK FLAGS WHERE BOTH USERS VOTED
    */
   // eslint-disable-next-line no-plusplus
   for (let i = 0; i < userPoints.length; i++) {
@@ -92,6 +96,9 @@ function UserVsUser({
     { name: 'Average on User 2', marker: MARKERS.average.submitted2 },
   ]);
 
+  /**
+   * CONVERT DATA POINTS TO TRACES
+   */
   const userBarTraces = createTraces(userBarPoints, [{ name: 'User 1 entry', marker: MARKERS.bar.user }], { type: 'bar', width: 1 });
   const user2BarTraces = createTraces(user2BarPoints, [{ name: 'User 2 entry', marker: MARKERS.bar.user2 }], { type: 'bar', width: 1 });
 

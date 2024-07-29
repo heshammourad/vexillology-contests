@@ -12,13 +12,15 @@ import MARKERS from './markers';
 const GROUP = { selected: 0, none: 1, few: 2 };
 
 /**
- * Compare user activity across each flag
+ * Determine how unlike the average each user voted
  */
 function DeviationFromMean({
   username, votes, userAvg, entryAvg, setUsername, voteMinimum,
 }) {
   /**
-   * Z SCORE FOR EACH USER
+   * CALCULATE Z SCORE FOR EACH USER
+   * How many standard deviations (sd) away from the mean did this user vote?
+   * (value - mean) / sd
    */
   const zScoresByUser = useMemo(() => {
     const allVotesByEntry = votes.reduce((acc, vote) => {
@@ -29,11 +31,10 @@ function DeviationFromMean({
       return acc;
     }, {});
 
-    // Entry average
-    const averagesByEntry = entryAvg.reduce((acc, curr) => ({ ...acc, [curr.entryId]: curr.average }), {});
-    // Entry standard deviation
-    const deviationByEntry = Object.keys(allVotesByEntry).reduce((acc, entryId) => {
-      const differences = allVotesByEntry[entryId].map((rating) => (rating - averagesByEntry[entryId]) ** 2);
+    const averagesByEntryLookup = entryAvg.reduce((acc, curr) => ({ ...acc, [curr.entryId]: curr.average }), {});
+    // Standard deviation calcution
+    const deviationByEntryLookup = Object.keys(allVotesByEntry).reduce((acc, entryId) => {
+      const differences = allVotesByEntry[entryId].map((rating) => (rating - averagesByEntryLookup[entryId]) ** 2);
       const sd = Math.sqrt(differences.reduce((a, b) => a + b, 0) / differences.length);
       return { ...acc, [entryId]: sd };
     }, {});
@@ -42,19 +43,24 @@ function DeviationFromMean({
       if (!acc[vote.username]) {
         acc[vote.username] = [];
       }
-      acc[vote.username].push((vote.rating - averagesByEntry[vote.entryId]) / deviationByEntry[vote.entryId]);
+      acc[vote.username].push((vote.rating - averagesByEntryLookup[vote.entryId]) / deviationByEntryLookup[vote.entryId]);
       return acc;
     }, {});
   }, [votes, userAvg, entryAvg]);
 
+  /**
+   * CREATE DATA POINTS FOR EACH USER
+   * Using the average of all zScores
+   */
   const dataPoints = userAvg.map((ua) => {
-    const zScore = zScoresByUser[ua.username].reduce((a, b) => a + b, 0) / zScoresByUser[ua.username].length;
     let group = GROUP.none;
     if (ua.username === username) {
       group = GROUP.selected;
     } else if (zScoresByUser[ua.username].length < voteMinimum) {
       group = GROUP.few;
     }
+
+    const zScore = zScoresByUser[ua.username].reduce((a, b) => a + b, 0) / zScoresByUser[ua.username].length;
     return {
       x: ua.average,
       y: zScore,
@@ -64,6 +70,9 @@ function DeviationFromMean({
     };
   });
 
+  /**
+   * CONVERT DATA POINTS TO TRACES
+   */
   const data = createTraces(dataPoints, [
     { name: trimUsername(username), marker: MARKERS.general.selected },
     { name: 'Other users', marker: MARKERS.general.unselected },
@@ -77,7 +86,7 @@ function DeviationFromMean({
   };
 
   /**
-   * NAVIGATION
+   * ALLOW KEYED NAVIGATION OF THIS CHART (left-right arrows)
    */
   const usernamesByAvg = useMemo(() => userAvg.sort((a, b) => a.average - b.average).map((ua) => ua.username), [userAvg]);
 

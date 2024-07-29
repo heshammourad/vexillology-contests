@@ -12,11 +12,14 @@ import MARKERS from './markers';
 const USER_GROUP = { none: 0, submitted: 1 };
 const ENTRY_GROUP = { none: 0, user: 1 };
 
+/**
+ * Display user votes vs the flag average across entire contest
+ */
 function UserVsAverage({
   username, votes, entryAvg, entryUserLookup, entryPositionLookup,
 }) {
   /**
-   * CREATE TRACES
+   * CREATE DATA POINTS FOR TRACES
    */
   const userPoints = Array.from({ length: entryAvg.length }, (_, i) => ({
     x: i, y: undefined, group: USER_GROUP.none,
@@ -27,7 +30,7 @@ function UserVsAverage({
   const userBarPoints = [];
 
   /**
-   * ADD VOTES TO USER TRACES
+   * ADD RATINGS (y-value) TO DATA POINTS
    */
   votes.forEach((vote) => {
     if (vote.username === username) {
@@ -36,7 +39,7 @@ function UserVsAverage({
   });
 
   /**
-   * MARK USER_SUBMITTED ENTRIES
+   * MARK USER SUBMITTED ENTRIES
    */
   entryAvg.forEach((ea, i) => {
     if (entryUserLookup[ea.entryId] === username) {
@@ -51,6 +54,9 @@ function UserVsAverage({
     entryPoints[i].text = text;
   });
 
+  /**
+   * CONVERT DATA POINTS TO TRACES
+   */
   const userTraces = createTraces(userPoints, [
     { name: 'User 1 vote', marker: MARKERS.user.none },
     { name: 'User 1 vote (self)', marker: MARKERS.user.submitted },

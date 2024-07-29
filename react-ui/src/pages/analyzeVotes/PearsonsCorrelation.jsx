@@ -12,16 +12,17 @@ import MARKERS from './markers';
 const GROUP = { selected: 0, none: 1, few: 2 };
 
 /**
- * Compare user similarity
+ * Determine similarity between selected user and all other users
  */
 function PearsonsCorrelation({
   username, username2, votes, entryPositionLookup, setUsername2, voteMinimum,
 }) {
   /**
    * CALCULATE PEARSONS
+   * Do these voting patterns trend in the same direction?
+   * covariance(x, y) / (sd_x * sd_y)
    */
   const pearsons = useMemo(() => {
-    // USER DOES NOT EXISTS
     if (!username) { return []; }
 
     const numberOfEntries = Object.keys(entryPositionLookup).length;
@@ -34,7 +35,7 @@ function PearsonsCorrelation({
     }, {});
 
     const userVotes = allVotesByUser[username];
-    // USER DID NOT VOTE
+    // User did not vote
     if (!userVotes) { return []; }
 
     const validPearsons = [];
@@ -69,6 +70,9 @@ function PearsonsCorrelation({
     return validPearsons.sort((a, b) => a.correlation - b.correlation);
   }, [username, votes, entryPositionLookup, voteMinimum]);
 
+  /**
+   * CREATE DATA POINTS FOR EACH USER
+   */
   const userPoints = pearsons.map((p, i) => ({
     x: i,
     y: p.correlation,
@@ -77,6 +81,9 @@ function PearsonsCorrelation({
     text: `User 2: ${trimUsername(p.username)}<br />Pearsons: ${roundTwoDecimals(p.correlation)}`,
   }));
 
+  /**
+   * CONVERT DATA POINTS TO TRACES
+   */
   const data = createTraces(userPoints, [
     { name: trimUsername(username2, 20), marker: MARKERS.general.selected },
     { name: 'Other users', marker: MARKERS.general.unselected },
@@ -89,8 +96,10 @@ function PearsonsCorrelation({
     yaxis: { title: 'Similarity (Pearsons)' },
   };
 
+  /**
+   * ALLOW KEYED NAVIGATION OF THIS CHART (up-down arrows)
+   */
   const usernames = useMemo(() => pearsons.map((p) => p.username), [pearsons]);
-
   const handleKeyDown = useCallback((event) => {
     const { key } = event;
     if (key === 'ArrowUp' || key === 'ArrowDown') {

@@ -105,7 +105,7 @@ function AnalyzeVotes() {
   const [username2, setUsername2] = useState('');
 
   const numberOfEntries = Object.keys(entryAvg).length;
-  const usernamesAlpha = useMemo(() => userAvg.map((ua) => ua.username), [userAvg]);
+  const usernames = useMemo(() => userAvg.map((ua) => ua.username), [userAvg]);
 
   const handleMinimumSlider = (event, newValue) => {
     setVoteMinimum(newValue);
@@ -128,20 +128,20 @@ function AnalyzeVotes() {
   }, [numberOfEntries]);
 
   useEffect(() => {
-    if (!usernamesAlpha.length) { return; }
+    if (!usernames.length) { return; }
     setUsername((prev) => {
       if (prev) {
-        if (usernamesAlpha.includes(prev)) { return prev; }
+        if (usernames.includes(prev)) { return prev; }
       }
-      return usernamesAlpha[0];
+      return usernames[0];
     });
     setUsername2((prev) => {
       if (prev) {
-        if (usernamesAlpha.includes(prev)) { return prev; }
+        if (usernames.includes(prev)) { return prev; }
       }
-      return usernamesAlpha[usernamesAlpha.length - 1];
+      return usernames[usernames.length - 1];
     });
-  }, [usernamesAlpha]);
+  }, [usernames]);
 
   const entryPositionLookup = useMemo(() => entryAvg
     .reduce((acc, curr, i) => ({ ...acc, [curr.entryId]: i }), {}), [entryAvg]);
@@ -208,7 +208,7 @@ function AnalyzeVotes() {
             noVotes={!userAvg.length}
             username={username}
             setUsername={setUsername}
-            usernames={usernamesAlpha}
+            usernames={usernames}
           />
 
           <Box className={classes.sideBySide}>
@@ -235,7 +235,7 @@ function AnalyzeVotes() {
             noVotes={!userAvg.length}
             username={username2}
             setUsername={setUsername2}
-            usernames={usernamesAlpha}
+            usernames={usernames}
           />
           <Box className={classes.sideBySide}>
             <Box>
