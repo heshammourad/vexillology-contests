@@ -15,7 +15,7 @@ const GROUP = { selected: 0, none: 1, few: 2 };
  * Determine similarity between selected user and all other users
  */
 function PearsonsCorrelation({
-  username, username2, votes, entryPositionLookup, setUsername2, voteMinimum,
+  user1, user2, votes, entryPositionLookup, setUser2, voteMinimum,
 }) {
   /**
    * CALCULATE PEARSONS
@@ -23,7 +23,7 @@ function PearsonsCorrelation({
    * covariance(x, y) / (sd_x * sd_y)
    */
   const pearsons = useMemo(() => {
-    if (!username) { return []; }
+    if (!user1) { return []; }
 
     const numberOfEntries = Object.keys(entryPositionLookup).length;
     const allVotesByUser = votes.reduce((acc, vote) => {
@@ -34,13 +34,13 @@ function PearsonsCorrelation({
       return acc;
     }, {});
 
-    const userVotes = allVotesByUser[username];
+    const userVotes = allVotesByUser[user1];
     // User did not vote
     if (!userVotes) { return []; }
 
     const validPearsons = [];
 
-    Object.keys(allVotesByUser).filter((u) => u !== username).forEach((u) => {
+    Object.keys(allVotesByUser).filter((u) => u !== user1).forEach((u) => {
       const otherUser = allVotesByUser[u];
       let sum1 = 0; let sum2 = 0; let sum1Sq = 0; let sum2Sq = 0; let sumProduct = 0;
       let n = 0;
@@ -68,7 +68,7 @@ function PearsonsCorrelation({
     });
 
     return validPearsons.sort((a, b) => a.correlation - b.correlation);
-  }, [username, votes, entryPositionLookup, voteMinimum]);
+  }, [user1, votes, entryPositionLookup, voteMinimum]);
 
   /**
    * CREATE DATA POINTS FOR EACH USER
@@ -77,7 +77,7 @@ function PearsonsCorrelation({
     x: i,
     y: p.correlation,
     id: p.username,
-    group: p.username === username2 ? GROUP.selected : (p.group || GROUP.none),
+    group: p.username === user2 ? GROUP.selected : (p.group || GROUP.none),
     text: `User 2: ${trimUsername(p.username)}<br />Pearsons: ${roundTwoDecimals(p.correlation)}`,
   }));
 
@@ -85,13 +85,13 @@ function PearsonsCorrelation({
    * CONVERT DATA POINTS TO TRACES
    */
   const data = createTraces(userPoints, [
-    { name: trimUsername(username2, 20), marker: MARKERS.general.selected },
+    { name: trimUsername(user2, 20), marker: MARKERS.general.selected },
     { name: 'Other users', marker: MARKERS.general.unselected },
     { name: `<${voteMinimum} votes`, marker: MARKERS.general.few },
   ]);
 
   const layout = {
-    title: `How similar is ${username} to others?`,
+    title: `How similar is ${user1} to others?`,
     xaxis: { title: 'User' },
     yaxis: { title: 'Similarity (Pearsons)' },
   };
@@ -104,7 +104,7 @@ function PearsonsCorrelation({
     const { key } = event;
     if (key === 'ArrowUp' || key === 'ArrowDown') {
       event.preventDefault();
-      setUsername2((prev) => {
+      setUser2((prev) => {
         const index = usernames.indexOf(prev);
         if (key === 'ArrowUp') {
           return usernames[index + 1] || usernames[0];
@@ -112,7 +112,7 @@ function PearsonsCorrelation({
         return usernames[index - 1] || usernames[usernames.length - 1];
       });
     }
-  }, [setUsername2, usernames]);
+  }, [setUser2, usernames]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -125,7 +125,7 @@ function PearsonsCorrelation({
     <Plot
       data={data}
       layout={layout}
-      onClick={(e) => setUsername2(e.points[0].id)}
+      onClick={(e) => setUser2(e.points[0].id)}
     />
   );
 }
@@ -134,14 +134,14 @@ export default PearsonsCorrelation;
 
 PearsonsCorrelation.propTypes = {
   entryPositionLookup: PropTypes.object.isRequired,
-  username: PropTypes.string,
-  username2: PropTypes.string,
+  user1: PropTypes.string,
+  user2: PropTypes.string,
   votes: PropTypes.arrayOf(PropTypes.object).isRequired,
-  setUsername2: PropTypes.func.isRequired,
+  setUser2: PropTypes.func.isRequired,
   voteMinimum: PropTypes.number.isRequired,
 };
 
 PearsonsCorrelation.defaultProps = {
-  username: '',
-  username2: '',
+  user1: '',
+  user2: '',
 };

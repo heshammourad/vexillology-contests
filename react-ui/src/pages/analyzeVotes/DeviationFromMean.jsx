@@ -15,7 +15,7 @@ const GROUP = { selected: 0, none: 1, few: 2 };
  * Determine how unlike the average each user voted
  */
 function DeviationFromMean({
-  username, votes, userAvg, entryAvg, setUsername, voteMinimum,
+  user1, votes, userAvg, entryAvg, setUser1, voteMinimum,
 }) {
   /**
    * CALCULATE Z SCORE FOR EACH USER
@@ -54,7 +54,7 @@ function DeviationFromMean({
    */
   const dataPoints = userAvg.map((ua) => {
     let group = GROUP.none;
-    if (ua.username === username) {
+    if (ua.username === user1) {
       group = GROUP.selected;
     } else if (zScoresByUser[ua.username].length < voteMinimum) {
       group = GROUP.few;
@@ -74,7 +74,7 @@ function DeviationFromMean({
    * CONVERT DATA POINTS TO TRACES
    */
   const data = createTraces(dataPoints, [
-    { name: trimUsername(username), marker: MARKERS.general.selected },
+    { name: trimUsername(user1), marker: MARKERS.general.selected },
     { name: 'Other users', marker: MARKERS.general.unselected },
     { name: `<${voteMinimum} votes`, marker: MARKERS.general.few },
   ]);
@@ -92,7 +92,7 @@ function DeviationFromMean({
 
   const handleKeyUp = useCallback(({ key }) => {
     if (key === 'ArrowLeft' || key === 'ArrowRight') {
-      setUsername((prev) => {
+      setUser1((prev) => {
         const index = usernamesByAvg.indexOf(prev);
         if (key === 'ArrowLeft') {
           return usernamesByAvg[index - 1] || usernamesByAvg[usernamesByAvg.length - 1];
@@ -113,7 +113,7 @@ function DeviationFromMean({
     <Plot
       data={data}
       layout={layout}
-      onClick={(e) => setUsername(e.points[0].id)}
+      onClick={(e) => setUser1(e.points[0].id)}
     />
   );
 }
@@ -123,12 +123,12 @@ export default DeviationFromMean;
 DeviationFromMean.propTypes = {
   entryAvg: PropTypes.arrayOf(object).isRequired,
   userAvg: PropTypes.arrayOf(object).isRequired,
-  username: PropTypes.string,
+  user1: PropTypes.string,
   votes: PropTypes.arrayOf(object).isRequired,
-  setUsername: PropTypes.func.isRequired,
+  setUser1: PropTypes.func.isRequired,
   voteMinimum: PropTypes.number.isRequired,
 };
 
 DeviationFromMean.defaultProps = {
-  username: '',
+  user1: '',
 };

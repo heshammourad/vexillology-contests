@@ -44,7 +44,7 @@ const useStyles = makeStyles({
 });
 
 function UserSelector({
-  username, noVotes, setUsername, usernames, title,
+  user, noVotes, setUser, usernames, title,
 }) {
   const classes = useStyles();
   const arrows = title === 'User 1: ' ? 'left-right' : 'up-down';
@@ -54,7 +54,7 @@ function UserSelector({
       <Typography>{title}</Typography>
       <Select
         className={classes.selector}
-        value={username}
+        value={user}
         disabled={noVotes}
         renderValue={(selected) => {
           if (noVotes) {
@@ -67,7 +67,7 @@ function UserSelector({
 
           return selected;
         }}
-        onChange={(event) => setUsername(event.target.value)}
+        onChange={(event) => setUser(event.target.value)}
       >
         {usernames.map((u) => (
           <MenuItem key={u} value={u}>
@@ -101,8 +101,8 @@ function AnalyzeVotes() {
   const { state } = useLocation();
 
   const [voteMinimum, setVoteMinimum] = useState(0);
-  const [username, setUsername] = useState('');
-  const [username2, setUsername2] = useState('');
+  const [user1, setUser1] = useState('');
+  const [user2, setUser2] = useState('');
 
   const numberOfEntries = Object.keys(entryAvg).length;
   const usernames = useMemo(() => userAvg.map((ua) => ua.username), [userAvg]);
@@ -129,13 +129,13 @@ function AnalyzeVotes() {
 
   useEffect(() => {
     if (!usernames.length) { return; }
-    setUsername((prev) => {
+    setUser1((prev) => {
       if (prev) {
         if (usernames.includes(prev)) { return prev; }
       }
       return usernames[0];
     });
-    setUsername2((prev) => {
+    setUser2((prev) => {
       if (prev) {
         if (usernames.includes(prev)) { return prev; }
       }
@@ -206,15 +206,15 @@ function AnalyzeVotes() {
           <UserSelector
             title="User: "
             noVotes={!userAvg.length}
-            username={username}
-            setUsername={setUsername}
+            user={user1}
+            setUser={setUser1}
             usernames={usernames}
           />
 
           <Box className={classes.sideBySide}>
             <Box>
               <DeviationFromMean {...{
-                username, votes, userAvg, entryAvg, setUsername, voteMinimum,
+                user1, votes, userAvg, entryAvg, setUser1, voteMinimum,
               }}
               />
               <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
@@ -222,7 +222,7 @@ function AnalyzeVotes() {
             </Box>
             <Box>
               <UserVsAverage {...{
-                username, votes, entryAvg, entryUserLookup, entryPositionLookup,
+                user1, votes, entryAvg, entryUserLookup, entryPositionLookup,
               }}
               />
               <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
@@ -233,14 +233,14 @@ function AnalyzeVotes() {
           <UserSelector
             title="User 2: "
             noVotes={!userAvg.length}
-            username={username2}
-            setUsername={setUsername2}
+            user={user2}
+            setUser={setUser2}
             usernames={usernames}
           />
           <Box className={classes.sideBySide}>
             <Box>
               <PearsonsCorrelation {...{
-                username, username2, votes, entryPositionLookup, setUsername2, voteMinimum,
+                user1, user2, votes, entryPositionLookup, setUser2, voteMinimum,
               }}
               />
               <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
@@ -248,7 +248,7 @@ function AnalyzeVotes() {
             </Box>
             <Box>
               <UserVsUser {...{
-                username, votes, entryAvg, entryUserLookup, username2, entryPositionLookup,
+                user1, votes, entryAvg, entryUserLookup, user2, entryPositionLookup,
               }}
               />
               <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
@@ -266,8 +266,8 @@ export default AnalyzeVotes;
 
 UserSelector.propTypes = {
   usernames: PropTypes.arrayOf(PropTypes.string).isRequired,
-  username: PropTypes.string.isRequired,
+  user: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
-  setUsername: PropTypes.func.isRequired,
+  setUser: PropTypes.func.isRequired,
   noVotes: PropTypes.bool.isRequired,
 };

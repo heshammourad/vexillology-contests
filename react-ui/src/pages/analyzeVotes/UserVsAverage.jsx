@@ -10,13 +10,13 @@ import {
 import MARKERS from './markers';
 
 const USER_GROUP = { none: 0, submitted: 1 };
-const ENTRY_GROUP = { none: 0, user: 1 };
+const ENTRY_GROUP = { none: 0, user1: 1 };
 
 /**
  * Display user votes vs the flag average across entire contest
  */
 function UserVsAverage({
-  username, votes, entryAvg, entryUserLookup, entryPositionLookup,
+  user1, votes, entryAvg, entryUserLookup, entryPositionLookup,
 }) {
   /**
    * CREATE DATA POINTS FOR TRACES
@@ -33,7 +33,7 @@ function UserVsAverage({
    * ADD RATINGS (y-value) TO DATA POINTS
    */
   votes.forEach((vote) => {
-    if (vote.username === username) {
+    if (vote.username === user1) {
       userPoints[entryPositionLookup[vote.entryId]].y = vote.rating;
     }
   });
@@ -42,9 +42,9 @@ function UserVsAverage({
    * MARK USER SUBMITTED ENTRIES
    */
   entryAvg.forEach((ea, i) => {
-    if (entryUserLookup[ea.entryId] === username) {
+    if (entryUserLookup[ea.entryId] === user1) {
       userPoints[i].group = USER_GROUP.submitted;
-      entryPoints[i].group = ENTRY_GROUP.user;
+      entryPoints[i].group = ENTRY_GROUP.user1;
       userBarPoints.push({
         x: i, y: 5, group: 0, text: 'User 1 entry',
       });
@@ -72,7 +72,7 @@ function UserVsAverage({
   const userVotes = userPoints.reduce((acc, curr) => (curr.y > -1 ? acc + 1 : acc), 0);
 
   const layout = {
-    title: `${username}'s votes compared to average (${userVotes}/${entryAvg.length})`,
+    title: `${user1}'s votes compared to average (${userVotes}/${entryAvg.length})`,
     xaxis: { title: 'Flag' },
     yaxis: { title: 'Score', range: [-0.5, 5.5] },
   };
@@ -92,6 +92,6 @@ UserVsAverage.propTypes = {
   entryAvg: PropTypes.arrayOf(object).isRequired,
   entryUserLookup: PropTypes.object.isRequired,
   entryPositionLookup: PropTypes.object.isRequired,
-  username: PropTypes.string.isRequired,
+  user1: PropTypes.string.isRequired,
   votes: PropTypes.arrayOf(object).isRequired,
 };

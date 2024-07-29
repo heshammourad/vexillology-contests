@@ -9,13 +9,13 @@ import {
 import MARKERS from './markers';
 
 const USER_GROUP = { none: 0, submitted: 1, shared: 2 };
-const ENTRY_GROUP = { none: 0, user: 1, user2: 2 };
+const ENTRY_GROUP = { none: 0, user1: 1, user2: 2 };
 
 /**
  * Display user votes vs user2 votes across entire contest
  */
 function UserVsUser({
-  username, username2, votes, entryAvg, entryUserLookup, entryPositionLookup,
+  user1, user2, votes, entryAvg, entryUserLookup, entryPositionLookup,
 }) {
   /**
    * CREATE DATA POINTS FOR TRACES
@@ -37,9 +37,9 @@ function UserVsUser({
    */
   votes.forEach((vote) => {
     // TEMP FIX. Sometimes throws TypeError (11vfqjf/mar23), even though user2Points and entryPositionLookup are both derived from entryAvg
-    if (vote.username === username && userPoints[entryPositionLookup[vote.entryId]]) {
+    if (vote.username === user1 && userPoints[entryPositionLookup[vote.entryId]]) {
       userPoints[entryPositionLookup[vote.entryId]].y = vote.rating;
-    } else if (vote.username === username2 && user2Points[entryPositionLookup[vote.entryId]]) {
+    } else if (vote.username === user2 && user2Points[entryPositionLookup[vote.entryId]]) {
       user2Points[entryPositionLookup[vote.entryId]].y = vote.rating;
     }
   });
@@ -59,13 +59,13 @@ function UserVsUser({
    * MARK USER_SUBMITTED ENTRIES
    */
   entryAvg.forEach((ea, i) => {
-    if (entryUserLookup[ea.entryId] === username) {
+    if (entryUserLookup[ea.entryId] === user1) {
       userPoints[i].group = USER_GROUP.submitted;
-      entryPoints[i].group = ENTRY_GROUP.user;
+      entryPoints[i].group = ENTRY_GROUP.user1;
       userBarPoints.push({
         x: i, y: 5, group: 0, text: 'User 1 entry',
       });
-    } else if (entryUserLookup[ea.entryId] === username2) {
+    } else if (entryUserLookup[ea.entryId] === user2) {
       user2Points[i].group = USER_GROUP.submitted;
       entryPoints[i].group = ENTRY_GROUP.user2;
       user2BarPoints.push({
@@ -105,7 +105,7 @@ function UserVsUser({
   const data = [...userTraces, ...user2Traces, ...entryTraces, ...userBarTraces, ...user2BarTraces];
 
   const layout = {
-    title: `${username}'s votes to ${username2}'s`,
+    title: `${user1}'s votes to ${user2}'s`,
     xaxis: { title: 'Flag' },
     yaxis: { title: 'Score', range: [-0.5, 5.5] },
   };
@@ -125,7 +125,7 @@ UserVsUser.propTypes = {
   entryAvg: PropTypes.arrayOf(object).isRequired,
   entryUserLookup: PropTypes.object.isRequired,
   entryPositionLookup: PropTypes.object.isRequired,
-  username: PropTypes.string.isRequired,
-  username2: PropTypes.string.isRequired,
+  user1: PropTypes.string.isRequired,
+  user2: PropTypes.string.isRequired,
   votes: PropTypes.arrayOf(object).isRequired,
 };
