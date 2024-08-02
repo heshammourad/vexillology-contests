@@ -106,6 +106,7 @@ function AnalyzeVotes() {
 
   const numberOfEntries = Object.keys(entryAvg).length;
   const usernames = useMemo(() => userAvg.map((ua) => ua.username), [userAvg]);
+  const formattedContest = (name, date) => `${name} (${format(parseISO(date), 'MMM yy')})`;
 
   const handleMinimumSlider = (event, newValue) => {
     setVoteMinimum(newValue);
@@ -166,13 +167,13 @@ function AnalyzeVotes() {
                   return <em>Loading...</em>;
                 }
 
-                return `${selected.name} (${format(parseISO(selected.date), 'MMM yy')})`;
+                return formattedContest(selected.name, selected.date);
               }}
               onChange={(event) => navigate(`/mod/analyze/${event.target.value.id}`)}
             >
               {contests.map((c) => (
                 <MenuItem key={c.id} value={c}>
-                  {`${c.name} (${format(parseISO(c.date), 'MMM yy')})`}
+                  {formattedContest(c.name, c.date)}
                 </MenuItem>
               ))}
             </Select>
@@ -180,7 +181,13 @@ function AnalyzeVotes() {
 
           {
             !votes.length
-              ? <Typography className={classes.sideBySide}>We don&apos;t have any votes for this contest yet. Please choose another contest.</Typography>
+              ? (
+                <Typography
+                  className={classes.sideBySide}
+                >
+                  We don&apos;t have any votes for this contest yet. Please choose another contest.
+                </Typography>
+              )
               : (
                 <>
                   <Box className={classes.sideBySide}>
