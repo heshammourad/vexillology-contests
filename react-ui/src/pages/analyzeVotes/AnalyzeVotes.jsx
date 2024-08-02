@@ -166,13 +166,13 @@ function AnalyzeVotes() {
                   return <em>Loading...</em>;
                 }
 
-                return selected.name;
+                return `${selected.name} (${format(parseISO(selected.date), 'MMM yy')})`;
               }}
               onChange={(event) => navigate(`/mod/analyze/${event.target.value.id}`)}
             >
               {contests.map((c) => (
                 <MenuItem key={c.id} value={c}>
-                  {`${c.name} ${format(parseISO(c.date), 'MMM yy')}`}
+                  {`${c.name} (${format(parseISO(c.date), 'MMM yy')})`}
                 </MenuItem>
               ))}
             </Select>
