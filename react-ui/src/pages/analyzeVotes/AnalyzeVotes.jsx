@@ -106,6 +106,7 @@ function AnalyzeVotes() {
 
   const numberOfEntries = Object.keys(entryAvg).length;
   const usernames = useMemo(() => userAvg.map((ua) => ua.username), [userAvg]);
+  const formattedContest = (name, date) => `${name} (${format(parseISO(date), 'MMM yy')})`;
 
   const handleMinimumSlider = (event, newValue) => {
     setVoteMinimum(newValue);
@@ -166,95 +167,109 @@ function AnalyzeVotes() {
                   return <em>Loading...</em>;
                 }
 
-                return selected.name;
+                return formattedContest(selected.name, selected.date);
               }}
               onChange={(event) => navigate(`/mod/analyze/${event.target.value.id}`)}
             >
               {contests.map((c) => (
                 <MenuItem key={c.id} value={c}>
-                  {`${c.name} ${format(parseISO(c.date), 'MMM yy')}`}
+                  {formattedContest(c.name, c.date)}
                 </MenuItem>
               ))}
             </Select>
           </Box>
 
-          <Box className={classes.sideBySide}>
-            <Typography style={{ flexShrink: 0, marginRight: 20 }}>Min votes:</Typography>
-            <Slider
-              value={voteMinimum}
-              onChange={handleMinimumSlider}
-              step={1}
-              min={0}
-              max={numberOfEntries}
-            />
-            <Input
-              value={voteMinimum}
-              size="small"
-              onChange={handleMinimumInput}
-              onBlur={handleMinimumBlur}
-              inputProps={{
-                step: 1,
-                min: 0,
-                max: numberOfEntries,
-                type: 'number',
-                'aria-labelledby': 'input-slider',
-              }}
-              style={{ width: '60px', marginLeft: 20 }}
-            />
-          </Box>
+          {
+            !votes.length
+              ? (
+                <Typography
+                  className={classes.sideBySide}
+                >
+                  We don&apos;t have any votes for this contest yet. Please choose another contest.
+                </Typography>
+              )
+              : (
+                <>
+                  <Box className={classes.sideBySide}>
+                    <Typography style={{ flexShrink: 0, marginRight: 20 }}>Min votes:</Typography>
+                    <Slider
+                      value={voteMinimum}
+                      onChange={handleMinimumSlider}
+                      step={1}
+                      min={0}
+                      max={numberOfEntries}
+                    />
+                    <Input
+                      value={voteMinimum}
+                      size="small"
+                      onChange={handleMinimumInput}
+                      onBlur={handleMinimumBlur}
+                      inputProps={{
+                        step: 1,
+                        min: 0,
+                        max: numberOfEntries,
+                        type: 'number',
+                        'aria-labelledby': 'input-slider',
+                      }}
+                      style={{ width: '60px', marginLeft: 20 }}
+                    />
+                  </Box>
 
-          <UserSelector
-            title="User: "
-            noVotes={!userAvg.length}
-            user={user1}
-            setUser={setUser1}
-            usernames={usernames}
-          />
+                  <UserSelector
+                    title="User: "
+                    noVotes={!userAvg.length}
+                    user={user1}
+                    setUser={setUser1}
+                    usernames={usernames}
+                  />
 
-          <Box className={classes.sideBySide}>
-            <Box>
-              <DeviationFromMean {...{
-                user1, votes, userAvg, entryAvg, setUser1, voteMinimum,
-              }}
-              />
-              <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
+                  <Box className={classes.sideBySide}>
+                    <Box>
+                      <DeviationFromMean {...{
+                        user1, votes, userAvg, entryAvg, setUser1, voteMinimum,
+                      }}
+                      />
+                      <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
 
-            </Box>
-            <Box>
-              <UserVsAverage {...{
-                user1, votes, entryAvg, entryUserLookup, entryPositionLookup,
-              }}
-              />
-              <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
+                    </Box>
+                    <Box>
+                      <UserVsAverage {...{
+                        user1, votes, entryAvg, entryUserLookup, entryPositionLookup,
+                      }}
+                      />
+                      <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
 
-            </Box>
-          </Box>
+                    </Box>
+                  </Box>
 
-          <UserSelector
-            title="User 2: "
-            noVotes={!userAvg.length}
-            user={user2}
-            setUser={setUser2}
-            usernames={usernames}
-          />
-          <Box className={classes.sideBySide}>
-            <Box>
-              <PearsonsCorrelation {...{
-                user1, user2, votes, entryPositionLookup, setUser2, voteMinimum,
-              }}
-              />
-              <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
+                  <UserSelector
+                    title="User 2: "
+                    noVotes={!userAvg.length}
+                    user={user2}
+                    setUser={setUser2}
+                    usernames={usernames}
+                  />
+                  <Box className={classes.sideBySide}>
+                    <Box>
+                      <PearsonsCorrelation {...{
+                        user1, user2, votes, entryPositionLookup, setUser2, voteMinimum,
+                      }}
+                      />
+                      <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
 
-            </Box>
-            <Box>
-              <UserVsUser {...{
-                user1, votes, entryAvg, entryUserLookup, user2, entryPositionLookup,
-              }}
-              />
-              <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
-            </Box>
+                    </Box>
+                    <Box>
+                      <UserVsUser {...{
+                        user1, votes, entryAvg, entryUserLookup, user2, entryPositionLookup,
+                      }}
+                      />
+                      <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
+                    </Box>
 
-          </Box>
+                  </Box>
+                </>
+              )
+}
         </PageContainer>
 
       </ProtectedRoute>

@@ -93,7 +93,7 @@ function PearsonsCorrelation({
   const layout = {
     title: `How similar is ${user1} to others?`,
     xaxis: { title: 'User' },
-    yaxis: { title: 'Similarity (Pearsons)' },
+    yaxis: { title: 'Similarity (Pearsons)', range: [-1.1, 1.1] },
   };
 
   /**
