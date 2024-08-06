@@ -249,7 +249,10 @@ function SubmissionRow({
     approved = 0, rejected = 0, submitted, withdrawn = 0,
   },
 }) {
-  const { isMutating: isMutatingReview, trigger: triggerReview } = useSwrMutation('/mod/reviewSubmissions', putData);
+  const { isMutating: isMutatingReview, trigger: triggerReview } = useSwrMutation(
+    '/mod/reviewSubmissions',
+    putData,
+  );
   const { isMutating: isMutatingUser, trigger: triggerUser } = useSwrMutation(
     '/submission',
     putData,

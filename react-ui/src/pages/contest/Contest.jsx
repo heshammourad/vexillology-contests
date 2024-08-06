@@ -165,12 +165,7 @@ function Contest() {
   const { headingVariant } = useContestSizing();
 
   const {
-    categories,
-    isContestMode,
-    name,
-    subtext,
-    votingWindowOpen,
-    winners,
+    categories, isContestMode, name, subtext, votingWindowOpen, winners,
   } = contest;
 
   return (

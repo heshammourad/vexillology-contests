@@ -41,11 +41,7 @@ export const postData = async (path, newData, authToken) => {
 
 export const putData = async (path, newData, authToken) => {
   try {
-    const { data } = await instance.put(
-      path,
-      newData,
-      generateConfig(authToken),
-    );
+    const { data } = await instance.put(path, newData, generateConfig(authToken));
     return data;
   } catch (err) {
     return null;

@@ -35,11 +35,7 @@ function useVoting(entryId) {
   const [{ isLoggedIn }] = useAuthState();
   const { disableVoting } = useVotingStatus();
 
-  const { trigger: triggerPut } = useSwrMutation(
-    contestUrl,
-    putData,
-    VOTES_URL,
-  );
+  const { trigger: triggerPut } = useSwrMutation(contestUrl, putData, VOTES_URL);
   const { trigger: triggerDelete } = useSwrMutation(
     contestUrl,
     deleteData,

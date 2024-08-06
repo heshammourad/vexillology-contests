@@ -20,10 +20,7 @@ function listItemComponent({ state, to }) {
 function ListItemLink({
   className, onClick, primary, state, to,
 }) {
-  const renderLink = React.useMemo(
-    () => listItemComponent({ state, to }),
-    [to],
-  );
+  const renderLink = React.useMemo(() => listItemComponent({ state, to }), [to]);
 
   return (
     <li>

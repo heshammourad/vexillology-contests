@@ -44,10 +44,7 @@ exports.get = async (req, res) => {
 
 const VALID_STATUSES = ['approved', 'pending', 'rejected'];
 
-exports.put = async (
-  { body: { id, rejectionReason, status }, username },
-  res,
-) => {
+exports.put = async ({ body: { id, rejectionReason, status }, username }, res) => {
   try {
     if (!VALID_STATUSES.includes(status)) {
       res

@@ -65,11 +65,7 @@ function EntryDescriptionDrawer({ entryId }) {
 
   const {
     data: {
-      categories,
-      entries = [],
-      isContestMode,
-      localVoting,
-      winners = [],
+      categories, entries = [], isContestMode, localVoting, winners = [],
     },
   } = useSwrContest();
   const {

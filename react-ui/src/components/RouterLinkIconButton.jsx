@@ -8,11 +8,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import types from '../common/types';
 
 function RouterLinkIconButton({
-  color,
-  onClick,
-  state,
-  to,
-  icon = 'arrowback',
+  color, onClick, state, to, icon = 'arrowback',
 }) {
   const Icon = useMemo(() => {
     switch (icon) {

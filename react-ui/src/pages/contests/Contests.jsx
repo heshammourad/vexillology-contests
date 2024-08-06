@@ -81,8 +81,8 @@ function Contests() {
                               {!yearEnd && (
                               <>
                                 <span className={classes.month}>
-                                  {format(parseISO(date), 'MMM yy')}
-                                </span>
+            {format(parseISO(date), 'MMM yy')}
+          </span>
                                   &nbsp;-&nbsp;
                               </>
                               )}
