@@ -62,9 +62,7 @@
     "prettier-eslint-cli": "^7.1.0"
   },
   "lint-staged": {
-    "*.{js,jsx}": [
-      "eslint",
-      "prettier-eslint --write"
-    ]
+    "*.{js,jsx}": "prettier-eslint --write",
+    "*": "prettier --ignore-unknown --write"
   }
 }
