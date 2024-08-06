@@ -21,8 +21,7 @@ exports.get = async ({ params: { code } }, res) => {
     const username = await reddit.getUser(result);
     const response = { accessToken, refreshToken, username };
     res.send(response);
-  } catch (err) {
-    logger.error(`Error retrieving access token: ${err}`);
+  } catch (err) {     logger.error(`Error retrieving access token: ${err}`);
     res.status(500).send();
   }
 };
