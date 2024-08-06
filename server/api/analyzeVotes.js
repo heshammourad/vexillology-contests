@@ -43,7 +43,12 @@ exports.get = async ({ params: { id } }, res) => {
       [id],
     );
 
-    if (!votes.length || !userAvg.length || !entryAvg.length || !userEntries.length) {
+    if (
+      !votes.length
+      || !userAvg.length
+      || !entryAvg.length
+      || !userEntries.length
+    ) {
       res.status(404).send();
       return;
     }
