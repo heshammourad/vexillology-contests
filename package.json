@@ -63,6 +63,6 @@
   },
   "lint-staged": {
     "*.{js,jsx}": "prettier-eslint --write",
-    "*": "prettier --ignore-unknown --write"
+    "!(*.{js,jsx})": "prettier --ignore-unknown --write"
   }
 }
