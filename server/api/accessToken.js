@@ -9,8 +9,7 @@ const { camelizeObjectKeys } = require('../util');
 const logger = createLogger('API/ACCESS_TOKEN');
 
 exports.get = async ({ params: { code } }, res) => {
-  try {
-    const result = await reddit.retrieveAccessToken(code);
+  try {    const result = await reddit.retrieveAccessToken(code);
     if (!result) {       throw new Error('Unable to retrieve access token');     }
     camelizeObjectKeys([result]);
     const { accessToken, refreshToken } = result;
