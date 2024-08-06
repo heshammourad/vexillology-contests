@@ -25,7 +25,10 @@ function LazyLoadCardImage({
   const classes = useStyles();
 
   const actualWidth = Math.min(displayWidth, width);
-  const maxHeight = Math.min(actualWidth / MAX_RATIO, Math.ceil((height * actualWidth) / width));
+  const maxHeight = Math.min(
+    actualWidth / MAX_RATIO,
+    Math.ceil((height * actualWidth) / width),
+  );
   return (
     <Box sx={{ width: displayWidth, maxHeight }}>
       <LazyLoad height={maxHeight} offset={100} resize scroll>
@@ -38,13 +41,14 @@ function LazyLoadCardImage({
           onError={() => setLoaded(true)}
         />
         {!isLoaded && (
-          <Box sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            height: maxHeight,
-            width: actualWidth,
-          }}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              height: maxHeight,
+              width: actualWidth,
+            }}
           >
             <Skeleton variant="rect" height={maxHeight} width={actualWidth} />
           </Box>

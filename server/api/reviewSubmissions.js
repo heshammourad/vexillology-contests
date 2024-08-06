@@ -3,7 +3,10 @@
  */
 
 const db = require('../db');
-const { getCurrentContest, getCurrentContestSubmissions } = require('../db/queries');
+const {
+  getCurrentContest,
+  getCurrentContestSubmissions,
+} = require('../db/queries');
 const { createLogger } = require('../logger');
 
 const logger = createLogger('API/REVIEW_SUBMISSIONS');
@@ -41,10 +44,15 @@ exports.get = async (req, res) => {
 
 const VALID_STATUSES = ['approved', 'pending', 'rejected'];
 
-exports.put = async ({ body: { id, rejectionReason, status }, username }, res) => {
+exports.put = async (
+  { body: { id, rejectionReason, status }, username },
+  res,
+) => {
   try {
     if (!VALID_STATUSES.includes(status)) {
-      res.status(400).send(`Status must be one of: ${VALID_STATUSES.join(', ')}`);
+      res
+        .status(400)
+        .send(`Status must be one of: ${VALID_STATUSES.join(', ')}`);
       return;
     }
 

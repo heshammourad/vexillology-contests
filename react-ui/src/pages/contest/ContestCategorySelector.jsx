@@ -19,7 +19,9 @@ import useCategoryLabelStyles from '../../common/useCategoryLabelStyles';
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const CATEGORY_MENU_PROPS = {
-  PaperProps: { style: { maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP, width: 250 } },
+  PaperProps: {
+    style: { maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP, width: 250 },
+  },
 };
 const FILTER_CATEGORIES_LABEL_ID = 'filter-categories-label';
 
@@ -84,8 +86,8 @@ function ContestCategorySelector({
                 className={clsx(
                   classes.categoryChip,
                   categoryLabelClasses[
-                  // eslint-disable-next-line indent
-                  `label${categories.indexOf(value) % LABEL_COLORS.length}`
+                    // eslint-disable-next-line indent
+                    `label${categories.indexOf(value) % LABEL_COLORS.length}`
                   ],
                 )}
                 key={value}

@@ -65,7 +65,11 @@ function EntryDescriptionDrawer({ entryId }) {
 
   const {
     data: {
-      categories, entries = [], isContestMode, localVoting, winners = [],
+      categories,
+      entries = [],
+      isContestMode,
+      localVoting,
+      winners = [],
     },
   } = useSwrContest();
   const {
@@ -110,7 +114,11 @@ function EntryDescriptionDrawer({ entryId }) {
       </Box>
       {category && (
         <Box paddingTop={1}>
-          <CategoryLabel categories={categories} category={category} categoryRank={categoryRank} />
+          <CategoryLabel
+            categories={categories}
+            category={category}
+            categoryRank={categoryRank}
+          />
         </Box>
       )}
       {isContestMode ? (
@@ -118,13 +126,18 @@ function EntryDescriptionDrawer({ entryId }) {
           <DrawerSectionHeader>Submit Vote</DrawerSectionHeader>
           {!isTouchScreen && (
             <Alert severity="info">
-              You can now vote by typing 0-5 on your keyboard, or type c to clear your vote.
+              You can now vote by typing 0-5 on your keyboard, or type c to
+              clear your vote.
             </Alert>
           )}
           {!differenceInDays(voteEndDate, new Date()) && (
             <Countdown endDate={voteEndDate} fontSize="small" />
           )}
-          <Box className={classes.votingContainer} alignItems="center" display="flex">
+          <Box
+            className={classes.votingContainer}
+            alignItems="center"
+            display="flex"
+          >
             <VotingSlider entryId={imgurId ?? id} rating={rating} />
           </Box>
         </>
@@ -140,13 +153,25 @@ function EntryDescriptionDrawer({ entryId }) {
         </Box>
       )}
       <DrawerSectionHeader>Description</DrawerSectionHeader>
-      {markdown ? <RedditMarkdown text={description} /> : <HtmlWrapper html={description} />}
+      {markdown ? (
+        <RedditMarkdown text={description} />
+      ) : (
+        <HtmlWrapper html={description} />
+      )}
       <DrawerSectionHeader>Links</DrawerSectionHeader>
       <List>
         {!localVoting && (
-          <ListItemButton href={redditPermalink} Icon={RedditIcon} text="Open Reddit comment" />
+          <ListItemButton
+            href={redditPermalink}
+            Icon={RedditIcon}
+            text="Open Reddit comment"
+          />
         )}
-        <ListItemButton href={flagWaverLink} Icon={FlagTwoToneIcon} text="Open FlagWaver" />
+        <ListItemButton
+          href={flagWaverLink}
+          Icon={FlagTwoToneIcon}
+          text="Open FlagWaver"
+        />
         <ListItemButton
           href="https://flagmaker-print.com/"
           Icon={FmpIcon}

@@ -5,7 +5,9 @@
 import useSwrInit from './useSwrInit';
 
 const useIsModerator = () => {
-  const { data: { moderator } } = useSwrInit();
+  const {
+    data: { moderator },
+  } = useSwrInit();
 
   return moderator;
 };

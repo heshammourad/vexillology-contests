@@ -10,7 +10,11 @@ import useSwrAuth from './useSwrAuth';
 // and the order gets changed.
 const DEDUPING_INTERVAL = 900_000;
 
-const useSwrContest = ({ makeRequest = true, options = {}, overrideId } = {}) => {
+const useSwrContest = ({
+  makeRequest = true,
+  options = {},
+  overrideId,
+} = {}) => {
   const contestId = overrideId || useContestId();
   const apiPath = `/contests/${contestId}`;
 

@@ -15,7 +15,11 @@ function Subheader({ children }) {
   const theme = useTheme();
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
   return (
-    <Typography className={classes.subheader} component="h2" variant={isSmUp ? 'h4' : 'h6'}>
+    <Typography
+      className={classes.subheader}
+      component="h2"
+      variant={isSmUp ? 'h4' : 'h6'}
+    >
       {children}
     </Typography>
   );

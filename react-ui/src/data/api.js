@@ -31,13 +31,21 @@ export const getData = async (path, authToken) => {
 };
 
 export const postData = async (path, newData, authToken) => {
-  const response = await instance.post(path, newData, generateConfig(authToken));
+  const response = await instance.post(
+    path,
+    newData,
+    generateConfig(authToken),
+  );
   return response;
 };
 
 export const putData = async (path, newData, authToken) => {
   try {
-    const { data } = await instance.put(path, newData, generateConfig(authToken));
+    const { data } = await instance.put(
+      path,
+      newData,
+      generateConfig(authToken),
+    );
     return data;
   } catch (err) {
     return null;

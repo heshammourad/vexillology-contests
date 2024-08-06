@@ -2,10 +2,22 @@
  * @file Custom or reusable prop types to extend the prop-types package.
  */
 import {
-  bool, node, number, oneOf, oneOfType, shape, string,
+  bool,
+  node,
+  number,
+  oneOf,
+  oneOfType,
+  shape,
+  string,
 } from 'prop-types';
 
-const color = oneOf(['default', 'inherit', 'primary', 'secondary', 'transparent']);
+const color = oneOf([
+  'default',
+  'inherit',
+  'primary',
+  'secondary',
+  'transparent',
+]);
 
 export const objects = {
   AppBar: {

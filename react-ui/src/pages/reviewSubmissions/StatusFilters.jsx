@@ -26,7 +26,10 @@ const useStyles = makeStyles((theme) => ({
  * @param {Object} submissionStatusCounts - Number values indicating count of each status.
  */
 function StatusFilters({
-  disabled, onChipClick, selectedChips, submissionStatusCounts,
+  disabled,
+  onChipClick,
+  selectedChips,
+  submissionStatusCounts,
 }) {
   const classes = useStyles();
   return (
@@ -35,7 +38,9 @@ function StatusFilters({
         <FilterChip
           key={status}
           disabled={disabled}
-          label={`${capitalize(status)} (${submissionStatusCounts[status] ?? 0})`}
+          label={`${capitalize(status)} (${
+            submissionStatusCounts[status] ?? 0
+          })`}
           onClick={onChipClick(status)}
           selected={selectedChips[status] ?? false}
         />

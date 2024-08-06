@@ -10,10 +10,7 @@ import pluralize from 'pluralize';
 import PropTypes from 'prop-types';
 
 import types from '../../common/types';
-import {
-  InternalLink,
-  SubmissionsTable,
-} from '../../components';
+import { InternalLink, SubmissionsTable } from '../../components';
 
 const useStyles = makeStyles((theme) => ({
   currentSubmissions: {

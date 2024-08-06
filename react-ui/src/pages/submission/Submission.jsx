@@ -75,9 +75,11 @@ function Submission() {
   const submissionEndDate = parseISO(submissionEnd);
   const submissionAllowed = isFuture(submissionEndDate);
 
-  const noData = (isLoading
-    ? <CircularProgress />
-    : <div>The submission portal is not yet open. Please check again later.</div>);
+  const noData = isLoading ? (
+    <CircularProgress />
+  ) : (
+    <div>The submission portal is not yet open. Please check again later.</div>
+  );
 
   const classes = useStyles();
   return (
@@ -106,12 +108,13 @@ function Submission() {
                   <SubmissionPrompt {...{ contestId, prompt }} />
                 </TabPanel>
                 <TabPanel currentTab={selectedTab} index={1}>
-                  <SubmissionForm {...{
-                    previewDescription,
-                    setPreviewDescription,
-                    setSelectedTab,
-                    submissionExpired,
-                  }}
+                  <SubmissionForm
+                    {...{
+                      previewDescription,
+                      setPreviewDescription,
+                      setSelectedTab,
+                      submissionExpired,
+                    }}
                   />
                 </TabPanel>
 
@@ -127,7 +130,9 @@ function Submission() {
               </div>
             )}
           </>
-        ) : noData}
+        ) : (
+          noData
+        )}
       </PageContainer>
     </>
   );

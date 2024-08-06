@@ -13,10 +13,7 @@ function CardImageLink({
 }) {
   const location = useLocation();
   return (
-    <RouterLink
-      state={{ background: location }}
-      to={`entry/${id}`}
-    >
+    <RouterLink state={{ background: location }} to={`entry/${id}`}>
       <CardActionArea>
         <LazyLoadCardImage
           displayWidth={displayWidth}
@@ -37,7 +34,6 @@ CardImageLink.propTypes = {
   width: PropTypes.number.isRequired,
 };
 
-CardImageLink.defaultProps = {
-};
+CardImageLink.defaultProps = {};
 
 export default CardImageLink;

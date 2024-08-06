@@ -51,7 +51,10 @@ function useVoting(entryId) {
     updateSnackbarState(snackbarTypes.VOTING_ERROR);
   };
   const triggerOptions = (input) => ({
-    optimisticData: (current) => ({ ...current, entries: updateEntries(current.entries, input) }),
+    optimisticData: (current) => ({
+      ...current,
+      entries: updateEntries(current.entries, input),
+    }),
     revalidate: false,
     populateCache: (response, contest) => {
       if (!response) {

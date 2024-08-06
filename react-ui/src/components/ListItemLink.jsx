@@ -20,11 +20,19 @@ function listItemComponent({ state, to }) {
 function ListItemLink({
   className, onClick, primary, state, to,
 }) {
-  const renderLink = React.useMemo(() => listItemComponent({ state, to }), [to]);
+  const renderLink = React.useMemo(
+    () => listItemComponent({ state, to }),
+    [to],
+  );
 
   return (
     <li>
-      <ListItem button className={className} component={renderLink} onClick={onClick}>
+      <ListItem
+        button
+        className={className}
+        component={renderLink}
+        onClick={onClick}
+      >
         <ListItemText primary={primary} />
       </ListItem>
     </li>
@@ -41,7 +49,7 @@ ListItemLink.propTypes = {
 
 ListItemLink.defaultProps = {
   className: null,
-  onClick: () => { },
+  onClick: () => {},
   state: {},
 };
 

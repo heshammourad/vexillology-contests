@@ -8,7 +8,11 @@ import { Link as RouterLink } from 'react-router-dom';
 import types from '../common/types';
 
 function RouterLinkIconButton({
-  color, onClick, state, to, icon = 'arrowback',
+  color,
+  onClick,
+  state,
+  to,
+  icon = 'arrowback',
 }) {
   const Icon = useMemo(() => {
     switch (icon) {
@@ -22,7 +26,13 @@ function RouterLinkIconButton({
   }, [icon]);
 
   return (
-    <IconButton color={color} component={RouterLink} onClick={onClick} state={state} to={to}>
+    <IconButton
+      color={color}
+      component={RouterLink}
+      onClick={onClick}
+      state={state}
+      to={to}
+    >
       <Icon />
     </IconButton>
   );
@@ -38,7 +48,7 @@ RouterLinkIconButton.propTypes = {
 
 RouterLinkIconButton.defaultProps = {
   color: 'default',
-  onClick: () => { },
+  onClick: () => {},
   state: {},
   icon: 'arrowback',
 };

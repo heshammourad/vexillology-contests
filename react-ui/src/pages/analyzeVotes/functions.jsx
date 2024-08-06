@@ -1,8 +1,19 @@
-export function createTraces(points, groupDetails, plotDetails = {
-  mode: 'markers', type: 'scatter',
-}) {
+export function createTraces(
+  points,
+  groupDetails,
+  plotDetails = {
+    mode: 'markers',
+    type: 'scatter',
+  },
+) {
   const initial = groupDetails.map((details) => ({
-    x: [], y: [], text: [], hovertemplate: '%{text}', ids: [], ...details, ...plotDetails,
+    x: [],
+    y: [],
+    text: [],
+    hovertemplate: '%{text}',
+    ids: [],
+    ...details,
+    ...plotDetails,
   }));
   return points.reduce((traces, point, i) => {
     traces[point.group].x.push(point.x);
@@ -18,5 +29,7 @@ export function roundTwoDecimals(num) {
 }
 
 export function trimUsername(username, chars = 6) {
-  return `${username.length < chars ? username : username.substring(0, chars)}...`;
+  return `${
+    username.length < chars ? username : username.substring(0, chars)
+  }...`;
 }
