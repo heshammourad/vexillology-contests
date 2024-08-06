@@ -9,16 +9,10 @@ import { makeStyles } from '@material-ui/core/styles';
 import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import PropTypes from 'prop-types';
-import {
-  useEffect, useMemo, useState,
-} from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import {
-  Header,
-  PageContainer,
-  ProtectedRoute,
-} from '../../components';
+import { Header, PageContainer, ProtectedRoute } from '../../components';
 import useContestId from '../../data/useContestId';
 import useSwrContests from '../../data/useSwrContests';
 import useSwrModAnalyze from '../../data/useSwrModAnalyze';
@@ -89,8 +83,10 @@ function AnalyzeVotes() {
   const classes = useStyles();
   const contestId = useContestId();
   const { data: contests } = useSwrContests();
-  // eslint-disable-next-line max-len
-  const contest = useMemo(() => contests.find((c) => c.id === contestId) || contests[0], [contests, contestId]);
+  const contest = useMemo(
+    () => contests.find((c) => c.id === contestId) || contests[0],
+    [contests, contestId],
+  );
   const navigate = useNavigate();
   const {
     data: {
@@ -129,26 +125,36 @@ function AnalyzeVotes() {
   }, [numberOfEntries]);
 
   useEffect(() => {
-    if (!usernames.length) { return; }
+    if (!usernames.length) {
+      return;
+    }
     setUser1((prev) => {
       if (prev) {
-        if (usernames.includes(prev)) { return prev; }
+        if (usernames.includes(prev)) {
+          return prev;
+        }
       }
       return usernames[0];
     });
     setUser2((prev) => {
       if (prev) {
-        if (usernames.includes(prev)) { return prev; }
+        if (usernames.includes(prev)) {
+          return prev;
+        }
       }
       return usernames[usernames.length - 1];
     });
   }, [usernames]);
 
-  const entryPositionLookup = useMemo(() => entryAvg
-    .reduce((acc, curr, i) => ({ ...acc, [curr.entryId]: i }), {}), [entryAvg]);
+  const entryPositionLookup = useMemo(
+    () => entryAvg.reduce((acc, curr, i) => ({ ...acc, [curr.entryId]: i }), {}),
+    [entryAvg],
+  );
 
-  // eslint-disable-next-line max-len
-  const entryUserLookup = useMemo(() => userEntries.reduce((acc, curr) => ({ ...acc, [curr.id]: curr.user }), {}), [userEntries]);
+  const entryUserLookup = useMemo(
+    () => userEntries.reduce((acc, curr) => ({ ...acc, [curr.id]: curr.user }), {}),
+    [userEntries],
+  );
 
   return (
     <>
@@ -179,99 +185,122 @@ function AnalyzeVotes() {
             </Select>
           </Box>
 
-          {
-            !votes.length
-              ? (
-                <Typography
-                  className={classes.sideBySide}
-                >
-                  We don&apos;t have any votes for this contest yet. Please choose another contest.
+          {!votes.length ? (
+            <Typography className={classes.sideBySide}>
+              We don&apos;t have any votes for this contest yet. Please choose
+              another contest.
+            </Typography>
+          ) : (
+            <>
+              <Box className={classes.sideBySide}>
+                <Typography style={{ flexShrink: 0, marginRight: 20 }}>
+                  Min votes:
                 </Typography>
-              )
-              : (
-                <>
-                  <Box className={classes.sideBySide}>
-                    <Typography style={{ flexShrink: 0, marginRight: 20 }}>Min votes:</Typography>
-                    <Slider
-                      value={voteMinimum}
-                      onChange={handleMinimumSlider}
-                      step={1}
-                      min={0}
-                      max={numberOfEntries}
-                    />
-                    <Input
-                      value={voteMinimum}
-                      size="small"
-                      onChange={handleMinimumInput}
-                      onBlur={handleMinimumBlur}
-                      inputProps={{
-                        step: 1,
-                        min: 0,
-                        max: numberOfEntries,
-                        type: 'number',
-                        'aria-labelledby': 'input-slider',
-                      }}
-                      style={{ width: '60px', marginLeft: 20 }}
-                    />
-                  </Box>
+                <Slider
+                  value={voteMinimum}
+                  onChange={handleMinimumSlider}
+                  step={1}
+                  min={0}
+                  max={numberOfEntries}
+                />
+                <Input
+                  value={voteMinimum}
+                  size="small"
+                  onChange={handleMinimumInput}
+                  onBlur={handleMinimumBlur}
+                  inputProps={{
+                    step: 1,
+                    min: 0,
+                    max: numberOfEntries,
+                    type: 'number',
+                    'aria-labelledby': 'input-slider',
+                  }}
+                  style={{ width: '60px', marginLeft: 20 }}
+                />
+              </Box>
 
-                  <UserSelector
-                    title="User: "
-                    noVotes={!userAvg.length}
-                    user={user1}
-                    setUser={setUser1}
-                    usernames={usernames}
+              <UserSelector
+                title="User: "
+                noVotes={!userAvg.length}
+                user={user1}
+                setUser={setUser1}
+                usernames={usernames}
+              />
+
+              <Box className={classes.sideBySide}>
+                <Box>
+                  <DeviationFromMean
+                    {...{
+                      user1,
+                      votes,
+                      userAvg,
+                      entryAvg,
+                      setUser1,
+                      voteMinimum,
+                    }}
                   />
-
-                  <Box className={classes.sideBySide}>
-                    <Box>
-                      <DeviationFromMean {...{
-                        user1, votes, userAvg, entryAvg, setUser1, voteMinimum,
-                      }}
-                      />
-                      <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
-
-                    </Box>
-                    <Box>
-                      <UserVsAverage {...{
-                        user1, votes, entryAvg, entryUserLookup, entryPositionLookup,
-                      }}
-                      />
-                      <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
-
-                    </Box>
-                  </Box>
-
-                  <UserSelector
-                    title="User 2: "
-                    noVotes={!userAvg.length}
-                    user={user2}
-                    setUser={setUser2}
-                    usernames={usernames}
+                  <Typography>
+                    <em>Double-click on an axis to remove the zoom</em>
+                  </Typography>
+                </Box>
+                <Box>
+                  <UserVsAverage
+                    {...{
+                      user1,
+                      votes,
+                      entryAvg,
+                      entryUserLookup,
+                      entryPositionLookup,
+                    }}
                   />
-                  <Box className={classes.sideBySide}>
-                    <Box>
-                      <PearsonsCorrelation {...{
-                        user1, user2, votes, entryPositionLookup, setUser2, voteMinimum,
-                      }}
-                      />
-                      <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
+                  <Typography>
+                    <em>Double-click on an axis to remove the zoom</em>
+                  </Typography>
+                </Box>
+              </Box>
 
-                    </Box>
-                    <Box>
-                      <UserVsUser {...{
-                        user1, votes, entryAvg, entryUserLookup, user2, entryPositionLookup,
-                      }}
-                      />
-                      <Typography><em>Double-click on an axis to remove the zoom</em></Typography>
-                    </Box>
-
-                  </Box>
-                </>
-              )
-}
+              <UserSelector
+                title="User 2: "
+                noVotes={!userAvg.length}
+                user={user2}
+                setUser={setUser2}
+                usernames={usernames}
+              />
+              <Box className={classes.sideBySide}>
+                <Box>
+                  <PearsonsCorrelation
+                    {...{
+                      user1,
+                      user2,
+                      votes,
+                      entryPositionLookup,
+                      setUser2,
+                      voteMinimum,
+                    }}
+                  />
+                  <Typography>
+                    <em>Double-click on an axis to remove the zoom</em>
+                  </Typography>
+                </Box>
+                <Box>
+                  <UserVsUser
+                    {...{
+                      user1,
+                      votes,
+                      entryAvg,
+                      entryUserLookup,
+                      user2,
+                      entryPositionLookup,
+                    }}
+                  />
+                  <Typography>
+                    <em>Double-click on an axis to remove the zoom</em>
+                  </Typography>
+                </Box>
+              </Box>
+            </>
+          )}
         </PageContainer>
-
       </ProtectedRoute>
     </>
   );

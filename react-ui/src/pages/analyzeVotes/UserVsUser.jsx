@@ -1,11 +1,8 @@
-/* eslint-disable max-len */
 /* eslint-disable react/forbid-prop-types */
 import PropTypes, { object } from 'prop-types';
 import Plot from 'react-plotly.js';
 
-import {
-  roundTwoDecimals, createTraces,
-} from './functions';
+import { roundTwoDecimals, createTraces } from './functions';
 import MARKERS from './markers';
 
 const USER_GROUP = { none: 0, submitted: 1, shared: 2 };
@@ -15,19 +12,30 @@ const ENTRY_GROUP = { none: 0, user1: 1, user2: 2 };
  * Display user votes vs user2 votes across entire contest
  */
 function UserVsUser({
-  user1, user2, votes, entryAvg, entryUserLookup, entryPositionLookup,
+  user1,
+  user2,
+  votes,
+  entryAvg,
+  entryUserLookup,
+  entryPositionLookup,
 }) {
   /**
    * CREATE DATA POINTS FOR TRACES
    */
   const userPoints = Array.from({ length: entryAvg.length }, (_, i) => ({
-    x: i, y: undefined, group: USER_GROUP.none,
+    x: i,
+    y: undefined,
+    group: USER_GROUP.none,
   }));
   const user2Points = Array.from({ length: entryAvg.length }, (_, i) => ({
-    x: i, y: undefined, group: USER_GROUP.none,
+    x: i,
+    y: undefined,
+    group: USER_GROUP.none,
   }));
   const entryPoints = Array.from({ length: entryAvg.length }, (_, i) => ({
-    x: i, y: entryAvg[i].average, group: ENTRY_GROUP.none,
+    x: i,
+    y: entryAvg[i].average,
+    group: ENTRY_GROUP.none,
   }));
   const userBarPoints = [];
   const user2BarPoints = [];
@@ -36,10 +44,17 @@ function UserVsUser({
    * ADD RATINGS (y-value) TO USER DATA POINTS
    */
   votes.forEach((vote) => {
-    // TEMP FIX. Sometimes throws TypeError (11vfqjf/mar23), even though user2Points and entryPositionLookup are both derived from entryAvg
-    if (vote.username === user1 && userPoints[entryPositionLookup[vote.entryId]]) {
+    // TEMP FIX. Sometimes throws TypeError (11vfqjf/mar23), even though user2Points and
+    // entryPositionLookup are both derived from entryAvg
+    if (
+      vote.username === user1
+      && userPoints[entryPositionLookup[vote.entryId]]
+    ) {
       userPoints[entryPositionLookup[vote.entryId]].y = vote.rating;
-    } else if (vote.username === user2 && user2Points[entryPositionLookup[vote.entryId]]) {
+    } else if (
+      vote.username === user2
+      && user2Points[entryPositionLookup[vote.entryId]]
+    ) {
       user2Points[entryPositionLookup[vote.entryId]].y = vote.rating;
     }
   });
@@ -63,16 +78,24 @@ function UserVsUser({
       userPoints[i].group = USER_GROUP.submitted;
       entryPoints[i].group = ENTRY_GROUP.user1;
       userBarPoints.push({
-        x: i, y: 5, group: 0, text: 'User 1 entry',
+        x: i,
+        y: 5,
+        group: 0,
+        text: 'User 1 entry',
       });
     } else if (entryUserLookup[ea.entryId] === user2) {
       user2Points[i].group = USER_GROUP.submitted;
       entryPoints[i].group = ENTRY_GROUP.user2;
       user2BarPoints.push({
-        x: i, y: 5, group: 0, text: 'User 2 entry',
+        x: i,
+        y: 5,
+        group: 0,
+        text: 'User 2 entry',
       });
     }
-    const text = `User score: ${userPoints[i].y ?? 'None'}<br />User 2 score: ${user2Points[i].y ?? 'None'}<br />Flag average: ${roundTwoDecimals(ea.average)}`;
+    const text = `User score: ${userPoints[i].y ?? 'None'}<br />User 2 score: ${
+      user2Points[i].y ?? 'None'
+    }<br />Flag average: ${roundTwoDecimals(ea.average)}`;
     userPoints[i].text = text;
     user2Points[i].text = text;
     entryPoints[i].text = text;
@@ -99,10 +122,24 @@ function UserVsUser({
   /**
    * CONVERT DATA POINTS TO TRACES
    */
-  const userBarTraces = createTraces(userBarPoints, [{ name: 'User 1 entry', marker: MARKERS.bar.user }], { type: 'bar', width: 1 });
-  const user2BarTraces = createTraces(user2BarPoints, [{ name: 'User 2 entry', marker: MARKERS.bar.user2 }], { type: 'bar', width: 1 });
+  const userBarTraces = createTraces(
+    userBarPoints,
+    [{ name: 'User 1 entry', marker: MARKERS.bar.user }],
+    { type: 'bar', width: 1 },
+  );
+  const user2BarTraces = createTraces(
+    user2BarPoints,
+    [{ name: 'User 2 entry', marker: MARKERS.bar.user2 }],
+    { type: 'bar', width: 1 },
+  );
 
-  const data = [...userTraces, ...user2Traces, ...entryTraces, ...userBarTraces, ...user2BarTraces];
+  const data = [
+    ...userTraces,
+    ...user2Traces,
+    ...entryTraces,
+    ...userBarTraces,
+    ...user2BarTraces,
+  ];
 
   const layout = {
     title: `${user1}'s votes to ${user2}'s`,
@@ -110,13 +147,7 @@ function UserVsUser({
     yaxis: { title: 'Score', range: [-0.5, 5.5] },
   };
 
-  return (
-    <Plot
-      data={data}
-      layout={layout}
-      showLegend
-    />
-  );
+  return <Plot data={data} layout={layout} showLegend />;
 }
 
 export default UserVsUser;

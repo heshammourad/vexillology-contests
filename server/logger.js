@@ -3,18 +3,19 @@
  */
 
 const winston = require('winston');
+
 const { LOG_LEVEL } = require('./env');
 
 const { format } = winston;
 
-const createLogger = (customLabel) => winston.createLogger({
+const createLogger = (
+  label,
+  { handleExceptions = false, handleRejections = false } = {},
+) => winston.loggers.add(label, {
   level: LOG_LEVEL,
-  format: format.combine(
-    format.label({ label: customLabel }),
-    format.json(),
-  ),
+  format: format.combine(format.label({ label }), format.json()),
   transports: [
-    new winston.transports.Console({ handleExceptions: true, handleRejections: true }),
+    new winston.transports.Console({ handleExceptions, handleRejections }),
   ],
   exitOnError: false,
 });
