@@ -183,7 +183,7 @@ function HallOfFameCard({
           component="div"
           variant="caption"
         >
-          <FormattedContent content={description} markdown={markdown} />
+          <FormattedContent content={description} isMarkdown={markdown} />
         </Typography>
       </Collapse>
     </Card>

@@ -152,7 +152,7 @@ function EntryDescriptionDrawer({ entryId }) {
         </Box>
       )}
       <DrawerSectionHeader>Description</DrawerSectionHeader>
-      <FormattedContent content={description} markdown={markdown} />
+      <FormattedContent content={description} isMarkdown={markdown} />
       <DrawerSectionHeader>Links</DrawerSectionHeader>
       <List>
         {!localVoting && (

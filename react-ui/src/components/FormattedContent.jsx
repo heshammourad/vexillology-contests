@@ -1,25 +1,85 @@
+import { makeStyles } from '@material-ui/core/styles';
+import clsx from 'clsx';
 import PropTypes from 'prop-types';
+import { markdown } from 'snudown-js';
 
 import HtmlWrapper from './HtmlWrapper';
-import RedditMarkdown from './RedditMarkdown';
 
-function FormattedContent({ className, content, markdown }) {
-  return markdown ? (
-    <RedditMarkdown {...{ className, text: content }} />
-  ) : (
-    <HtmlWrapper {...{ className, html: content }} />
+const useStyles = makeStyles((theme) => ({
+  markdown: {
+    fontSize: '1.0769230769230769em',
+    lineHeight: '20px',
+    '& a': {
+      color: theme.palette.primary.main,
+      textDecoration: 'none',
+    },
+    '& em': {
+      fontStyle: 'italic',
+    },
+    '& h1, & h2': {
+      fontSize: '1.2857142857142858em',
+      lineHeight: '1.3888888888888888em',
+      margin: '0.8333333333333334em 0',
+    },
+    '& h1, & h3, & h5, & strong': {
+      fontWeight: 600,
+    },
+    '& h2, & h4': {
+      fontWeight: 500,
+    },
+    '& h3, & h4': {
+      fontSize: '1.1428571428571428em',
+      lineHeight: '1.25em',
+      margin: '0.625em 0',
+    },
+    '& h5, & h6': {
+      fontSize: '1em',
+      lineHeight: '1.4285714285714286em',
+      marginBottom: '0.35714285714285715em',
+      marginTop: '0.7142857142857143em',
+    },
+    '& h6': {
+      fontWeight: 400,
+      textDecoration: 'underline',
+    },
+    '& p': {
+      marginBottom: 5,
+      marginTop: 5,
+    },
+    '& table': {
+      border: 'thin solid grey',
+      borderCollapse: 'collapse',
+    },
+    '& td': {
+      border: 'thin solid lightgrey',
+      padding: '4px 9px',
+    },
+    '& th': {
+      display: 'none',
+    },
+  },
+}));
+
+function FormattedContent({ className, content, isMarkdown }) {
+  const classes = useStyles();
+  const html = isMarkdown ? markdown(content) : content;
+  return (
+    <HtmlWrapper
+      className={clsx({ [classes.markdown]: isMarkdown }, className)}
+      html={html}
+    />
   );
 }
 
 FormattedContent.propTypes = {
   className: PropTypes.string,
   content: PropTypes.string.isRequired,
-  markdown: PropTypes.bool,
+  isMarkdown: PropTypes.bool,
 };
 
 FormattedContent.defaultProps = {
   className: '',
-  markdown: false,
+  isMarkdown: false,
 };
 
 export default FormattedContent;

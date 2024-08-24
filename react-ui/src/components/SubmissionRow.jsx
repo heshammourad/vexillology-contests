@@ -378,7 +378,7 @@ function SubmissionRow({
           Description
         </Typography>
         <div className={classes.description}>
-          <FormattedContent content={description} markdown />
+          <FormattedContent content={description} isMarkdown />
         </div>
       </div>
       {!moderator && submissionRejected && (

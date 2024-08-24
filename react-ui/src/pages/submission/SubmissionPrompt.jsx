@@ -14,7 +14,7 @@ function SubmissionPrompt({ contestId, prompt }) {
   if (!prompt) {
     return null;
   }
-  return <FormattedContent content={prompt} markdown />;
+  return <FormattedContent content={prompt} isMarkdown />;
 }
 
 export default SubmissionPrompt;
