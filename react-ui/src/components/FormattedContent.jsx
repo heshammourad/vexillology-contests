@@ -1,11 +1,16 @@
+/* eslint-disable react/no-danger */
 import { makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { markdown } from 'snudown-js';
 
-import HtmlWrapper from './HtmlWrapper';
-
 const useStyles = makeStyles((theme) => ({
+  html: {
+    overflowWrap: 'break-word',
+    '& p': {
+      marginTop: 0,
+    },
+  },
   markdown: {
     fontSize: '1.0769230769230769em',
     lineHeight: '20px',
@@ -60,13 +65,27 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const parser = new DOMParser();
+
 function FormattedContent({ className, content, isMarkdown }) {
   const classes = useStyles();
+
   const html = isMarkdown ? markdown(content) : content;
+  const htmlContent = parser.parseFromString(html, 'text/html');
+  const anchors = Array.from(htmlContent.getElementsByTagName('a'));
+  anchors.forEach((a) => {
+    a.setAttribute('rel', 'noopener noreferrer');
+    a.setAttribute('target', 'vexillology-contests');
+  });
+
   return (
-    <HtmlWrapper
-      className={clsx({ [classes.markdown]: isMarkdown }, className)}
-      html={html}
+    <div
+      className={clsx(
+        { [classes.markdown]: isMarkdown },
+        classes.html,
+        className,
+      )}
+      dangerouslySetInnerHTML={{ __html: htmlContent.body.innerHTML }}
     />
   );
 }
