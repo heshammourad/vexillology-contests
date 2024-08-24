@@ -56,7 +56,9 @@ function Contest() {
   const location = useLocation();
   const { state = {} } = location;
 
-  const [selectedCategories, setSelectedCategories] = useState(state?.selectedCategories ?? []);
+  const [selectedCategories, setSelectedCategories] = useState(
+    state?.selectedCategories ?? [],
+  );
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerEntryId, setDrawerEntryId] = useState(null);
 
@@ -178,17 +180,29 @@ function Contest() {
       }}
       drawer={
         drawerEntryId
-          ? { heading: 'Info', children: <EntryDescriptionDrawer entryId={drawerEntryId} /> }
+          ? {
+            heading: 'Info',
+            children: <EntryDescriptionDrawer entryId={drawerEntryId} />,
+          }
           : { heading: 'Settings', children: <ContestSettings /> }
       }
     >
       <ContestSponsor />
       {name && (
-        <PageContainer className={clsx({ [classes.entriesLoading]: !contest.name })} fixed>
-          <Typography className={classes.heading} variant={headingVariant} component="h1">
+        <PageContainer
+          className={clsx({ [classes.entriesLoading]: !contest.name })}
+          fixed
+        >
+          <Typography
+            className={classes.heading}
+            variant={headingVariant}
+            component="h1"
+          >
             {name}
           </Typography>
-          {votingWindowOpen === false && <ContestUnderReview {...{ isValidating, mutate }} />}
+          {votingWindowOpen === false && (
+            <ContestUnderReview {...{ isValidating, mutate }} />
+          )}
           {isContestMode && (
             <Box marginBottom={3}>
               <Typography component="div" variant="subtitle1">
@@ -196,7 +210,9 @@ function Contest() {
               </Typography>
             </Box>
           )}
-          <ContestCategorySelector {...{ categories, selectedCategories, setSelectedCategories }} />
+          <ContestCategorySelector
+            {...{ categories, selectedCategories, setSelectedCategories }}
+          />
           <ContestWinners {...{ winners }} />
           <ContestGrid
             {...{
