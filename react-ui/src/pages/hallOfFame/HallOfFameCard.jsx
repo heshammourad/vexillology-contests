@@ -114,7 +114,9 @@ function HallOfFameCard({
     setExpanded(!expanded);
   };
 
-  const contestYearLabel = yearEndContest ? '' : `${format(parseISO(date), 'MMM yyyy')} - `;
+  const contestYearLabel = yearEndContest
+    ? ''
+    : `${format(parseISO(date), 'MMM yyyy')} - `;
   const contestLabel = `${contestYearLabel}${contestName}`;
   const year = getYear(parseISO(date));
 
@@ -132,21 +134,26 @@ function HallOfFameCard({
           {entryName && (
             <Typography
               className={clsx({
-                [`${classes.bestOfYear} ${classes[`bestOfYear${year}`]}`]: yearEndWinner,
+                [`${classes.bestOfYear} ${classes[`bestOfYear${year}`]}`]:
+                  yearEndWinner,
               })}
               component="div"
               variant="subtitle2"
             >
               {entryName}
               {yearEndWinner && (
-                <span className={classes.bestOfYearLabel}>&nbsp;|&nbsp;BEST OF</span>
+                <span className={classes.bestOfYearLabel}>
+                  &nbsp;|&nbsp;BEST OF
+                </span>
               )}
             </Typography>
           )}
           <RedditUserAttribution user={user} />
           <div className={classes.contestLabel}>
             {redditThreadId ? (
-              <ExternalLink href={`https://redd.it/${redditThreadId}`}>{contestLabel}</ExternalLink>
+              <ExternalLink href={`https://redd.it/${redditThreadId}`}>
+                {contestLabel}
+              </ExternalLink>
             ) : (
               contestLabel
             )}
@@ -172,8 +179,16 @@ function HallOfFameCard({
         </CardActions>
       </Box>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
-        <Typography className={classes.description} component="div" variant="caption">
-          {markdown ? <RedditMarkdown text={description} /> : <HtmlWrapper html={description} />}
+        <Typography
+          className={classes.description}
+          component="div"
+          variant="caption"
+        >
+          {markdown ? (
+            <RedditMarkdown text={description} />
+          ) : (
+            <HtmlWrapper html={description} />
+          )}
         </Typography>
       </Collapse>
     </Card>

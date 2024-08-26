@@ -5,9 +5,7 @@
 import Box from '@material-ui/core/Box';
 import PropTypes from 'prop-types';
 
-import {
-  SpinnerButton,
-} from '../../components';
+import { SpinnerButton } from '../../components';
 
 function ContestUnderReview({ isValidating, mutate }) {
   return (

@@ -35,11 +35,7 @@ function useVoting(entryId) {
   const [{ isLoggedIn }] = useAuthState();
   const { disableVoting } = useVotingStatus();
 
-  const { trigger: triggerPut } = useSwrMutation(
-    contestUrl,
-    putData,
-    VOTES_URL,
-  );
+  const { trigger: triggerPut } = useSwrMutation(contestUrl, putData, VOTES_URL);
   const { trigger: triggerDelete } = useSwrMutation(
     contestUrl,
     deleteData,
@@ -51,7 +47,10 @@ function useVoting(entryId) {
     updateSnackbarState(snackbarTypes.VOTING_ERROR);
   };
   const triggerOptions = (input) => ({
-    optimisticData: (current) => ({ ...current, entries: updateEntries(current.entries, input) }),
+    optimisticData: (current) => ({
+      ...current,
+      entries: updateEntries(current.entries, input),
+    }),
     revalidate: false,
     populateCache: (response, contest) => {
       if (!response) {

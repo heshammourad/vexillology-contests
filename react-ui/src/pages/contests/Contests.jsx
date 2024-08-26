@@ -43,7 +43,9 @@ function Contests() {
     }
   }, [contests]);
 
-  const groups = contests ? groupBy(contests, ({ date }) => getYear(parseISO(date))) : null;
+  const groups = contests
+    ? groupBy(contests, ({ date }) => getYear(parseISO(date)))
+    : null;
 
   const toggleYearStatus = (year) => {
     setOpenYear(openYear === year ? null : year);
@@ -77,12 +79,12 @@ function Contests() {
                           primary={(
                             <>
                               {!yearEnd && (
-                                <>
-                                  <span className={classes.month}>
-                                    {format(parseISO(date), 'MMM yy')}
-                                  </span>
+                              <>
+                                <span className={classes.month}>
+            {format(parseISO(date), 'MMM yy')}
+          </span>
                                   &nbsp;-&nbsp;
-                                </>
+                              </>
                               )}
                               {name}
                             </>

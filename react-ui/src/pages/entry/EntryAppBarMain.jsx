@@ -5,9 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
 import { useParams, useLocation, useOutletContext } from 'react-router-dom';
 
-import {
-  RouterLinkIconButton,
-} from '../../components';
+import { RouterLinkIconButton } from '../../components';
 
 export default function EntryAppBarMain({ entryPosition, numberOfEntries }) {
   const { setScrollEntryId } = useOutletContext();
@@ -26,15 +24,15 @@ export default function EntryAppBarMain({ entryPosition, numberOfEntries }) {
         icon="close"
       />
       {!!entryPosition && !!numberOfEntries && (
-      <Typography sx={{ paddingLeft: 2 }}>
-        Flag
-        {' '}
-        {entryPosition}
-        {' '}
-        of
-        {' '}
-        {numberOfEntries}
-      </Typography>
+        <Typography sx={{ paddingLeft: 2 }}>
+          Flag
+          {' '}
+          {entryPosition}
+          {' '}
+          of
+          {' '}
+          {numberOfEntries}
+        </Typography>
       )}
     </>
   );

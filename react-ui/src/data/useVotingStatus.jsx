@@ -20,9 +20,7 @@ function useVotingStatus() {
   const [votingExpired, setVotingExpired] = useState(false);
 
   const {
-    data: {
-      voteEnd,
-    },
+    data: { voteEnd },
     mutate,
   } = useSwrContest();
 
@@ -30,7 +28,10 @@ function useVotingStatus() {
 
   useEffect(() => {
     if (isFuture(voteEndDate)) {
-      const timeToEnd = Math.min(differenceInMilliseconds(voteEndDate, new Date()), MAX_DELAY);
+      const timeToEnd = Math.min(
+        differenceInMilliseconds(voteEndDate, new Date()),
+        MAX_DELAY,
+      );
       const timeout = setTimeout(() => {
         mutate();
         setVotingExpired(true);
@@ -39,7 +40,7 @@ function useVotingStatus() {
     }
 
     setVotingExpired(true);
-    return () => { };
+    return () => {};
   }, [voteEndDate]);
 
   const votingUnavailable = votingDisabled || votingExpired;

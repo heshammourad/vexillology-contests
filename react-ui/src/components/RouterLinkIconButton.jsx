@@ -22,7 +22,13 @@ function RouterLinkIconButton({
   }, [icon]);
 
   return (
-    <IconButton color={color} component={RouterLink} onClick={onClick} state={state} to={to}>
+    <IconButton
+      color={color}
+      component={RouterLink}
+      onClick={onClick}
+      state={state}
+      to={to}
+    >
       <Icon />
     </IconButton>
   );
@@ -38,7 +44,7 @@ RouterLinkIconButton.propTypes = {
 
 RouterLinkIconButton.defaultProps = {
   color: 'default',
-  onClick: () => { },
+  onClick: () => {},
   state: {},
   icon: 'arrowback',
 };

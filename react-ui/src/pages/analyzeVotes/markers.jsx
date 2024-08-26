@@ -17,7 +17,10 @@ const MARKERS = {
     submitted: { size: LARGE, color: 'blueviolet', symbol: 'diamond' },
     shared: { size: SMALL, color: 'blueviolet', symbol: 'diamond' },
     unshared: {
-      size: SMALL, color: 'blueviolet', symbol: 'diamond', opacity: 0.3,
+      size: SMALL,
+      color: 'blueviolet',
+      symbol: 'diamond',
+      opacity: 0.3,
     },
   },
   average: {

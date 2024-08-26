@@ -8,7 +8,14 @@ import PropTypes from 'prop-types';
 import types from '../common/types';
 
 function CustomIconButton({
-  ariaLabel, className, color, href, Icon, innerRef, onClick, size,
+  ariaLabel,
+  className,
+  color,
+  href,
+  Icon,
+  innerRef,
+  onClick,
+  size,
 }) {
   let target;
   if (href) {

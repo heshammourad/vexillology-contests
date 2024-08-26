@@ -26,7 +26,9 @@ function CategoryLabel({ categories, category, categoryRank }) {
       <div
         className={clsx(
           classes.label,
-          categoryLabelClasses[`label${categories.indexOf(category) % LABEL_COLORS.length}`],
+          categoryLabelClasses[
+            `label${categories.indexOf(category) % LABEL_COLORS.length}`
+          ],
         )}
       >
         <Typography variant="caption">

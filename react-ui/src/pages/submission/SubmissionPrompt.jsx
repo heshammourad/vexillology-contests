@@ -3,9 +3,7 @@
  */
 import PropTypes from 'prop-types';
 
-import {
-  RedditMarkdown,
-} from '../../components';
+import { RedditMarkdown } from '../../components';
 
 import May23 from './content/May23';
 

@@ -70,7 +70,12 @@ const useStyles = makeStyles((theme) => ({
 function RedditMarkdown({ className, text }) {
   const classes = useStyles();
 
-  return <HtmlWrapper className={clsx(classes.markdown, className)} html={markdown(text)} />;
+  return (
+    <HtmlWrapper
+      className={clsx(classes.markdown, className)}
+      html={markdown(text)}
+    />
+  );
 }
 
 RedditMarkdown.propTypes = {

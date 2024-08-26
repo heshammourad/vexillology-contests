@@ -21,7 +21,11 @@ function Header({
   return (
     <AppBarDivided color="default" disableGutters position={position}>
       <RouterLinkIconButton to={to} />
-      <Typography className={clsx(classes.title, className)} component="div" variant="h6">
+      <Typography
+        className={clsx(classes.title, className)}
+        component="div"
+        variant="h6"
+      >
         {children}
       </Typography>
     </AppBarDivided>

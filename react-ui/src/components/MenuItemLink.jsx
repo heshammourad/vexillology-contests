@@ -13,13 +13,18 @@ import types from '../common/types';
 
 function menuItemComponent({ state, to }) {
   // eslint-disable-next-line react/jsx-props-no-spreading
-  return forwardRef((itemProps, ref) => <Link state={state} to={to} ref={ref} {...itemProps} />);
+  return forwardRef((itemProps, ref) => (
+    <Link state={state} to={to} ref={ref} {...itemProps} />
+  ));
 }
 
 function MenuItemLink({
   Icon, onClick, state, text, to,
 }) {
-  const renderLink = useMemo(() => (to ? menuItemComponent({ state, to }) : undefined), [to]);
+  const renderLink = useMemo(
+    () => (to ? menuItemComponent({ state, to }) : undefined),
+    [to],
+  );
 
   return (
     <MenuItem button component={renderLink} onClick={onClick}>

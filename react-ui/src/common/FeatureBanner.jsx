@@ -91,16 +91,21 @@ function FeatureBanner({ screenOverride }) {
   const classes = useStyles();
   const { pathname } = useLocation();
 
-  const screen = screenOverride || Object.values(SCREENS).find((val) => pathname.includes(val));
+  const screen = screenOverride
+    || Object.values(SCREENS).find((val) => pathname.includes(val));
 
   const Banner = useMemo(() => {
     // Reduce features to only months and bullets that relate to given screen
     const screenFeatures = features.reduce((acc, month) => {
       const screenBullets = month.bullets.filter((bullet) => bullet.onScreens.includes(screen));
       if (screenBullets.length) {
-        return [...acc, {
-          ...month, bullets: screenBullets,
-        }];
+        return [
+          ...acc,
+          {
+            ...month,
+            bullets: screenBullets,
+          },
+        ];
       }
       return acc;
     }, []);
@@ -114,18 +119,18 @@ function FeatureBanner({ screenOverride }) {
         <Typography className={classes.monthYear}>NEW FEATURES</Typography>
         {screenFeatures.map(({ monthYear, bullets }) => (
           <Box key={monthYear}>
-            <Typography className={clsx(classes.monthYear)}>{monthYear}</Typography>
-            {
-              bullets.map(({ isBold = false, text }) => (
-                <Typography
-                  key={text}
-                  className={clsx(classes.bullet, { [classes.isBold]: isBold })}
-                >
-                  {'-  '}
-                  {text}
-                </Typography>
-              ))
-            }
+            <Typography className={clsx(classes.monthYear)}>
+              {monthYear}
+            </Typography>
+            {bullets.map(({ isBold = false, text }) => (
+              <Typography
+                key={text}
+                className={clsx(classes.bullet, { [classes.isBold]: isBold })}
+              >
+                {'-  '}
+                {text}
+              </Typography>
+            ))}
           </Box>
         ))}
       </Box>

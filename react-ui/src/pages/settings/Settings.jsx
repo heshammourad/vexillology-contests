@@ -8,7 +8,12 @@ import { useLocation } from 'react-router-dom';
 
 import snackbarTypes from '../../common/snackbarTypes';
 import useSnackbarState from '../../common/useSnackbarState';
-import { CustomSwitch, Header, PageContainer, ProtectedRoute } from '../../components';
+import {
+  CustomSwitch,
+  Header,
+  PageContainer,
+  ProtectedRoute,
+} from '../../components';
 import { putData } from '../../data/api';
 import useSwrAuth from '../../data/useSwrAuth';
 import useSwrMutation from '../../data/useSwrMutation';

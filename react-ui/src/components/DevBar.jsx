@@ -15,7 +15,13 @@ import useSwrContest from '../data/useSwrContest';
 import useSwrInit from '../data/useSwrInit';
 import { VIEW_DEV_BAR, START_WITHOUT_CACHE } from '../env';
 
-const contestStatus = ['prerelease', 'submission', 'review', 'voting', 'results'];
+const contestStatus = [
+  'prerelease',
+  'submission',
+  'review',
+  'voting',
+  'results',
+];
 
 function DevBar() {
   const {
@@ -109,7 +115,9 @@ function DevBar() {
           <Typography>Not logged in</Typography>
         )}
         <Divider orientation="vertical" flexItem />
-        <Typography>{START_WITHOUT_CACHE ? 'Cache OFF' : 'Cache ON'}</Typography>
+        <Typography>
+          {START_WITHOUT_CACHE ? 'Cache OFF' : 'Cache ON'}
+        </Typography>
       </Stack>
     </Toolbar>
   );

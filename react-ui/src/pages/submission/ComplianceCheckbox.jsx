@@ -23,9 +23,15 @@ function ComplianceCheckbox({
   return (
     <FormControlLabel
       classes={{ label: classes.label, root: classes.root }}
-      control={
-        <Checkbox id={name} name={name} checked={checked} onBlur={onBlur} onChange={onChange} />
-      }
+      control={(
+        <Checkbox
+          id={name}
+          name={name}
+          checked={checked}
+          onBlur={onBlur}
+          onChange={onChange}
+        />
+      )}
       label={label}
     />
   );
@@ -40,7 +46,7 @@ ComplianceCheckbox.propTypes = {
 };
 
 ComplianceCheckbox.defaultProps = {
-  onBlur: () => { },
+  onBlur: () => {},
 };
 
 export default ComplianceCheckbox;

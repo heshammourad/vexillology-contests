@@ -31,7 +31,11 @@ export const getData = async (path, authToken) => {
 };
 
 export const postData = async (path, newData, authToken) => {
-  const response = await instance.post(path, newData, generateConfig(authToken));
+  const response = await instance.post(
+    path,
+    newData,
+    generateConfig(authToken),
+  );
   return response;
 };
 

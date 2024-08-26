@@ -23,7 +23,10 @@ function NavigateIconButton({ className, Icon, onClick }) {
   const classes = useStyles();
 
   return (
-    <IconButton className={clsx(classes.navigateButton, className)} onClick={onClick}>
+    <IconButton
+      className={clsx(classes.navigateButton, className)}
+      onClick={onClick}
+    >
       <Icon className={classes.navigateIcon} fontSize="large" />
     </IconButton>
   );

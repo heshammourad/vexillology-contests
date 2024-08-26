@@ -189,7 +189,9 @@ const updateSubmissions = (currentData, response) => {
   };
 
   if (currentData.userBreakdown) {
-    const { submissionStatus, user } = currentData.submissions.find(({ id }) => id === response.id);
+    const { submissionStatus, user } = currentData.submissions.find(
+      ({ id }) => id === response.id,
+    );
     if (submissionStatus !== response.submissionStatus) {
       const { userBreakdown } = currentData;
       const changedUserBreakdown = userBreakdown[user];
@@ -333,12 +335,19 @@ function SubmissionRow({
       return;
     }
 
-    const body = { id, rejectionReason: formState.reason.value, status: action };
+    const body = {
+      id,
+      rejectionReason: formState.reason.value,
+      status: action,
+    };
     triggerReview(body, triggerOptions);
   };
 
   const userSubmit = () => {
-    const body = { id, submissionStatus: submissionWithdrawn ? 'pending' : 'withdrawn' };
+    const body = {
+      id,
+      submissionStatus: submissionWithdrawn ? 'pending' : 'withdrawn',
+    };
     triggerUser(body, triggerOptions);
   };
 
@@ -346,7 +355,9 @@ function SubmissionRow({
   const isSmBreakpoint = useMediaQuery(theme.breakpoints.only('sm'));
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
 
-  const redditUserAttribution = <RedditUserAttribution showUsernameOnly user={user} />;
+  const redditUserAttribution = (
+    <RedditUserAttribution showUsernameOnly user={user} />
+  );
   const fields = (
     <>
       {category && (
@@ -452,7 +463,10 @@ function SubmissionRow({
                   className={classes.image}
                   alt=""
                   src={imagePath}
-                  style={{ border: `2px solid ${backgroundColor}`, backgroundColor }}
+                  style={{
+                    border: `2px solid ${backgroundColor}`,
+                    backgroundColor,
+                  }}
                 />
               )}
             </div>
@@ -469,21 +483,33 @@ function SubmissionRow({
           />
         </TableCell>
         <TableCell align="right" className={classes.expandIconCell}>
-          <IconButton aria-label="expand row" size="small" onClick={handleExpandClick}>
+          <IconButton
+            aria-label="expand row"
+            size="small"
+            onClick={handleExpandClick}
+          >
             {open ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
         </TableCell>
       </TableRow>
       <TableRow>
         <TableCell className={classes.expandedTableRow} colSpan={6}>
-          <Collapse in={open} timeout="auto" unmountOnExit className={classes.expandedRow}>
+          <Collapse
+            in={open}
+            timeout="auto"
+            unmountOnExit
+            className={classes.expandedRow}
+          >
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6} md={4}>
                 <img
                   className={classes.expandedImage}
                   alt=""
                   src={imagePath}
-                  style={{ border: `5px solid ${backgroundColor}`, backgroundColor }}
+                  style={{
+                    border: `5px solid ${backgroundColor}`,
+                    backgroundColor,
+                  }}
                 />
                 {dropFields && fields}
               </Grid>
@@ -527,9 +553,13 @@ function SubmissionRow({
                       {modifiedBy && (
                         <Alert severity="info">
                           {'Set to '}
-                          <span className={classes.submissionStatus}>{submissionStatus}</span>
+                          <span className={classes.submissionStatus}>
+                            {submissionStatus}
+                          </span>
                           {' by '}
-                          <span className={classes.modifiedBy}>{modifiedBy}</span>
+                          <span className={classes.modifiedBy}>
+                            {modifiedBy}
+                          </span>
                         </Alert>
                       )}
                       <TextField
@@ -563,8 +593,8 @@ function SubmissionRow({
                     <>
                       {submissionStatus === 'approved' && (
                         <Alert severity="warning">
-                          This flag is approved. If you re-submit it later, it will need to be
-                          reviewed again by a moderator.
+                          This flag is approved. If you re-submit it later, it
+                          will need to be reviewed again by a moderator.
                         </Alert>
                       )}
                       <SpinnerButton

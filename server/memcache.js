@@ -1,8 +1,8 @@
 /**
  * Recall database value from cache
- * @param key 
+ * @param key
  * @param callback fetch value if not found
- * @param [expires] 
+ * @param [expires]
  */
 
 const memjs = require('memjs');

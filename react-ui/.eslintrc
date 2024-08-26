@@ -2,29 +2,20 @@
   "env": {
     "browser": true
   },
-  "extends": [
-    "airbnb"
-  ],
+  "extends": ["airbnb"],
   "parser": "@babel/eslint-parser",
   "parserOptions": {
     "babelOptions": {
-      "presets": [
-        "@babel/preset-react"
-      ]
+      "presets": ["@babel/preset-react"]
     },
     "ecmaVersion": 2023,
     "requireConfigFile": false,
     "sourceType": "module"
   },
-  "plugins": [
-    "mui-unused-classes"
-  ],
+  "plugins": ["mui-unused-classes"],
   "rules": {
     "strict": 0,
-    "curly": [
-      "error",
-      "all"
-    ],
+    "curly": ["error", "all"],
     "import/order": [
       "error",
       {
@@ -59,10 +50,7 @@
             "message": "Please import specific method instead, e.g. import debounce from 'lodash/debounce'."
           }
         ],
-        "patterns": [
-          "**/components/*",
-          "**/pages/*"
-        ]
+        "patterns": ["**/components/*", "**/pages/*"]
       }
     ],
     "react/jsx-uses-react": "off",
