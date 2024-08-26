@@ -1,8 +1,5 @@
-const axios = require('axios');
-
 const db = require('../db');
 const { createLogger } = require('../logger');
-const memcache = require('../memcache');
 
 const logger = createLogger('API/STATIC_CONTENT');
 
