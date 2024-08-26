@@ -36,7 +36,7 @@ import { putData } from '../data/api';
 import useSwrMutation from '../data/useSwrMutation';
 
 import Fieldset from './Fieldset';
-import RedditMarkdown from './RedditMarkdown';
+import FormattedContent from './FormattedContent';
 import RedditUserAttribution from './RedditUserAttribution';
 import SpinnerButton from './SpinnerButton';
 
@@ -381,7 +381,7 @@ function SubmissionRow({
           Description
         </Typography>
         <div className={classes.description}>
-          <RedditMarkdown text={description} />
+          <FormattedContent content={description} markdown />
         </div>
       </div>
       {!moderator && submissionRejected && (

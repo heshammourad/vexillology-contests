@@ -13,10 +13,10 @@ import { animateScroll } from 'react-scroll';
 
 import {
   EntryDescriptionDrawer,
-  HtmlWrapper,
   PageContainer,
   PageWithDrawer,
   RedditLogInDialog,
+  StaticContent,
 } from '../../components';
 import useSwrContest from '../../data/useSwrContest';
 
@@ -165,7 +165,7 @@ function Contest() {
   const { headingVariant } = useContestSizing();
 
   const {
-    categories, isContestMode, name, subtext, votingWindowOpen, winners,
+    categories, isContestMode, name, votingWindowOpen, winners,
   } = contest;
 
   return (
@@ -203,10 +203,10 @@ function Contest() {
           {votingWindowOpen === false && (
             <ContestUnderReview {...{ isValidating, mutate }} />
           )}
-          {isContestMode && subtext && (
+          {isContestMode && (
             <Box marginBottom={3}>
               <Typography component="div" variant="subtitle1">
-                <HtmlWrapper html={subtext} />
+                <StaticContent id="voting_instructions" />
               </Typography>
             </Box>
           )}

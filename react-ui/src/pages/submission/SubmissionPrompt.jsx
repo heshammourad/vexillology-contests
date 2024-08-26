@@ -3,7 +3,7 @@
  */
 import PropTypes from 'prop-types';
 
-import { RedditMarkdown } from '../../components';
+import { FormattedContent } from '../../components';
 
 import May23 from './content/May23';
 
@@ -14,7 +14,7 @@ function SubmissionPrompt({ contestId, prompt }) {
   if (!prompt) {
     return null;
   }
-  return <RedditMarkdown text={prompt} />;
+  return <FormattedContent content={prompt} markdown />;
 }
 
 export default SubmissionPrompt;

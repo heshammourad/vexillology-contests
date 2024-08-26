@@ -18,7 +18,7 @@ import { useState } from 'react';
 import {
   CustomIconButton,
   ExternalLink,
-  HtmlWrapper,
+  FormattedContent,
   LazyLoadCardImage,
   RedditMarkdown,
   RedditUserAttribution,
@@ -184,11 +184,7 @@ function HallOfFameCard({
           component="div"
           variant="caption"
         >
-          {markdown ? (
-            <RedditMarkdown text={description} />
-          ) : (
-            <HtmlWrapper html={description} />
-          )}
+          <FormattedContent content={description} markdown={markdown} />
         </Typography>
       </Collapse>
     </Card>

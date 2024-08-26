@@ -23,7 +23,7 @@ import {
   ExternalLink,
   Fieldset,
   ProtectedRoute,
-  RedditMarkdown,
+  FormattedContent,
   SpinnerButton,
 } from '../../components';
 import { postData } from '../../data/api';
@@ -563,11 +563,12 @@ function SubmissionForm({
               onChange={handleFieldChange}
               inputProps={{ maxLength: CHAR_LIMIT_DESCRIPTION }}
             />
-            <RedditMarkdown
+            <FormattedContent
               className={clsx(classes.descriptionPreview, {
                 [classes.descriptionEntry]: !previewDescription,
               })}
-              text={formState.description.value}
+              content={formState.description.value}
+              markdown
             />
           </div>
           <Button
