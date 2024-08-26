@@ -3,11 +3,7 @@
   ??? What is the removed column for in entries?
 */
 
-const {
-  add,
-  format,
-  sub,
-} = require('date-fns');
+const { add, format, sub } = require('date-fns');
 
 const db = require('../db');
 const { createLogger } = require('../logger');
@@ -17,7 +13,14 @@ const VOTE_MAX = 5;
 const logger = createLogger('API/DEV');
 
 const getDevContest = (status) => {
-  const contestStatuses = ['prerelease', 'reset', 'submission', 'review', 'voting', 'results'];
+  const contestStatuses = [
+    'prerelease',
+    'reset',
+    'submission',
+    'review',
+    'voting',
+    'results',
+  ];
   const contestIndex = contestStatuses.indexOf(status);
   const isAfter = (lastStatus) => contestIndex > contestStatuses.indexOf(lastStatus);
 
@@ -47,8 +50,8 @@ const getDevContest = (status) => {
     valid_reddit_id: false, // boolean
     submission_start: isAfter('prerelease') ? pastest : future, // timestamp with time zone
     submission_end: isAfter('submission') ? past : futurest, // timestamp with time zone
-    vote_start: add((isAfter('review') ? pastest : future), { seconds: 2 }), // timestamp with time zone
-    vote_end: add((isAfter('voting') ? past : futurest), { seconds: 2 }), // timestamp with time zone
+    vote_start: add(isAfter('review') ? pastest : future, { seconds: 2 }), // timestamp with time zone
+    vote_end: add(isAfter('voting') ? past : futurest, { seconds: 2 }), // timestamp with time zone
     subtext: 'Dev subtext', // character varying
     local_voting: true, // boolean
     prompt: 'This is the prompt for the development contest.', // character varying
@@ -67,7 +70,9 @@ const CASTINGS = {
 
 exports.contest = async ({ body: { status }, username }, res) => {
   try {
-    const isExisting = (await db.any("SELECT EXISTS (SELECT 1 FROM contests WHERE id='dev')"))[0].exists;
+    const isExisting = (
+      await db.any("SELECT EXISTS (SELECT 1 FROM contests WHERE id='dev')")
+    )[0].exists;
 
     if (status === 'reset') {
       /*
@@ -93,7 +98,10 @@ exports.contest = async ({ body: { status }, username }, res) => {
         ------- CONTEST_CATEGORIES -------
         Create categories for dev contest
       */
-      const categories = [{ contest_id: 'dev', category: 'cat1' }, { contest_id: 'dev', category: 'cat2' }];
+      const categories = [
+        { contest_id: 'dev', category: 'cat1' },
+        { contest_id: 'dev', category: 'cat2' },
+      ];
       await db.insert('contest_categories', categories);
 
       /*
@@ -103,11 +111,15 @@ exports.contest = async ({ body: { status }, username }, res) => {
       */
       const users = await db.select('SELECT username FROM users');
       if (!users.some((user) => user.username === username)) {
-        await db.insert('users', [{ username, contest_reminders: true, moderator: true }]);
+        await db.insert('users', [
+          { username, contest_reminders: true, moderator: true },
+        ]);
         users.push({ username });
       }
       if (!users.some((user) => user.username === 'dev')) {
-        await db.insert('users', [{ username: 'dev', contest_reminders: true, moderator: false }]);
+        await db.insert('users', [
+          { username: 'dev', contest_reminders: true, moderator: false },
+        ]);
         users.push({ username: 'dev' });
       }
 
@@ -120,74 +132,130 @@ exports.contest = async ({ body: { status }, username }, res) => {
               diversity of images, descriptions, etc
       */
       let entryVersions = [
-        { user: 'dev', name: 'Pending example 1', submission_status: 'pending' },
-        { user: username, name: 'Pending example 2', submission_status: 'pending' },
-        { user: 'dev', name: 'Withdrawn example 1', submission_status: 'withdrawn' },
-        { user: username, name: 'Withdrawn example 2', submission_status: 'withdrawn' },
         {
-          user: 'dev', name: 'Approved example', submission_status: 'approved', modified_by: 'VertigoOne',
+          user: 'dev',
+          name: 'Pending example 1',
+          submission_status: 'pending',
         },
         {
-          user: 'dev', name: 'Approved example 2', submission_status: 'approved', modified_by: 'VertigoOne',
+          user: username,
+          name: 'Pending example 2',
+          submission_status: 'pending',
         },
         {
-          user: username, name: 'Approved example 3', submission_status: 'approved', modified_by: 'VertigoOne',
+          user: 'dev',
+          name: 'Withdrawn example 1',
+          submission_status: 'withdrawn',
         },
         {
-          user: 'dev', name: 'Rejected example 1', submission_status: 'rejected', modified_by: 'VertigoOne', rejection_reason: 'Rejected because.',
+          user: username,
+          name: 'Withdrawn example 2',
+          submission_status: 'withdrawn',
         },
         {
-          user: username, name: 'Rejected example 2', submission_status: 'rejected', modified_by: 'VertigoOne', rejection_reason: 'Rejected because.',
+          user: 'dev',
+          name: 'Approved example',
+          submission_status: 'approved',
+          modified_by: 'VertigoOne',
+        },
+        {
+          user: 'dev',
+          name: 'Approved example 2',
+          submission_status: 'approved',
+          modified_by: 'VertigoOne',
+        },
+        {
+          user: username,
+          name: 'Approved example 3',
+          submission_status: 'approved',
+          modified_by: 'VertigoOne',
+        },
+        {
+          user: 'dev',
+          name: 'Rejected example 1',
+          submission_status: 'rejected',
+          modified_by: 'VertigoOne',
+          rejection_reason: 'Rejected because.',
+        },
+        {
+          user: username,
+          name: 'Rejected example 2',
+          submission_status: 'rejected',
+          modified_by: 'VertigoOne',
+          rejection_reason: 'Rejected because.',
         },
       ];
 
-      const backgroundColors = (await db.select('SELECT * FROM background_colors')).map((obj) => obj.color);
+      const backgroundColors = (
+        await db.select('SELECT * FROM background_colors')
+      ).map((obj) => obj.color);
       // add sequential dev# for id (NOTE: zero-indexed, can do i+1 if desired)
-      entryVersions = entryVersions.map((v, i) => ({ ...v, id: `dev-${i}`, background_color: backgroundColors[i % 3] }));
+      entryVersions = entryVersions.map((v, i) => ({
+        ...v,
+        id: `dev-${i}`,
+        background_color: backgroundColors[i % 3],
+      }));
 
-      const existingEntries = await db.select(`SELECT width, height, url FROM entries WHERE height > 600 AND url LIKE '%firebasestorage%' LIMIT ${entryVersions.length}`);
-      await db.insert('entries', entryVersions.map((version, i) => ({
-        ...existingEntries[i], ...version,
-      })));
+      const existingEntries = await db.select(
+        `SELECT width, height, url FROM entries WHERE height > 600 AND url LIKE '%firebasestorage%' LIMIT ${entryVersions.length}`,
+      );
+      await db.insert(
+        'entries',
+        entryVersions.map((version, i) => ({
+          ...existingEntries[i],
+          ...version,
+        })),
+      );
 
       /*
         ------- CONTEST_ENTRIES -------
         Connect the two
       */
-      await db.insert('contest_entries', entryVersions.map(({ id }, i) => ({
-        contest_id: 'dev',
-        entry_id: id,
-        rank: null,
-        category: categories[i % categories.length].category, // alternating entries
-      })));
+      await db.insert(
+        'contest_entries',
+        entryVersions.map(({ id }, i) => ({
+          contest_id: 'dev',
+          entry_id: id,
+          rank: null,
+          category: categories[i % categories.length].category, // alternating entries
+        })),
+      );
 
       /*
         ------- VOTES -------
         Random voting, all users on all flags
       */
-      const approvedEntries = entryVersions.filter((version) => version.submission_status === 'approved');
+      const approvedEntries = entryVersions.filter(
+        (version) => version.submission_status === 'approved',
+      );
 
-      await db.insert('votes', users.flatMap(({ username: u }) => (
-        approvedEntries.map(({ id }) => ({
+      await db.insert(
+        'votes',
+        users.flatMap(({ username: u }) => approvedEntries.map(({ id }) => ({
           username: u,
           entry_id: id,
           contest_id: 'dev',
-          rating: u === approvedEntries.user
-            ? VOTE_MAX
-            : Math.floor(Math.random() * (VOTE_MAX + 1)),
+          rating:
+              u === approvedEntries.user
+                ? VOTE_MAX
+                : Math.floor(Math.random() * (VOTE_MAX + 1)),
           last_modified: new Date(),
-        }))
-      )));
+        }))),
+      );
     } else {
       const contest = getDevContest(status);
       // Switch contest status
       if (isExisting) {
-        await db.update('contests', [contest], Object.keys(contest).map((key) => {
-          if (key === 'id') {
-            return '?id';
-          }
-          return { name: key, cast: CASTINGS[key] };
-        }));
+        await db.update(
+          'contests',
+          [contest],
+          Object.keys(contest).map((key) => {
+            if (key === 'id') {
+              return '?id';
+            }
+            return { name: key, cast: CASTINGS[key] };
+          }),
+        );
       } else {
         await db.insert('contests', [contest]);
       }
@@ -203,16 +271,25 @@ exports.contest = async ({ body: { status }, username }, res) => {
 exports.mod = async ({ body: { moderator }, username }, res) => {
   try {
     // Create user "dev"
-    const user = await db.select(`SELECT moderator
+    const user = await db.select(
+      `SELECT moderator
     FROM users
-    WHERE username = $1`, [username]);
+    WHERE username = $1`,
+      [username],
+    );
 
     let status;
     if (!user.length) {
-      await db.insert('users', [{ username, contest_reminders: true, moderator }]);
+      await db.insert('users', [
+        { username, contest_reminders: true, moderator },
+      ]);
       status = 201;
     } else {
-      await db.update('users', [{ username, moderator }], ['?username', 'moderator']);
+      await db.update(
+        'users',
+        [{ username, moderator }],
+        ['?username', 'moderator'],
+      );
       status = 200;
     }
 

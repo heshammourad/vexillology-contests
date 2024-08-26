@@ -28,7 +28,9 @@ function RedditLogInDialog() {
       aria-labelledby="reddit-log-in-dialog-title"
       aria-describedby="reddit-log-in-dialog-description"
     >
-      <DialogTitle id="reddit-log-in-dialog-title">Log in to Reddit?</DialogTitle>
+      <DialogTitle id="reddit-log-in-dialog-title">
+        Log in to Reddit?
+      </DialogTitle>
       <DialogContent>
         <DialogContentText id="reddit-log-in-dialog-description">
           You must be logged in to Reddit to vote on contests

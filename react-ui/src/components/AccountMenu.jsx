@@ -14,6 +14,7 @@ import Popper from '@material-ui/core/Popper';
 import { makeStyles } from '@material-ui/core/styles';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import AccountCircleOutlinedIcon from '@material-ui/icons/AccountCircleOutlined';
+import BallotIcon from '@material-ui/icons/Ballot';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import PlaylistAddCheckIcon from '@material-ui/icons/PlaylistAddCheck';
 import RedditIcon from '@material-ui/icons/Reddit';
@@ -52,9 +53,10 @@ function AccountMenu({ color }) {
   const { pathname } = useLocation();
   const classes = useStyles();
 
-  // Prettier and eslint aren't playing well together
-  // eslint-disable-next-line max-len
-  const [{ isLoggedIn, authTokens: { refreshToken } = {}, username }, setAuthState] = useAuthState();
+  const [
+    { isLoggedIn, authTokens: { refreshToken } = {}, username },
+    setAuthState,
+  ] = useAuthState();
   const sendUserToAuthUrl = useRedditLogIn();
 
   const {
@@ -151,12 +153,20 @@ function AccountMenu({ color }) {
                         to="/profile/settings"
                       />
                       {moderator && (
-                        <MenuItemLink
-                          Icon={reviewSubmissionsIcon}
-                          state={{ back: pathname }}
-                          text="Review Submissions"
-                          to="/mod/review"
-                        />
+                        <>
+                          <MenuItemLink
+                            Icon={reviewSubmissionsIcon}
+                            state={{ back: pathname }}
+                            text="Review Submissions"
+                            to="/mod/review"
+                          />
+                          <MenuItemLink
+                            Icon={BallotIcon}
+                            state={{ back: pathname }}
+                            text="Analyze Votes"
+                            to="/mod/analyze"
+                          />
+                        </>
                       )}
                       <MenuItemLink
                         Icon={ExitToAppIcon}

@@ -79,9 +79,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function VotingSlider({
-  entryId, rating,
-}) {
+function VotingSlider({ entryId, rating }) {
   const { votingUnavailable: disabled } = useVotingStatus();
   const ratingRef = useRef(rating);
 
@@ -102,7 +100,10 @@ function VotingSlider({
   return (
     <>
       <ThemedSlider
-        className={clsx({ [classes.disabled]: disabled, [classes.unrated]: isUnrated })}
+        className={clsx({
+          [classes.disabled]: disabled,
+          [classes.unrated]: isUnrated,
+        })}
         aria-label="Vote on flag"
         disabled={disabled}
         marks

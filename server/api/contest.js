@@ -44,7 +44,9 @@ const filterRepeatedIds = async (data, idField) => {
 const addContestEntries = async (contestId, entries) => {
   const { filteredData, repeatedIds } = await filterRepeatedIds(entries, 'id');
   if (repeatedIds.length) {
-    logger.warn(`Error adding contest entries. Repeated ids: ${repeatedIds.join(', ')}`);
+    logger.warn(
+      `Error adding contest entries. Repeated ids: ${repeatedIds.join(', ')}`,
+    );
   }
   await db.insert(
     'contest_entries',
@@ -59,13 +61,26 @@ const addContestEntries = async (contestId, entries) => {
 const addEntries = async (entries) => {
   const { filteredData, repeatedIds } = await filterRepeatedIds(entries, 'id');
   if (repeatedIds.length) {
-    logger.warn(`Error adding entries. Repeated ids: ${repeatedIds.join(', ')}`);
+    logger.warn(
+      `Error adding entries. Repeated ids: ${repeatedIds.join(', ')}`,
+    );
   }
   await db.insert('entries', filteredData);
 };
 
-// eslint-disable-next-line max-len
-const findMissingEntries = (contest, imagesData) => contest.entries.filter((entry) => !imagesData.find((image) => image.id === entry.imgurId));
+const findMissingEntries = (contest, imagesData) => contest.entries.filter(
+  (entry) => !imagesData.find((image) => image.id === entry.imgurId),
+);
+
+const getVoteData = async (contestId) => {
+  const voteData = await db.select(
+    `SELECT entry_id, rank, category_rank, average
+     FROM contests_summary cs, entries e
+     WHERE cs.entry_id = e.id AND e.submission_status = 'approved' AND contest_id = $1`,
+    [contestId],
+  );
+  return voteData;
+};
 
 exports.get = async ({ params: { id }, username }, res) => {
   try {
@@ -180,13 +195,20 @@ exports.get = async ({ params: { id }, username }, res) => {
               '?entry_id',
               'rank',
             ]);
-            await db.update('entries', entriesData, ['?id', 'description', 'name', 'user']);
+            await db.update('entries', entriesData, [
+              '?id',
+              'description',
+              'name',
+              'user',
+            ]);
           }
         }
       }
 
       const getEntryRank = (entryId) => {
-        const contestEntry = contestEntriesData.find((entry) => entry.entry_id === entryId);
+        const contestEntry = contestEntriesData.find(
+          (entry) => entry.entry_id === entryId,
+        );
         if (contestEntry) {
           return contestEntry.rank;
         }
@@ -196,9 +218,10 @@ exports.get = async ({ params: { id }, username }, res) => {
       const allImagesData = [...imagesData];
       let missingEntries = findMissingEntries(contest, allImagesData);
       if (missingEntries.length) {
-        const entriesData = await db.select('SELECT * FROM entries WHERE id = ANY ($1)', [
-          missingEntries.map((entry) => entry.imgurId),
-        ]);
+        const entriesData = await db.select(
+          'SELECT * FROM entries WHERE id = ANY ($1)',
+          [missingEntries.map((entry) => entry.imgurId)],
+        );
         const contestEntries = entriesData.map((entry) => ({
           ...entry,
           rank: getEntryRank(entry.id),
@@ -239,7 +262,9 @@ exports.get = async ({ params: { id }, username }, res) => {
       }
 
       contest.entries = contest.entries.reduce((acc, cur) => {
-        const imageData = allImagesData.find((image) => cur.imgurId === image.id);
+        const imageData = allImagesData.find(
+          (image) => cur.imgurId === image.id,
+        );
         if (imageData) {
           const {
             id: imgurId, height, rank, width, user,
@@ -266,11 +291,13 @@ exports.get = async ({ params: { id }, username }, res) => {
       response = { ...response, ...contest };
 
       try {
-        const updateData = response.entries.map(({ description, imgurId, name: entryName }) => ({
-          description,
-          id: imgurId,
-          name: entryName,
-        }));
+        const updateData = response.entries.map(
+          ({ description, imgurId, name: entryName }) => ({
+            description,
+            id: imgurId,
+            name: entryName,
+          }),
+        );
         db.update('entries', updateData, ['?id', 'description', 'name']);
       } catch (err) {
         logger.error(`Unable to update db: ${err}`);
@@ -301,7 +328,10 @@ exports.get = async ({ params: { id }, username }, res) => {
         [id, submissionStatus],
       );
 
-      const votingNotOpenResponse = { name: response.name, votingWindowOpen: false };
+      const votingNotOpenResponse = {
+        name: response.name,
+        votingWindowOpen: false,
+      };
       if (isFuture(voteStart)) {
         res.send(votingNotOpenResponse);
         return;
@@ -348,14 +378,19 @@ exports.get = async ({ params: { id }, username }, res) => {
     }
 
     if (username) {
-      logger.debug(`Auth tokens present, retrieving votes of ${username} on ${id}`);
+      logger.debug(
+        `Auth tokens present, retrieving votes of ${username} on ${id}`,
+      );
       const votes = await db.select(
         'SELECT entry_id, rating FROM votes WHERE contest_id = $1 AND username = $2',
         [id, username],
       );
       logger.debug(`${username} votes on ${id}: '${JSON.stringify(votes)}'`);
 
-      const entriesObj = keyBy(response.entries, response.entries[0]?.imgurId ? 'imgurId' : 'id');
+      const entriesObj = keyBy(
+        response.entries,
+        response.entries[0]?.imgurId ? 'imgurId' : 'id',
+      );
       votes.forEach(({ entryId, rating }) => {
         if (!entriesObj[entryId]) {
           return;
@@ -385,8 +420,9 @@ exports.get = async ({ params: { id }, username }, res) => {
         return hash;
       };
 
-      response.entries = response.entries.map(({ rank, user, ...entry }) => entry).sort(
-        (a, b) => {
+      response.entries = response.entries
+        .map(({ rank, user, ...entry }) => entry)
+        .sort((a, b) => {
           if (a.rating > -1 && b.rating === undefined) {
             return 1;
           }
@@ -397,15 +433,14 @@ exports.get = async ({ params: { id }, username }, res) => {
             return b.rating - a.rating;
           }
           return getHash(b.id) - getHash(a.id);
-        },
-      );
+        });
     } else if (localVoting) {
-      const voteData = await db.select(
-        `SELECT entry_id, rank, category_rank, average
-         FROM contests_summary cs, entries e
-         WHERE cs.entry_id = e.id AND e.submission_status = 'approved' AND contest_id = $1`,
-        [id],
-      );
+      let voteData = await getVoteData(id);
+      if (!voteData.length) {
+        // The contest is over, but the materialized view has not been updated.
+        await db.any('REFRESH MATERIALIZED VIEW contests_summary');
+        voteData = await getVoteData(id);
+      }
       const map = new Map();
       voteData.forEach(({
         average, categoryRank, entryId, rank,
@@ -423,7 +458,9 @@ exports.get = async ({ params: { id }, username }, res) => {
           ...map.get(entryId),
         });
       });
-      response.entries = Array.from(map.values()).sort((a, b) => a.rank - b.rank);
+      response.entries = Array.from(map.values()).sort(
+        (a, b) => a.rank - b.rank,
+      );
     } else {
       const [winners, entries] = partition(
         response.entries,

@@ -52,7 +52,10 @@ const del = async (table, values) => {
       return acc;
     }, [])
     .join(' AND ');
-  await db.none(`DELETE FROM ${table} WHERE ${whereCondition}`, Object.values(values));
+  await db.none(
+    `DELETE FROM ${table} WHERE ${whereCondition}`,
+    Object.values(values),
+  );
 };
 
 const insert = async (table, values, returning = []) => {

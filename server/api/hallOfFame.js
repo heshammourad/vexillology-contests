@@ -14,10 +14,22 @@ exports.get = async (req, res) => {
 
     const removedYearEndWinners = [];
     const response = result.reduce(
-      (acc, {
-        contestId, date, entryId, validRedditId, winnersThreadId, yearEnd, ...rest
-      }) => {
-        if (yearEnd && result.filter((entry) => entry.entryId === entryId).length > 1) {
+      (
+        acc,
+        {
+          contestId,
+          date,
+          entryId,
+          validRedditId,
+          winnersThreadId,
+          yearEnd,
+          ...rest
+        },
+      ) => {
+        if (
+          yearEnd
+          && result.filter((entry) => entry.entryId === entryId).length > 1
+        ) {
           removedYearEndWinners.push(entryId);
           return acc;
         }

@@ -24,7 +24,12 @@ function ListItemLink({
 
   return (
     <li>
-      <ListItem button className={className} component={renderLink} onClick={onClick}>
+      <ListItem
+        button
+        className={className}
+        component={renderLink}
+        onClick={onClick}
+      >
         <ListItemText primary={primary} />
       </ListItem>
     </li>
@@ -41,7 +46,7 @@ ListItemLink.propTypes = {
 
 ListItemLink.defaultProps = {
   className: null,
-  onClick: () => { },
+  onClick: () => {},
   state: {},
 };
 

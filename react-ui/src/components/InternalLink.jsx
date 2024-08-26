@@ -18,7 +18,13 @@ function InternalLink({
   children, className, onClick, state, to,
 }) {
   return (
-    <Link className={className} component={RouterLink} onClick={onClick} state={state} to={to}>
+    <Link
+      className={className}
+      component={RouterLink}
+      onClick={onClick}
+      state={state}
+      to={to}
+    >
       {children}
     </Link>
   );

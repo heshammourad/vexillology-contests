@@ -2,9 +2,7 @@
   "env": {
     "browser": true
   },
-  "extends": [
-    "airbnb-base"
-  ],
+  "extends": ["airbnb-base"],
   "parser": "@babel/eslint-parser",
   "parserOptions": {
     "ecmaVersion": 2023,
@@ -15,9 +13,7 @@
     "import/no-unresolved": [
       "error",
       {
-        "ignore": [
-          "firebase-admin/*"
-        ]
+        "ignore": ["firebase-admin/*"]
       }
     ],
     "import/order": [

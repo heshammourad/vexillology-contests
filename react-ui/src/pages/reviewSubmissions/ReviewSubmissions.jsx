@@ -54,13 +54,17 @@ function ReviewSubmissions() {
   useEffect(() => {
     let updatedSubmissions = [...submissions];
 
-    const statusesToDisplay = Object.keys(selectedChips).filter((status) => selectedChips[status]);
+    const statusesToDisplay = Object.keys(selectedChips).filter(
+      (status) => selectedChips[status],
+    );
     if (statusesToDisplay.length) {
       // eslint-disable-next-line max-len
       updatedSubmissions = updatedSubmissions.filter(({ submissionStatus }) => statusesToDisplay.includes(submissionStatus));
     }
 
-    const usersToDisplay = Object.keys(selectedUsers).filter((user) => selectedUsers[user]);
+    const usersToDisplay = Object.keys(selectedUsers).filter(
+      (user) => selectedUsers[user],
+    );
     if (usersToDisplay.length) {
       updatedSubmissions = updatedSubmissions.filter(({ user }) => usersToDisplay.includes(user));
     }
@@ -81,7 +85,10 @@ function ReviewSubmissions() {
   }, [showErrorsOnly]);
 
   const handleChipClick = (chipName) => () => {
-    setSelectedChips({ ...selectedChips, [chipName]: !selectedChips[chipName] });
+    setSelectedChips({
+      ...selectedChips,
+      [chipName]: !selectedChips[chipName],
+    });
   };
 
   const toggleErrorFilters = () => {
@@ -150,7 +157,11 @@ You have more than 2 entries in this month's contest. Can you please let us know
                       </li>
                     ))}
                   </ul>
-                  <Button color="primary" onClick={toggleErrorFilters} variant="contained">
+                  <Button
+                    color="primary"
+                    onClick={toggleErrorFilters}
+                    variant="contained"
+                  >
                     {showErrorsOnly ? 'Reset Filters' : 'Show Errors'}
                   </Button>
                 </Alert>

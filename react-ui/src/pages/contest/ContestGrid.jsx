@@ -81,10 +81,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function ContestGrid({
-  selectedCategories,
-  setDrawer,
-}) {
+function ContestGrid({ selectedCategories, setDrawer }) {
   const { votingDisabled } = useVotingStatus();
   const { data: contest } = useSwrContest();
 
@@ -93,34 +90,33 @@ function ContestGrid({
 
   const [{ density = 'default' }] = useSettingsState();
 
-  const getGridVariables = useCallback((fullWidth) => {
-    const xs = 12;
-    let sm = 12;
-    let md = 6;
-    let lg = 4;
+  const getGridVariables = useCallback(
+    (fullWidth) => {
+      const xs = 12;
+      let sm = 12;
+      let md = 6;
+      let lg = 4;
 
-    if (fullWidth) {
-      md = 12;
-      lg = 12;
-    } else if (density === 'compact') {
-      sm = 6;
-      md = 4;
-      lg = 3;
-    }
+      if (fullWidth) {
+        md = 12;
+        lg = 12;
+      } else if (density === 'compact') {
+        sm = 6;
+        md = 4;
+        lg = 3;
+      }
 
-    return {
-      xs,
-      sm,
-      md,
-      lg,
-    };
-  }, [density]);
+      return {
+        xs,
+        sm,
+        md,
+        lg,
+      };
+    },
+    [density],
+  );
 
-  const {
-    categories,
-    entries,
-    isContestMode,
-  } = contest;
+  const { categories, entries, isContestMode } = contest;
 
   if (!entries) {
     return null;
@@ -130,8 +126,7 @@ function ContestGrid({
     <Grid container spacing={density === 'compact' ? 1 : 2}>
       {entries
         .filter(
-          ({ category }) => !selectedCategories.length
-            || selectedCategories.includes(category),
+          ({ category }) => !selectedCategories.length || selectedCategories.includes(category),
         )
         .map(
           ({
@@ -150,24 +145,34 @@ function ContestGrid({
           }) => (
             // eslint-disable-next-line react/jsx-props-no-spreading
             <Grid key={id} item {...getGridVariables(rank === '1')}>
-              <Card id={id} className={classes.entry} sx={{ maxWidth: rank === '1' ? winnerDisplayWidth : gridDisplayWidth }}>
-                <CardContentWrapper {...{
-                  average,
-                  category,
-                  categories,
-                  categoryRank,
-                  entryName,
-                  id,
-                  isContestMode,
-                  rank,
-                  rating,
-                  setDrawer,
-                  user,
+              <Card
+                id={id}
+                className={classes.entry}
+                sx={{
+                  maxWidth:
+                    rank === '1' ? winnerDisplayWidth : gridDisplayWidth,
                 }}
+              >
+                <CardContentWrapper
+                  {...{
+                    average,
+                    category,
+                    categories,
+                    categoryRank,
+                    entryName,
+                    id,
+                    isContestMode,
+                    rank,
+                    rating,
+                    setDrawer,
+                    user,
+                  }}
                 />
                 <div className={classes.entryImageContainer}>
                   <CardImageLink
-                    displayWidth={rank === '1' ? winnerDisplayWidth : gridDisplayWidth}
+                    displayWidth={
+                      rank === '1' ? winnerDisplayWidth : gridDisplayWidth
+                    }
                     height={height}
                     id={id}
                     image={imagePath}
@@ -180,10 +185,7 @@ function ContestGrid({
                       [classes.disabledVoting]: votingDisabled,
                     })}
                   >
-                    <VotingSlider
-                      entryId={imgurId ?? id}
-                      rating={rating}
-                    />
+                    <VotingSlider entryId={imgurId ?? id} rating={rating} />
                   </CardActions>
                 )}
               </Card>
@@ -211,75 +213,78 @@ function CardContentWrapper({
 }) {
   const classes = useStyles();
 
-  const cardContent = useMemo(() => (
-    <CardContent className={classes.entryHeading}>
-      {rank && (
-        <Typography component="div" variant="h6">
-          <span className={classes.numberSymbol}>#</span>
-          {rank}
-        </Typography>
-      )}
-      <div className={classes.entryInfo}>
-        <Box alignItems="flex-start" display="flex" flexGrow={1}>
-          <Box flexGrow={1}>
-            <Typography component="div" variant="subtitle2">
-              {entryName}
-            </Typography>
-            {user && (
-              <Typography variant="caption">
-                <RedditUserAttribution user={user} />
-              </Typography>
-            )}
-          </Box>
-          <Experiment name="contest_card_description">
-            <CustomIconButton
-              ariaLabel="View description"
-              className={classes.descriptionIcon}
-              Icon={DescriptionIcon}
-              onClick={() => {
-                setDrawer(id);
-              }}
-              size="small"
-            />
-          </Experiment>
-        </Box>
-        {(!isContestMode || category) && (
-          <div className={classes.entryRatings}>
-            {category && (
-              <CategoryLabel
-                categories={categories}
-                category={category}
-                categoryRank={categoryRank}
-              />
-            )}
-            {!isContestMode && (
-              <>
-                <Average average={average} fullText={rank === '1'} />
-                {rating > -1 && (
-                  <Typography className={classes.myRating} variant="caption">
-                    {rank === '1' && <span>My&nbsp;rating:&nbsp;</span>}
-                    <FiveStar rating={rating} />
-                  </Typography>
-                )}
-              </>
-            )}
-          </div>
+  const cardContent = useMemo(
+    () => (
+      <CardContent className={classes.entryHeading}>
+        {rank && (
+          <Typography component="div" variant="h6">
+            <span className={classes.numberSymbol}>#</span>
+            {rank}
+          </Typography>
         )}
-      </div>
-    </CardContent>
-  ), [
-    average,
-    category,
-    categories,
-    categoryRank,
-    entryName,
-    id,
-    isContestMode,
-    rank,
-    rating,
-    setDrawer,
-    user,
-  ]);
+        <div className={classes.entryInfo}>
+          <Box alignItems="flex-start" display="flex" flexGrow={1}>
+            <Box flexGrow={1}>
+              <Typography component="div" variant="subtitle2">
+                {entryName}
+              </Typography>
+              {user && (
+                <Typography variant="caption">
+                  <RedditUserAttribution user={user} />
+                </Typography>
+              )}
+            </Box>
+            <Experiment name="contest_card_description">
+              <CustomIconButton
+                ariaLabel="View description"
+                className={classes.descriptionIcon}
+                Icon={DescriptionIcon}
+                onClick={() => {
+                  setDrawer(id);
+                }}
+                size="small"
+              />
+            </Experiment>
+          </Box>
+          {(!isContestMode || category) && (
+            <div className={classes.entryRatings}>
+              {category && (
+                <CategoryLabel
+                  categories={categories}
+                  category={category}
+                  categoryRank={categoryRank}
+                />
+              )}
+              {!isContestMode && (
+                <>
+                  <Average average={average} fullText={rank === '1'} />
+                  {rating > -1 && (
+                    <Typography className={classes.myRating} variant="caption">
+                      {rank === '1' && <span>My&nbsp;rating:&nbsp;</span>}
+                      <FiveStar rating={rating} />
+                    </Typography>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </CardContent>
+    ),
+    [
+      average,
+      category,
+      categories,
+      categoryRank,
+      entryName,
+      id,
+      isContestMode,
+      rank,
+      rating,
+      setDrawer,
+      user,
+    ],
+  );
 
   return cardContent;
 }

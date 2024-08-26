@@ -7,7 +7,9 @@ function RedditUserAttribution({ showUsernameOnly, user }) {
   return (
     <div>
       {!showUsernameOnly && 'by '}
-      <ExternalLink href={`https://reddit.com${redditUser}`}>{redditUser}</ExternalLink>
+      <ExternalLink href={`https://reddit.com${redditUser}`}>
+        {redditUser}
+      </ExternalLink>
     </div>
   );
 }
