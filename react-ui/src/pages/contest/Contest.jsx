@@ -165,7 +165,7 @@ function Contest() {
   const { headingVariant } = useContestSizing();
 
   const {
-    categories, isContestMode, name, subtext, votingWindowOpen, winners,
+    categories, isContestMode, name, votingWindowOpen, winners,
   } = contest;
 
   return (
@@ -203,7 +203,7 @@ function Contest() {
           {votingWindowOpen === false && (
             <ContestUnderReview {...{ isValidating, mutate }} />
           )}
-          {isContestMode && subtext && (
+          {isContestMode && (
             <Box marginBottom={3}>
               <Typography component="div" variant="subtitle1">
                 <StaticContent id="voting_instructions" />
