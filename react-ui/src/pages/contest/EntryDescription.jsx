@@ -8,7 +8,7 @@ import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 
-import { HtmlWrapper, RedditMarkdown } from '../../components';
+import { FormattedContent } from '../../components';
 
 const useStyles = makeStyles((theme) => ({
   expand: {
@@ -22,7 +22,8 @@ const useStyles = makeStyles((theme) => ({
     transform: 'rotate(180deg)',
   },
   overlay: {
-    maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 48px)',
+    maskImage:
+      'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 48px)',
   },
 }));
 
@@ -39,7 +40,7 @@ function EntryDescription({ description, markdown }) {
           component="div"
           variant="caption"
         >
-          {markdown ? <RedditMarkdown text={description} /> : <HtmlWrapper html={description} />}
+          <FormattedContent content={description} markdown={markdown} />
         </Typography>
       </Collapse>
       <IconButton

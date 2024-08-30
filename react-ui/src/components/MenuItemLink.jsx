@@ -12,8 +12,8 @@ import { Link } from 'react-router-dom';
 import types from '../common/types';
 
 function menuItemComponent({ state, to }) {
-  // eslint-disable-next-line react/jsx-props-no-spreading
   return forwardRef((itemProps, ref) => (
+    // eslint-disable-next-line react/jsx-props-no-spreading
     <Link state={state} to={to} ref={ref} {...itemProps} />
   ));
 }

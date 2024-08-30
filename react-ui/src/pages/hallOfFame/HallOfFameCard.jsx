@@ -20,7 +20,6 @@ import {
   ExternalLink,
   FormattedContent,
   LazyLoadCardImage,
-  RedditMarkdown,
   RedditUserAttribution,
 } from '../../components';
 import flair from '../../images/flair.png';
