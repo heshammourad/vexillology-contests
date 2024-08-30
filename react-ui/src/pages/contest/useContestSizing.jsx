@@ -49,8 +49,12 @@ function useContestSizing() {
     size = 'sm';
   }
 
-  const gridDisplayWidth = size ? imageWidths[density][size] : defaultContainerWidth;
-  const winnerDisplayWidth = size ? imageWidths.full[size] - 48 : defaultContainerWidth;
+  const gridDisplayWidth = size
+    ? imageWidths[density][size]
+    : defaultContainerWidth;
+  const winnerDisplayWidth = size
+    ? imageWidths.full[size] - 48
+    : defaultContainerWidth;
 
   const headingVariant = isSmUp ? 'h3' : 'h5';
 

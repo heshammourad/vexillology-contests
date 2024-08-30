@@ -18,8 +18,9 @@ import { useState } from 'react';
 import {
   CustomIconButton,
   ExternalLink,
-  HtmlWrapper,
+  FormattedContent,
   LazyLoadCardImage,
+  RedditMarkdown,
   RedditUserAttribution,
 } from '../../components';
 import flair from '../../images/flair.png';
@@ -27,7 +28,7 @@ import flair from '../../images/flair.png';
 // The first year available in /images/flair.png.
 const FLAIR_START_YEAR = 2015;
 // The last year available in /images/flair.png.
-const FLAIR_END_YEAR = 2022;
+const FLAIR_END_YEAR = 2023;
 const FLAIR_WIDTH = 25;
 
 const useStyles = makeStyles((theme) => {
@@ -99,6 +100,7 @@ function HallOfFameCard({
     entryName,
     height,
     imagePath,
+    markdown,
     redditThreadId,
     user,
     width,
@@ -112,7 +114,9 @@ function HallOfFameCard({
     setExpanded(!expanded);
   };
 
-  const contestYearLabel = yearEndContest ? '' : `${format(parseISO(date), 'MMM yyyy')} - `;
+  const contestYearLabel = yearEndContest
+    ? ''
+    : `${format(parseISO(date), 'MMM yyyy')} - `;
   const contestLabel = `${contestYearLabel}${contestName}`;
   const year = getYear(parseISO(date));
 
@@ -130,21 +134,26 @@ function HallOfFameCard({
           {entryName && (
             <Typography
               className={clsx({
-                [`${classes.bestOfYear} ${classes[`bestOfYear${year}`]}`]: yearEndWinner,
+                [`${classes.bestOfYear} ${classes[`bestOfYear${year}`]}`]:
+                  yearEndWinner,
               })}
               component="div"
               variant="subtitle2"
             >
               {entryName}
               {yearEndWinner && (
-                <span className={classes.bestOfYearLabel}>&nbsp;|&nbsp;BEST OF</span>
+                <span className={classes.bestOfYearLabel}>
+                  &nbsp;|&nbsp;BEST OF
+                </span>
               )}
             </Typography>
           )}
           <RedditUserAttribution user={user} />
           <div className={classes.contestLabel}>
             {redditThreadId ? (
-              <ExternalLink href={`https://redd.it/${redditThreadId}`}>{contestLabel}</ExternalLink>
+              <ExternalLink href={`https://redd.it/${redditThreadId}`}>
+                {contestLabel}
+              </ExternalLink>
             ) : (
               contestLabel
             )}
@@ -170,8 +179,12 @@ function HallOfFameCard({
         </CardActions>
       </Box>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
-        <Typography className={classes.description} component="div" variant="caption">
-          <HtmlWrapper html={description} />
+        <Typography
+          className={classes.description}
+          component="div"
+          variant="caption"
+        >
+          <FormattedContent content={description} markdown={markdown} />
         </Typography>
       </Collapse>
     </Card>
@@ -186,6 +199,7 @@ HallOfFameCard.propTypes = {
     entryName: PropTypes.string,
     height: PropTypes.number,
     imagePath: PropTypes.string,
+    markdown: PropTypes.bool,
     redditThreadId: PropTypes.string,
     user: PropTypes.string,
     width: PropTypes.number,

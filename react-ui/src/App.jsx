@@ -9,11 +9,7 @@ import {
 } from 'react-router-dom';
 import { SWRConfig } from 'swr';
 
-import {
-  AppHelmet,
-  CustomSnackbar,
-  CustomThemeProvider,
-} from './components';
+import { AppHelmet, CustomSnackbar, CustomThemeProvider } from './components';
 import localStorageProvider from './data/LocalStorageProvider';
 import { getData } from './data/api';
 import {
@@ -24,6 +20,7 @@ import {
   HallOfFame,
   Home,
   ReviewSubmissions,
+  AnalyzeVotes,
   Settings,
   Submission,
 } from './pages';
@@ -64,13 +61,20 @@ function ModalSwitch() {
         <Route path="/home" element={<Home />} />
         <Route path="/contests" element={<Contests />} />
         <Route path="/contests/:contestId" element={<Contest />}>
-          <Route path="/contests/:contestId/entry/:entryId" element={<EntryModal />} />
+          <Route
+            path="/contests/:contestId/entry/:entryId"
+            element={<EntryModal />}
+          />
         </Route>
         <Route path="/mod/review" element={<ReviewSubmissions />} />
+        <Route path="/mod/analyze" element={<AnalyzeVotes />} />
+        <Route path="/mod/analyze/:contestId" element={<AnalyzeVotes />} />
         <Route path="/submission" element={<Submission />} />
         <Route
           path="/submit"
-          element={<Navigate replace state={{ defaultTab: 1 }} to="/submission" />}
+          element={
+            <Navigate replace state={{ defaultTab: 1 }} to="/submission" />
+          }
         />
         <Route path="/hallOfFame" element={<HallOfFame />} />
         <Route path="/profile/settings" element={<Settings />} />

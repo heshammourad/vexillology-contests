@@ -27,7 +27,11 @@ const CITIES = [
     name: 'Coal Valley Township, Illinois',
     link: 'https://www.crwflags.com/fotw/flags/us-ilcvt.html',
     image: 'https://www.crwflags.com/fotw/images/u/us-ilcvt.gif',
-    facts: ['Located in Rock Island county', 'Named for the local coal mines', 'Founded in 1856'],
+    facts: [
+      'Located in Rock Island county',
+      'Named for the local coal mines',
+      'Founded in 1856',
+    ],
   },
   {
     name: 'Westfield, Massachusetts',
@@ -62,7 +66,8 @@ const CITIES = [
   {
     name: 'Republic, Missouri',
     link: 'https://upload.wikimedia.org/wikipedia/en/c/cd/City_of_Republic%2C_Missouri_flag.png',
-    image: 'https://upload.wikimedia.org/wikipedia/en/c/cd/City_of_Republic%2C_Missouri_flag.png',
+    image:
+      'https://upload.wikimedia.org/wikipedia/en/c/cd/City_of_Republic%2C_Missouri_flag.png',
     facts: [
       'Founded and grew as the result of railway deployment and expansion',
       'Eventually subsumed the nearby village of Brookline, however they had special agreements to keep signage marking where Brookline was',
@@ -257,7 +262,10 @@ const CITIES = [
 function May23() {
   return (
     <>
-      <p>This month, you can both read about the prompt below, or you can watch the video.</p>
+      <p>
+        This month, you can both read about the prompt below, or you can watch
+        the video.
+      </p>
 
       <div
         style={{
@@ -278,21 +286,23 @@ function May23() {
       </div>
 
       <p>
-        In 2022 the North American Vexillological Association did a survey, and found that
+        In 2022 the North American Vexillological Association did a survey, and
+        found that
         {' '}
         <a href="https://i.imgur.com/97r74bq.png">
-          these were the twenty five worst new (adopted since 2015) village/town/city flags in
-          America.
+          these were the twenty five worst new (adopted since 2015)
+          village/town/city flags in America.
         </a>
       </p>
 
       <p>
-        We want you to redesign these flags. Show the people of these villages, towns, and cities
-        that better design is in fact in their grasp.
+        We want you to redesign these flags. Show the people of these villages,
+        towns, and cities that better design is in fact in their grasp.
       </p>
 
       <p>
-        To help you along, here is the list of all the towns, and three useful facts about each one.
+        To help you along, here is the list of all the towns, and three useful
+        facts about each one.
       </p>
 
       <List aria-label="list of cities">

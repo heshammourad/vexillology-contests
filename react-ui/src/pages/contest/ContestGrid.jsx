@@ -151,7 +151,10 @@ function ContestGrid({ selectedCategories, setDrawer }) {
               <Card
                 id={id}
                 className={classes.entry}
-                sx={{ maxWidth: rank === '1' ? winnerDisplayWidth : gridDisplayWidth }}
+                sx={{
+                  maxWidth:
+                    rank === '1' ? winnerDisplayWidth : gridDisplayWidth,
+                }}
               >
                 <CardContentWrapper
                   {...{
@@ -170,7 +173,9 @@ function ContestGrid({ selectedCategories, setDrawer }) {
                 />
                 <div className={classes.entryImageContainer}>
                   <CardImageLink
-                    displayWidth={rank === '1' ? winnerDisplayWidth : gridDisplayWidth}
+                    displayWidth={
+                      rank === '1' ? winnerDisplayWidth : gridDisplayWidth
+                    }
                     height={height}
                     id={id}
                     image={imagePath}

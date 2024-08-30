@@ -1,3 +1,4 @@
+export { default as AnalyzeVotes } from './analyzeVotes/AnalyzeVotes';
 export { default as AuthorizeCallback } from './authorizeCallback/AuthorizeCallback';
 export { default as Contest } from './contest/Contest';
 export { default as Contests } from './contests/Contests';

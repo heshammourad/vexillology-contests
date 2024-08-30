@@ -5,10 +5,7 @@
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 
-import {
-  ExternalLink,
-  FmpIcon,
-} from '../../components';
+import { ExternalLink, FmpIcon } from '../../components';
 
 const useStyles = makeStyles((theme) => ({
   sponsorBanner: {

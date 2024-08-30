@@ -4,12 +4,10 @@
   "formation": {
     "web": {
       "quantity": 1,
-      "size": "hobby"
+      "size": "basic"
     }
   },
-  "addons": [
-    "papertrail:choklad"
-  ],
+  "addons": ["papertrail:choklad"],
   "buildpacks": [
     {
       "url": "heroku/nodejs"

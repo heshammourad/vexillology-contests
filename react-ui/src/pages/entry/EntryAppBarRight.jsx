@@ -7,9 +7,7 @@ import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import RedditIcon from '@material-ui/icons/Reddit';
 import PropTypes from 'prop-types';
 
-import {
-  CustomIconButton,
-} from '../../components';
+import { CustomIconButton } from '../../components';
 
 export default function EntryAppBarRight({
   entry: { imagePath, permalink },

@@ -13,11 +13,7 @@ import throttle from 'lodash/throttle';
 import {
   useEffect, useMemo, useRef, useState,
 } from 'react';
-import {
-  useLocation,
-  useNavigate,
-  useOutletContext,
-} from 'react-router-dom';
+import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 
 import useSettingsState from '../../common/useSettingsState';
 import {
@@ -41,7 +37,10 @@ const useStyles = makeStyles((theme) => ({
   }),
   appBar: (props) => ({
     backgroundColor: props?.backgroundColor || theme.palette.common.black,
-    color: props?.backgroundColor === '#FFFFFF' ? theme.palette.grey[700] : theme.palette.common.white,
+    color:
+      props?.backgroundColor === '#FFFFFF'
+        ? theme.palette.grey[700]
+        : theme.palette.common.white,
   }),
   clickActive: {
     cursor: 'pointer',
@@ -103,11 +102,7 @@ function EntryModal() {
    */
   const entryId = useEntryId();
   const { data } = useSwrContest();
-  const {
-    entries = [],
-    winners = [],
-    localVoting,
-  } = data;
+  const { entries = [], winners = [], localVoting } = data;
   const allEntriesRef = useRef([]);
   const [entry, setEntry] = useState({});
   const [entryIndex, updateEntryIndex] = useState(-1);
@@ -118,8 +113,8 @@ function EntryModal() {
   };
 
   /**
-  * Layout
-  */
+   * Layout
+   */
   const classes = useStyles(entry);
   const imageContainerRef = useRef(null);
 
@@ -139,7 +134,10 @@ function EntryModal() {
     isNavigationAvailableRef.current = value;
     updateNavigationAvailable(value);
   };
-  const [isNavigationVisible, setNavigationVisible] = useState({ before: true, next: true });
+  const [isNavigationVisible, setNavigationVisible] = useState({
+    before: true,
+    next: true,
+  });
   const hideNavigation = () => {
     setNavigationVisible({ before: false, next: false });
   };
@@ -204,8 +202,7 @@ function EntryModal() {
 
   useEffect(() => {
     const allEntries = [...winners, ...entries].filter(
-      ({ category }) => !selectedCategories?.length
-        || selectedCategories?.includes(category),
+      ({ category }) => !selectedCategories?.length || selectedCategories?.includes(category),
     );
     if (!entryId || !allEntries.length) {
       return;
@@ -305,7 +302,7 @@ function EntryModal() {
             position: 'fixed',
             accountMenuColor: 'inherit',
             className: classes.appBar,
-            right: (entry?.id && (
+            right: entry?.id && (
               <EntryAppBarRight
                 {...{
                   redditCommentButtonRef,
@@ -315,15 +312,24 @@ function EntryModal() {
                   entry,
                 }}
               />
-            )),
-            children: <EntryAppBarMain />,
+            ),
+            children: (
+              <EntryAppBarMain
+                entryPosition={entryIndex + 1}
+                numberOfEntries={entries.length + winners.length}
+              />
+            ),
           }}
-          drawer={{ heading: 'Info', children: <EntryDescriptionDrawer {...{ entryId }} /> }}
+          drawer={{
+            heading: 'Info',
+            children: <EntryDescriptionDrawer {...{ entryId }} />,
+          }}
         >
           <Box
             ref={imageContainerRef}
             className={clsx(classes.imageContainer, {
-              [classes.clickActive]: isNavigationVisible.before || isNavigationVisible.next,
+              [classes.clickActive]:
+                isNavigationVisible.before || isNavigationVisible.next,
             })}
             display="flex"
             alignItems="center"
@@ -334,16 +340,22 @@ function EntryModal() {
           >
             {isNavigationAvailable.before && (
               <NavigateIconButton
-                className={clsx(classes.navigateButton, classes.navigateBefore, {
-                  [classes.navigateVisible]: isNavigationVisible.before,
-                })}
+                className={clsx(
+                  classes.navigateButton,
+                  classes.navigateBefore,
+                  {
+                    [classes.navigateVisible]: isNavigationVisible.before,
+                  },
+                )}
                 Icon={NavigateBeforeIcon}
                 onClick={() => {
                   handleNavigate(-1);
                 }}
               />
             )}
-            {entry?.imagePath && <img className={classes.image} src={entry.imagePath} alt="" />}
+            {entry?.imagePath && (
+              <img className={classes.image} src={entry.imagePath} alt="" />
+            )}
             {isNavigationAvailable.next && (
               <NavigateIconButton
                 className={clsx(classes.navigateButton, classes.navigateNext, {

@@ -61,7 +61,9 @@ function ProtectedRoute({
   if (errorStatus === 403) {
     return (
       <PageContainer className={classes.container}>
-        <Typography className={classes.message}>Must be a moderator to access page</Typography>
+        <Typography className={classes.message}>
+          Must be a moderator to access page
+        </Typography>
         {goHomeButton}
       </PageContainer>
     );

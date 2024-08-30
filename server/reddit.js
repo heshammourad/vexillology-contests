@@ -50,9 +50,13 @@ const userAgent = 'node:com.vexillologycontests:v0.1.0';
  * @returns auth ? user-populated snoowrap : default snoowrap
  */
 const getSnoowrap = (auth = {}) => {
-  const accessToken = auth.accessToken || auth.accesstoken || auth.access_token
+  const accessToken = auth.accessToken
+    || auth.accesstoken
+    || auth.access_token
     || WEB_APP_ACCESS_TOKEN;
-  const refreshToken = auth.refreshToken || auth.refreshtoken || auth.refresh_token
+  const refreshToken = auth.refreshToken
+    || auth.refreshtoken
+    || auth.refresh_token
     || WEB_APP_REFRESH_TOKEN;
 
   if (IS_UNAUTHENTICATED_VIEW || !accessToken || !refreshToken) {
@@ -94,7 +98,9 @@ exports.getContest = async (submissionId) => {
         return acc;
       }
 
-      const description = `<p>${bodyHtml.match(/<\/p>.*?<p>(.*)<\/p>/s)[1]}</p>`;
+      const description = `<p>${
+        bodyHtml.match(/<\/p>.*?<p>(.*)<\/p>/s)[1]
+      }</p>`;
       const imgurId = body.match(/imgur\.com\/(\w*)(\.|\))/)[1];
       const name = body.match(/\*\*(.*?)\*\*/)[1];
 
@@ -145,7 +151,9 @@ exports.getWinners = async (winnersThreadId) => {
 
 exports.isModerator = async (user) => {
   logger.debug(`Checking if ${user} is moderator`);
-  const moderators = await getSnoowrap().getSubreddit('vexillology').getModerators();
+  const moderators = await getSnoowrap()
+    .getSubreddit('vexillology')
+    .getModerators();
 
   const moderator = moderators.some(({ name }) => name === user);
   logger.debug(`${user} is moderator: ${moderator}`);
@@ -168,5 +176,8 @@ exports.retrieveAccessToken = async (code) => {
 };
 
 exports.revokeRefreshToken = async (token) => {
-  await redditApi.post('/revoke_token', { token, token_type_hint: 'refresh_token' });
+  await redditApi.post('/revoke_token', {
+    token,
+    token_type_hint: 'refresh_token',
+  });
 };

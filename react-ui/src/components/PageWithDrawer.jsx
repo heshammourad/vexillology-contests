@@ -79,7 +79,13 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function PageWithDrawer({
-  appBar, children, className, drawer, handleClose, isOpen, isModal,
+  appBar,
+  children,
+  className,
+  drawer,
+  handleClose,
+  isOpen,
+  isModal,
 }) {
   const classes = useStyles();
   return (

@@ -61,7 +61,12 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Countdown({
-  endDate, fontSize, handleExpiry, handleReload, startDate, variant,
+  endDate,
+  fontSize,
+  handleExpiry,
+  handleReload,
+  startDate,
+  variant,
 }) {
   const [initialized, setInitialized] = useState(false);
   const [textFontSize, setFontSize] = useState();
@@ -77,7 +82,9 @@ function Countdown({
   }
 
   const variantValues = VARIANTS[variant] ?? VARIANTS[countdownTypes.VOTING];
-  const periodDays = startDate ? differenceInDays(endDate, startDate) : variantValues.defaultDays;
+  const periodDays = startDate
+    ? differenceInDays(endDate, startDate)
+    : variantValues.defaultDays;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -93,7 +100,9 @@ function Countdown({
 
       if (fontSize !== 'small') {
         const daysLeft = differenceInDays(endDate, now);
-        setFontSize(0.875 + (Math.max(periodDays - daysLeft, 0) / periodDays) * 0.25);
+        setFontSize(
+          0.875 + (Math.max(periodDays - daysLeft, 0) / periodDays) * 0.25,
+        );
       }
 
       const newTimeLeft = isMdUp
@@ -130,13 +139,18 @@ function Countdown({
   return (
     <div
       className={clsx(classes.countdown, {
-        [classes.countdownWarning]: timeLeft && !differenceInDays(endDate, new Date()),
+        [classes.countdownWarning]:
+          timeLeft && !differenceInDays(endDate, new Date()),
       })}
     >
       <ScheduleIcon className={classes.icon} fontSize={fontSize} />
       <Typography
         className={classes.countdownLabel}
-        style={isMdUp && timeLeft && textFontSize ? { fontSize: `${textFontSize}rem` } : null}
+        style={
+          isMdUp && timeLeft && textFontSize
+            ? { fontSize: `${textFontSize}rem` }
+            : null
+        }
         variant={labelVariant}
       >
         {timeLeft ? (
@@ -173,7 +187,7 @@ Countdown.propTypes = {
 
 Countdown.defaultProps = {
   fontSize: 'medium',
-  handleExpiry: () => { },
+  handleExpiry: () => {},
   handleReload: () => {
     window.location.reload();
   },

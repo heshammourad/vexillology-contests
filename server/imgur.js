@@ -18,12 +18,15 @@ const getImagesData = async (images) => {
           data: {
             data: { width, height },
           },
-        } = await axios.get(`https://imgur-apiv3.p.rapidapi.com/3/image/${image.imgurId}`, {
-          headers: {
-            Authorization: `Client-ID ${IMGUR_CLIENT_ID}`,
-            'x-rapidapi-key': RAPIDAPI_KEY,
+        } = await axios.get(
+          `https://imgur-apiv3.p.rapidapi.com/3/image/${image.imgurId}`,
+          {
+            headers: {
+              Authorization: `Client-ID ${IMGUR_CLIENT_ID}`,
+              'x-rapidapi-key': RAPIDAPI_KEY,
+            },
           },
-        });
+        );
         return {
           ...image,
           width,
@@ -33,10 +36,15 @@ const getImagesData = async (images) => {
         if (e.response.status === 404) {
           logger.error(`Unable to find image with ID: ${image.imgurId}.`);
           return {
-            ...image, height: 0, removed: true, width: 0,
+            ...image,
+            height: 0,
+            removed: true,
+            width: 0,
           };
         }
-        logger.error(`Error retrieving image with ID, ${image.imgurId}: ${e.message}.`);
+        logger.error(
+          `Error retrieving image with ID, ${image.imgurId}: ${e.message}.`,
+        );
         return null;
       }
     }),

@@ -6,10 +6,7 @@ import Box from '@material-ui/core/Box';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 
-import {
-  RouterLinkIconButton,
-  Countdown,
-} from '../../components';
+import { Countdown, RouterLinkIconButton } from '../../components';
 import useVotingStatus from '../../data/useVotingStatus';
 
 export default function ContestAppBarMain({ handleReload, contest }) {
@@ -18,11 +15,7 @@ export default function ContestAppBarMain({ handleReload, contest }) {
 
   const backLink = (state || {}).back || '/contests';
 
-  const {
-    date,
-    isContestMode,
-    voteEnd,
-  } = contest;
+  const { date, isContestMode, voteEnd } = contest;
 
   return (
     <>
@@ -30,10 +23,7 @@ export default function ContestAppBarMain({ handleReload, contest }) {
       <RouterLinkIconButton state={{ date }} to={backLink} />
       {isContestMode && voteEnd && (
         <Box display="inline-flex" paddingLeft={1.5}>
-          <Countdown
-            endDate={voteEndDate}
-            handleReload={handleReload}
-          />
+          <Countdown endDate={voteEndDate} handleReload={handleReload} />
         </Box>
       )}
     </>

@@ -36,10 +36,13 @@ try {
 }
 
 // Ensure all DEFAULT_DEV_VARIABLE fields are in the final object and false if in production
-const DEV_VARIABLES = Object.keys(DEFAULT_DEV_VARIABLES).reduce((acc, key) => ({
-  ...acc,
-  [key]: (devVariables[key] ?? false) && IS_DEV,
-}), {});
+const DEV_VARIABLES = Object.keys(DEFAULT_DEV_VARIABLES).reduce(
+  (acc, key) => ({
+    ...acc,
+    [key]: (devVariables[key] ?? false) && IS_DEV,
+  }),
+  {},
+);
 
 // END DEVELOPER VARIABLES ***************************************
 

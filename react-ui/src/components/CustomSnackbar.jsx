@@ -12,19 +12,25 @@ import snackbarTypes from '../common/snackbarTypes';
 import useComponentsState from '../common/useComponentsState';
 
 const TYPES = {
-  [snackbarTypes.REVIEW_SUBMISSION_ERROR]: 'Error updating submission. Please try again later.',
+  [snackbarTypes.REVIEW_SUBMISSION_ERROR]:
+    'Error updating submission. Please try again later.',
   [snackbarTypes.REVIEW_SUBMISSION_SUCCESS]: 'Submission updated',
-  [snackbarTypes.SETTINGS_ERROR]: 'Error submitting setting. Please try again later.',
+  [snackbarTypes.SETTINGS_ERROR]:
+    'Error submitting setting. Please try again later.',
   [snackbarTypes.SETTINGS_SUCCESS]: 'Setting saved',
-  [snackbarTypes.SUBMISSION_ERROR]: 'Error submitting entry. Please try again later.',
+  [snackbarTypes.SUBMISSION_ERROR]:
+    'Error submitting entry. Please try again later.',
   [snackbarTypes.SUBMISSION_SUCCESS]: 'Entry submitted successfully!',
-  [snackbarTypes.VOTING_ERROR]: 'Error submitting vote. Please try again later.',
+  [snackbarTypes.VOTING_ERROR]:
+    'Error submitting vote. Please try again later.',
   [snackbarTypes.VOTING_SUCCESS]: 'Vote submitted!',
 };
 
 function CustomSnackbar() {
-  // eslint-disable-next-line max-len
-  const [{ snackbar: { openTimestamp, type } = { snackbar: {} } }, setComponentsState] = useComponentsState();
+  const [
+    { snackbar: { openTimestamp, type } = { snackbar: {} } },
+    setComponentsState,
+  ] = useComponentsState();
   const [isOpen, setOpen] = useState(false);
 
   const resetSnackbar = () => {
@@ -67,7 +73,10 @@ function CustomSnackbar() {
       open={isOpen && !!message}
     >
       {message ? (
-        <Alert onClose={handleClose} severity={type.split('_').pop().toLowerCase()}>
+        <Alert
+          onClose={handleClose}
+          severity={type.split('_').pop().toLowerCase()}
+        >
           {message}
         </Alert>
       ) : null}
