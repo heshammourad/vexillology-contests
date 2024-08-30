@@ -3,6 +3,7 @@
  */
 
 import Box from '@material-ui/core/Box';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
@@ -62,7 +63,7 @@ function Contest() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerEntryId, setDrawerEntryId] = useState(null);
 
-  if (contest?.submissionWindowOpen) {
+  if (contest?.submissionWindowOpen && !isValidating) {
     navigate('/submission', { replace: true });
   }
 
@@ -167,6 +168,27 @@ function Contest() {
   const {
     categories, isContestMode, name, votingWindowOpen, winners,
   } = contest;
+
+  // Prevents display of stale, cached data
+  if (isValidating) {
+    return (
+      <PageWithDrawer
+        isOpen={false}
+        appBar={{
+          className: classes.icon,
+          color: 'default',
+          right: <ContestAppBarRight {...{ toggleDrawerOpen, contest }} />,
+        }}
+        drawer={{ heading: 'Loading...', children: null }}
+      >
+        <PageContainer>
+          <Box marginBottom={6} />
+          <CircularProgress />
+        </PageContainer>
+        <RedditLogInDialog />
+      </PageWithDrawer>
+    );
+  }
 
   return (
     <PageWithDrawer
