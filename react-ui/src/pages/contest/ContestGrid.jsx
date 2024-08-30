@@ -28,6 +28,7 @@ import useSwrContest from '../../data/useSwrContest';
 import useVotingStatus from '../../data/useVotingStatus';
 
 import CardImageLink from './CardImageLink';
+import EntryDescription from './EntryDescription';
 import useContestSizing from './useContestSizing';
 
 const useStyles = makeStyles((theme) => ({
@@ -133,10 +134,12 @@ function ContestGrid({ selectedCategories, setDrawer }) {
             average,
             category,
             categoryRank,
+            description,
             id,
             imagePath,
             imgurId,
             height,
+            markdown,
             name: entryName,
             rank,
             rating,
@@ -179,6 +182,9 @@ function ContestGrid({ selectedCategories, setDrawer }) {
                     width={width}
                   />
                 </div>
+                <CardContent>
+                  <EntryDescription {...{ description, markdown }} />
+                </CardContent>
                 {isContestMode && (
                   <CardActions
                     className={clsx(classes.votingSlider, {
