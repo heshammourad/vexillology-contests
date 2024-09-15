@@ -12,7 +12,6 @@ import { forceCheck } from 'react-lazyload';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
 
-import { useCache, useSwrData } from '../../common';
 import {
   EntryDescriptionDrawer,
   PageContainer,
