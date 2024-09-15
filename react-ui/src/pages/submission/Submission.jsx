@@ -9,7 +9,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import isFuture from 'date-fns/isFuture';
 import parseISO from 'date-fns/parseISO';
 import { useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 import countdownTypes from '../../common/countdownTypes';
 import {
@@ -134,7 +134,6 @@ function Submission() {
           noData
         )}
       </PageContainer>
-      <Outlet />
     </>
   );
 }
