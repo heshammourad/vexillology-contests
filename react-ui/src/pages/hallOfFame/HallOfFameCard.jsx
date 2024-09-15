@@ -18,16 +18,20 @@ import { useState } from 'react';
 import {
   CustomIconButton,
   ExternalLink,
-  HtmlWrapper,
+  FormattedContent,
   LazyLoadCardImage,
+  RedditMarkdown,
   RedditUserAttribution,
 } from '../../components';
 import flair from '../../images/flair.png';
 
-const useStyles = makeStyles((theme) => {
-  const FLAIR_START_YEAR = 2015;
-  const FLAIR_WIDTH = 25;
+// The first year available in /images/flair.png.
+const FLAIR_START_YEAR = 2015;
+// The last year available in /images/flair.png.
+const FLAIR_END_YEAR = 2023;
+const FLAIR_WIDTH = 25;
 
+const useStyles = makeStyles((theme) => {
   const styles = {
     bestOfYear: {
       '&::after': {
@@ -45,6 +49,7 @@ const useStyles = makeStyles((theme) => {
     },
     card: {
       marginTop: theme.spacing(3),
+      position: 'relative',
     },
     cardContent: {
       flex: 1,
@@ -66,10 +71,24 @@ const useStyles = makeStyles((theme) => {
       transform: 'rotate(180deg)',
     },
   };
-  for (let i = FLAIR_START_YEAR; i <= 2022; i += 1) {
-    const offset = (i - FLAIR_START_YEAR) * FLAIR_WIDTH;
-    styles[`bestOfYear${i}`] = { '&::after': { backgroundPosition: `-${offset}px 0` } };
+
+  const currentYear = getYear(new Date());
+  for (let i = FLAIR_START_YEAR; i <= currentYear; i += 1) {
+    const style = {};
+    if (i <= FLAIR_END_YEAR) {
+      // If the flair is available in images/flair.png, set the horizontal offset.
+      const offset = (i - FLAIR_START_YEAR) * FLAIR_WIDTH;
+      style.backgroundPosition = `-${offset}px 0`;
+    } else {
+      // If the flair is not available, use year text instead.
+      style.background = 'none';
+      style.content = `"${i}"`;
+      style.verticalAlign = 0;
+    }
+
+    styles[`bestOfYear${i}`] = { '&::after': style };
   }
+
   return styles;
 });
 
@@ -81,6 +100,7 @@ function HallOfFameCard({
     entryName,
     height,
     imagePath,
+    markdown,
     redditThreadId,
     user,
     width,
@@ -94,7 +114,9 @@ function HallOfFameCard({
     setExpanded(!expanded);
   };
 
-  const contestYearLabel = yearEndContest ? '' : `${format(parseISO(date), 'MMM yyyy')} - `;
+  const contestYearLabel = yearEndContest
+    ? ''
+    : `${format(parseISO(date), 'MMM yyyy')} - `;
   const contestLabel = `${contestYearLabel}${contestName}`;
   const year = getYear(parseISO(date));
 
@@ -112,21 +134,26 @@ function HallOfFameCard({
           {entryName && (
             <Typography
               className={clsx({
-                [`${classes.bestOfYear} ${classes[`bestOfYear${year}`]}`]: yearEndWinner,
+                [`${classes.bestOfYear} ${classes[`bestOfYear${year}`]}`]:
+                  yearEndWinner,
               })}
               component="div"
               variant="subtitle2"
             >
               {entryName}
               {yearEndWinner && (
-                <span className={classes.bestOfYearLabel}>&nbsp;|&nbsp;BEST OF</span>
+                <span className={classes.bestOfYearLabel}>
+                  &nbsp;|&nbsp;BEST OF
+                </span>
               )}
             </Typography>
           )}
           <RedditUserAttribution user={user} />
           <div className={classes.contestLabel}>
             {redditThreadId ? (
-              <ExternalLink href={`https://redd.it/${redditThreadId}`}>{contestLabel}</ExternalLink>
+              <ExternalLink href={`https://redd.it/${redditThreadId}`}>
+                {contestLabel}
+              </ExternalLink>
             ) : (
               contestLabel
             )}
@@ -152,8 +179,12 @@ function HallOfFameCard({
         </CardActions>
       </Box>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
-        <Typography className={classes.description} component="div" variant="caption">
-          <HtmlWrapper html={description} />
+        <Typography
+          className={classes.description}
+          component="div"
+          variant="caption"
+        >
+          <FormattedContent content={description} markdown={markdown} />
         </Typography>
       </Collapse>
     </Card>
@@ -168,6 +199,7 @@ HallOfFameCard.propTypes = {
     entryName: PropTypes.string,
     height: PropTypes.number,
     imagePath: PropTypes.string,
+    markdown: PropTypes.bool,
     redditThreadId: PropTypes.string,
     user: PropTypes.string,
     width: PropTypes.number,

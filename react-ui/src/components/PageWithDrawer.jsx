@@ -17,6 +17,7 @@ import clsx from 'clsx';
 import PropTypes from 'prop-types';
 
 import types from '../common/types';
+import { VIEW_DEV_BAR } from '../env';
 
 import AppBarDivided from './AppBarDivided';
 
@@ -78,7 +79,13 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function PageWithDrawer({
-  appBar, children, className, drawer, handleClose, isOpen,
+  appBar,
+  children,
+  className,
+  drawer,
+  handleClose,
+  isOpen,
+  isModal,
 }) {
   const classes = useStyles();
   return (
@@ -92,6 +99,7 @@ function PageWithDrawer({
         isElevationScroll={appBar.isElevationScroll}
         position={appBar.position}
         right={appBar.right}
+        isModal={isModal}
       >
         {appBar.children}
       </AppBarDivided>
@@ -100,6 +108,7 @@ function PageWithDrawer({
           [classes.contentShift]: isOpen,
         })}
       >
+        {VIEW_DEV_BAR && !isModal && <Toolbar variant="dense" />}
         <Toolbar />
         {children}
       </main>
@@ -132,11 +141,13 @@ PageWithDrawer.propTypes = {
   }).isRequired,
   handleClose: PropTypes.func.isRequired,
   isOpen: PropTypes.bool.isRequired,
+  isModal: PropTypes.bool,
 };
 
 PageWithDrawer.defaultProps = {
   children: null,
   className: null,
+  isModal: false,
 };
 
 export default PageWithDrawer;

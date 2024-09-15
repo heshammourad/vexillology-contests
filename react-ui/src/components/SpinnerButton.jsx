@@ -12,11 +12,21 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function SpinnerButton({
-  children, color, disabled, onClick, submitting, variant,
+  children,
+  color,
+  disabled,
+  onClick,
+  submitting,
+  variant,
 }) {
   const classes = useStyles();
   return (
-    <Button color={color} disabled={disabled || submitting} onClick={onClick} variant={variant}>
+    <Button
+      color={color}
+      disabled={disabled || submitting}
+      onClick={onClick}
+      variant={variant}
+    >
       {submitting && <CircularProgress className={classes.spinner} size={24} />}
       {children}
     </Button>

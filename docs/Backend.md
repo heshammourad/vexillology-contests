@@ -1,4 +1,4 @@
-# Backend 
+# Backend
 
 ## LINKS
 
@@ -7,7 +7,7 @@
 [api subfolder](/server/api)
 [db subfolder](/server/db)
 
-
 ## PACKAGES
+
 [winston](https://github.com/winstonjs/winston) Saving and displaying logs
 [pg-promise](https://github.com/vitaly-t/pg-promise) Wrapper for simplifying postgres queries

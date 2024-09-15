@@ -47,18 +47,29 @@ exports.all = async ({ body: { contestId } }, res, next) => {
   }
 };
 
-exports.put = async ({ body: { contestId, entryId, rating }, username }, res) => {
+exports.put = async (
+  {
+    body: {
+      contestId, entryId, isDesktop, isKeyed, rating,
+    }, username,
+  },
+  res,
+) => {
   try {
     if (!Number.isInteger(rating) || rating < 0 || rating > 5) {
-      res.status(400).send('Expected rating to be an integer between 0 and 5 inclusive.');
+      res
+        .status(400)
+        .send('Expected rating to be an integer between 0 and 5 inclusive.');
       return;
     }
 
     const voteData = {
       contest_id: contestId,
       entry_id: entryId,
-      username,
+      is_desktop: isDesktop,
+      is_keyed: isKeyed,
       rating,
+      username,
     };
 
     const currentValue = await db.select(
@@ -70,7 +81,18 @@ exports.put = async ({ body: { contestId, entryId, rating }, username }, res) =>
       await db.insert('votes', [voteData]);
       status = 201;
     } else {
-      await db.update('votes', [voteData], ['?contest_id', '?entry_id', '?username', 'rating']);
+      await db.update(
+        'votes',
+        [voteData],
+        [
+          '?contest_id',
+          '?entry_id',
+          '?username',
+          'rating',
+          'is_desktop',
+          'is_keyed',
+        ],
+      );
       status = 200;
     }
     camelizeObjectKeys([voteData]);

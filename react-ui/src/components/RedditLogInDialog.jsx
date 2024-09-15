@@ -5,7 +5,8 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
-import { useRedditLogIn, useComponentsState } from '../common';
+import useComponentsState from '../common/useComponentsState';
+import useRedditLogIn from '../common/useRedditLogIn';
 
 function RedditLogInDialog() {
   const sendUserToAuthUrl = useRedditLogIn();
@@ -27,7 +28,9 @@ function RedditLogInDialog() {
       aria-labelledby="reddit-log-in-dialog-title"
       aria-describedby="reddit-log-in-dialog-description"
     >
-      <DialogTitle id="reddit-log-in-dialog-title">Log in to Reddit?</DialogTitle>
+      <DialogTitle id="reddit-log-in-dialog-title">
+        Log in to Reddit?
+      </DialogTitle>
       <DialogContent>
         <DialogContentText id="reddit-log-in-dialog-description">
           You must be logged in to Reddit to vote on contests

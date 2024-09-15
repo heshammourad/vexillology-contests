@@ -18,7 +18,10 @@ exports.get = async ({ params: { image } }, res) => {
       image,
       async () => {
         const [id] = image.match(/([^.]*)/);
-        let [{ url } = {}] = await db.select('SELECT url FROM entries WHERE id = $1', [id]);
+        let [{ url } = {}] = await db.select(
+          'SELECT url FROM entries WHERE id = $1',
+          [id],
+        );
         if (url) {
           return url;
         }
@@ -33,7 +36,9 @@ exports.get = async ({ params: { image } }, res) => {
       return;
     }
 
-    const { data } = await axios.get(downloadUrl, { responseType: 'arraybuffer' });
+    const { data } = await axios.get(downloadUrl, {
+      responseType: 'arraybuffer',
+    });
     res.contentType(downloadUrl.includes('png') ? 'image/png' : 'image/jpeg');
     res.send(Buffer.from(data, 'binary'));
   } catch (err) {

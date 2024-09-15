@@ -19,7 +19,10 @@ const useFormState = (fields) => {
   const [state, setState] = useState(generateInitialState(fields));
 
   const updateState = (field, key, value) => {
-    setState((prevState) => ({ ...prevState, [field]: { ...prevState[field], [key]: value } }));
+    setState((prevState) => ({
+      ...prevState,
+      [field]: { ...prevState[field], [key]: value },
+    }));
   };
 
   const resetState = () => {

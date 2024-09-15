@@ -41,12 +41,23 @@ function City({
             </ExternalLink>
           )}
         />
-        <IconButton onClick={handleClick}>{open ? <ExpandLess /> : <ExpandMore />}</IconButton>
+        <IconButton onClick={handleClick}>
+          {open ? <ExpandLess /> : <ExpandMore />}
+        </IconButton>
       </ListItem>
-      <Collapse className={classes.collapse} in={open} timeout="auto" unmountOnExit>
+      <Collapse
+        className={classes.collapse}
+        in={open}
+        timeout="auto"
+        unmountOnExit
+      >
         <Box display="flex">
           <Box flexBasis="34%" flexShrink={1}>
-            <img src={image} alt={`Flag of ${name}`} className={classes.image} />
+            <img
+              src={image}
+              alt={`Flag of ${name}`}
+              className={classes.image}
+            />
           </Box>
           <Box flexBasis="66%">
             <ul>

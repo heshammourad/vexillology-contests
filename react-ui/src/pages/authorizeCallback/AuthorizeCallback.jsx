@@ -8,9 +8,10 @@ import { makeStyles } from '@material-ui/core/styles';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import { getData } from '../../api';
-import { useAuthState, useRedditLogIn } from '../../common';
+import useAuthState from '../../common/useAuthState';
+import useRedditLogIn from '../../common/useRedditLogIn';
 import { PageContainer } from '../../components';
+import { getData } from '../../data/api';
 
 const ACCESS_DENIED = 'access_denied';
 const DATA_ERROR = 'data_error';
@@ -74,13 +75,13 @@ function AuthorizeCallback() {
         return;
       }
 
-      retrieveAccessTokens(code).then((tokens) => {
-        if (!tokens.accessToken || !tokens.refreshToken) {
+      retrieveAccessTokens(code).then(({ username, ...authTokens }) => {
+        if (!authTokens.accessToken || !authTokens.refreshToken) {
           setErrorMessage(DATA_ERROR);
           return;
         }
 
-        setAuthState({ ...tokens, isLoggedIn: true });
+        setAuthState({ authTokens, username, isLoggedIn: true });
 
         navigate(redirectPath, { replace: true, state: scrollState });
       });

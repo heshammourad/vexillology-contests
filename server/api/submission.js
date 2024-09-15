@@ -2,6 +2,7 @@ const { isAfter, isBefore } = require('date-fns');
 
 const db = require('../db');
 const { getCategories, getCurrentContest } = require('../db/queries');
+const { IS_FIREBASE_OFF } = require('../env');
 const { getToken } = require('../firebase');
 const { createLogger } = require('../logger');
 const { generateImagePath } = require('../util');
@@ -18,6 +19,7 @@ const getSubmissions = async (contestId, username) => {
   const submissions = await db.select(
     `SELECT
        ce.category,
+       e.background_color,
        e.description,
        e.id,
        e.name,
@@ -46,10 +48,15 @@ exports.get = async ({ username }, res) => {
 
     const { now, ...result } = contest;
     const categories = await getCategories(result.id);
-    const response = { ...result, categories };
+    const backgroundColors = (
+      await db.select('SELECT * FROM background_colors')
+    ).map((obj) => obj.color);
+    const response = { ...result, categories, backgroundColors };
 
     if (username) {
-      response.firebaseToken = await getToken(username);
+      if (!IS_FIREBASE_OFF) {
+        response.firebaseToken = await getToken(username);
+      }
       response.submissions = await getSubmissions(result.id, username);
     }
 
@@ -71,8 +78,16 @@ const isWithinSubmissionWindow = async () => {
 exports.post = async (
   {
     body: {
-      category, contestId, description, height, name, url, width,
-    }, username,
+      category,
+      contestId,
+      description,
+      height,
+      name,
+      url,
+      width,
+      backgroundColor,
+    },
+    username,
   },
   res,
 ) => {
@@ -97,19 +112,24 @@ exports.post = async (
       }
       res
         .status(400)
-        .send(`Expected ${invalidDimensions.join(' and ')} to be integers between 0 and 3000`);
+        .send(
+          `Expected ${invalidDimensions.join(
+            ' and ',
+          )} to be integers between 0 and 3000`,
+        );
       return;
     }
 
     const id = url.match(/%2F(\w*)/)[1];
     const submissionData = {
+      background_color: backgroundColor,
       description,
       height,
       id,
       name,
-      width,
       url,
       user: username,
+      width,
     };
     await db.insert('entries', [submissionData]);
 
@@ -133,7 +153,9 @@ const VALID_STATUSES = ['pending', 'withdrawn'];
 exports.put = async ({ body: { id, submissionStatus }, username }, res) => {
   try {
     if (!VALID_STATUSES.includes(submissionStatus)) {
-      res.status(400).send(`Status must be one of: ${VALID_STATUSES.join(', ')}`);
+      res
+        .status(400)
+        .send(`Status must be one of: ${VALID_STATUSES.join(', ')}`);
       return;
     }
 
@@ -161,7 +183,11 @@ exports.put = async ({ body: { id, submissionStatus }, username }, res) => {
       [response] = await db.update(
         'entries',
         [{ id, modified_by: null, submission_status: submissionStatus }],
-        ['?id', 'modified_by', { name: 'submission_status', cast: 'submission_status' }],
+        [
+          '?id',
+          'modified_by',
+          { name: 'submission_status', cast: 'submission_status' },
+        ],
         ['id', 'submission_status'],
       );
     }

@@ -7,12 +7,13 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import FlagTwoToneIcon from '@material-ui/icons/FlagTwoTone';
 import RedditIcon from '@material-ui/icons/Reddit';
+import Alert from '@mui/material/Alert';
 import differenceInDays from 'date-fns/differenceInDays';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
 
-import { useCache, useComponentsState, useSwrData } from '../common';
+import useIsTouchScreen from '../common/useIsTouchScreen';
+import useSwrContest from '../data/useSwrContest';
+import useVotingStatus from '../data/useVotingStatus';
 
 import Average from './Average';
 import CategoryLabel from './CategoryLabel';
@@ -20,9 +21,8 @@ import Countdown from './Countdown';
 import DrawerSectionHeader from './DrawerSectionHeader';
 import FiveStar from './FiveStar';
 import FmpIcon from './FmpIcon';
-import HtmlWrapper from './HtmlWrapper';
+import FormattedContent from './FormattedContent';
 import ListItemButton from './ListItemButton';
-import RedditMarkdown from './RedditMarkdown';
 import RedditUserAttribution from './RedditUserAttribution';
 import VotingSlider from './VotingSlider';
 
@@ -59,17 +59,14 @@ function EntryDescriptionDrawer({ entryId }) {
     return null;
   }
 
-  const [{ votingDisabled }, setComponentsState] = useComponentsState();
-  const [votingExpired, setVotingExpired] = useState(false);
+  const { voteEndDate } = useVotingStatus();
+  const isTouchScreen = useIsTouchScreen();
 
-  const { contestId } = useParams();
-  const apiPath = `/contests/${contestId}`;
   const {
     data: {
-      categories, entries = [], isContestMode, localVoting, voteEnd, winners = [],
+      categories, entries = [], isContestMode, localVoting, winners = [],
     },
-  } = useSwrData(apiPath, false);
-  const updateCache = useCache[1];
+  } = useSwrContest();
   const {
     average,
     category,
@@ -90,23 +87,16 @@ function EntryDescriptionDrawer({ entryId }) {
   const flagWaverLink = `https://krikienoid.github.io/flagwaver/#?src=${imageSrc}`;
   const redditPermalink = `https://www.reddit.com${permalink}`;
   const showRank = localVoting && !!rank;
-  const voteEndDate = new Date(voteEnd);
-  const votingUnavailable = votingDisabled || votingExpired;
-
-  const handleVotingExpired = () => {
-    updateCache(null);
-    setVotingExpired(true);
-  };
 
   const classes = useStyles();
   return (
     <div className={classes.drawerContent}>
       <Box display="flex">
         {showRank && (
-          <div className={classes.rank}>
-            #
-            {rank}
-          </div>
+        <div className={classes.rank}>
+          #
+          {rank}
+        </div>
         )}
         <Box>
           <div className={classes.entryName}>{name}</div>
@@ -119,22 +109,31 @@ function EntryDescriptionDrawer({ entryId }) {
       </Box>
       {category && (
         <Box paddingTop={1}>
-          <CategoryLabel categories={categories} category={category} categoryRank={categoryRank} />
+          <CategoryLabel
+            categories={categories}
+            category={category}
+            categoryRank={categoryRank}
+          />
         </Box>
       )}
       {isContestMode ? (
         <>
           <DrawerSectionHeader>Submit Vote</DrawerSectionHeader>
-          {!differenceInDays(voteEndDate, new Date()) && (
-            <Countdown endDate={voteEndDate} fontSize="small" handleExpiry={handleVotingExpired} />
+          {!isTouchScreen && (
+            <Alert severity="info">
+              You can now vote by typing 0-5 on your keyboard, or type c to
+              clear your vote.
+            </Alert>
           )}
-          <Box className={classes.votingContainer} alignItems="center" display="flex">
-            <VotingSlider
-              disabled={votingUnavailable}
-              entryId={imgurId ?? id}
-              rating={rating}
-              setComponentsState={setComponentsState}
-            />
+          {!differenceInDays(voteEndDate, new Date()) && (
+            <Countdown endDate={voteEndDate} fontSize="small" />
+          )}
+          <Box
+            className={classes.votingContainer}
+            alignItems="center"
+            display="flex"
+          >
+            <VotingSlider entryId={imgurId ?? id} rating={rating} />
           </Box>
         </>
       ) : (
@@ -149,13 +148,21 @@ function EntryDescriptionDrawer({ entryId }) {
         </Box>
       )}
       <DrawerSectionHeader>Description</DrawerSectionHeader>
-      {markdown ? <RedditMarkdown text={description} /> : <HtmlWrapper html={description} />}
+      <FormattedContent content={description} markdown={markdown} />
       <DrawerSectionHeader>Links</DrawerSectionHeader>
       <List>
         {!localVoting && (
-          <ListItemButton href={redditPermalink} Icon={RedditIcon} text="Open Reddit comment" />
+          <ListItemButton
+            href={redditPermalink}
+            Icon={RedditIcon}
+            text="Open Reddit comment"
+          />
         )}
-        <ListItemButton href={flagWaverLink} Icon={FlagTwoToneIcon} text="Open FlagWaver" />
+        <ListItemButton
+          href={flagWaverLink}
+          Icon={FlagTwoToneIcon}
+          text="Open FlagWaver"
+        />
         <ListItemButton
           href="https://flagmaker-print.com/"
           Icon={FmpIcon}

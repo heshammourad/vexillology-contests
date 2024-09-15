@@ -29,7 +29,9 @@ function FiveStar({ rating }) {
   const classes = useStyles();
 
   const filledIcon = <StarIcon className={classes.filled} fontSize="small" />;
-  const borderIcon = <StarBorderIcon className={classes.border} fontSize="small" />;
+  const borderIcon = (
+    <StarBorderIcon className={classes.border} fontSize="small" />
+  );
   return (
     <span className={classes.container}>
       {[...Array(5).keys()].map((i) => (

@@ -6,22 +6,16 @@ import Box from '@material-ui/core/Box';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 
-import { RouterLinkIconButton, Countdown } from '../../components';
+import { Countdown, RouterLinkIconButton } from '../../components';
+import useVotingStatus from '../../data/useVotingStatus';
 
-export default function ContestAppBarMain({ handleVotingExpired, handleReload, contest }) {
+export default function ContestAppBarMain({ handleReload, contest }) {
   const { state = {} } = useLocation();
+  const { voteEndDate } = useVotingStatus();
 
   const backLink = (state || {}).back || '/contests';
 
-  const {
-    date, isContestMode, name, voteEnd,
-  } = contest;
-
-  if (!name) {
-    return null;
-  }
-
-  const voteEndDate = new Date(voteEnd);
+  const { date, isContestMode, voteEnd } = contest;
 
   return (
     <>
@@ -29,11 +23,7 @@ export default function ContestAppBarMain({ handleVotingExpired, handleReload, c
       <RouterLinkIconButton state={{ date }} to={backLink} />
       {isContestMode && voteEnd && (
         <Box display="inline-flex" paddingLeft={1.5}>
-          <Countdown
-            endDate={voteEndDate}
-            handleExpiry={handleVotingExpired}
-            handleReload={handleReload}
-          />
+          <Countdown endDate={voteEndDate} handleReload={handleReload} />
         </Box>
       )}
     </>
@@ -42,7 +32,6 @@ export default function ContestAppBarMain({ handleVotingExpired, handleReload, c
 
 ContestAppBarMain.propTypes = {
   handleReload: PropTypes.func.isRequired,
-  handleVotingExpired: PropTypes.func.isRequired,
   contest: PropTypes.shape({
     date: PropTypes.string.isRequired,
     isContestMode: PropTypes.bool,

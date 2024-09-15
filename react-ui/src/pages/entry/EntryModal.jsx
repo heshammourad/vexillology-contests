@@ -13,19 +13,17 @@ import throttle from 'lodash/throttle';
 import {
   useEffect, useMemo, useRef, useState,
 } from 'react';
-import {
-  useParams,
-  useLocation,
-  useNavigate,
-  useOutletContext,
-} from 'react-router-dom';
+import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 
-import { useSettingsState, useSwrData } from '../../common';
+import useSettingsState from '../../common/useSettingsState';
 import {
   EntryDescriptionDrawer,
   PageWithDrawer,
   RedditLogInDialog,
 } from '../../components';
+import useEntryId from '../../data/useEntryId';
+import useSwrContest from '../../data/useSwrContest';
+import useVoting from '../../data/useVoting';
 
 import EntryAppBarMain from './EntryAppBarMain';
 import EntryAppBarRight from './EntryAppBarRight';
@@ -34,12 +32,16 @@ import NavigateIconButton from './NavigateIconButton';
 const calculateImageContainerHeight = (offset) => `calc(100vh - ${offset}px)`;
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    backgroundColor: theme.palette.common.black,
-  },
-  appBar: {
-    backgroundColor: 'inherit',
-  },
+  root: (props) => ({
+    backgroundColor: props?.backgroundColor || theme.palette.common.black,
+  }),
+  appBar: (props) => ({
+    backgroundColor: props?.backgroundColor || theme.palette.common.black,
+    color:
+      props?.backgroundColor === '#FFFFFF'
+        ? theme.palette.grey[700]
+        : theme.palette.common.white,
+  }),
   clickActive: {
     cursor: 'pointer',
   },
@@ -73,12 +75,6 @@ const useStyles = makeStyles((theme) => ({
 
 function EntryModal() {
   /**
-   * Layout
-   */
-  const classes = useStyles();
-  const imageContainerRef = useRef(null);
-
-  /**
    * AppBar
    */
   const redditCommentButtonRef = useRef(null);
@@ -104,14 +100,9 @@ function EntryModal() {
   /**
    * Entries
    */
-  const { contestId, entryId } = useParams();
-  const apiPath = `/contests/${contestId}`;
-  const { data } = useSwrData(apiPath, false);
-  const {
-    entries = [],
-    winners = [],
-    localVoting,
-  } = data;
+  const entryId = useEntryId();
+  const { data } = useSwrContest();
+  const { entries = [], winners = [], localVoting } = data;
   const allEntriesRef = useRef([]);
   const [entry, setEntry] = useState({});
   const [entryIndex, updateEntryIndex] = useState(-1);
@@ -122,8 +113,15 @@ function EntryModal() {
   };
 
   /**
-   * Navigation
+   * Layout
    */
+  const classes = useStyles(entry);
+  const imageContainerRef = useRef(null);
+
+  /**
+   * Navigation and voting
+   */
+  const { changeRating, clearRating } = useVoting(entryId, 'EntryModal');
   const navigate = useNavigate();
   const { selectedCategories = [] } = useOutletContext();
   const { state = {} } = useLocation();
@@ -136,7 +134,10 @@ function EntryModal() {
     isNavigationAvailableRef.current = value;
     updateNavigationAvailable(value);
   };
-  const [isNavigationVisible, setNavigationVisible] = useState({ before: true, next: true });
+  const [isNavigationVisible, setNavigationVisible] = useState({
+    before: true,
+    next: true,
+  });
   const hideNavigation = () => {
     setNavigationVisible({ before: false, next: false });
   };
@@ -159,9 +160,6 @@ function EntryModal() {
 
   const handleKeyUp = ({ key }) => {
     let indexChange = 0;
-    if (key >= '0' && key <= '5') {
-      return;
-    }
     switch (key) {
       case 'ArrowLeft':
         indexChange = -1;
@@ -179,9 +177,12 @@ function EntryModal() {
         redditCommentButtonRef.current.click();
         return;
       case 'c':
-        // clear vote?
+        clearRating();
         return;
       default:
+        if (key >= '0' && key <= '5') {
+          changeRating(parseInt(key, 10), entry?.rating, /* isKeyed= */ true);
+        }
         return;
     }
     handleNavigate(indexChange);
@@ -197,12 +198,11 @@ function EntryModal() {
     return () => {
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, []);
+  }, [handleKeyUp]);
 
   useEffect(() => {
     const allEntries = [...winners, ...entries].filter(
-      ({ category }) => !selectedCategories?.length
-        || selectedCategories?.includes(category),
+      ({ category }) => !selectedCategories?.length || selectedCategories?.includes(category),
     );
     if (!entryId || !allEntries.length) {
       return;
@@ -296,12 +296,13 @@ function EntryModal() {
         <PageWithDrawer
           handleClose={handleDrawerClose}
           isOpen={isEntryDrawerOpen}
+          isModal
           className={classes.root}
           appBar={{
             position: 'fixed',
             accountMenuColor: 'inherit',
             className: classes.appBar,
-            right: (entry?.id && (
+            right: entry?.id && (
               <EntryAppBarRight
                 {...{
                   redditCommentButtonRef,
@@ -311,15 +312,24 @@ function EntryModal() {
                   entry,
                 }}
               />
-            )),
-            children: <EntryAppBarMain />,
+            ),
+            children: (
+              <EntryAppBarMain
+                entryPosition={entryIndex + 1}
+                numberOfEntries={entries.length + winners.length}
+              />
+            ),
           }}
-          drawer={{ heading: 'Info', children: <EntryDescriptionDrawer {...{ entryId }} /> }}
+          drawer={{
+            heading: 'Info',
+            children: <EntryDescriptionDrawer {...{ entryId }} />,
+          }}
         >
           <Box
             ref={imageContainerRef}
             className={clsx(classes.imageContainer, {
-              [classes.clickActive]: isNavigationVisible.before || isNavigationVisible.next,
+              [classes.clickActive]:
+                isNavigationVisible.before || isNavigationVisible.next,
             })}
             display="flex"
             alignItems="center"
@@ -330,16 +340,22 @@ function EntryModal() {
           >
             {isNavigationAvailable.before && (
               <NavigateIconButton
-                className={clsx(classes.navigateButton, classes.navigateBefore, {
-                  [classes.navigateVisible]: isNavigationVisible.before,
-                })}
+                className={clsx(
+                  classes.navigateButton,
+                  classes.navigateBefore,
+                  {
+                    [classes.navigateVisible]: isNavigationVisible.before,
+                  },
+                )}
                 Icon={NavigateBeforeIcon}
                 onClick={() => {
                   handleNavigate(-1);
                 }}
               />
             )}
-            {entry?.imagePath && <img className={classes.image} src={entry.imagePath} alt="" />}
+            {entry?.imagePath && (
+              <img className={classes.image} src={entry.imagePath} alt="" />
+            )}
             {isNavigationAvailable.next && (
               <NavigateIconButton
                 className={clsx(classes.navigateButton, classes.navigateNext, {

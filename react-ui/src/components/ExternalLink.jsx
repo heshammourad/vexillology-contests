@@ -7,7 +7,13 @@ function ExternalLink({
   children, className, color, href, target,
 }) {
   return (
-    <Link className={className} color={color} href={href} rel="noopener noreferrer" target={target}>
+    <Link
+      className={className}
+      color={color}
+      href={href}
+      rel="noopener noreferrer"
+      target={target}
+    >
       {children}
     </Link>
   );

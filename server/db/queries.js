@@ -5,11 +5,13 @@
  * @exports getVoteDates
  */
 
+const { ALLOW_DEV_CONTEST } = require('../env');
+
 const db = require('.');
 
 exports.getCategories = async (contestId) => {
   const categories = await db.select(
-    'SELECT category FROM contest_categories WHERE contest_id = $1 ORDER BY category',
+    'SELECT category FROM contest_categories WHERE contest_id = $1 ORDER BY sort_order, category',
     [contestId],
   );
   return categories.map(({ category }) => category);
@@ -20,6 +22,7 @@ exports.getCurrentContest = async () => {
     `SELECT id, name, prompt, submission_start, submission_end, now()
      FROM contests
      WHERE submission_start < now()
+     ${ALLOW_DEV_CONTEST ? "AND id = 'dev'" : ''}
      ORDER BY submission_start DESC
      LIMIT 1`,
   );
@@ -35,6 +38,7 @@ exports.getCurrentContestSubmissions = async () => {
   const submissions = await db.select(
     `SELECT
        ce.category,
+       e.background_color,
        e.description,
        e.id,
        '/i/' || e.id || '.png' AS image_path,

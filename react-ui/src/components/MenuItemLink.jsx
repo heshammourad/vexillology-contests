@@ -13,16 +13,21 @@ import types from '../common/types';
 
 function menuItemComponent({ state, to }) {
   // eslint-disable-next-line react/jsx-props-no-spreading
-  return forwardRef((itemProps, ref) => <Link state={state} to={to} ref={ref} {...itemProps} />);
+  return forwardRef((itemProps, ref) => (
+    <Link state={state} to={to} ref={ref} {...itemProps} />
+  ));
 }
 
 function MenuItemLink({
   Icon, onClick, state, text, to,
 }) {
-  const renderLink = useMemo(() => menuItemComponent({ state, to }), [to]);
+  const renderLink = useMemo(
+    () => (to ? menuItemComponent({ state, to }) : undefined),
+    [to],
+  );
 
   return (
-    <MenuItem button component={to ? renderLink : undefined} onClick={onClick}>
+    <MenuItem button component={renderLink} onClick={onClick}>
       {Icon && (
         <ListItemIcon>
           <Icon />
@@ -38,13 +43,14 @@ MenuItemLink.propTypes = {
   onClick: PropTypes.func,
   state: PropTypes.shape({}),
   text: PropTypes.string.isRequired,
-  to: types.to.isRequired,
+  to: types.to,
 };
 
 MenuItemLink.defaultProps = {
   Icon: null,
-  onClick: () => { },
+  onClick: () => {},
   state: {},
+  to: null,
 };
 
 export default MenuItemLink;

@@ -8,9 +8,15 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 
 const accessToken = require('./api/accessToken');
-const { requireAuthentication, requireModerator, processUser } = require('./api/authentication');
+const analyzeVotes = require('./api/analyzeVotes');
+const {
+  requireAuthentication,
+  requireModerator,
+  processUser,
+} = require('./api/authentication');
 const contest = require('./api/contest');
 const contests = require('./api/contests');
+const dev = require('./api/dev');
 const hallOfFame = require('./api/hallOfFame');
 const images = require('./api/images');
 const init = require('./api/init');
@@ -24,7 +30,10 @@ const votes = require('./api/votes');
 const { IS_DEV, BACKEND_PORT } = require('./env');
 const { createLogger } = require('./logger');
 
-const logger = createLogger('INDEX');
+const logger = createLogger('INDEX', {
+  handleExceptions: true,
+  handleRejections: true,
+});
 
 // Multi-process to utilize all CPU cores.
 if (!IS_DEV && cluster.isMaster) {
@@ -36,7 +45,9 @@ if (!IS_DEV && cluster.isMaster) {
   }
 
   cluster.on('exit', (worker, code, signal) => {
-    logger.info(`Node cluster worker ${worker.process.pid} exited: code ${code}, signal ${signal}`);
+    logger.info(
+      `Node cluster worker ${worker.process.pid} exited: code ${code}, signal ${signal}`,
+    );
   });
 } else {
   const app = express();
@@ -50,7 +61,9 @@ if (!IS_DEV && cluster.isMaster) {
       const newDomain = isOldDomain ? 'www.vexillologycontests.com' : hostname;
       const redirectUrl = `https://${newDomain}${url}`;
       res.redirect(301, redirectUrl);
-      logger.info(`Request: ${protocol}://${hostname}${url}, redirecting to ${redirectUrl}`);
+      logger.info(
+        `Request: ${protocol}://${hostname}${url}, redirecting to ${redirectUrl}`,
+      );
       return;
     }
 
@@ -78,7 +91,11 @@ if (!IS_DEV && cluster.isMaster) {
           '*.nocookie.net',
           '*.wikimedia.org',
         ],
-        scriptSrc: [...defaultDirectives['script-src'], '*.google.com', '*.gstatic.com'],
+        scriptSrc: [
+          ...defaultDirectives['script-src'],
+          '*.google.com',
+          '*.gstatic.com',
+        ],
       },
     }),
   );
@@ -100,6 +117,7 @@ if (!IS_DEV && cluster.isMaster) {
     .route('/reviewSubmissions')
     .get(reviewSubmissions.get)
     .put(checkRequiredFields('id', 'status'), reviewSubmissions.put);
+  modRouter.route('/analyzeVotes/:id').get(analyzeVotes.get);
 
   const apiRouter = express.Router();
   apiRouter.use(express.json());
@@ -110,7 +128,11 @@ if (!IS_DEV && cluster.isMaster) {
   apiRouter.get('/hallOfFame', hallOfFame.get);
   apiRouter.get('/init', processUser(true), init.get);
   apiRouter.get('/revokeToken/:refreshToken', revokeToken.get);
-  apiRouter.route('/settings').all(requireAuthentication).get(settings.get).put(settings.put);
+  apiRouter
+    .route('/settings')
+    .all(requireAuthentication)
+    .get(settings.get)
+    .put(settings.put);
   apiRouter.get('/staticContent/:id', staticContent.get);
   apiRouter
     .route('/submission')
@@ -120,13 +142,22 @@ if (!IS_DEV && cluster.isMaster) {
       checkRequiredFields('description', 'height', 'name', 'url', 'width'),
       submission.post,
     )
-    .put(requireAuthentication, checkRequiredFields('id', 'submissionStatus'), submission.put);
+    .put(
+      requireAuthentication,
+      checkRequiredFields('id', 'submissionStatus'),
+      submission.put,
+    );
   apiRouter
     .route('/votes')
     .all(requireAuthentication, votes.all)
     .put(checkRequiredFields('contestId', 'entryId', 'rating'), votes.put)
     .delete(checkRequiredFields('contestId', 'entryId'), votes.delete);
   apiRouter.use('/mod', modRouter);
+
+  if (IS_DEV) {
+    apiRouter.route('/dev/contest').put(requireAuthentication, dev.contest);
+    apiRouter.route('/dev/mod').put(requireAuthentication, dev.mod);
+  }
 
   app.use('/api', apiRouter);
 
@@ -136,12 +167,16 @@ if (!IS_DEV && cluster.isMaster) {
 
   // All remaining requests return the React app, so it can handle routing.
   app.get('*', (request, response) => {
-    response.sendFile(path.resolve(__dirname, '../react-ui/build', 'index.html'));
+    response.sendFile(
+      path.resolve(__dirname, '../react-ui/build', 'index.html'),
+    );
   });
 
   app.listen(BACKEND_PORT, () => {
     logger.info(
-      `Node ${IS_DEV ? 'dev server' : `cluster worker ${process.pid}`}: listening on port ${BACKEND_PORT}`,
+      `Node ${
+        IS_DEV ? 'dev server' : `cluster worker ${process.pid}`
+      }: listening on port ${BACKEND_PORT}`,
     );
   });
 }

@@ -1,6 +1,5 @@
 /**
  * Older contest results style where the top 20 flags were highlighted
- * ??? Check winnerPropTypes
  */
 
 import Card from '@material-ui/core/Card';
@@ -10,9 +9,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import {
-  RedditUserAttribution,
-} from '../../components';
+import { RedditUserAttribution } from '../../components';
 
 import CardImageLink from './CardImageLink';
 import Subheader from './Subheader';
@@ -51,33 +48,35 @@ function ContestWinners({ winners = [] }) {
   return (
     <>
       <Subheader>Top 20</Subheader>
-      {winners.map(({
-        height, id, imagePath, name: entryName, rank, user, width,
-      }) => (
-        <React.Fragment key={id}>
-          <div id={id} className={classes.winnerHeading}>
-            <Typography variant={headingVariant}>
-              <span className={classes.numberSymbol}>#</span>
-              {rank}
-            </Typography>
-            <div className={classes.winnerContent}>
-              <Typography variant="subtitle2">{entryName}</Typography>
-              <Typography variant="caption">
-                <RedditUserAttribution user={user} />
+      {winners.map(
+        ({
+          height, id, imagePath, name: entryName, rank, user, width,
+        }) => (
+          <React.Fragment key={id}>
+            <div id={id} className={classes.winnerHeading}>
+              <Typography variant={headingVariant}>
+                <span className={classes.numberSymbol}>#</span>
+                {rank}
               </Typography>
+              <div className={classes.winnerContent}>
+                <Typography variant="subtitle2">{entryName}</Typography>
+                <Typography variant="caption">
+                  <RedditUserAttribution user={user} />
+                </Typography>
+              </div>
             </div>
-          </div>
-          <Card className={classes.winnerCard} elevation={2}>
-            <CardImageLink
-              displayWidth={winnerDisplayWidth}
-              height={height}
-              id={id}
-              image={imagePath}
-              width={width}
-            />
-          </Card>
-        </React.Fragment>
-      ))}
+            <Card className={classes.winnerCard} elevation={2}>
+              <CardImageLink
+                displayWidth={winnerDisplayWidth}
+                height={height}
+                id={id}
+                image={imagePath}
+                width={width}
+              />
+            </Card>
+          </React.Fragment>
+        ),
+      )}
       <Divider className={classes.divider} />
       <Subheader>All other entries</Subheader>
     </>

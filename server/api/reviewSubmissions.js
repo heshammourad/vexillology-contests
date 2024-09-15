@@ -3,7 +3,10 @@
  */
 
 const db = require('../db');
-const { getCurrentContest, getCurrentContestSubmissions } = require('../db/queries');
+const {
+  getCurrentContest,
+  getCurrentContestSubmissions,
+} = require('../db/queries');
 const { createLogger } = require('../logger');
 
 const logger = createLogger('API/REVIEW_SUBMISSIONS');
@@ -19,12 +22,9 @@ exports.get = async (req, res) => {
     const submissions = await getCurrentContestSubmissions();
     const breakdownMap = new Map();
     submissions.forEach(({ submissionStatus, user }) => {
-      const userBreakdown = breakdownMap.get(user) ?? {};
-      const submittedCount = userBreakdown?.submitted ?? 0;
-      userBreakdown.submitted = submittedCount + 1;
-
-      const statusCount = userBreakdown[submissionStatus] ?? 0;
-      userBreakdown[submissionStatus] = statusCount + 1;
+      const userBreakdown = breakdownMap.get(user) ?? { submitted: 0 };
+      userBreakdown.submitted += 1;
+      userBreakdown[submissionStatus] = (userBreakdown[submissionStatus] ?? 0) + 1;
 
       breakdownMap.set(user, userBreakdown);
     });
@@ -47,7 +47,9 @@ const VALID_STATUSES = ['approved', 'pending', 'rejected'];
 exports.put = async ({ body: { id, rejectionReason, status }, username }, res) => {
   try {
     if (!VALID_STATUSES.includes(status)) {
-      res.status(400).send(`Status must be one of: ${VALID_STATUSES.join(', ')}`);
+      res
+        .status(400)
+        .send(`Status must be one of: ${VALID_STATUSES.join(', ')}`);
       return;
     }
 

@@ -8,12 +8,13 @@ import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation } from 'react-router-dom';
 
-import { useComponentsState, useSwrData } from '../common';
+import useComponentsState from '../common/useComponentsState';
+import useSwrInit from '../data/useSwrInit';
 
 function AppHelmet() {
   const {
     data: { title = 'Vexillology Contests' },
-  } = useSwrData('/init');
+  } = useSwrInit();
   const location = useLocation();
   const setComponentsState = useComponentsState()[1];
 

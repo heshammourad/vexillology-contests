@@ -1,6 +1,6 @@
 import useSWRMutation from 'swr/mutation';
 
-import useAuthState from './useAuthState';
+import useAuthState from '../common/useAuthState';
 
 /**
  * This callback type is called `apiFunction` and is displayed as a global symbol.
@@ -25,8 +25,7 @@ import useAuthState from './useAuthState';
  * @returns {*} isMutating - if there's an ongoing mutation
  */
 const useSwrMutation = (key, apiFunction, apiPath) => {
-  const [{ accessToken, refreshToken }] = useAuthState();
-  const authTokens = { accessToken, refreshToken };
+  const [{ authTokens }] = useAuthState();
 
   // eslint-disable-next-line max-len
   const response = useSWRMutation([key, authTokens], (_, { arg }) => apiFunction(apiPath ?? key, arg, authTokens));

@@ -4,7 +4,7 @@
 
 import useSWR from 'swr';
 
-import { useAuthState } from '../common';
+import useAuthState from '../common/useAuthState';
 
 const useSwrAuth = (path, options = {}) => {
   const [{ authTokens }] = useAuthState();
@@ -14,7 +14,10 @@ const useSwrAuth = (path, options = {}) => {
   // fetcher is set as provider in App.jsx and calls getData in index.js
   const {
     data, error, isLoading, isValidating, mutate,
-  } = useSWR(uniqueKey, options);
+  } = useSWR(
+    uniqueKey,
+    options,
+  );
 
   // isValidating vs isLoading: https://swr.vercel.app/docs/advanced/understanding
   return {

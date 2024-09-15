@@ -7,8 +7,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 
-import { useCategoryLabelStyles } from '../common';
 import { LABEL_COLORS } from '../common/styles';
+import useCategoryLabelStyles from '../common/useCategoryLabelStyles';
 
 const useStyles = makeStyles({
   label: {
@@ -26,7 +26,9 @@ function CategoryLabel({ categories, category, categoryRank }) {
       <div
         className={clsx(
           classes.label,
-          categoryLabelClasses[`label${categories.indexOf(category) % LABEL_COLORS.length}`],
+          categoryLabelClasses[
+            `label${categories.indexOf(category) % LABEL_COLORS.length}`
+          ],
         )}
       >
         <Typography variant="caption">

@@ -5,10 +5,8 @@
 import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 
-import {
-  useClientWidth,
-  useSettingsState,
-} from '../../common';
+import useClientWidth from '../../common/useClientWidth';
+import useSettingsState from '../../common/useSettingsState';
 
 const imageWidths = {
   default: {
@@ -51,8 +49,12 @@ function useContestSizing() {
     size = 'sm';
   }
 
-  const gridDisplayWidth = size ? imageWidths[density][size] : defaultContainerWidth;
-  const winnerDisplayWidth = size ? imageWidths.full[size] - 48 : defaultContainerWidth;
+  const gridDisplayWidth = size
+    ? imageWidths[density][size]
+    : defaultContainerWidth;
+  const winnerDisplayWidth = size
+    ? imageWidths.full[size] - 48
+    : defaultContainerWidth;
 
   const headingVariant = isSmUp ? 'h3' : 'h5';
 

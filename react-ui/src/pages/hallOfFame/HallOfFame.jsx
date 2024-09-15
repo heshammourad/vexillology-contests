@@ -16,8 +16,10 @@ import throttle from 'lodash/throttle';
 import { useState, useEffect } from 'react';
 import { Events, animateScroll } from 'react-scroll';
 
-import { useClientWidth, useSwrData } from '../../common';
+import useClientWidth from '../../common/useClientWidth';
 import { Header, PageContainer } from '../../components';
+import useSwrHallOfFame from '../../data/useSwrHallOfFame';
+import { VIEW_DEV_BAR } from '../../env';
 
 import HallOfFameCard from './HallOfFameCard';
 
@@ -52,7 +54,7 @@ const getToolbarHeight = () => document.getElementById(TOOLBAR_ID).offsetHeight;
 let pauseScollListener = false;
 
 function HallOfFame() {
-  const { data: hallOfFame } = useSwrData('/hallOfFame');
+  const { data: hallOfFame } = useSwrHallOfFame();
 
   const [selectedYear, setSelectedYear] = useState();
   const [groups, setGroups] = useState({});
@@ -98,17 +100,19 @@ function HallOfFame() {
   const clientWidth = useClientWidth();
 
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
-  // eslint-disable-next-line max-len
-  const imageWidth = Math.min(clientWidth, theme.breakpoints.values.md) - theme.spacing(isSmUp ? 3 : 2) * 2;
+  const imageWidth = Math.min(clientWidth, theme.breakpoints.values.md)
+    - theme.spacing(isSmUp ? 3 : 2) * 2;
 
   const handleTabsChange = (event, newValue) => {
     setSelectedYear(newValue);
     animateScroll.scrollTo(
-      document.getElementById(`hofc-${groups[newValue][0].date}`).getBoundingClientRect().top
-      + window.scrollY
-      - getToolbarHeight()
-      - tabsHeight
-      - theme.spacing(3) / 2,
+      document
+        .getElementById(`hofc-${groups[newValue][0].date}`)
+        .getBoundingClientRect().top
+        + window.scrollY
+        - getToolbarHeight()
+        - tabsHeight
+        - theme.spacing(3) / 2,
       {
         duration: 650,
         delay: 0,
@@ -126,6 +130,7 @@ function HallOfFame() {
       <Toolbar id={TOOLBAR_ID} />
       {hallOfFame && !!hallOfFame.length && (
         <>
+          {VIEW_DEV_BAR && <Toolbar variant="dense" />}
           <Paper className={classes.tabsContainer} square>
             <Tabs
               classes={{
@@ -148,7 +153,11 @@ function HallOfFame() {
           </Paper>
           <PageContainer className={classes.content} maxWidth="md">
             {hallOfFame.map((entry) => (
-              <HallOfFameCard key={entry.entryId} entry={entry} imageDisplayWidth={imageWidth} />
+              <HallOfFameCard
+                key={entry.entryId}
+                entry={entry}
+                imageDisplayWidth={imageWidth}
+              />
             ))}
           </PageContainer>
         </>

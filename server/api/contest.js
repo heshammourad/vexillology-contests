@@ -7,13 +7,12 @@
 const { isBefore, isFuture, isPast } = require('date-fns');
 const keyBy = require('lodash/keyBy');
 const partition = require('lodash/partition');
-const shuffle = require('lodash/shuffle');
 const numeral = require('numeral');
 const { v4: uuidv4 } = require('uuid');
 
 const db = require('../db');
 const { getCategories, getVoteDates } = require('../db/queries');
-const { CONTEST_ENV_LEVEL } = require('../env');
+const { CONTEST_ENV_LEVEL, IGNORE_PENDING_DEV } = require('../env');
 const imgur = require('../imgur');
 const { createLogger } = require('../logger');
 const memcache = require('../memcache');
@@ -45,7 +44,9 @@ const filterRepeatedIds = async (data, idField) => {
 const addContestEntries = async (contestId, entries) => {
   const { filteredData, repeatedIds } = await filterRepeatedIds(entries, 'id');
   if (repeatedIds.length) {
-    logger.warn(`Error adding contest entries. Repeated ids: ${repeatedIds.join(', ')}`);
+    logger.warn(
+      `Error adding contest entries. Repeated ids: ${repeatedIds.join(', ')}`,
+    );
   }
   await db.insert(
     'contest_entries',
@@ -60,13 +61,26 @@ const addContestEntries = async (contestId, entries) => {
 const addEntries = async (entries) => {
   const { filteredData, repeatedIds } = await filterRepeatedIds(entries, 'id');
   if (repeatedIds.length) {
-    logger.warn(`Error adding entries. Repeated ids: ${repeatedIds.join(', ')}`);
+    logger.warn(
+      `Error adding entries. Repeated ids: ${repeatedIds.join(', ')}`,
+    );
   }
   await db.insert('entries', filteredData);
 };
 
-// eslint-disable-next-line max-len
-const findMissingEntries = (contest, imagesData) => contest.entries.filter((entry) => !imagesData.find((image) => image.id === entry.imgurId));
+const findMissingEntries = (contest, imagesData) => contest.entries.filter(
+  (entry) => !imagesData.find((image) => image.id === entry.imgurId),
+);
+
+const getVoteData = async (contestId) => {
+  const voteData = await db.select(
+    `SELECT entry_id, rank, category_rank, average
+     FROM contests_summary cs, entries e
+     WHERE cs.entry_id = e.id AND e.submission_status = 'approved' AND contest_id = $1`,
+    [contestId],
+  );
+  return voteData;
+};
 
 exports.get = async ({ params: { id }, username }, res) => {
   try {
@@ -181,13 +195,20 @@ exports.get = async ({ params: { id }, username }, res) => {
               '?entry_id',
               'rank',
             ]);
-            await db.update('entries', entriesData, ['?id', 'description', 'name', 'user']);
+            await db.update('entries', entriesData, [
+              '?id',
+              'description',
+              'name',
+              'user',
+            ]);
           }
         }
       }
 
       const getEntryRank = (entryId) => {
-        const contestEntry = contestEntriesData.find((entry) => entry.entry_id === entryId);
+        const contestEntry = contestEntriesData.find(
+          (entry) => entry.entry_id === entryId,
+        );
         if (contestEntry) {
           return contestEntry.rank;
         }
@@ -197,9 +218,10 @@ exports.get = async ({ params: { id }, username }, res) => {
       const allImagesData = [...imagesData];
       let missingEntries = findMissingEntries(contest, allImagesData);
       if (missingEntries.length) {
-        const entriesData = await db.select('SELECT * FROM entries WHERE id = ANY ($1)', [
-          missingEntries.map((entry) => entry.imgurId),
-        ]);
+        const entriesData = await db.select(
+          'SELECT * FROM entries WHERE id = ANY ($1)',
+          [missingEntries.map((entry) => entry.imgurId)],
+        );
         const contestEntries = entriesData.map((entry) => ({
           ...entry,
           rank: getEntryRank(entry.id),
@@ -240,7 +262,9 @@ exports.get = async ({ params: { id }, username }, res) => {
       }
 
       contest.entries = contest.entries.reduce((acc, cur) => {
-        const imageData = allImagesData.find((image) => cur.imgurId === image.id);
+        const imageData = allImagesData.find(
+          (image) => cur.imgurId === image.id,
+        );
         if (imageData) {
           const {
             id: imgurId, height, rank, width, user,
@@ -267,17 +291,18 @@ exports.get = async ({ params: { id }, username }, res) => {
       response = { ...response, ...contest };
 
       try {
-        const updateData = response.entries.map(({ description, imgurId, name: entryName }) => ({
-          description,
-          id: imgurId,
-          name: entryName,
-        }));
+        const updateData = response.entries.map(
+          ({ description, imgurId, name: entryName }) => ({
+            description,
+            id: imgurId,
+            name: entryName,
+          }),
+        );
         db.update('entries', updateData, ['?id', 'description', 'name']);
       } catch (err) {
         logger.error(`Unable to update db: ${err}`);
       }
     }
-
     const [{ now, voteStart, voteEnd }] = await getVoteDates(id);
     if (voteStart && voteEnd) {
       response.isContestMode = isBefore(now, voteEnd);
@@ -287,12 +312,12 @@ exports.get = async ({ params: { id }, username }, res) => {
 
     if (submissionStart) {
       if (isFuture(submissionStart)) {
-        res.status(404).send();
+        res.status(404).send(id === 'dev' ? { name } : {});
         return;
       }
 
       if (isFuture(submissionEnd)) {
-        res.send({ submissionWindowOpen: true });
+        res.send({ submissionWindowOpen: true, name });
         return;
       }
 
@@ -303,20 +328,24 @@ exports.get = async ({ params: { id }, username }, res) => {
         [id, submissionStatus],
       );
 
-      const votingNotOpenResponse = { name: response.name, votingWindowOpen: false };
+      const votingNotOpenResponse = {
+        name: response.name,
+        votingWindowOpen: false,
+      };
       if (isFuture(voteStart)) {
         res.send(votingNotOpenResponse);
         return;
       }
 
       const pendingEntries = await queryEntries('*', 'pending');
-      if (pendingEntries.length) {
+      if (pendingEntries.length && !IGNORE_PENDING_DEV) {
         res.send(votingNotOpenResponse);
         return;
       }
 
       response.entries = await queryEntries(
         `ce.category,
+         e.background_color,
          e.description,
          e.height,
          e.id,
@@ -349,14 +378,19 @@ exports.get = async ({ params: { id }, username }, res) => {
     }
 
     if (username) {
-      logger.debug(`Auth tokens present, retrieving votes of ${username} on ${id}`);
+      logger.debug(
+        `Auth tokens present, retrieving votes of ${username} on ${id}`,
+      );
       const votes = await db.select(
         'SELECT entry_id, rating FROM votes WHERE contest_id = $1 AND username = $2',
         [id, username],
       );
       logger.debug(`${username} votes on ${id}: '${JSON.stringify(votes)}'`);
 
-      const entriesObj = keyBy(response.entries, response.entries[0].imgurId ? 'imgurId' : 'id');
+      const entriesObj = keyBy(
+        response.entries,
+        response.entries[0]?.imgurId ? 'imgurId' : 'id',
+      );
       votes.forEach(({ entryId, rating }) => {
         if (!entriesObj[entryId]) {
           return;
@@ -368,27 +402,45 @@ exports.get = async ({ params: { id }, username }, res) => {
     }
 
     if (response.isContestMode && !winnersThreadId) {
-      response.entries = shuffle(response.entries.map(({ rank, user, ...entry }) => entry)).sort(
-        (a, b) => {
+      /**
+       * Reproducible yet random hash function
+       * Concatenates username and entryId for distinct hash
+       * @param {string} entryId
+       * @returns {int}
+       */
+      const getHash = (entryId) => {
+        const seed = username + entryId;
+        let hash = 0;
+        for (let i = 0; i < seed.length; i += 1) {
+          // eslint-disable-next-line no-bitwise
+          hash = (hash << 5) - hash + seed.charCodeAt(i);
+          // eslint-disable-next-line no-bitwise
+          hash |= 0; // Convert to 32bit integer
+        }
+        return hash;
+      };
+
+      response.entries = response.entries
+        .map(({ rank, user, ...entry }) => entry)
+        .sort((a, b) => {
           if (a.rating > -1 && b.rating === undefined) {
             return 1;
           }
           if (b.rating > -1 && a.rating === undefined) {
             return -1;
           }
-          if (a.rating === undefined && b.rating === undefined) {
-            return 0;
+          if (b.rating !== a.rating) {
+            return b.rating - a.rating;
           }
-          return b.rating - a.rating;
-        },
-      );
+          return getHash(b.id) - getHash(a.id);
+        });
     } else if (localVoting) {
-      const voteData = await db.select(
-        `SELECT entry_id, rank, category_rank, average
-         FROM contests_summary cs, entries e
-         WHERE cs.entry_id = e.id AND e.submission_status = 'approved' AND contest_id = $1`,
-        [id],
-      );
+      let voteData = await getVoteData(id);
+      if (!voteData.length) {
+        // The contest is over, but the materialized view has not been updated.
+        await db.any('REFRESH MATERIALIZED VIEW contests_summary');
+        voteData = await getVoteData(id);
+      }
       const map = new Map();
       voteData.forEach(({
         average, categoryRank, entryId, rank,
@@ -406,7 +458,9 @@ exports.get = async ({ params: { id }, username }, res) => {
           ...map.get(entryId),
         });
       });
-      response.entries = Array.from(map.values()).sort((a, b) => a.rank - b.rank);
+      response.entries = Array.from(map.values()).sort(
+        (a, b) => a.rank - b.rank,
+      );
     } else {
       const [winners, entries] = partition(
         response.entries,
@@ -417,7 +471,6 @@ exports.get = async ({ params: { id }, username }, res) => {
         response.winners = winners.sort((a, b) => a.rank - b.rank);
       }
     }
-
     res.send(response);
   } catch (err) {
     logger.error(`Error getting /contest/${id}: ${err}`);

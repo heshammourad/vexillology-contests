@@ -3,14 +3,13 @@
  */
 
 import Box from '@material-ui/core/Box';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import { useState, useEffect, useCallback } from 'react';
 import { forceCheck } from 'react-lazyload';
-import {
-  Outlet, useLocation, useNavigate, useParams,
-} from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { animateScroll } from 'react-scroll';
 
 import { useCache, useSwrData } from '../../common';
@@ -21,6 +20,7 @@ import {
   RedditLogInDialog,
   StaticContent,
 } from '../../components';
+import useSwrContest from '../../data/useSwrContest';
 
 import ContestAppBarMain from './ContestAppBarMain';
 import ContestAppBarRight from './ContestAppBarRight';
@@ -51,24 +51,22 @@ const useStyles = makeStyles((theme) => ({
 
 function Contest() {
   const navigate = useNavigate();
-  const { contestId } = useParams();
   const classes = useStyles();
 
-  const apiPath = `/contests/${contestId}`;
-  const { data: contest, isValidating, mutate } = useSwrData(apiPath, false);
-  const updateCache = useCache(apiPath)[1];
-
-  if (contest?.submissionWindowOpen) {
-    navigate('/submission', { replace: true });
-  }
+  const { data: contest, isValidating, mutate } = useSwrContest();
 
   const location = useLocation();
   const { state = {} } = location;
 
-  const [selectedCategories, setSelectedCategories] = useState(state?.selectedCategories ?? []);
+  const [selectedCategories, setSelectedCategories] = useState(
+    state?.selectedCategories ?? [],
+  );
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerEntryId, setDrawerEntryId] = useState(null);
-  const [votingExpired, setVotingExpired] = useState(false);
+
+  if (contest?.submissionWindowOpen && !isValidating) {
+    navigate('/submission', { replace: true });
+  }
 
   // Scroll to top when unmounted
   // For site-wide solution see https://reactrouter.com/en/main/components/scroll-restoration
@@ -87,36 +85,9 @@ function Contest() {
   useEffect(() => {
     // Clear cache if the voting window is still closed to force fetch again on next visit
     if (contest.votingWindowOpen === false) {
-      updateCache(null);
+      mutate();
     }
   }, [contest.votingWindowOpen]);
-
-  // ??? WHAT ELSE CAN BE REMOVED HERE?
-  // useEffect(() => {
-  // instead of isLoaded, I think we can just use contest.name
-  // if (!contest.name) {
-  //   return;
-  // }
-  // const { entryId } = scroll;
-  // const { scrollY } = state || {};
-  // if (!entryId && !scrollY) {
-  //   return;
-  // }
-  // }, [state, contest]);
-
-  // forceCheck elements in viewport when selectedCategories changes
-  useEffect(() => {
-    forceCheck();
-    window.history.pushState(
-      { usr: { ...window.history.state?.usr, selectedCategories } },
-      document.title,
-    );
-  }, [selectedCategories]);
-
-  const handleVotingExpired = useCallback(() => {
-    updateCache(null);
-    setVotingExpired(true);
-  }, []);
 
   const handleReload = useCallback(() => {
     scrollInstantlyTo(0);
@@ -199,6 +170,27 @@ function Contest() {
     categories, isContestMode, name, votingWindowOpen, winners,
   } = contest;
 
+  // Prevents display of stale, cached data
+  if (isValidating) {
+    return (
+      <PageWithDrawer
+        isOpen={false}
+        appBar={{
+          className: classes.icon,
+          color: 'default',
+          right: <ContestAppBarRight {...{ toggleDrawerOpen, contest }} />,
+        }}
+        drawer={{ heading: 'Loading...', children: null }}
+      >
+        <PageContainer>
+          <Box marginBottom={6} />
+          <CircularProgress />
+        </PageContainer>
+        <RedditLogInDialog />
+      </PageWithDrawer>
+    );
+  }
+
   return (
     <PageWithDrawer
       handleClose={closeDrawer}
@@ -207,21 +199,33 @@ function Contest() {
         className: classes.icon,
         color: 'default',
         right: <ContestAppBarRight {...{ toggleDrawerOpen, contest }} />,
-        children: <ContestAppBarMain {...{ handleVotingExpired, handleReload, contest }} />,
+        children: <ContestAppBarMain {...{ handleReload, contest }} />,
       }}
       drawer={
         drawerEntryId
-          ? { heading: 'Info', children: <EntryDescriptionDrawer entryId={drawerEntryId} /> }
+          ? {
+            heading: 'Info',
+            children: <EntryDescriptionDrawer entryId={drawerEntryId} />,
+          }
           : { heading: 'Settings', children: <ContestSettings /> }
       }
     >
       <ContestSponsor />
       {name && (
-        <PageContainer className={clsx({ [classes.entriesLoading]: !contest.name })} fixed>
-          <Typography className={classes.heading} variant={headingVariant} component="h1">
+        <PageContainer
+          className={clsx({ [classes.entriesLoading]: !contest.name })}
+          fixed
+        >
+          <Typography
+            className={classes.heading}
+            variant={headingVariant}
+            component="h1"
+          >
             {name}
           </Typography>
-          {votingWindowOpen === false && <ContestUnderReview {...{ isValidating, mutate }} />}
+          {votingWindowOpen === false && (
+            <ContestUnderReview {...{ isValidating, mutate }} />
+          )}
           {isContestMode && (
             <Box marginBottom={3}>
               <Typography component="div" variant="subtitle1">
@@ -229,13 +233,14 @@ function Contest() {
               </Typography>
             </Box>
           )}
-          <ContestCategorySelector {...{ categories, selectedCategories, setSelectedCategories }} />
+          <ContestCategorySelector
+            {...{ categories, selectedCategories, setSelectedCategories }}
+          />
           <ContestWinners {...{ winners }} />
           <ContestGrid
             {...{
               selectedCategories,
               setDrawer,
-              votingExpired,
             }}
           />
         </PageContainer>

@@ -4,6 +4,7 @@ npm-debug.log
 
 # Local development
 *.env
+*/env.personal.js
 *.dev
 .DS_Store
 

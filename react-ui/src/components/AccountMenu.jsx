@@ -14,6 +14,7 @@ import Popper from '@material-ui/core/Popper';
 import { makeStyles } from '@material-ui/core/styles';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import AccountCircleOutlinedIcon from '@material-ui/icons/AccountCircleOutlined';
+import BallotIcon from '@material-ui/icons/Ballot';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import PlaylistAddCheckIcon from '@material-ui/icons/PlaylistAddCheck';
 import RedditIcon from '@material-ui/icons/Reddit';
@@ -21,9 +22,11 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import { useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { getData } from '../api';
-import { useAuthState, useRedditLogIn, useSwrData } from '../common';
 import types from '../common/types';
+import useAuthState from '../common/useAuthState';
+import useRedditLogIn from '../common/useRedditLogIn';
+import { getData } from '../data/api';
+import useSwrInit from '../data/useSwrInit';
 
 import CustomBadge from './CustomBadge';
 import MenuItemLink from './MenuItemLink';
@@ -50,12 +53,15 @@ function AccountMenu({ color }) {
   const { pathname } = useLocation();
   const classes = useStyles();
 
-  const [{ isLoggedIn, refreshToken, username }, setAuthState] = useAuthState();
+  const [
+    { isLoggedIn, authTokens: { refreshToken } = {}, username },
+    setAuthState,
+  ] = useAuthState();
   const sendUserToAuthUrl = useRedditLogIn();
 
   const {
     data: { moderator, submissionsToReview },
-  } = useSwrData('/init');
+  } = useSwrInit();
 
   const toggleMenu = () => {
     setMenuOpen((prevOpen) => !prevOpen);
@@ -147,12 +153,20 @@ function AccountMenu({ color }) {
                         to="/profile/settings"
                       />
                       {moderator && (
-                        <MenuItemLink
-                          Icon={reviewSubmissionsIcon}
-                          state={{ back: pathname }}
-                          text="Review Submissions"
-                          to="/mod/review"
-                        />
+                        <>
+                          <MenuItemLink
+                            Icon={reviewSubmissionsIcon}
+                            state={{ back: pathname }}
+                            text="Review Submissions"
+                            to="/mod/review"
+                          />
+                          <MenuItemLink
+                            Icon={BallotIcon}
+                            state={{ back: pathname }}
+                            text="Analyze Votes"
+                            to="/mod/analyze"
+                          />
+                        </>
                       )}
                       <MenuItemLink
                         Icon={ExitToAppIcon}

@@ -44,6 +44,7 @@ if (!IS_FIREBASE_OFF) {
   };
 
   module.exports = {
-    getDownloadUrl, getToken,
+    getDownloadUrl,
+    getToken,
   };
 }

@@ -10,12 +10,8 @@ import ListSubheader from '@material-ui/core/ListSubheader';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import { makeStyles } from '@material-ui/core/styles';
 
-import {
-  useSettingsState,
-} from '../../common';
-import {
-  CustomRadio,
-} from '../../components';
+import useSettingsState from '../../common/useSettingsState';
+import { CustomRadio } from '../../components';
 
 const useStyles = makeStyles((theme) => ({
   listSubheader: {
@@ -42,9 +38,11 @@ function ContestSettings() {
     <FormControl component="fieldset">
       <List
         dense
-        subheader={
-          <ListSubheader className={classes.listSubheader}>Density</ListSubheader>
-        }
+        subheader={(
+          <ListSubheader className={classes.listSubheader}>
+            Density
+          </ListSubheader>
+        )}
       >
         <RadioGroup
           aria-label="density"

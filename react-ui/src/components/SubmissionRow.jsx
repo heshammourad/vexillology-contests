@@ -28,13 +28,15 @@ import isToday from 'date-fns/isToday';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 
-import { putData } from '../api';
-import { useFormState, useSnackbarState, useSwrMutation } from '../common';
 import snackbarTypes from '../common/snackbarTypes';
 import types from '../common/types';
+import useFormState from '../common/useFormState';
+import useSnackbarState from '../common/useSnackbarState';
+import { putData } from '../data/api';
+import useSwrMutation from '../data/useSwrMutation';
 
 import Fieldset from './Fieldset';
-import RedditMarkdown from './RedditMarkdown';
+import FormattedContent from './FormattedContent';
 import RedditUserAttribution from './RedditUserAttribution';
 import SpinnerButton from './SpinnerButton';
 
@@ -187,7 +189,9 @@ const updateSubmissions = (currentData, response) => {
   };
 
   if (currentData.userBreakdown) {
-    const { submissionStatus, user } = currentData.submissions.find(({ id }) => id === response.id);
+    const { submissionStatus, user } = currentData.submissions.find(
+      ({ id }) => id === response.id,
+    );
     if (submissionStatus !== response.submissionStatus) {
       const { userBreakdown } = currentData;
       const changedUserBreakdown = userBreakdown[user];
@@ -207,6 +211,7 @@ const updateSubmissions = (currentData, response) => {
  * @param props
  * @param {boolean} props.moderator - Whether to display to a moderator or a regular user. Affects
  *  whether moderator controls are displayed.
+ * @param {string} [props.submission.backgroundColor] - See types.js
  * @param {string} [props.submission.category]
  * @param {string} props.submission.description
  * @param {id} props.submission.id
@@ -228,6 +233,7 @@ const updateSubmissions = (currentData, response) => {
 function SubmissionRow({
   moderator,
   submission: {
+    backgroundColor = 'transparent',
     category,
     description,
     id,
@@ -329,12 +335,19 @@ function SubmissionRow({
       return;
     }
 
-    const body = { id, rejectionReason: formState.reason.value, status: action };
+    const body = {
+      id,
+      rejectionReason: formState.reason.value,
+      status: action,
+    };
     triggerReview(body, triggerOptions);
   };
 
   const userSubmit = () => {
-    const body = { id, submissionStatus: submissionWithdrawn ? 'pending' : 'withdrawn' };
+    const body = {
+      id,
+      submissionStatus: submissionWithdrawn ? 'pending' : 'withdrawn',
+    };
     triggerUser(body, triggerOptions);
   };
 
@@ -342,7 +355,9 @@ function SubmissionRow({
   const isSmBreakpoint = useMediaQuery(theme.breakpoints.only('sm'));
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
 
-  const redditUserAttribution = <RedditUserAttribution showUsernameOnly user={user} />;
+  const redditUserAttribution = (
+    <RedditUserAttribution showUsernameOnly user={user} />
+  );
   const fields = (
     <>
       {category && (
@@ -366,7 +381,7 @@ function SubmissionRow({
           Description
         </Typography>
         <div className={classes.description}>
-          <RedditMarkdown text={description} />
+          <FormattedContent content={description} markdown />
         </div>
       </div>
       {!moderator && submissionRejected && (
@@ -443,7 +458,17 @@ function SubmissionRow({
         <TableCell align="center" className={classes.previewImage}>
           {isSmUp && (
             <div className={classes.imageContainer}>
-              {!open && <img className={classes.image} alt="" src={imagePath} />}
+              {!open && (
+                <img
+                  className={classes.image}
+                  alt=""
+                  src={imagePath}
+                  style={{
+                    border: `2px solid ${backgroundColor}`,
+                    backgroundColor,
+                  }}
+                />
+              )}
             </div>
           )}
         </TableCell>
@@ -458,17 +483,34 @@ function SubmissionRow({
           />
         </TableCell>
         <TableCell align="right" className={classes.expandIconCell}>
-          <IconButton aria-label="expand row" size="small" onClick={handleExpandClick}>
+          <IconButton
+            aria-label="expand row"
+            size="small"
+            onClick={handleExpandClick}
+          >
             {open ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
         </TableCell>
       </TableRow>
       <TableRow>
         <TableCell className={classes.expandedTableRow} colSpan={6}>
-          <Collapse in={open} timeout="auto" unmountOnExit className={classes.expandedRow}>
+          <Collapse
+            in={open}
+            timeout="auto"
+            unmountOnExit
+            className={classes.expandedRow}
+          >
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6} md={4}>
-                <img className={classes.expandedImage} alt="" src={imagePath} />
+                <img
+                  className={classes.expandedImage}
+                  alt=""
+                  src={imagePath}
+                  style={{
+                    border: `5px solid ${backgroundColor}`,
+                    backgroundColor,
+                  }}
+                />
                 {dropFields && fields}
               </Grid>
               {!dropFields && (
@@ -511,9 +553,13 @@ function SubmissionRow({
                       {modifiedBy && (
                         <Alert severity="info">
                           {'Set to '}
-                          <span className={classes.submissionStatus}>{submissionStatus}</span>
+                          <span className={classes.submissionStatus}>
+                            {submissionStatus}
+                          </span>
                           {' by '}
-                          <span className={classes.modifiedBy}>{modifiedBy}</span>
+                          <span className={classes.modifiedBy}>
+                            {modifiedBy}
+                          </span>
                         </Alert>
                       )}
                       <TextField
@@ -547,8 +593,8 @@ function SubmissionRow({
                     <>
                       {submissionStatus === 'approved' && (
                         <Alert severity="warning">
-                          This flag is approved. If you re-submit it later, it will need to be
-                          reviewed again by a moderator.
+                          This flag is approved. If you re-submit it later, it
+                          will need to be reviewed again by a moderator.
                         </Alert>
                       )}
                       <SpinnerButton

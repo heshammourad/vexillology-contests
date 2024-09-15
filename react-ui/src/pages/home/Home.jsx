@@ -12,12 +12,14 @@ import FacebookIcon from '@material-ui/icons/Facebook';
 import TwitterIcon from '@material-ui/icons/Twitter';
 import { useLocation } from 'react-router-dom';
 
-import { useSwrData } from '../../common';
-// eslint-disable-next-line no-restricted-imports
 import { FeatureBanner, SCREENS } from '../../common/FeatureBanner';
 import {
-  AppBarDivided, CustomIconButton, ExternalLink, InternalLink,
+  AppBarDivided,
+  CustomIconButton,
+  ExternalLink,
+  InternalLink,
 } from '../../components';
+import useSwrContests from '../../data/useSwrContests';
 import logo from '../../images/logo.png';
 
 const useStyles = makeStyles((theme) => ({
@@ -82,7 +84,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Home() {
-  const { data: contests } = useSwrData('/contests');
+  const { data: contests } = useSwrContests();
   const location = useLocation();
 
   const classes = useStyles();
@@ -97,10 +99,11 @@ function Home() {
         <p>
           This site is a companion site to the vexillology contests held at
           {' '}
-          <ExternalLink href="https://reddit.com/r/vexillology">/r/vexillology</ExternalLink>
+          <ExternalLink href="https://reddit.com/r/vexillology">
+            /r/vexillology
+          </ExternalLink>
           {' '}
-          to
-          help view all the great entries in one place.
+          to help view all the great entries in one place.
         </p>
         {contests && !!contests.length && (
           <p>
@@ -116,8 +119,8 @@ function Home() {
             , check out
             {' '}
             <InternalLink to="/contests">older contests</InternalLink>
-            , or view the
-            {' '}
+            , or view
+            the
             <InternalLink to="/hallOfFame">Hall of Fame</InternalLink>
             .
           </p>
@@ -127,7 +130,11 @@ function Home() {
         <Divider />
         <Container className={classes.footerContent}>
           <Box alignItems="center" className={classes.footerLeft}>
-            <Box alignItems="center" className={classes.footerLogo} display="flex">
+            <Box
+              alignItems="center"
+              className={classes.footerLogo}
+              display="flex"
+            >
               <img alt="" className={classes.logo} src={logo} />
               <Typography component="span" variant="subtitle1">
                 Vexillology Contests
