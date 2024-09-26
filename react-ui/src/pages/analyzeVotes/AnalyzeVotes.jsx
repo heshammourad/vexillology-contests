@@ -38,10 +38,10 @@ const useStyles = makeStyles({
 });
 
 function UserSelector({
-  user, noVotes, setUser, usernames, title,
+  user, noVotes, setUser, usernames, title, leftRightControlled,
 }) {
   const classes = useStyles();
-  const arrows = title === 'User 1: ' ? 'left-right' : 'up-down';
+  const arrows = title === leftRightControlled ? 'left-right' : 'up-down';
 
   return (
     <Box className={classes.sideBySide}>
@@ -229,6 +229,7 @@ function AnalyzeVotes() {
                 user={user1}
                 setUser={setUser1}
                 usernames={usernames}
+                leftRightControlled
               />
 
               <Box className={classes.sideBySide}>
@@ -313,9 +314,14 @@ function AnalyzeVotes() {
 export default AnalyzeVotes;
 
 UserSelector.propTypes = {
-  usernames: PropTypes.arrayOf(PropTypes.string).isRequired,
-  user: PropTypes.string.isRequired,
-  title: PropTypes.string.isRequired,
-  setUser: PropTypes.func.isRequired,
+  leftRightControlled: PropTypes.bool,
   noVotes: PropTypes.bool.isRequired,
+  setUser: PropTypes.func.isRequired,
+  title: PropTypes.string.isRequired,
+  user: PropTypes.string.isRequired,
+  usernames: PropTypes.arrayOf(PropTypes.string).isRequired,
+};
+
+UserSelector.defaultProps = {
+  leftRightControlled: false,
 };
