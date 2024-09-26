@@ -84,7 +84,7 @@ function AnalyzeVotes() {
   const contestId = useContestId();
   const { data: contests } = useSwrContests();
   const contest = useMemo(
-    () => contests.find((c) => c.id === contestId) || contests[0],
+    () => contests.find((c) => c.id === contestId),
     [contests, contestId],
   );
   const navigate = useNavigate();
@@ -99,6 +99,10 @@ function AnalyzeVotes() {
   const [voteMinimum, setVoteMinimum] = useState(0);
   const [user1, setUser1] = useState('');
   const [user2, setUser2] = useState('');
+
+  if (!contestId && contests[0]?.id) {
+    navigate(`/mod/analyze/${contests[0].id}`, { replace: true });
+  }
 
   const numberOfEntries = Object.keys(entryAvg).length;
   const usernames = useMemo(() => userAvg.map((ua) => ua.username), [userAvg]);
