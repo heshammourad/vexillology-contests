@@ -242,7 +242,9 @@ function Contest() {
             onChange={togglePromptOpen}
           >
             <AccordionSummary expandIcon={<ExpandMore />}>
-              Click here to view the prompt that contestants were given
+              {isPromptOpen ? 'Hide' : 'View'}
+              {' '}
+              contest prompt
             </AccordionSummary>
             <AccordionDetails onClick={togglePromptOpen} style={{ cursor: 'pointer' }}>
               <FormattedContent content={prompt} markdown />
