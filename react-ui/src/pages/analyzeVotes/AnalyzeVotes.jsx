@@ -38,7 +38,7 @@ const useStyles = makeStyles({
 });
 
 function UserSelector({
-  user, noVotes, setUser, usernames, title, arrows,
+  user, noVotes, setUser, usernames, title, navigationArrows,
 }) {
   const classes = useStyles();
 
@@ -69,7 +69,7 @@ function UserSelector({
         ))}
       </Select>
       <Typography style={{ marginLeft: 10 }}>
-        {` or use ${arrows} arrows`}
+        {` or use ${navigationArrows} arrows`}
       </Typography>
     </Box>
   );
@@ -228,7 +228,7 @@ function AnalyzeVotes() {
                 user={user1}
                 setUser={setUser1}
                 usernames={usernames}
-                arrows="left-right"
+                navigationArrows="left-right"
               />
 
               <Box className={classes.sideBySide}>
@@ -269,7 +269,7 @@ function AnalyzeVotes() {
                 user={user2}
                 setUser={setUser2}
                 usernames={usernames}
-                arrows="up-down"
+                navigationArrows="up-down"
               />
               <Box className={classes.sideBySide}>
                 <Box>
@@ -314,7 +314,7 @@ function AnalyzeVotes() {
 export default AnalyzeVotes;
 
 UserSelector.propTypes = {
-  arrows: PropTypes.string.isRequired,
+  navigationArrows: PropTypes.ofOne(['left-right', 'up-down']).isRequired,
   noVotes: PropTypes.bool.isRequired,
   setUser: PropTypes.func.isRequired,
   title: PropTypes.string.isRequired,
