@@ -1,11 +1,14 @@
 /**
  * Voting and winners
  */
-
+import Accordion from '@material-ui/core/Accordion';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
 import Box from '@material-ui/core/Box';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
+import ExpandMore from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
 import { useState, useEffect, useCallback } from 'react';
 import { forceCheck } from 'react-lazyload';
@@ -14,6 +17,7 @@ import { animateScroll } from 'react-scroll';
 
 import {
   EntryDescriptionDrawer,
+  FormattedContent,
   PageContainer,
   PageWithDrawer,
   RedditLogInDialog,
@@ -46,6 +50,10 @@ const useStyles = makeStyles((theme) => ({
   icon: {
     color: theme.palette.grey[700],
   },
+  prompt: {
+    backgroundColor: theme.palette.grey[200],
+    marginBottom: '20px',
+  },
 }));
 
 function Contest() {
@@ -60,6 +68,7 @@ function Contest() {
   const [selectedCategories, setSelectedCategories] = useState(
     state?.selectedCategories ?? [],
   );
+  const [isPromptOpen, setIsPromptOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerEntryId, setDrawerEntryId] = useState(null);
 
@@ -91,6 +100,10 @@ function Contest() {
   const handleReload = useCallback(() => {
     scrollInstantlyTo(0);
     window.location.reload();
+  }, []);
+
+  const togglePromptOpen = useCallback(() => {
+    setIsPromptOpen((prev) => !prev);
   }, []);
 
   const toggleDrawerOpen = useCallback((isOpen) => {
@@ -166,7 +179,7 @@ function Contest() {
   const { headingVariant } = useContestSizing();
 
   const {
-    categories, isContestMode, name, votingWindowOpen, winners,
+    categories, isContestMode, name, votingWindowOpen, winners, prompt,
   } = contest;
 
   // Prevents display of stale, cached data
@@ -222,6 +235,22 @@ function Contest() {
           >
             {name}
           </Typography>
+
+          <Accordion
+            className={classes.prompt}
+            expanded={isPromptOpen}
+            onChange={togglePromptOpen}
+          >
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              {isPromptOpen ? 'Hide' : 'View'}
+              {' '}
+              contest prompt
+            </AccordionSummary>
+            <AccordionDetails onClick={togglePromptOpen} style={{ cursor: 'pointer' }}>
+              <FormattedContent content={prompt} markdown />
+            </AccordionDetails>
+          </Accordion>
+
           {votingWindowOpen === false && (
             <ContestUnderReview {...{ isValidating, mutate }} />
           )}
