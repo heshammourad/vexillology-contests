@@ -38,10 +38,9 @@ const useStyles = makeStyles({
 });
 
 function UserSelector({
-  user, noVotes, setUser, usernames, title,
+  user, noVotes, setUser, usernames, title, navigationArrows,
 }) {
   const classes = useStyles();
-  const arrows = title === 'User 1: ' ? 'left-right' : 'up-down';
 
   return (
     <Box className={classes.sideBySide}>
@@ -70,7 +69,7 @@ function UserSelector({
         ))}
       </Select>
       <Typography style={{ marginLeft: 10 }}>
-        {` or use ${arrows} arrows`}
+        {` or use ${navigationArrows} arrows`}
       </Typography>
     </Box>
   );
@@ -84,7 +83,7 @@ function AnalyzeVotes() {
   const contestId = useContestId();
   const { data: contests } = useSwrContests();
   const contest = useMemo(
-    () => contests.find((c) => c.id === contestId) || contests[0],
+    () => contests.find((c) => c.id === contestId),
     [contests, contestId],
   );
   const navigate = useNavigate();
@@ -99,6 +98,10 @@ function AnalyzeVotes() {
   const [voteMinimum, setVoteMinimum] = useState(0);
   const [user1, setUser1] = useState('');
   const [user2, setUser2] = useState('');
+
+  if (!contestId && contests[0]?.id) {
+    navigate(`/mod/analyze/${contests[0].id}`, { replace: true });
+  }
 
   const numberOfEntries = Object.keys(entryAvg).length;
   const usernames = useMemo(() => userAvg.map((ua) => ua.username), [userAvg]);
@@ -225,6 +228,7 @@ function AnalyzeVotes() {
                 user={user1}
                 setUser={setUser1}
                 usernames={usernames}
+                navigationArrows="left-right"
               />
 
               <Box className={classes.sideBySide}>
@@ -265,6 +269,7 @@ function AnalyzeVotes() {
                 user={user2}
                 setUser={setUser2}
                 usernames={usernames}
+                navigationArrows="up-down"
               />
               <Box className={classes.sideBySide}>
                 <Box>
@@ -309,9 +314,10 @@ function AnalyzeVotes() {
 export default AnalyzeVotes;
 
 UserSelector.propTypes = {
-  usernames: PropTypes.arrayOf(PropTypes.string).isRequired,
-  user: PropTypes.string.isRequired,
-  title: PropTypes.string.isRequired,
-  setUser: PropTypes.func.isRequired,
+  navigationArrows: PropTypes.oneOf(['left-right', 'up-down']).isRequired,
   noVotes: PropTypes.bool.isRequired,
+  setUser: PropTypes.func.isRequired,
+  title: PropTypes.string.isRequired,
+  user: PropTypes.string.isRequired,
+  usernames: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
