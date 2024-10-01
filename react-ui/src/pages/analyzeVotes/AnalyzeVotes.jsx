@@ -314,7 +314,7 @@ function AnalyzeVotes() {
 export default AnalyzeVotes;
 
 UserSelector.propTypes = {
-  navigationArrows: PropTypes.ofOne(['left-right', 'up-down']).isRequired,
+  navigationArrows: PropTypes.oneOf(['left-right', 'up-down']).isRequired,
   noVotes: PropTypes.bool.isRequired,
   setUser: PropTypes.func.isRequired,
   title: PropTypes.string.isRequired,
