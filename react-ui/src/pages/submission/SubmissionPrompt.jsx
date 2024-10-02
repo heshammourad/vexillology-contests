@@ -1,20 +1,33 @@
 /**
  * Prompt for contest submission
  */
+import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
+import { Outlet } from 'react-router-dom';
 
-import { FormattedContent } from '../../components';
+import { FormattedContent, InternalLink } from '../../components';
 
 import May23 from './content/May23';
 
 function SubmissionPrompt({ contestId, prompt }) {
-  if (contestId === 'may23') {
-    return <May23 />;
-  }
   if (!prompt) {
     return null;
   }
-  return <FormattedContent content={prompt} markdown />;
+  let content = <FormattedContent content={prompt} markdown />;
+  if (contestId === 'may23') {
+    content = <May23 />;
+  }
+  return (
+    <>
+      {content}
+      <InternalLink to="rules">
+        <Typography component="span" variant="h6">
+          Please read the contest rules in full before submitting.
+        </Typography>
+      </InternalLink>
+      <Outlet />
+    </>
+  );
 }
 
 export default SubmissionPrompt;
