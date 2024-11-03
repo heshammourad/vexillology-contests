@@ -24,7 +24,6 @@ import {
   Settings,
   Submission,
 } from './pages';
-// TODO: Remove when removing pages index file
 // eslint-disable-next-line no-restricted-imports
 import ContestRules from './pages/submission/ContestRules';
 
