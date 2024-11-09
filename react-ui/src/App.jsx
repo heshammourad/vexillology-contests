@@ -24,6 +24,8 @@ import {
   Settings,
   Submission,
 } from './pages';
+// eslint-disable-next-line no-restricted-imports
+import ContestRules from './pages/submission/ContestRules';
 
 function App() {
   return (
@@ -69,7 +71,9 @@ function ModalSwitch() {
         <Route path="/mod/review" element={<ReviewSubmissions />} />
         <Route path="/mod/analyze" element={<AnalyzeVotes />} />
         <Route path="/mod/analyze/:contestId" element={<AnalyzeVotes />} />
-        <Route path="/submission" element={<Submission />} />
+        <Route path="/submission" element={<Submission />}>
+          <Route path="/submission/rules" element={<ContestRules />} />
+        </Route>
         <Route
           path="/submit"
           element={
