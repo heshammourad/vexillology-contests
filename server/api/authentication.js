@@ -78,7 +78,6 @@ exports.requireModerator = [
       const moderator = await isModerator(req.username);
       if (!moderator) {
         res.status(403).send('Must be moderator to access resource');
-        next(true);
         return;
       }
 
