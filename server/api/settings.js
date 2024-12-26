@@ -43,7 +43,9 @@ exports.put = async ({ body: { contestReminders }, username }, res) => {
     let response;
     let status;
     if (!currentSettings) {
-      [response] = await db.insert('users', settingsData, SETTINGS_FIELDS);
+      [response] = await db.insert('users', settingsData, {
+        returning: SETTINGS_FIELDS,
+      });
       status = 201;
     } else {
       [response] = await db.update(

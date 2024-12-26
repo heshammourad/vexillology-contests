@@ -37,12 +37,11 @@ db.$config.options.receive = (data) => {
 
 db.$config.options.schema = DATABASE_SCHEMA;
 
-const addReturningFields = (query, returning = []) => {
-  let newQuery = query;
-  if (returning.length) {
-    newQuery += ` RETURNING ${returning.join(', ')}`;
+const getReturningClause = (returning = []) => {
+  if (!returning.length) {
+    return '';
   }
-  return newQuery;
+  return ` RETURNING ${returning.join(', ')}`;
 };
 
 const del = async (table, values) => {
@@ -58,9 +57,21 @@ const del = async (table, values) => {
   );
 };
 
-const insert = async (table, values, returning = []) => {
+const insert = async (table, values, additionalOptions = {}) => {
+  const { conflictTargets = [], returning = [] } = additionalOptions;
   const cs = new pgp.helpers.ColumnSet(Object.keys(values[0]), { table });
-  const query = addReturningFields(pgp.helpers.insert(values, cs), returning);
+
+  let query = pgp.helpers.insert(values, cs);
+  if (conflictTargets.length) {
+    query += ` ON CONFLICT (${conflictTargets.join(
+      ', ',
+    )}) DO UPDATE SET ${cs.assignColumns({
+      from: 'EXCLUDED',
+      skip: conflictTargets,
+    })}`;
+  }
+  query += getReturningClause(returning);
+
   const result = await db.manyOrNone(query);
   return result;
 };
@@ -92,10 +103,9 @@ const update = async (table, data, columns, returning = []) => {
     return `${result} v.${column} = t.${column}`;
   }, ' WHERE');
 
-  const query = addReturningFields(
-    pgp.helpers.update(data, cs) + whereCondition,
-    returning.map((field) => `t.${field}`),
-  );
+  const query = pgp.helpers.update(data, cs)
+    + whereCondition
+    + getReturningClause(returning.map((field) => `t.${field}`));
   const result = await db.manyOrNone(query);
   return result;
 };
