@@ -20,7 +20,7 @@ exports.get = async ({ params: { code } }, res) => {
       throw new Error('Missing auth tokens');
     }
 
-    const username = await reddit.getUser(result);
+    const { username } = await reddit.getUser(result);
     const response = { accessToken, refreshToken, username };
     res.send(response);
   } catch (err) {

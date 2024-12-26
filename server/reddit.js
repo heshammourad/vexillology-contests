@@ -127,10 +127,15 @@ exports.getContest = async (submissionId) => {
  * @returns name
  */
 exports.getUser = async (auth) => {
-  logger.debug('Getting username');
-  const { name } = await getSnoowrap(auth).getMe();
-  logger.debug(`Retrieved username: ${name}`);
-  return name;
+  logger.debug('Getting user');
+  const {
+    created_utc: createdUtc,
+    name: username,
+    total_karma: karma,
+  } = await getSnoowrap(auth).getMe();
+  const user = { createdUtc, karma, username };
+  logger.debug(`Retrieved user: ${user}`);
+  return user;
 };
 
 exports.getWinners = async (winnersThreadId) => {
