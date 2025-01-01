@@ -20,7 +20,7 @@ function ContestRules() {
       <Header position="static" to="/submission">
         Contest Rules
       </Header>
-      <PageContainer className={classes.container}>
+      <PageContainer className={classes.container} maxWidth="md">
         <StaticContent id="contest_rules" />
       </PageContainer>
     </Dialog>
