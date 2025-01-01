@@ -83,7 +83,7 @@ function Contests() {
                                 <span className={classes.month}>
             {format(parseISO(date), 'MMM yy')}
           </span>
-                                  &nbsp;-&nbsp;
+                                {' - '}
                               </>
                               )}
                               {name}
