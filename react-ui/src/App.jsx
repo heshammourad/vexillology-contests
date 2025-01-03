@@ -13,6 +13,7 @@ import { AppHelmet, CustomSnackbar, CustomThemeProvider } from './components';
 import localStorageProvider from './data/LocalStorageProvider';
 import { getData } from './data/api';
 import {
+  AnalyzeVotes,
   AuthorizeCallback,
   Contest,
   Contests,
@@ -20,12 +21,13 @@ import {
   HallOfFame,
   Home,
   ReviewSubmissions,
-  AnalyzeVotes,
   Settings,
   Submission,
 } from './pages';
-// eslint-disable-next-line no-restricted-imports
+/* eslint-disable no-restricted-imports */
+import Mod from './pages/mod/Mod';
 import ContestRules from './pages/submission/ContestRules';
+/* eslint-enable no-restricted-imports */
 
 function App() {
   return (
@@ -68,9 +70,13 @@ function ModalSwitch() {
             element={<EntryModal />}
           />
         </Route>
-        <Route path="/mod/review" element={<ReviewSubmissions />} />
-        <Route path="/mod/analyze" element={<AnalyzeVotes />} />
-        <Route path="/mod/analyze/:contestId" element={<AnalyzeVotes />} />
+        <Route path="/mod" element={<Mod />}>
+          <Route index element={<ReviewSubmissions />} />
+          <Route path="analyze" element={<AnalyzeVotes />}>
+            <Route path=":contestId" element={<AnalyzeVotes />} />
+          </Route>
+          <Route path="review" element={<ReviewSubmissions />} />
+        </Route>
         <Route path="/submission" element={<Submission />}>
           <Route path="/submission/rules" element={<ContestRules />} />
         </Route>

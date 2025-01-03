@@ -14,12 +14,29 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+/**
+ * Header component that renders an AppBar with a title and a back button.
+ *
+ * @param {Object} props - The component props.
+ * @param {string} props.appBarClassName - The class name for the AppBar component.
+ * @param {React.ReactNode} props.children - The title to render in the AppBar.
+ * @param {string} props.className - The class name for the title.
+ * @param {string} props.position - The position of the AppBar component.
+ * @param {string} props.to - The destination URL for the back button.
+ *
+ * @returns {JSX.Element} The rendered Header component.
+ */
 function Header({
-  children, className, position, to,
+  appBarClassName, children, className, position, to,
 }) {
   const classes = useStyles();
   return (
-    <AppBarDivided color="default" disableGutters position={position}>
+    <AppBarDivided
+      className={appBarClassName}
+      color="default"
+      disableGutters
+      position={position}
+    >
       <RouterLinkIconButton to={to} />
       <Typography
         className={clsx(classes.title, className)}
@@ -33,6 +50,7 @@ function Header({
 }
 
 Header.propTypes = {
+  appBarClassName: PropTypes.string,
   children: PropTypes.node.isRequired,
   className: PropTypes.string,
   position: PropTypes.string.isRequired,
@@ -40,6 +58,7 @@ Header.propTypes = {
 };
 
 Header.defaultProps = {
+  appBarClassName: undefined,
   className: undefined,
 };
 

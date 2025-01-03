@@ -6,16 +6,13 @@ import MessageIcon from '@material-ui/icons/Message';
 import Alert from '@material-ui/lab/Alert';
 import countBy from 'lodash/countBy';
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 
 import {
   CustomIconButton,
-  Header,
-  PageContainer,
   ProtectedRoute,
   SubmissionsTable,
-} from '../../components';
-import useSwrModReview from '../../data/useSwrModReview';
+} from '../../../components';
+import useSwrModReview from '../../../data/useSwrModReview';
 
 import StatusFilters from './StatusFilters';
 
@@ -40,7 +37,6 @@ function ReviewSubmissions() {
     data: { name: contestName, submissions = [], userBreakdown = {} },
     error,
   } = useSwrModReview();
-  const { state } = useLocation();
   const [selectedChips, setSelectedChips] = useState({});
   const [selectedUsers, setSelectedUsers] = useState({});
   const [showErrorsOnly, setShowErrorsOnly] = useState(false);
@@ -122,80 +118,73 @@ You have more than 2 entries in this month's contest. Can you please let us know
 
   const classes = useStyles();
   return (
-    <>
-      <Header position="static" to={state?.back ?? '/home'}>
-        Review Submissions
-      </Header>
-      <ProtectedRoute errorStatus={error?.response?.status}>
-        <PageContainer>
-          <Typography className={classes.header} component="h1" variant="h5">
-            {contestName}
-          </Typography>
-          {submissions?.length ? (
-            <>
-              <StatusFilters
-                disabled={showErrorsOnly}
-                onChipClick={handleChipClick}
-                selectedChips={selectedChips}
-                submissionStatusCounts={submissionStatusCounts}
-              />
-              {usersExceedingLimit.length > 0 && (
-                <Alert className={classes.submissionsError} severity="error">
-                  The following users have more than 2 approved entries:
-                  <ul>
-                    {usersExceedingLimit.map(([user, { approved }]) => (
-                      <li key={user}>
-                        <span>{`/u/${user}: ${approved} entries`}</span>
-                        <CustomIconButton
-                          ariaLabel={`Send message to ${user}`}
-                          className={classes.messageIcon}
-                          color="primary"
-                          href={generateMessageUrl(user)}
-                          Icon={MessageIcon}
-                          size="small"
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    color="primary"
-                    onClick={toggleErrorFilters}
-                    variant="contained"
-                  >
-                    {showErrorsOnly ? 'Reset Filters' : 'Show Errors'}
-                  </Button>
-                </Alert>
-              )}
-              {filteredSubmissions
-                && (filteredSubmissions.length ? (
-                  <SubmissionsTable
-                    moderator
-                    submissions={filteredSubmissions}
-                    userBreakdown={userBreakdown}
-                  />
-                ) : (
-                  <>
-                    <Typography component="div" variant="subtitle2">
-                      There are no entries matching the filter.
-                    </Typography>
-                    <Button color="primary" onClick={resetFilters}>
-                      Reset Filters
-                    </Button>
-                  </>
+    <ProtectedRoute errorStatus={error?.response?.status}>
+      <Typography className={classes.header} component="h1" variant="h5">
+        {contestName}
+      </Typography>
+      {submissions?.length ? (
+        <>
+          <StatusFilters
+            disabled={showErrorsOnly}
+            onChipClick={handleChipClick}
+            selectedChips={selectedChips}
+            submissionStatusCounts={submissionStatusCounts}
+          />
+          {usersExceedingLimit.length > 0 && (
+            <Alert className={classes.submissionsError} severity="error">
+              The following users have more than 2 approved entries:
+              <ul>
+                {usersExceedingLimit.map(([user, { approved }]) => (
+                  <li key={user}>
+                    <span>{`/u/${user}: ${approved} entries`}</span>
+                    <CustomIconButton
+                      ariaLabel={`Send message to ${user}`}
+                      className={classes.messageIcon}
+                      color="primary"
+                      href={generateMessageUrl(user)}
+                      Icon={MessageIcon}
+                      size="small"
+                    />
+                  </li>
                 ))}
-            </>
-          ) : (
-            contestName && (
-              <Box display="flex" alignItems="center" justifyContent="center">
-                <Typography component="div" variant="h6">
-                  There are no submissions for this contest
-                </Typography>
-              </Box>
-            )
+              </ul>
+              <Button
+                color="primary"
+                onClick={toggleErrorFilters}
+                variant="contained"
+              >
+                {showErrorsOnly ? 'Reset Filters' : 'Show Errors'}
+              </Button>
+            </Alert>
           )}
-        </PageContainer>
-      </ProtectedRoute>
-    </>
+          {filteredSubmissions
+            && (filteredSubmissions.length ? (
+              <SubmissionsTable
+                moderator
+                submissions={filteredSubmissions}
+                userBreakdown={userBreakdown}
+              />
+            ) : (
+              <>
+                <Typography component="div" variant="subtitle2">
+                  There are no entries matching the filter.
+                </Typography>
+                <Button color="primary" onClick={resetFilters}>
+                  Reset Filters
+                </Button>
+              </>
+            ))}
+        </>
+      ) : (
+        contestName && (
+          <Box display="flex" alignItems="center" justifyContent="center">
+            <Typography component="div" variant="h6">
+              There are no submissions for this contest
+            </Typography>
+          </Box>
+        )
+      )}
+    </ProtectedRoute>
   );
 }
 
