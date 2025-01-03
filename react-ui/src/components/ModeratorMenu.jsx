@@ -28,6 +28,17 @@ function badgedIcon(badgedIcons, Icon, item) {
   };
 }
 
+/**
+ * ModeratorMenu component renders a list of menu items for moderators.
+ *
+ * @param {Object} props - The properties object.
+ * @param {Object} props.badgedIcons - List of icons to add a badge to.
+ * @param {boolean} props.highlightSelected - Whether to highlight the selected menu item.
+ * @param {function} props.onClick - The function to call when a menu item is clicked.
+ * @param {Object} props.sx - The style object to apply to the List component.
+ *
+ * @returns {JSX.Element} The rendered ModeratorMenu component.
+ */
 function ModeratorMenu({
   badgedIcons, highlightSelected, onClick, sx,
 }) {

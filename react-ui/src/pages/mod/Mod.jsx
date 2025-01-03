@@ -17,6 +17,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+/**
+ * Mod component renders the moderator page layout with a header, drawer, and main content area.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered component.
+ */
 function Mod() {
   const { state } = useLocation();
 
