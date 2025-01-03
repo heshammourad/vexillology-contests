@@ -4,9 +4,12 @@
  */
 
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import Collapse from '@material-ui/core/Collapse';
 import Divider from '@material-ui/core/Divider';
 import Grow from '@material-ui/core/Grow';
 import IconButton from '@material-ui/core/IconButton';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import MenuList from '@material-ui/core/MenuList';
 import Paper from '@material-ui/core/Paper';
@@ -14,12 +17,14 @@ import Popper from '@material-ui/core/Popper';
 import { makeStyles } from '@material-ui/core/styles';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import AccountCircleOutlinedIcon from '@material-ui/icons/AccountCircleOutlined';
-import BallotIcon from '@material-ui/icons/Ballot';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import PlaylistAddCheckIcon from '@material-ui/icons/PlaylistAddCheck';
 import RedditIcon from '@material-ui/icons/Reddit';
 import SettingsIcon from '@material-ui/icons/Settings';
-import { useRef, useState } from 'react';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import PropTypes from 'prop-types';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import types from '../common/types';
@@ -30,6 +35,7 @@ import useSwrInit from '../data/useSwrInit';
 
 import CustomBadge from './CustomBadge';
 import MenuItemLink from './MenuItemLink';
+import ModeratorMenu from './ModeratorMenu';
 
 const useStyles = makeStyles((theme) => ({
   accountMenu: {
@@ -47,6 +53,17 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+/**
+ * AccountMenu component renders a user account menu with options to log in, log out,
+ * and access settings.
+ *
+ * If the user is a moderator, the component also renders a section with moderator actions.
+ *
+ * @param {Object} props - The component props.
+ * @param {string} props.color - The color of the IconButton.
+ *
+ * @returns {JSX.Element} The rendered AccountMenu component.
+ */
 function AccountMenu({ color }) {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const anchorRef = useRef(null);
@@ -95,12 +112,6 @@ function AccountMenu({ color }) {
     }
   };
 
-  const reviewSubmissionsIcon = () => (
-    <CustomBadge invisible={!submissionsToReview}>
-      <PlaylistAddCheckIcon />
-    </CustomBadge>
-  );
-
   return (
     <>
       <IconButton
@@ -110,7 +121,7 @@ function AccountMenu({ color }) {
         onClick={toggleMenu}
         ref={anchorRef}
       >
-        <CustomBadge invisible={!submissionsToReview}>
+        <CustomBadge overlap="circular" invisible={!submissionsToReview}>
           {isLoggedIn ? <AccountCircleIcon /> : <AccountCircleOutlinedIcon />}
         </CustomBadge>
       </IconButton>
@@ -135,8 +146,9 @@ function AccountMenu({ color }) {
                   onKeyDown={handleListKeyDown}
                 >
                   {isLoggedIn ? (
-                    <>
+                    [
                       <ListItemText
+                        key="username"
                         primary={(
                           <>
                             Logged in as
@@ -144,36 +156,25 @@ function AccountMenu({ color }) {
                             <span className={classes.username}>{username}</span>
                           </>
                         )}
-                      />
-                      <Divider />
+                      />,
+                      <Divider key="divider" />,
                       <MenuItemLink
+                        key="settings"
                         Icon={SettingsIcon}
                         state={{ back: pathname }}
                         text="Settings"
                         to="/profile/settings"
-                      />
-                      {moderator && (
-                        <>
-                          <MenuItemLink
-                            Icon={reviewSubmissionsIcon}
-                            state={{ back: pathname }}
-                            text="Review Submissions"
-                            to="/mod/review"
-                          />
-                          <MenuItemLink
-                            Icon={BallotIcon}
-                            state={{ back: pathname }}
-                            text="Analyze Votes"
-                            to="/mod/analyze"
-                          />
-                        </>
-                      )}
+                      />,
+                      moderator && (
+                        <ModeratorSection key="moderator" onClick={closeMenu} />
+                      ),
                       <MenuItemLink
+                        key="logOut"
                         Icon={ExitToAppIcon}
                         onClick={handleAuthenticationAction}
                         text="Log Out"
-                      />
-                    </>
+                      />,
+                    ]
                   ) : (
                     <MenuItemLink
                       Icon={RedditIcon}
@@ -197,6 +198,45 @@ AccountMenu.propTypes = {
 
 AccountMenu.defaultProps = {
   color: 'default',
+};
+
+function ModeratorSection({ onClick }) {
+  const {
+    data: { submissionsToReview },
+  } = useSwrInit();
+  const [open, setOpen] = useState(true);
+  const [badgedIcons, setBadgedIcons] = useState([]);
+
+  useEffect(() => {
+    if (submissionsToReview > 0) {
+      setBadgedIcons((prev) => [...new Set([...prev, 'review'])]);
+    } else {
+      setBadgedIcons((prev) => prev.filter((icon) => icon !== 'review'));
+    }
+  }, [submissionsToReview]);
+
+  const handleClick = () => {
+    setOpen(!open);
+  };
+
+  return (
+    <>
+      <ListItem button onClick={handleClick}>
+        <ListItemIcon>
+          <ManageAccountsIcon />
+        </ListItemIcon>
+        <ListItemText>Moderator</ListItemText>
+        {open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+      </ListItem>
+      <Collapse in={open} timeout="auto" unmountOnExit>
+        <ModeratorMenu {...{ badgedIcons, onClick }} sx={{ p: 0, pl: 3 }} />
+      </Collapse>
+    </>
+  );
+}
+
+ModeratorSection.propTypes = {
+  onClick: PropTypes.func.isRequired,
 };
 
 export default AccountMenu;
