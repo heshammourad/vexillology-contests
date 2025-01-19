@@ -4,12 +4,9 @@
  */
 
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import Collapse from '@material-ui/core/Collapse';
 import Divider from '@material-ui/core/Divider';
 import Grow from '@material-ui/core/Grow';
 import IconButton from '@material-ui/core/IconButton';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import MenuList from '@material-ui/core/MenuList';
 import Paper from '@material-ui/core/Paper';
@@ -20,9 +17,6 @@ import AccountCircleOutlinedIcon from '@material-ui/icons/AccountCircleOutlined'
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import RedditIcon from '@material-ui/icons/Reddit';
 import SettingsIcon from '@material-ui/icons/Settings';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import PropTypes from 'prop-types';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -158,6 +152,9 @@ function AccountMenu({ color }) {
                         )}
                       />,
                       <Divider key="divider" />,
+                      moderator && (
+                        <ModeratorSection key="moderator" onClick={closeMenu} />
+                      ),
                       <MenuItemLink
                         key="settings"
                         Icon={SettingsIcon}
@@ -165,9 +162,6 @@ function AccountMenu({ color }) {
                         text="Settings"
                         to="/profile/settings"
                       />,
-                      moderator && (
-                        <ModeratorSection key="moderator" onClick={closeMenu} />
-                      ),
                       <MenuItemLink
                         key="logOut"
                         Icon={ExitToAppIcon}
@@ -204,7 +198,6 @@ function ModeratorSection({ onClick }) {
   const {
     data: { submissionsToReview },
   } = useSwrInit();
-  const [open, setOpen] = useState(true);
   const [badgedIcons, setBadgedIcons] = useState([]);
 
   useEffect(() => {
@@ -215,22 +208,11 @@ function ModeratorSection({ onClick }) {
     }
   }, [submissionsToReview]);
 
-  const handleClick = () => {
-    setOpen(!open);
-  };
-
   return (
     <>
-      <ListItem button onClick={handleClick}>
-        <ListItemIcon>
-          <ManageAccountsIcon />
-        </ListItemIcon>
-        <ListItemText>Moderator</ListItemText>
-        {open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-      </ListItem>
-      <Collapse in={open} timeout="auto" unmountOnExit>
-        <ModeratorMenu {...{ badgedIcons, onClick }} sx={{ p: 0, pl: 3 }} />
-      </Collapse>
+      <ListItemText>Mod Pages</ListItemText>
+      <ModeratorMenu {...{ badgedIcons, onClick }} sx={{ p: 0 }} />
+      <Divider />
     </>
   );
 }
