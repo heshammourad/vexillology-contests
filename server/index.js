@@ -15,6 +15,7 @@ const {
   processUser,
 } = require('./api/authentication');
 const contest = require('./api/contest');
+const contestSummary = require('./api/contestSummary');
 const contests = require('./api/contests');
 const dev = require('./api/dev');
 const hallOfFame = require('./api/hallOfFame');
@@ -113,11 +114,12 @@ if (!IS_DEV && cluster.isMaster) {
   modRouter.use(express.json());
 
   modRouter.all('*', requireModerator);
+  modRouter.route('/analyzeVotes/:id').get(analyzeVotes.get);
+  modRouter.route('/contestSummary').get(contestSummary.get);
   modRouter
     .route('/reviewSubmissions')
     .get(reviewSubmissions.get)
     .put(checkRequiredFields('id', 'status'), reviewSubmissions.put);
-  modRouter.route('/analyzeVotes/:id').get(analyzeVotes.get);
 
   const apiRouter = express.Router();
   apiRouter.use(express.json());

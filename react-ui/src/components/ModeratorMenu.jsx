@@ -1,4 +1,5 @@
 import FactCheckIcon from '@mui/icons-material/FactCheck';
+import GradingIcon from '@mui/icons-material/Grading';
 import InsightsIcon from '@mui/icons-material/Insights';
 import List from '@mui/material/List';
 import PropTypes from 'prop-types';
@@ -15,6 +16,10 @@ const MODERATOR_MENU_ITEMS = {
   analyze: {
     Icon: InsightsIcon,
     text: 'Analyze Votes',
+  },
+  contestSummary: {
+    Icon: GradingIcon,
+    text: 'Contest Summary',
   },
 };
 

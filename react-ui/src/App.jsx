@@ -26,6 +26,7 @@ import {
 } from './pages';
 /* eslint-disable no-restricted-imports */
 import Mod from './pages/mod/Mod';
+import ContestSummary from './pages/mod/contestSummary/ContestSummary';
 import ContestRules from './pages/submission/ContestRules';
 /* eslint-enable no-restricted-imports */
 
@@ -75,6 +76,7 @@ function ModalSwitch() {
           <Route path="analyze" element={<AnalyzeVotes />}>
             <Route path=":contestId" element={<AnalyzeVotes />} />
           </Route>
+          <Route path="contestSummary" element={<ContestSummary />} />
           <Route path="review" element={<ReviewSubmissions />} />
         </Route>
         <Route path="/submission" element={<Submission />}>
