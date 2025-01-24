@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import capitalize from 'lodash/capitalize';
 import PropTypes from 'prop-types';
 
-import { FilterChip } from '../../components';
+import { FilterChip } from '../../../components';
 
 const STATUSES = ['pending', 'approved', 'rejected', 'withdrawn'];
 
