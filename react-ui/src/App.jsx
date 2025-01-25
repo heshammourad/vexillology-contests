@@ -15,6 +15,7 @@ import { getData } from './data/api';
 import {
   AnalyzeVotes,
   AuthorizeCallback,
+  Banned,
   Contest,
   Contests,
   EntryModal,
@@ -63,6 +64,7 @@ function ModalSwitch() {
         <Route path="/" element={<Navigate replace to="home" />} />
         <Route path="/authorizeCallback" element={<AuthorizeCallback />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/banned" element={<Banned />} />
         <Route path="/contests" element={<Contests />} />
         <Route path="/contests/:contestId" element={<Contest />}>
           <Route
