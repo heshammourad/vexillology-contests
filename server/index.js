@@ -21,6 +21,7 @@ const dev = require('./api/dev');
 const hallOfFame = require('./api/hallOfFame');
 const images = require('./api/images');
 const init = require('./api/init');
+const manageContest = require('./api/manageContest');
 const reviewSubmissions = require('./api/reviewSubmissions');
 const revokeToken = require('./api/revokeToken');
 const settings = require('./api/settings');
@@ -116,6 +117,9 @@ if (!IS_DEV && cluster.isMaster) {
   modRouter.all('*', requireModerator);
   modRouter.route('/analyzeVotes/:id').get(analyzeVotes.get);
   modRouter.route('/contestSummary').get(contestSummary.get);
+  modRouter
+    .route('/manageContest')
+    .put(checkRequiredFields('id', 'resultsCertified'), manageContest.put);
   modRouter
     .route('/reviewSubmissions')
     .get(reviewSubmissions.get)
