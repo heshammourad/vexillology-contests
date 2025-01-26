@@ -19,7 +19,16 @@ exports.getCategories = async (contestId) => {
 
 exports.getCurrentContest = async () => {
   const [result] = await db.select(
-    `SELECT id, name, prompt, submission_start, submission_end, now()
+    `SELECT
+       id,
+       name,
+       prompt,
+       results_certified,
+       submission_start,
+       submission_end,
+       vote_start,
+       vote_end,
+       now()
      FROM contests
      WHERE submission_start < now()
      ${ALLOW_DEV_CONTEST ? "AND id = 'dev'" : ''}
