@@ -1,6 +1,10 @@
 const db = require('../db');
+const { createLogger } = require('../logger');
+
+const logger = createLogger('API/CONTEST_SUMMARY');
 
 exports.put = async ({ body: { id, resultsCertified } }, res) => {
+  logger.debug('Putting /manageContest');
   try {
     const [response] = await db.update(
       'contests',
