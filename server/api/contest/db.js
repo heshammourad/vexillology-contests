@@ -72,7 +72,41 @@ exports.getContestEntries = async (contestId) => db.select(
   [contestId],
 );
 
+exports.getContestEntriesBySubmissionStatus = async (
+  contestId,
+  submissionStatus,
+  fields = ['*'],
+) => db.select(
+  `SELECT ${fields.join(', ')}
+    FROM entries e
+    JOIN contest_entries ce
+      on e.id = ce.entry_id
+    WHERE ce.contest_id = $1 AND e.submission_status = $2`,
+  [contestId, submissionStatus],
+);
+
+exports.getContestEntryCategories = async (contestId) => db.select(
+  'SELECT entry_id, category FROM contest_entries WHERE contest_id = $1',
+  [contestId],
+);
+
+exports.getContestVotes = async (contestId) => db.select(
+  `SELECT entry_id, rank, category_rank, average
+  FROM contests_summary cs
+  LEFT JOIN entries e
+    ON cs.entry_id = e.id
+  WHERE submission_status = 'submitted' AND contest_id = $1`,
+  [contestId],
+);
+
 exports.getEntriesByIds = async (ids) => db.select('SELECT * FROM entries WHERE id = ANY ($1)', [ids]);
+
+exports.getUserVotes = async (contestId, username) => db.select(
+  'SELECT entry_id, rating FROM votes WHERE contest_id = $1 AND username = $2',
+  [contestId, username],
+);
+
+exports.refreshContestsSummaryView = async () => db.any('REFRESH MATERIALIZED VIEW contests_summary');
 
 exports.updateContestEntries = async (contestEntries, fields) => db.update('contest_entries', contestEntries, fields);
 
