@@ -1,3 +1,9 @@
+/**
+ * @file Retrieves contest data
+ *  - FROM DATABASE: results and voting dates
+ *  - FROM REDDIT: only applied to older contests before migration
+ */
+
 const { isBefore, isFuture, isPast } = require('date-fns');
 const { keyBy } = require('lodash');
 const numeral = require('numeral');
@@ -14,6 +20,14 @@ const logger = createLogger('API/CONTEST');
 
 const CONTESTS_AVERAGE_FORMAT = '0.000';
 
+/**
+ * Adds categories to contest entries.
+ *
+ * @param {string} contestId - The ID of the contest.
+ * @param {Array<Object>} entries - The list of contest entries.
+ * @returns {Promise<Array<Object>>} A promise that resolves to the list of contest entries
+ * with categories added.
+ */
 const addCategoriesToEntries = async (contestId, entries) => {
   const entryCategories = await db.getContestEntryCategories(contestId);
   const map = new Map();
@@ -28,6 +42,14 @@ const addCategoriesToEntries = async (contestId, entries) => {
   return Array.from(map.values());
 };
 
+/**
+ * Adds ranks to contest entries based on vote data.
+ *
+ * @param {string} contestId - The ID of the contest.
+ * @param {Array<Object>} entries - The list of contest entries.
+ * @returns {Promise<Array<Object>>} A promise that resolves to a sorted array of entries
+ * with added rank information.
+ */
 const addRanksToEntries = async (contestId, entries) => {
   let voteData = await db.getContestVotes(contestId);
   if (!voteData.length) {
@@ -52,6 +74,14 @@ const addRanksToEntries = async (contestId, entries) => {
   return Array.from(map.values()).sort((a, b) => a.rank - b.rank);
 };
 
+/**
+ * Adds user votes to contest entries.
+ *
+ * @param {string} contestId - The ID of the contest.
+ * @param {string} username - The username of the user.
+ * @param {Array<Object>} entries - The list of contest entries.
+ * @returns {Promise<Array<Object>>} The list of contest entries with user votes added.
+ */
 const addUserVotesToEntries = async (contestId, username, entries) => {
   logger.debug(
     `Auth tokens present, retrieving votes of ${username} on ${contestId}`,
@@ -69,6 +99,14 @@ const addUserVotesToEntries = async (contestId, username, entries) => {
   return Object.values(entriesObj);
 };
 
+/**
+ * Sorts contest entries randomly but reproducibly based on a username.
+ * Entries are sorted by rating first, then by a reproducible hash.
+ *
+ * @param {Array<Object>} entries - The list of contest entries to sort.
+ * @param {string} username - The username used to generate reproducible randomness.
+ * @returns {Array<Object>} - The sorted list of contest entries.
+ */
 const sortEntriesRandomly = (entries, username) => {
   /**
    * Reproducible yet random hash function
@@ -222,8 +260,8 @@ exports.get = async ({ params: { contestId }, username }, res) => {
       );
     }
 
-    // Load user votes
     if (username) {
+      // If logged in user, add their ratings to the entries
       response.entries = await addUserVotesToEntries(
         contestId,
         username,

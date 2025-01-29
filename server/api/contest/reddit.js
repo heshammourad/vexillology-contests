@@ -1,3 +1,7 @@
+/**
+ * @file Retrieves contest data for contests that were conducted on Reddit.
+ */
+
 const partition = require('lodash/partition');
 
 const imgur = require('../../imgur');
@@ -14,10 +18,27 @@ const CONTESTS_CACHE_TIMEOUT = 600;
 const LAST_WINNER_RANK = 20;
 const WINNERS_CACHE_TIMEOUT = 3600;
 
+/**
+ * Finds and returns the entries in a contest that are missing corresponding images.
+ *
+ * @param {Object} contest - The contest object containing entries.
+ * @param {Array} contest.entries - An array of contest entries.
+ * @param {Object} contest.entries[].imgurId - The imgur ID of the contest entry.
+ * @param {Array} imagesData - An array of image data objects.
+ * @param {Object} imagesData[].id - The imgur ID of the image.
+ * @returns {Array} An array of contest entries that do not have corresponding images.
+ */
 const findMissingEntries = (contest, imagesData) => contest.entries.filter(
   (entry) => !imagesData.find((image) => image.id === entry.imgurId),
 );
 
+/**
+ * Retrieves contest data for a specific contest conducted on Reddit.
+ *
+ * @param {string} contestId - The ID of the contest to retrieve.
+ * @param {string} [winnersThreadId] - The ID of the winners thread, if available.
+ * @returns {Promise<Object>} The contest data, including entries and winners.
+ */
 exports.getContest = async (contestId, winnersThreadId) => {
   const contest = await memcache.get(
     `reddit.${contestId}`,
