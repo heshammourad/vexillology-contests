@@ -230,7 +230,6 @@ exports.get = async ({ params: { contestId }, username }, res) => {
       }
 
       const fields = [
-        'ce.category',
         'e.background_color',
         'e.description',
         'e.height',

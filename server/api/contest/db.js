@@ -153,7 +153,7 @@ exports.getContestVotes = async (contestId) => db.select(
   FROM contests_summary cs
   LEFT JOIN entries e
     ON cs.entry_id = e.id
-  WHERE submission_status = 'submitted' AND contest_id = $1`,
+  WHERE submission_status = 'approved' AND contest_id = $1`,
   [contestId],
 );
 
