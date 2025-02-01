@@ -9,7 +9,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-function Banned() {
+function BanNotice() {
   const classes = useStyles();
   const isPermanentBan = true;
   const banExpiry = '';
@@ -38,4 +38,4 @@ function Banned() {
   );
 }
 
-export default Banned;
+export default BanNotice;

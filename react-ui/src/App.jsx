@@ -15,7 +15,9 @@ import { getData } from './data/api';
 import {
   AnalyzeVotes,
   AuthorizeCallback,
-  Banned,
+  BanNotice,
+  BanStatus,
+  BanUser,
   Contest,
   Contests,
   EntryModal,
@@ -27,6 +29,9 @@ import {
 } from './pages';
 /* eslint-disable no-restricted-imports */
 import Mod from './pages/mod/Mod';
+import EntrantVotersTable from './pages/mod/analyzeVotes/EntrantVotersTable';
+import EntrantsTable from './pages/mod/analyzeVotes/EntrantsTable';
+import VotersTable from './pages/mod/analyzeVotes/VotersTable';
 import ContestRules from './pages/submission/ContestRules';
 /* eslint-enable no-restricted-imports */
 
@@ -64,7 +69,7 @@ function ModalSwitch() {
         <Route path="/" element={<Navigate replace to="home" />} />
         <Route path="/authorizeCallback" element={<AuthorizeCallback />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/banned" element={<Banned />} />
+        <Route path="/banned" element={<BanNotice />} />
         <Route path="/contests" element={<Contests />} />
         <Route path="/contests/:contestId" element={<Contest />}>
           <Route
@@ -75,8 +80,12 @@ function ModalSwitch() {
         <Route path="/mod" element={<Mod />}>
           <Route index element={<ReviewSubmissions />} />
           <Route path="analyze" element={<AnalyzeVotes />}>
-            <Route path=":contestId" element={<AnalyzeVotes />} />
+            <Route path=":contestId" element={<EntrantsTable />}>
+              <Route path=":entrantId" element={<EntrantVotersTable />} />
+            </Route>
           </Route>
+          <Route path="banStatus" element={<BanStatus />} />
+          <Route path="banUser" element={<BanUser />} />
           <Route path="review" element={<ReviewSubmissions />} />
         </Route>
         <Route path="/submission" element={<Submission />}>

@@ -1,11 +1,13 @@
 export { default as AuthorizeCallback } from './authorizeCallback/AuthorizeCallback';
-export { default as Banned } from './banned/Banned';
+export { default as BanNotice } from './banNotice/BanNotice';
 export { default as Contest } from './contest/Contest';
 export { default as Contests } from './contests/Contests';
 export { default as EntryModal } from './entry/EntryModal';
 export { default as HallOfFame } from './hallOfFame/HallOfFame';
 export { default as Home } from './home/Home';
 export { default as AnalyzeVotes } from './mod/analyzeVotes/AnalyzeVotes';
+export { default as BanStatus } from './mod/banStatus/BanStatus';
+export { default as BanUser } from './mod/banUser/BanUser';
 export { default as ReviewSubmissions } from './mod/reviewSubmissions/ReviewSubmissions';
 export { default as Settings } from './settings/Settings';
 export { default as Submission } from './submission/Submission';
