@@ -1,7 +1,21 @@
 import { createContext, useContext } from 'react';
 
-const DEFAULT_CHIPS = {
-  hideBadVotes: false,
+const CHIPS = {
+  hideExcluded: {
+    label: 'Hide excluded votes',
+    defaultValue: false,
+    color: 'error',
+  },
+  hideAutofiltered: {
+    label: 'Hide autofiltered votes',
+    defaultValue: false,
+    color: 'error',
+  },
+  showRejected: {
+    label: 'Show rejected votes in chart',
+    defaultValue: false,
+    color: 'primary',
+  },
 };
 
 const ChipContext = createContext(null);
@@ -14,4 +28,4 @@ const useChipContext = () => {
   return context;
 };
 
-export { DEFAULT_CHIPS, ChipContext, useChipContext };
+export { CHIPS, ChipContext, useChipContext };

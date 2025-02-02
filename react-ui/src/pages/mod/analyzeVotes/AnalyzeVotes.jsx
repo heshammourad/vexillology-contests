@@ -13,7 +13,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { ContestSelector, ProtectedRoute } from '../../../components';
 import useContestId from '../../../data/useContestId';
 
-import { DEFAULT_CHIPS, ChipContext } from './ChipContext';
+import { CHIPS, ChipContext } from './ChipContext';
 
 const useStyles = makeStyles({
   sectionHeader: {
@@ -36,7 +36,11 @@ function AnalyzeVotes() {
   // );
   const navigate = useNavigate();
   const handleContestSelection = (cId) => navigate(`./${cId}`);
-  const [chips, setChips] = useState(DEFAULT_CHIPS);
+  const [chips, setChips] = useState(
+    Object.fromEntries(
+      Object.entries(CHIPS).map(([key, value]) => [key, value.defaultValue]),
+    ),
+  );
 
   const chipsContextValue = useMemo(() => ({ chips, setChips }), [chips]);
 

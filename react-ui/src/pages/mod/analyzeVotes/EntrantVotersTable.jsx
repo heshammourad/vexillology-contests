@@ -19,7 +19,7 @@ import TableRow from '@mui/material/TableRow';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { useChipContext } from './ChipContext';
+import { CHIPS, useChipContext } from './ChipContext';
 import {
   BanStatusTableText,
   ScoreTableText,
@@ -75,6 +75,10 @@ function EntrantVotersTable() {
   const [showVoter, setShowVoter] = useState('');
   const { chips, setChips } = useChipContext();
 
+  const handleChip = (event) => {
+    const field = event.currentTarget.getAttribute('data-id');
+    setChips((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
   const handleCheckAll = () => {
     setCheckedVoters((prev) => (prev.size ? new Set() : new Set(ENTRANT_VOTERS.map((v) => v.username))));
   };
@@ -94,9 +98,16 @@ function EntrantVotersTable() {
   return (
     <>
       <Stack direction="row" spacing={1} sx={{ marginBottom: 1 }}>
-        <Chip label="Hide excluded votes" />
-        <Chip label="Hide autofiltered votes" />
-        <Chip label="Show rejected votes in chart" variant="outlined" />
+        {Object.keys(CHIPS).map((key) => (
+          <Chip
+            key={key}
+            data-id={key}
+            color={CHIPS[key].color}
+            label={CHIPS[key].label}
+            variant={chips[key] ? 'filled' : 'outlined'}
+            onClick={handleChip}
+          />
+        ))}
       </Stack>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
