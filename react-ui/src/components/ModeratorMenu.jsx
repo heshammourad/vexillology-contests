@@ -18,13 +18,13 @@ const MODERATOR_MENU_ITEMS = {
     Icon: InsightsIcon,
     text: 'Analyze Votes',
   },
-  banUser: {
+  banUsers: {
     Icon: Block,
-    text: 'Ban User',
+    text: 'Ban Users',
   },
-  banStatus: {
+  viewBans: {
     Icon: GroupRemove,
-    text: 'Ban Status',
+    text: 'View Bans',
   },
 };
 

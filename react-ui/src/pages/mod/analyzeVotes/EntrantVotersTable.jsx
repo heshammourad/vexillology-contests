@@ -1,15 +1,11 @@
 /*
+SHOW REJECTED VOTES = a third set of average points
 https://mui.com/material-ui/react-table/#collapsible-table
-Add (entrant) and background color to the entrant's voter row?
-Store chip values in AnalyzeVotes so it stays through navigation?
-  https://react.dev/learn/passing-data-deeply-with-context
-WTF are the chips even for?
-DO NOT USE FLEX for text in line with icons. Use <Stack alignItems="center" direction="row" gap={2}>
+Can you add entrant's DQ status somewhere?
 */
 
 /* eslint-disable react/forbid-prop-types */
 import Checkbox from '@material-ui/core/Checkbox';
-import { makeStyles } from '@material-ui/core/styles';
 import Chip from '@mui/material/Chip';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Paper from '@mui/material/Paper';
@@ -21,54 +17,51 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 import { useChipContext } from './ChipContext';
 import {
-  BlackTableText,
-  GreyTableText,
-  OrangeTableText,
-  RedTableText,
+  BanStatusTableText,
   ScoreTableText,
+  VoteStatusTableText,
 } from './TableText';
 import TakeActionButton from './TakeActionButton';
-
-const useStyles = makeStyles({});
 
 export const ENTRANT_VOTERS = [
   {
     username: 'joshuauiux',
-    contest: 'dq',
-    site: 'ban',
+    voteStatus: 'exclude',
+    banStatus: 'ban',
     score: null,
   },
   {
     username: 'Examination-4706',
-    contest: 'dq',
-    site: 'ban',
+    voteStatus: 'exclude',
+    banStatus: 'ban',
     score: 97,
   },
   {
     username: 'Taco-Man123',
-    contest: 'dq',
-    site: 'warning',
+    voteStatus: 'exclude',
+    banStatus: 'warn',
     score: 81,
   },
   {
     username: 'TorteApp',
-    contest: '',
-    site: '',
+    voteStatus: '',
+    banStatus: '',
     score: 47,
   },
   {
     username: 'heshammourad',
-    contest: '',
-    site: '',
+    voteStatus: '',
+    banStatus: '',
     score: 13,
   },
   {
     username: 'LowVotingAcct',
-    contest: 'autofilter',
-    site: '',
+    voteStatus: 'autofilter',
+    banStatus: '',
     score: 10,
   },
 ];
@@ -77,6 +70,7 @@ export const ENTRANT_VOTERS = [
  * The page for moderators to review contest submissions.
  */
 function EntrantVotersTable() {
+  const { entrantId } = useParams();
   const [checkedVoters, setCheckedVoters] = useState(new Set());
   const [showVoter, setShowVoter] = useState('');
   const { chips, setChips } = useChipContext();
@@ -99,12 +93,10 @@ function EntrantVotersTable() {
 
   return (
     <>
-      <Stack direction="row" spacing={1}>
-        <Chip label="DQ" />
-        <Chip label="Autofilter" variant="outlined" />
-        <Chip label="Banned" variant="outlined" />
-        <Chip label="Warning" variant="outlined" />
-        <Chip label="Hide dq votes in chart average" variant="outlined" />
+      <Stack direction="row" spacing={1} sx={{ marginBottom: 1 }}>
+        <Chip label="Hide excluded votes" />
+        <Chip label="Hide autofiltered votes" />
+        <Chip label="Show rejected votes in chart" variant="outlined" />
       </Stack>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -118,8 +110,8 @@ function EntrantVotersTable() {
                 />
                 Voter
               </TableCell>
-              <TableCell align="center">Contest</TableCell>
-              <TableCell align="center">Site</TableCell>
+              <TableCell align="center">Vote status</TableCell>
+              <TableCell align="center">Site ban</TableCell>
               <TableCell align="center">Cheat score</TableCell>
             </TableRow>
           </TableHead>
@@ -127,7 +119,10 @@ function EntrantVotersTable() {
             {ENTRANT_VOTERS.map((voter) => (
               <TableRow
                 key={voter.username}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                sx={{
+                  '&:last-child td, &:last-child th': { border: 0 },
+                  backgroundColor: voter.username === entrantId && '#e3f1ff',
+                }}
                 onClick={() => setShowVoter(voter.username)}
                 hover
               >
@@ -141,29 +136,15 @@ function EntrantVotersTable() {
                         name={voter.username}
                       />
                     )}
-                    label={voter.username}
+                    label={`${voter.username}${
+                      voter.username === entrantId ? ' (entrant)' : ''
+                    }`}
                   />
                 </TableCell>
-                {
-                  // eslint-disable-next-line no-nested-ternary
-                  voter.contest === 'dq' ? (
-                    <RedTableText>DQ</RedTableText>
-                  ) : voter.contest === 'autofilter' ? (
-                    <GreyTableText>AUTOFILTER</GreyTableText>
-                  ) : (
-                    <BlackTableText />
-                  )
-                }
-                {
-                  // eslint-disable-next-line no-nested-ternary
-                  voter.site === 'ban' ? (
-                    <RedTableText>BANNED</RedTableText>
-                  ) : voter.site === 'warning' ? (
-                    <OrangeTableText>WARNED</OrangeTableText>
-                  ) : (
-                    <BlackTableText />
-                  )
-                }
+
+                <VoteStatusTableText voteStatus={voter.voteStatus} />
+
+                <BanStatusTableText banStatus={voter.banStatus} />
 
                 <ScoreTableText>{voter.score}</ScoreTableText>
               </TableRow>

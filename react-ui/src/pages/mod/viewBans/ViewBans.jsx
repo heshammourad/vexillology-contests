@@ -20,6 +20,7 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { ProtectedRoute } from '../../../components';
 
@@ -130,7 +131,7 @@ const useStyles = makeStyles({
 /**
  * The page for moderators to manage bans
  */
-function BanStatus() {
+function ViewBans() {
   const classes = useStyles();
   const error = {};
   const [searchTerm, setSearchTerm] = useState('asmall');
@@ -190,11 +191,7 @@ function SearchResults({ searchTerm }) {
   }
   if (!SEARCH_RESULTS.length) {
     return (
-      <Typography
-        className={
-          classes.italics
-        }
-      >
+      <Typography className={classes.italics}>
         {`No results for "${searchTerm}"`}
       </Typography>
     );
@@ -207,6 +204,7 @@ function SearchResults({ searchTerm }) {
 function BanHistory({ username, history }) {
   const classes = useStyles();
   const [showHistory, setShowHistory] = useState(false);
+  const navigate = useNavigate();
   return (
     <Box className={classes.row}>
       <Box display="flex" sx={{ alignItems: 'center' }}>
@@ -220,6 +218,9 @@ function BanHistory({ username, history }) {
           onClick={() => setShowHistory((prev) => !prev)}
         >
           {!showHistory ? 'History' : 'Hide'}
+        </Button>
+        <Button color="primary" onClick={() => navigate('/mod/banUsers')}>
+          BAN
         </Button>
       </Box>
       {showHistory
@@ -244,10 +245,7 @@ function ActionItem({
       </Box>
       <Expiration {...{ action, issueDate, expiryDate }} />
       <Typography>
-        {`Issued ${format(
-          issueDate,
-          'MMM d, yyyy',
-        )} by ${modName}`}
+        {`Issued ${format(issueDate, 'MMM d, yyyy')} by ${modName}`}
       </Typography>
       <Typography className={classes.italics}>{reason}</Typography>
     </Box>
@@ -315,10 +313,7 @@ function BannedUser({
         <Expiration {...{ action, expiryDate, issueDate }} />
         {showHistory && (
           <Typography>
-            {`Issued ${format(
-              issueDate,
-              'MMM d, yyyy',
-            )} by ${modName}`}
+            {`Issued ${format(issueDate, 'MMM d, yyyy')} by ${modName}`}
           </Typography>
         )}
       </Box>
@@ -334,7 +329,7 @@ function BannedUser({
   );
 }
 
-export default BanStatus;
+export default ViewBans;
 
 SearchResults.propTypes = {
   searchTerm: PropTypes.string.isRequired,

@@ -11,35 +11,40 @@ import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { UserSelector } from '../../../components';
 
 import SectionTitleWithButtons from './SectionTitleWithButtons';
-import { BlackTableText, OrangeTableText, RedTableText } from './TableText';
+import {
+  BanStatusTableText,
+  EntryStatusTableText,
+  OrangeTableText,
+  RedTableText,
+} from './TableText';
 import VotersTable from './VotersTable';
 
 export const ENTRANTS = [
   {
     username: 'joshuauiux',
-    contest: 'dq',
-    site: 'ban',
+    entryStatus: 'dq',
+    banStatus: 'ban',
     cheating: 21,
     suspicious: 0,
   },
   {
     username: 'WorkingKing',
-    contest: 'dq',
-    site: 'warning',
+    entryStatus: 'dq',
+    banStatus: 'warn',
     cheating: 4,
     suspicious: 2,
   },
   {
     username: 'TorteApp',
-    contest: '',
-    site: '',
+    entryStatus: '',
+    banStatus: '',
     cheating: 21,
     suspicious: 1,
   },
   {
     username: 'heshammourad',
-    contest: '',
-    site: '',
+    entryStatus: '',
+    banStatus: '',
     cheating: 0,
     suspicious: 0,
   },
@@ -102,8 +107,8 @@ function EntrantsTable() {
           <TableHead>
             <TableRow>
               <TableCell>Entrant</TableCell>
-              <TableCell align="center">Contest</TableCell>
-              <TableCell align="center">Site</TableCell>
+              <TableCell align="center">Entry DQ</TableCell>
+              <TableCell align="center">Site ban</TableCell>
               <TableCell align="center">Cheating</TableCell>
               <TableCell align="center">Suscipious</TableCell>
             </TableRow>
@@ -119,22 +124,8 @@ function EntrantsTable() {
                 <TableCell component="th" scope="row">
                   {entrant.username}
                 </TableCell>
-                {entrant.contest === 'dq' ? (
-                  <RedTableText>DQ</RedTableText>
-                ) : (
-                  <BlackTableText />
-                )}
-                {
-                  // eslint-disable-next-line no-nested-ternary
-                  entrant.site === 'ban' ? (
-                    <RedTableText>BANNED</RedTableText>
-                  ) : entrant.site === 'warning' ? (
-                    <OrangeTableText>WARNED</OrangeTableText>
-                  ) : (
-                    <BlackTableText />
-                  )
-                }
-
+                <EntryStatusTableText entryStatus={entrant.entryStatus} />
+                <BanStatusTableText banStatus={entrant.banStatus} />
                 <RedTableText>{entrant.cheating}</RedTableText>
                 <OrangeTableText>{entrant.suspicious}</OrangeTableText>
               </TableRow>

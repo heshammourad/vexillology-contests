@@ -73,23 +73,6 @@ function AnalyzeVotes() {
       <ChipContext.Provider value={chipsContextValue}>
         <Outlet />
       </ChipContext.Provider>
-
-      {/*
-      {contestID && !entrantID && (
-        <EntrantsTable {...{ setEntrantID }} />
-      )}
-
-      {entrantID
-      && (
-      <>
-
-        <EntrantVotersTable setEntrantVoterID={setEntrantVoterID} entrant={entrantID} />
-      </>
-      )}
-
-      <br /> */}
-
-      {/* {contestID && !entrantID && <EntrantsTable {...{ setEntrantID }} />} */}
     </ProtectedRoute>
   );
 }

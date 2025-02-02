@@ -67,7 +67,7 @@ const useStyles = makeStyles({
 /**
  * The page for moderators to create / edit a ban / warning
  */
-function BanUser() {
+function BanUsers() {
   const classes = useStyles();
   const error = {};
 
@@ -405,4 +405,4 @@ function BanUser() {
   );
 }
 
-export default BanUser;
+export default BanUsers;

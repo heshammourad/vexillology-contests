@@ -100,12 +100,42 @@ function BlackTableText({ bold, center, children }) {
   );
 }
 
+function BanStatusTableText({ banStatus }) {
+  if (banStatus === 'ban') {
+    return <RedTableText>BANNED</RedTableText>;
+  }
+  if (banStatus === 'warn') {
+    return <OrangeTableText>WARNED</OrangeTableText>;
+  }
+  return <BlackTableText />;
+}
+
+function VoteStatusTableText({ voteStatus }) {
+  if (voteStatus === 'exclude') {
+    return <RedTableText>EXCLUDE</RedTableText>;
+  }
+  if (voteStatus === 'autofilter') {
+    return <GreyTableText>AUTOFILTER</GreyTableText>;
+  }
+  return <BlackTableText />;
+}
+
+function EntryStatusTableText({ entryStatus }) {
+  if (entryStatus === 'dq') {
+    return <RedTableText>DQ</RedTableText>;
+  }
+  return <BlackTableText />;
+}
+
 export {
   BlackTableText,
   RedTableText,
   OrangeTableText,
   GreyTableText,
   ScoreTableText,
+  BanStatusTableText,
+  VoteStatusTableText,
+  EntryStatusTableText,
 };
 
 RedTableText.propTypes = {
@@ -141,4 +171,28 @@ BlackTableText.defaultProps = {
 
 ScoreTableText.defaultProps = {
   children: undefined,
+};
+
+BanStatusTableText.propTypes = {
+  banStatus: PropTypes.oneOf(['ban', 'warn']),
+};
+
+BanStatusTableText.defaultProps = {
+  banStatus: undefined,
+};
+
+VoteStatusTableText.propTypes = {
+  voteStatus: PropTypes.oneOf(['exclude', 'autofilter']),
+};
+
+VoteStatusTableText.defaultProps = {
+  voteStatus: undefined,
+};
+
+EntryStatusTableText.propTypes = {
+  entryStatus: PropTypes.oneOf(['dq']),
+};
+
+EntryStatusTableText.defaultProps = {
+  entryStatus: undefined,
 };

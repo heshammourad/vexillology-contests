@@ -16,8 +16,7 @@ import {
   AnalyzeVotes,
   AuthorizeCallback,
   BanNotice,
-  BanStatus,
-  BanUser,
+  BanUsers,
   Contest,
   Contests,
   EntryModal,
@@ -26,12 +25,12 @@ import {
   ReviewSubmissions,
   Settings,
   Submission,
+  ViewBans,
 } from './pages';
 /* eslint-disable no-restricted-imports */
 import Mod from './pages/mod/Mod';
 import EntrantVotersTable from './pages/mod/analyzeVotes/EntrantVotersTable';
 import EntrantsTable from './pages/mod/analyzeVotes/EntrantsTable';
-import VotersTable from './pages/mod/analyzeVotes/VotersTable';
 import ContestRules from './pages/submission/ContestRules';
 /* eslint-enable no-restricted-imports */
 
@@ -84,8 +83,8 @@ function ModalSwitch() {
               <Route path=":entrantId" element={<EntrantVotersTable />} />
             </Route>
           </Route>
-          <Route path="banStatus" element={<BanStatus />} />
-          <Route path="banUser" element={<BanUser />} />
+          <Route path="viewBans" element={<ViewBans />} />
+          <Route path="banUsers" element={<BanUsers />} />
           <Route path="review" element={<ReviewSubmissions />} />
         </Route>
         <Route path="/submission" element={<Submission />}>

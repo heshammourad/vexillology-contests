@@ -10,10 +10,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 import SectionTitleWithButtons from './SectionTitleWithButtons';
 import {
+  BanStatusTableText,
   BlackTableText,
-  GreyTableText,
   OrangeTableText,
   RedTableText,
+  VoteStatusTableText,
 } from './TableText';
 
 const KARMA_THRESHOLD = 20;
@@ -25,14 +26,16 @@ export const VOTERS = [
     age: '>1 yr',
     karma: '104',
     voted: 100,
-    status: 'BANNED',
+    voteStatus: 'exclude',
+    banStatus: 'ban',
   },
   {
     username: 'Examination-4706',
     age: '26 days',
     karma: '56',
     voted: 100,
-    status: 'DQ',
+    voteStatus: 'exclude',
+    banStatus: 'warn',
   },
   {
     username: 'VertigoOne',
@@ -51,14 +54,14 @@ export const VOTERS = [
     age: '>1 yr',
     karma: '13',
     voted: 100,
-    status: 'DQ',
+    voteStatus: 'autofilter',
   },
   {
     username: 'SomeLowVotingAccount',
     age: '>1 yr',
     karma: '301',
     voted: 10,
-    status: 'AUTOFILTER',
+    voteStatus: 'autofilter',
   },
 ];
 
@@ -71,7 +74,7 @@ function VotersTable() {
     () => [
       {
         color: 'secondary',
-        text: 'SWITCH TO voterS',
+        text: 'SWITCH TO ENTRANTS',
         onClick: () => navigate(`/mod/analyze/${contestId}`),
       },
     ],
@@ -92,7 +95,8 @@ function VotersTable() {
               <TableCell align="center">Age</TableCell>
               <TableCell align="center">Karma</TableCell>
               <TableCell align="center">% voted</TableCell>
-              <TableCell align="center">Status</TableCell>
+              <TableCell align="center">Vote status</TableCell>
+              <TableCell align="center">Site ban</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -136,11 +140,9 @@ function VotersTable() {
                   </BlackTableText>
                 )}
 
-                {voter.status === 'BANNED' || voter.status === 'DQ' ? (
-                  <RedTableText>{voter.status}</RedTableText>
-                ) : (
-                  <GreyTableText>{voter.status}</GreyTableText>
-                )}
+                <VoteStatusTableText voteStatus={voter.voteStatus} />
+
+                <BanStatusTableText banStatus={voter.banStatus} />
               </TableRow>
             ))}
           </TableBody>
