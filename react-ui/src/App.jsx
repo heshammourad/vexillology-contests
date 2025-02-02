@@ -10,7 +10,6 @@ import {
 import { SWRConfig } from 'swr';
 
 import { AppHelmet, CustomSnackbar, CustomThemeProvider } from './components';
-import localStorageProvider from './data/LocalStorageProvider';
 import { getData } from './data/api';
 import {
   AnalyzeVotes,
@@ -38,7 +37,6 @@ function App() {
         <SWRConfig
           value={{
             fetcher: (arr) => getData(...arr),
-            provider: localStorageProvider,
             revalidateOnMount: true,
             revalidateOnFocus: false,
             revalidateOnReconnect: false,

@@ -22,6 +22,10 @@ exports.get = async (req, res) => {
     const contestResults = await db.select(
       'SELECT * FROM get_contest_results()',
     );
+    if (!contestResults) {
+      res.status(404).send();
+      return;
+    }
     if (
       isFuture(voteEnd)
       && contestResults.some((result) => result.submitter === req.username)
