@@ -240,6 +240,12 @@ exports.get = async ({ params: { contestId }, username }, res) => {
         'e.width',
       ];
       if (isPast(voteEnd)) {
+        // Contest voting window is closed
+        if (!contest.resultsCertified) {
+          // Contest results are not certified yet
+          res.send({ resultsCertified: false, name });
+          return;
+        }
         fields.push('e.user');
       }
       response.entries = await db.getContestEntriesBySubmissionStatus(

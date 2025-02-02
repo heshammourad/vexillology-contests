@@ -29,6 +29,7 @@ import ContestAppBarMain from './ContestAppBarMain';
 import ContestAppBarRight from './ContestAppBarRight';
 import ContestCategorySelector from './ContestCategorySelector';
 import ContestGrid from './ContestGrid';
+import ContestResultsNotCertified from './ContestResultsNotCertified';
 import ContestSettings from './ContestSettings';
 import ContestSponsor from './ContestSponsor';
 import ContestUnderReview from './ContestUnderReview';
@@ -179,7 +180,13 @@ function Contest() {
   const { headingVariant } = useContestSizing();
 
   const {
-    categories, isContestMode, name, votingWindowOpen, winners, prompt,
+    categories,
+    isContestMode,
+    name,
+    resultsCertified,
+    votingWindowOpen,
+    winners,
+    prompt,
   } = contest;
 
   // Prevents display of stale, cached data
@@ -246,13 +253,19 @@ function Contest() {
               {' '}
               contest prompt
             </AccordionSummary>
-            <AccordionDetails onClick={togglePromptOpen} style={{ cursor: 'pointer' }}>
+            <AccordionDetails
+              onClick={togglePromptOpen}
+              style={{ cursor: 'pointer' }}
+            >
               <FormattedContent content={prompt} markdown />
             </AccordionDetails>
           </Accordion>
 
           {votingWindowOpen === false && (
             <ContestUnderReview {...{ isValidating, mutate }} />
+          )}
+          {resultsCertified === false && (
+            <ContestResultsNotCertified {...{ isValidating, mutate }} />
           )}
           {isContestMode && (
             <Box marginBottom={3}>
