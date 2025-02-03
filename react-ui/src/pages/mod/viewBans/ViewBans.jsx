@@ -4,6 +4,7 @@ TO-DO
 Header is hiding top of pages
 Fetch search results (with search button)
 Fetch history in active ban (and check display)
+Do warnings have an expiration?
 */
 
 import Box from '@material-ui/core/Box';
@@ -19,88 +20,102 @@ import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { ProtectedRoute } from '../../../components';
 
-const { format } = require('date-fns');
+const {
+  format, isFuture, endOfMonth, addMonths,
+} = require('date-fns');
 
-const NO_SEARCH_RESULTS = false;
-const SEARCH_RESULTS = NO_SEARCH_RESULTS
-  ? []
-  : [
-    {
-      username: 'ASmallEye',
-      history: [
-        {
-          issueDate: new Date(),
-          modName: 'TorteApp',
-          contestID: '',
-          action: 'ban',
-          expiryDate: 'never',
-          reason: 'Syke',
-          actionID: 'as1',
-        },
-        {
-          issueDate: new Date(),
-          modName: 'TorteApp',
-          contestID: '',
-          action: 'ban',
-          expiryDate: null,
-          reason: 'Ban was reversed due to contrition',
-          actionID: 'as2',
-        },
-        {
-          issueDate: new Date(),
-          modName: 'TorteApp',
-          contestID: '',
-          action: 'ban',
-          expiryDate: new Date(),
-          reason: 'Voted with alt account again',
-          actionID: 'as3',
-        },
-        {
-          issueDate: new Date(),
-          modName: 'TorteApp',
-          contestID: '',
-          action: 'warning',
-          expiryDate: null,
-          reason: 'Voted with alt account',
-          actionID: 'as4',
-        },
-      ],
-    },
-  ];
-const BANNED_USERS = [
+const SEARCH_STATUSES = {
+  noSearchTerm: 'noSearchTerm',
+  failedSearch: 'failedSearch',
+  successfulSearch: 'successfulSearch',
+};
+const SEARCH_STATUS = SEARCH_STATUSES.successfulSearch;
+
+const SEARCH_RESULTS = [
+  {
+    username: 'ASmallEye',
+    history: [
+      {
+        issueDate: new Date(2024, 7, 29),
+        modName: 'TorteApp',
+        contestID: '',
+        actionType: 'ban',
+        expiryDate: 'never',
+        reason: 'Syke',
+        actionID: 'as1',
+      },
+      {
+        issueDate: new Date(2024, 7, 1),
+        modName: 'TorteApp',
+        contestID: '',
+        actionType: 'ban',
+        expiryDate: null,
+        reason: 'Ban was reversed due to contrition',
+        actionID: 'as2',
+      },
+      {
+        issueDate: new Date(2024, 6, 20),
+        modName: 'TorteApp',
+        contestID: '',
+        actionType: 'ban',
+        expiryDate: new Date(2024, 7, 31),
+        reason: 'Voted with alt account again',
+        actionID: 'as3',
+      },
+      {
+        issueDate: new Date(2024, 5, 2),
+        modName: 'TorteApp',
+        contestID: '',
+        actionType: 'warn',
+        expiryDate: null,
+        reason: 'Voted with alt account',
+        actionID: 'as4',
+      },
+    ],
+  },
+];
+
+export const BANNED_USERS = [
   {
     username: 'joshuauiux',
-    action: {
-      issueDate: new Date(),
-      modName: 'TorteApp',
-      contestID: '',
-      action: 'ban',
-      expiryDate: 'never',
-      reason: 'Created 40 fake accounts to boost score in Jan 25 contest.',
-      actionID: 'as5',
-    },
+    history: [
+      {
+        issueDate: new Date(2024, 11, 17),
+        modName: 'TorteApp',
+        contestID: '',
+        actionType: 'ban',
+        expiryDate: 'never',
+        reason: 'Created 40 fake accounts to boost score in Jan 25 contest.',
+        actionID: 'as5',
+      },
+    ],
   },
   {
     username: 'WorkingKing',
-    action: {
-      issueDate: new Date(),
-      modName: 'bakonydraco',
-      contestID: '',
-      action: 'ban',
-      expiryDate: new Date(),
-      reason: 'Created 3 fake accounts to boost score in Jan 25 contest.',
-    },
+    history: [
+      {
+        issueDate: new Date(2024, 11, 17),
+        modName: 'bakonydraco',
+        contestID: '',
+        actionType: 'ban',
+        expiryDate: endOfMonth(addMonths(new Date(), 3)),
+        reason: 'Created 3 fake accounts to boost score in Jan 25 contest.',
+      },
+    ],
   },
 ];
 
 const useStyles = makeStyles({
   banRed: {
     color: '#EB0000',
+  },
+  neutralGrey: {
+    color: '#898989',
   },
   historyItem: {
     marginLeft: '20px',
@@ -134,7 +149,19 @@ const useStyles = makeStyles({
 function ViewBans() {
   const classes = useStyles();
   const error = {};
-  const [searchTerm, setSearchTerm] = useState('asmall');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // FOR DEV PURPOSES ONLY
+  useEffect(() => {
+    // eslint-disable-next-line no-nested-ternary
+    setSearchTerm(
+      SEARCH_STATUS === SEARCH_STATUSES.noSearchTerm
+        ? ''
+        : SEARCH_STATUS === SEARCH_STATUSES.failedSearch
+          ? 'quoix'
+          : 'asmall',
+    );
+  }, [SEARCH_STATUS]);
 
   return (
     <ProtectedRoute errorStatus={error?.response?.status}>
@@ -162,6 +189,8 @@ function ViewBans() {
             </InputAdornment>
           )}
           helperText="Case insensitive"
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
         />
         <FormHelperText>Case insensitive</FormHelperText>
       </FormControl>
@@ -172,8 +201,13 @@ function ViewBans() {
 
       <h1 className={classes.sectionHeader}>Active bans</h1>
 
-      {BANNED_USERS.map(({ username, action }) => (
-        <BannedUser key={username} {...{ username, action }} />
+      {BANNED_USERS.map(({ username, history }) => (
+        <UserBanHistory
+          key={username}
+          {...{ username, history }}
+          isActiveBans
+          showBanButton
+        />
       ))}
     </ProtectedRoute>
   );
@@ -184,56 +218,32 @@ function SearchResults({ searchTerm }) {
 
   if (!searchTerm) {
     return (
-      <Typography className={classes.italics}>
-        Search for a user above
-      </Typography>
+      <Box>
+        <br />
+        <Typography className={classes.italics}>
+          Search for a user above
+        </Typography>
+      </Box>
     );
   }
-  if (!SEARCH_RESULTS.length) {
+  if (SEARCH_STATUS === SEARCH_STATUSES.failedSearch) {
     return (
-      <Typography className={classes.italics}>
-        {`No results for "${searchTerm}"`}
-      </Typography>
+      <Box>
+        <br />
+        <Typography className={classes.italics}>
+          {`No results for "${searchTerm}"`}
+        </Typography>
+      </Box>
     );
   }
   return SEARCH_RESULTS.map(({ username, history }) => (
-    <BanHistory key={username} {...{ username, history }} />
+    <UserBanHistory key={username} {...{ username, history }} showBanButton />
   ));
 }
 
-function BanHistory({ username, history }) {
-  const classes = useStyles();
-  const [showHistory, setShowHistory] = useState(false);
-  const navigate = useNavigate();
-  return (
-    <Box className={classes.row}>
-      <Box display="flex" sx={{ alignItems: 'center' }}>
-        <Box sx={{ flex: 1 }}>
-          <Typography>
-            <b>{username}</b>
-          </Typography>
-        </Box>
-        <Button
-          color="secondary"
-          onClick={() => setShowHistory((prev) => !prev)}
-        >
-          {!showHistory ? 'History' : 'Hide'}
-        </Button>
-        <Button color="primary" onClick={() => navigate('/mod/banUsers')}>
-          BAN
-        </Button>
-      </Box>
-      {showHistory
-        && history.map((action) => (
-          <ActionItem key={action.actionID} action={action} />
-        ))}
-    </Box>
-  );
-}
-
-function ActionItem({
+function HistoryItem({
   action: {
-    action, issueDate, expiryDate, modName, reason,
+    actionType, issueDate, expiryDate, modName, reason,
   },
 }) {
   const classes = useStyles();
@@ -243,7 +253,7 @@ function ActionItem({
       <Box sx={{ float: 'right' }}>
         <Button color="primary">Edit</Button>
       </Box>
-      <Expiration {...{ action, issueDate, expiryDate }} />
+      <Expiration {...{ actionType, expiryDate }} />
       <Typography>
         {`Issued ${format(issueDate, 'MMM d, yyyy')} by ${modName}`}
       </Typography>
@@ -252,9 +262,16 @@ function ActionItem({
   );
 }
 
-function Expiration({ action, expiryDate, issueDate }) {
+function Expiration({ actionType, expiryDate, ignorePastBans }) {
   const classes = useStyles();
-  if (action === 'warning') {
+  if (!actionType) {
+    return (
+      <Typography className={classes.neutralGrey} component="span">
+        <b>NO ACTIVE BANS</b>
+      </Typography>
+    );
+  }
+  if (actionType === 'warn') {
     return (
       <Typography className={classes.warnOrange} component="span">
         <b>WARNING</b>
@@ -268,63 +285,109 @@ function Expiration({ action, expiryDate, issueDate }) {
       </Typography>
     );
   }
+  if (expiryDate === null) {
+    return (
+      <Typography className={classes.banRed} component="span">
+        <b>BAN LIFTED</b>
+      </Typography>
+    );
+  }
+  const inTheFuture = isFuture(expiryDate);
+  if (!inTheFuture) {
+    if (ignorePastBans) {
+      return (
+        <Typography className={classes.neutralGrey} component="span">
+          <b>NO ACTIVE BANS</b>
+        </Typography>
+      );
+    }
+    return (
+      <Typography className={classes.banRed} component="span">
+        <b>
+          BAN EXPIRED
+          {format(expiryDate, 'MMM d, yyyy').toUpperCase()}
+        </b>
+      </Typography>
+    );
+  }
   return (
     <Typography className={classes.banRed} component="span">
       <b>
         BANNED UNTIL
-        {format(issueDate, 'MMM d, yyyy').toUpperCase()}
+        {format(expiryDate, 'MMM d, yyyy').toUpperCase()}
       </b>
     </Typography>
   );
 }
 
-function BannedUser({
+export function UserBanHistory({
   username,
-  action: {
-    issueDate, modName, contestID, action, expiryDate, reason, actionID,
-  },
+  history,
+  isActiveBans,
+  showBanButton,
 }) {
   const classes = useStyles();
+  const navigate = useNavigate();
   const [showHistory, setShowHistory] = useState(false);
-  const [history, setHistory] = useState(undefined);
+
+  // const activeBan = useMemo(() => {
+  //   if (!history.length) { return null; }
+  //   // const ban = history.find((action) => action.actionType === 'ban' && (action.expiryDate === 'never' || isFuture(action.expiryDate)));
+  //   // if (ban) { return ban; }
+  //   // return null;
+  // }, [history]);
+
+  const mostRecentBan = history[0];
 
   return (
     <Box className={classes.row}>
-      <Box sx={{ float: 'right' }}>
-        {/* Should: fill search bar, scroll up, and auto-expand */}
-        {/* or should it just open underneath? */}
-        <Button
-          color="secondary"
-          onClick={() => setShowHistory((prev) => !prev)}
-        >
-          {!showHistory ? 'History' : 'Hide'}
-        </Button>
-        <Button color="primary">Edit</Button>
+      <Box display="flex">
+        <Box sx={{ flex: 1, alignSelf: 'center' }}>
+          <Box>
+            <Typography component="span">
+              <b>
+                {username}
+                {' '}
+                -
+              </b>
+              {' '}
+            </Typography>
+            <Expiration
+              actionType={mostRecentBan?.actionType}
+              expiryDate={mostRecentBan?.expiryDate}
+              ignorePastBans
+            />
+          </Box>
+          {mostRecentBan && (
+            <Typography className={classes.italics}>
+              {mostRecentBan.reason}
+            </Typography>
+          )}
+        </Box>
+        <Box>
+          <Button
+            color="secondary"
+            onClick={() => setShowHistory((prev) => !prev)}
+            disabled={!history.length}
+          >
+            {/* eslint-disable-next-line no-nested-ternary */}
+            {history.length
+              ? !showHistory
+                ? 'History'
+                : 'Hide'
+              : 'No history'}
+          </Button>
+          {showBanButton && (
+            <Button color="primary" onClick={() => navigate('/mod/banUsers')}>
+              {isActiveBans ? 'UNBAN' : 'BAN'}
+            </Button>
+          )}
+        </Box>
       </Box>
-      <Box>
-        <Typography component="span">
-          <b>
-            {username}
-            {' '}
-            -
-          </b>
-          {' '}
-        </Typography>
-        <Expiration {...{ action, expiryDate, issueDate }} />
-        {showHistory && (
-          <Typography>
-            {`Issued ${format(issueDate, 'MMM d, yyyy')} by ${modName}`}
-          </Typography>
-        )}
-      </Box>
-      <Typography className={classes.italics}>{reason}</Typography>
-
       {showHistory
-        && history?.map(
-          (h) => actionID !== h.actionID && (
-          <ActionItem key={h.actionID} action={h} />
-          ),
-        )}
+        && history.map((action) => (
+          <HistoryItem key={action.actionID} action={action} />
+        ))}
     </Box>
   );
 }
@@ -339,7 +402,7 @@ const actionType = PropTypes.shape({
   issueDate: PropTypes.instanceOf(Date).isRequired,
   modName: PropTypes.string.isRequired,
   contestID: PropTypes.string.isRequired,
-  action: PropTypes.oneOf(['ban', 'warning']).isRequired,
+  actionType: PropTypes.oneOf(['ban', 'warn']).isRequired,
   expiryDate: PropTypes.oneOfType([
     PropTypes.oneOf(['never', null]),
     PropTypes.instanceOf(Date),
@@ -348,25 +411,22 @@ const actionType = PropTypes.shape({
   actionID: PropTypes.string.isRequired,
 });
 
-ActionItem.propTypes = { ...actionType };
+HistoryItem.propTypes = { ...actionType };
 
-BanHistory.propTypes = PropTypes.shape({
+UserBanHistory.propTypes = PropTypes.shape({
   username: PropTypes.string.isRequired,
-  history: PropTypes.arrayOf(actionType),
-}).isRequired;
-
-BannedUser.propTypes = PropTypes.shape({
-  username: PropTypes.string.isRequired,
-  action: actionType,
+  history: PropTypes.arrayOf(actionType).isRequired,
+  isActiveBans: PropTypes.bool,
+  showBanButton: PropTypes.bool,
 }).isRequired;
 
 Expiration.propTypes = {
-  issueDate: PropTypes.instanceOf(Date).isRequired,
-  action: PropTypes.oneOf(['ban', 'warning']).isRequired,
+  actionType: PropTypes.oneOf(['ban', 'warn']).isRequired,
   expiryDate: PropTypes.oneOfType([
     PropTypes.oneOf(['never']),
     PropTypes.instanceOf(Date),
   ]),
+  ignorePastBans: PropTypes.bool,
 };
 
 Expiration.defaultProps = {
