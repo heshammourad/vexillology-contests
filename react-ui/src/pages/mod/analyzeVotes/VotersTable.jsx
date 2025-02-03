@@ -118,7 +118,7 @@ function VotersTable() {
                   ) : voter.age.includes('mo') ? (
                     <OrangeTableText>{voter.age}</OrangeTableText>
                   ) : (
-                    <BlackTableText bold center="center">
+                    <BlackTableText bold center>
                       {voter.age}
                     </BlackTableText>
                   )
@@ -127,7 +127,7 @@ function VotersTable() {
                 {voter.karma < KARMA_THRESHOLD ? (
                   <RedTableText>{voter.karma}</RedTableText>
                 ) : (
-                  <BlackTableText bold center="center">
+                  <BlackTableText bold center>
                     {voter.karma}
                   </BlackTableText>
                 )}
@@ -135,7 +135,7 @@ function VotersTable() {
                 {voter.voted < VOTED_THRESHOLD ? (
                   <RedTableText>{voter.voted}</RedTableText>
                 ) : (
-                  <BlackTableText bold center="center">
+                  <BlackTableText bold center>
                     {voter.voted}
                   </BlackTableText>
                 )}

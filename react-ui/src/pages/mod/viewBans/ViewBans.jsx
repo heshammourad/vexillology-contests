@@ -1,12 +1,3 @@
-/*
-TO-DO
-
-Header is hiding top of pages
-Fetch search results (with search button)
-Fetch history in active ban (and check display)
-Do warnings have an expiration?
-*/
-
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';

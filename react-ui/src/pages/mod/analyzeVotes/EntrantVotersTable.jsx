@@ -1,12 +1,8 @@
-/*
-SHOW REJECTED VOTES = a third set of average points
-https://mui.com/material-ui/react-table/#collapsible-table
-Can you add entrant's DQ status somewhere?
-*/
-
-/* eslint-disable react/forbid-prop-types */
+import Box from '@material-ui/core/Box';
 import Checkbox from '@material-ui/core/Checkbox';
+import Typography from '@material-ui/core/Typography';
 import Chip from '@mui/material/Chip';
+import Collapse from '@mui/material/Collapse';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
@@ -16,6 +12,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -26,6 +23,7 @@ import {
   VoteStatusTableText,
 } from './TableText';
 import TakeActionButton from './TakeActionButton';
+import { AccountAgeText } from './VoteBreakdownText';
 
 export const ENTRANT_VOTERS = [
   {
@@ -67,16 +65,15 @@ export const ENTRANT_VOTERS = [
 ];
 
 /**
- * The page for moderators to review contest submissions.
+ * Breaks down voter stats for the selected entrant
  */
 function EntrantVotersTable() {
   const { entrantId } = useParams();
   const [checkedVoters, setCheckedVoters] = useState(new Set());
-  const [showVoter, setShowVoter] = useState('');
   const { chips, setChips } = useChipContext();
 
   const handleChip = (event) => {
-    const field = event.currentTarget.getAttribute('data-id');
+    const field = event.currentTarget.getAttribute('data-chip');
     setChips((prev) => ({ ...prev, [field]: !prev[field] }));
   };
   const handleCheckAll = () => {
@@ -101,7 +98,7 @@ function EntrantVotersTable() {
         {Object.keys(CHIPS).map((key) => (
           <Chip
             key={key}
-            data-id={key}
+            data-chip={key}
             color={CHIPS[key].color}
             label={CHIPS[key].label}
             variant={chips[key] ? 'filled' : 'outlined'}
@@ -128,62 +125,100 @@ function EntrantVotersTable() {
           </TableHead>
           <TableBody>
             {ENTRANT_VOTERS.map((voter) => (
-              <TableRow
+              <VoterRow
                 key={voter.username}
-                sx={{
-                  '&:last-child td, &:last-child th': { border: 0 },
-                  backgroundColor: voter.username === entrantId && '#e3f1ff',
-                }}
-                onClick={() => setShowVoter(voter.username)}
-                hover
-              >
-                <TableCell component="th" scope="row">
-                  <FormControlLabel
-                    control={(
-                      <Checkbox
-                        style={{ paddingTop: 0, paddingBottom: 0 }}
-                        checked={checkedVoters.has(voter.username)}
-                        onChange={handleCheckOne}
-                        name={voter.username}
-                      />
-                    )}
-                    label={`${voter.username}${
-                      voter.username === entrantId ? ' (entrant)' : ''
-                    }`}
-                  />
-                </TableCell>
-
-                <VoteStatusTableText voteStatus={voter.voteStatus} />
-
-                <BanStatusTableText banStatus={voter.banStatus} />
-
-                <ScoreTableText>{voter.score}</ScoreTableText>
-              </TableRow>
+                voter={voter}
+                isEntrant={voter.username === entrantId}
+                isChecked={checkedVoters.has(voter.username)}
+                handleCheckOne={handleCheckOne}
+              />
             ))}
           </TableBody>
         </Table>
       </TableContainer>
       <TakeActionButton users={checkedVoters} />
-      {/* {!!checkedVoters.size && (
-      <Fab
-        color="secondary"
-        variant="extended"
+    </>
+  );
+}
+
+function VoterRow({
+  voter, isEntrant, isChecked, handleCheckOne,
+}) {
+  const [showVoter, setShowVoter] = useState(false);
+
+  return (
+    <>
+      <TableRow
+        key={voter.username}
         sx={{
-          position: 'absolute',
-          bottom: 16,
-          right: 16,
+          '&:last-child td, &:last-child th': { border: 0 },
+          '& > *': { borderBottom: 'unset' },
         }}
+        onClick={() => setShowVoter((prev) => !prev)}
+        hover
       >
-        <GavelIcon sx={{ mr: 1 }} />
-        Take action against
-        {' '}
-        {checkedVoters.size === 1 ? 'user' : `${checkedVoters.size} users`}
-      </Fab>
-      )} */}
+        <TableCell component="th" scope="row">
+          <FormControlLabel
+            control={(
+              <Checkbox
+                style={{ paddingTop: 0, paddingBottom: 0 }}
+                checked={isChecked}
+                onChange={handleCheckOne}
+                name={voter.username}
+              />
+            )}
+            label={`${voter.username}${isEntrant ? ' (entrant)' : ''}`}
+          />
+        </TableCell>
+
+        <VoteStatusTableText voteStatus={voter.voteStatus} />
+
+        <BanStatusTableText banStatus={voter.banStatus} />
+
+        <ScoreTableText>{voter.score}</ScoreTableText>
+      </TableRow>
+      <TableRow onClick={() => setShowVoter(false)}>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+          <Collapse in={showVoter} timeout="auto" unmountOnExit>
+            <Box
+              sx={{
+                display: 'flex',
+                height: 300,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#adeefa',
+              }}
+            >
+              <Typography>FUTURE SITE OF A USER VS AVERAGE CHART</Typography>
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+            >
+              <Box>
+                <AccountAgeText age={50} />
+                <AccountAgeText age={70} />
+              </Box>
+            </Box>
+          </Collapse>
+        </TableCell>
+      </TableRow>
     </>
   );
 }
 
 export default EntrantVotersTable;
 
-EntrantVotersTable.propTypes = {};
+VoterRow.propTypes = {
+  voter: PropTypes.shape({
+    username: PropTypes.string.isRequired,
+    voteStatus: PropTypes.oneOf(['exclude', 'autofilter', '']).isRequired,
+    banStatus: PropTypes.oneOf(['ban', 'warn', '']).isRequired,
+    score: PropTypes.number,
+  }).isRequired,
+  isEntrant: PropTypes.bool.isRequired,
+  isChecked: PropTypes.bool.isRequired,
+  handleCheckOne: PropTypes.func.isRequired,
+};

@@ -1,8 +1,3 @@
-/*
-  TO-DO
-*/
-
-/* eslint-disable react/forbid-prop-types */
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
@@ -24,7 +19,7 @@ const useStyles = makeStyles({
 });
 
 /**
- * The page for moderators to review contest submissions.
+ * The page for moderators to review entrants and voters
  */
 function AnalyzeVotes() {
   const classes = useStyles();

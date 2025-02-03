@@ -1,4 +1,3 @@
-/* eslint-disable react/forbid-prop-types */
 import TableCell from '@mui/material/TableCell';
 import PropTypes from 'prop-types';
 
@@ -40,13 +39,21 @@ const MAX_LIGHTNESS = 50;
 const MIN_DARK_HUE = 80;
 const MAX_DARK_HUE = 160;
 const HUE_GRADIENT_DISTANCE = 40;
-function getColorFromNumber(value) {
-  // Map score onto HSL color wheel
-  // 70+ = red; 0 = purple
-  const hue = value > RED_ABOVE_SCORE
+
+function getHueFromScore(value) {
+  return value > RED_ABOVE_SCORE
     ? RED
     : (RED_ABOVE_SCORE - value) * (PURPLE / RED_ABOVE_SCORE);
+}
 
+/**
+ * 0 = red; 275 = purple
+ * @param {*} hue
+ * @returns
+ */
+function getColorFromHue(hue) {
+  // Map score onto HSL color wheel
+  // 70+ = red; 0 = purple
   // Lowers brightness of yellows, greens, and teals
   let lightness;
   if (hue >= MIN_DARK_HUE && hue <= MAX_DARK_HUE) {
@@ -77,7 +84,7 @@ function ScoreTableText({ children }) {
   return (
     <TableCell
       style={{
-        color: getColorFromNumber(children),
+        color: getColorFromHue(getHueFromScore(children)),
         fontWeight: 'bolder',
         textAlign: 'center',
       }}
@@ -136,6 +143,7 @@ export {
   BanStatusTableText,
   VoteStatusTableText,
   EntryStatusTableText,
+  getColorFromHue,
 };
 
 RedTableText.propTypes = {
@@ -174,7 +182,7 @@ ScoreTableText.defaultProps = {
 };
 
 BanStatusTableText.propTypes = {
-  banStatus: PropTypes.oneOf(['ban', 'warn']),
+  banStatus: PropTypes.oneOf(['ban', 'warn', '']),
 };
 
 BanStatusTableText.defaultProps = {
@@ -182,7 +190,7 @@ BanStatusTableText.defaultProps = {
 };
 
 VoteStatusTableText.propTypes = {
-  voteStatus: PropTypes.oneOf(['exclude', 'autofilter']),
+  voteStatus: PropTypes.oneOf(['exclude', 'autofilter', '']),
 };
 
 VoteStatusTableText.defaultProps = {
