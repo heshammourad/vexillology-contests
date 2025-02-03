@@ -32,7 +32,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Contests() {
-  const { data: contests } = useSwrContests();
+  const {
+    data: { contests },
+  } = useSwrContests();
   const { pathname, state = {} } = useLocation();
 
   const [openYear, setOpenYear] = useState(null);
@@ -81,8 +83,8 @@ function Contests() {
                               {!yearEnd && (
                               <>
                                 <span className={classes.month}>
-                                  {format(parseISO(date), 'MMM yy')}
-                                </span>
+            {format(parseISO(date), 'MMM yy')}
+          </span>
                                 {' - '}
                               </>
                               )}

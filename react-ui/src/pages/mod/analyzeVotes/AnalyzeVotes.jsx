@@ -86,7 +86,9 @@ function UserSelector({
 function AnalyzeVotes() {
   const classes = useStyles();
   const contestId = useContestId();
-  const { data: contests } = useSwrContests();
+  const {
+    data: { contests = [] },
+  } = useSwrContests();
   const contest = useMemo(
     () => contests.find((c) => c.id === contestId),
     [contests, contestId],
