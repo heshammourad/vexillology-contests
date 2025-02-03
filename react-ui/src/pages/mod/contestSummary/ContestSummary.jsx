@@ -8,6 +8,7 @@ import { ProtectedRoute } from '../../../components';
 import LoadingContent from '../../../components/LoadingContent';
 import useSwrModContestSummary from '../../../data/useSwrModContestSummary';
 
+import CertifyButton from './CertifyButton';
 import EntriesTable from './EntriesTable';
 
 const getErrorMessage = (entries, errorStatus, visibilityLimited, voteEnd) => {
@@ -17,7 +18,7 @@ const getErrorMessage = (entries, errorStatus, visibilityLimited, voteEnd) => {
 
   if (visibilityLimited) {
     let message = "Can't view summary during voting window if you're a participant";
-    if (voteEnd && isFuture(voteEnd)) {
+    if (voteEnd && isFuture(new Date(voteEnd))) {
       message += `. Please return after ${format(
         new Date(voteEnd),
         'MMM d h:mm a',
@@ -35,7 +36,13 @@ const getErrorMessage = (entries, errorStatus, visibilityLimited, voteEnd) => {
 
 function ContestSummary() {
   const {
-    data: { entries, visibilityLimited, voteEnd } = {},
+    data: {
+      contestId,
+      entries,
+      resultsCertified,
+      visibilityLimited,
+      voteEnd,
+    } = {},
     error,
     isValidating,
   } = useSwrModContestSummary();
@@ -59,10 +66,13 @@ function ContestSummary() {
           mt: 2,
         }}
       >
-        <Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
           <Typography component="h1" variant="h5">
             Contest Summary
           </Typography>
+          {!isValidating && entries?.length > 0 && (
+            <CertifyButton {...{ contestId, resultsCertified, voteEnd }} />
+          )}
         </Box>
         <LoadingContent loading={isValidating}>
           {errorMessage ? (

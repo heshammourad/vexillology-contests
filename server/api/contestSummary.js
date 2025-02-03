@@ -40,6 +40,7 @@ exports.get = async (req, res) => {
 
     const response = {
       categories,
+      contestId: id,
       entries,
       resultsCertified,
       voteEnd,
