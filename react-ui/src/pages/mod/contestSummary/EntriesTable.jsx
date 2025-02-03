@@ -8,10 +8,13 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
+import LazyLoad from 'react-lazyload';
 
 import types from '../../../common/types';
 // eslint-disable-next-line no-restricted-imports
 import Submission from '../../../components/Submission';
+
+const ROW_HEIGHT = 50;
 
 const TableCellVerticalDividers = styled(TableCell)(({ theme }) => ({
   borderRight: `1px solid ${theme.palette.divider}`,
@@ -82,19 +85,27 @@ function EntriesTable({ categories, entries }) {
                   {submitter}
                 </TableCellVerticalDividers>
                 <TableCellVerticalDividers align="center">
-                  <Box sx={{ height: 50 }}>
-                    <Submission
-                      {...{
-                        additionalStyle: {
-                          maxHeight: '100%',
-                          maxWidth: '100%',
-                        },
-                        backgroundColor,
-                        imagePath,
-                        name: entryName,
-                      }}
-                    />
-                  </Box>
+                  <LazyLoad
+                    height={ROW_HEIGHT}
+                    offset={ROW_HEIGHT * 2}
+                    overflow
+                    resize
+                    scroll
+                  >
+                    <Box sx={{ height: ROW_HEIGHT }}>
+                      <Submission
+                        {...{
+                          additionalStyle: {
+                            maxHeight: '100%',
+                            maxWidth: '100%',
+                          },
+                          backgroundColor,
+                          imagePath,
+                          name: entryName,
+                        }}
+                      />
+                    </Box>
+                  </LazyLoad>
                 </TableCellVerticalDividers>
                 <TableCellVerticalDividers align="right">
                   {votes}
