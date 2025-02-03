@@ -95,7 +95,7 @@ function EntriesTable({ categories, entries }) {
                     <Box sx={{ height: ROW_HEIGHT }}>
                       <Submission
                         {...{
-                          additionalStyle: {
+                          additionalStyles: {
                             maxHeight: '100%',
                             maxWidth: '100%',
                           },
