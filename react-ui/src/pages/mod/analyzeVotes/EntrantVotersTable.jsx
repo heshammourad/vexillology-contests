@@ -70,7 +70,7 @@ export const ENTRANT_VOTERS = [
 function EntrantVotersTable() {
   const { entrantId } = useParams();
   const [checkedVoters, setCheckedVoters] = useState(new Set());
-  const { chips, setChips } = useChipContext();
+  const { chips, setChips } = useChipContext(); // {[field]: bool}
 
   const handleChip = (event) => {
     const field = event.currentTarget.getAttribute('data-chip');
@@ -145,6 +145,15 @@ function VoterRow({
   voter, isEntrant, isChecked, handleCheckOne,
 }) {
   const [showVoter, setShowVoter] = useState(false);
+  const { chips } = useChipContext(); // {[field]: bool}
+
+  if (chips.hideExcluded && voter.voteStatus === 'exclude') {
+    return null;
+  }
+
+  if (chips.hideAutofiltered && voter.voteStatus === 'autofilter') {
+    return null;
+  }
 
   return (
     <>
