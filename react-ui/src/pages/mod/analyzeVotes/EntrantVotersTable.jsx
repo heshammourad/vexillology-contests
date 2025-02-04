@@ -189,7 +189,9 @@ function VoterRow({
                 backgroundColor: '#adeefa',
               }}
             >
-              <Typography>FUTURE SITE OF A USER VS AVERAGE CHART</Typography>
+              <Typography>
+                FUTURE SITE OF BOTH USER VS AVERAGE CHARTS
+              </Typography>
             </Box>
             <Box
               sx={{

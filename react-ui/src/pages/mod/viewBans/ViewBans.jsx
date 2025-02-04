@@ -27,28 +27,28 @@ const SEARCH_STATUSES = {
 };
 const SEARCH_STATUS = SEARCH_STATUSES.successfulSearch;
 
-const SEARCH_RESULTS = [
+export const SEARCH_RESULTS = [
   {
     username: 'ASmallEye',
     history: [
       {
         issueDate: new Date(2024, 7, 29),
         modName: 'TorteApp',
-        contestID: '',
+        contestId: 'sep23',
         actionType: 'ban',
         expiryDate: 'never',
         reason: 'Syke',
-        actionID: 'as1',
+        actionId: 'as1',
         lifted: false,
       },
       {
         issueDate: new Date(2024, 6, 20),
         modName: 'TorteApp',
-        contestID: '',
+        contestId: '',
         actionType: 'ban',
         expiryDate: new Date(2024, 7, 31),
         reason: 'Voted with alt account again',
-        actionID: 'as3',
+        actionId: 'as3',
         lifted: true,
         liftedDate: new Date(2024, 6, 30),
         liftedMod: 'TorteApp',
@@ -57,11 +57,11 @@ const SEARCH_RESULTS = [
       {
         issueDate: new Date(2024, 5, 2),
         modName: 'TorteApp',
-        contestID: '',
+        contestId: '',
         actionType: 'warn',
         expiryDate: 'never',
         reason: 'Voted with alt account',
-        actionID: 'as4',
+        actionId: 'as4',
         lifted: false,
       },
     ],
@@ -75,11 +75,11 @@ export const BANNED_USERS = [
       {
         issueDate: new Date(2024, 11, 17),
         modName: 'TorteApp',
-        contestID: '',
+        contestId: '',
         actionType: 'ban',
         expiryDate: 'never',
         reason: 'Created 40 fake accounts to boost score in Jan 25 contest.',
-        actionID: 'as5',
+        actionId: 'as5',
         lifted: false,
       },
     ],
@@ -90,7 +90,7 @@ export const BANNED_USERS = [
       {
         issueDate: new Date(2024, 11, 17),
         modName: 'bakonydraco',
-        contestID: '',
+        contestId: '',
         actionType: 'ban',
         expiryDate: endOfMonth(addMonths(new Date(), 3)),
         reason: 'Created 3 fake accounts to boost score in Jan 25 contest.',
@@ -337,33 +337,37 @@ function Expiration({
   );
 }
 
-export function UserBanHistory({ username, history, showBanButton }) {
+export function UserBanHistory({
+  username, history, showBanButton, actionId,
+}) {
   const classes = useStyles();
   const navigate = useNavigate();
   const [showHistory, setShowHistory] = useState(false);
 
   // Report most recent active ban. Otherwise, report on most recent warning
   const topLevelAction = useMemo(
-    () => history.reduce((topLevel, action) => {
-      if (topLevel.actionType === 'ban') {
+    () => (actionId
+      ? history.find((a) => a.actionId === actionId)
+      : history.reduce((topLevel, action) => {
+        if (topLevel.actionType === 'ban') {
+          return topLevel;
+        }
+        if (
+          action.actionType === 'ban'
+              && (action.expiryDate === 'never' || isFuture(action.expiryDate))
+              && !action.lifted
+        ) {
+          return action;
+        }
+        if (topLevel.actionType === 'warn') {
+          return topLevel;
+        }
+        if (action.actionType === 'warn' && !action.lifted) {
+          return action;
+        }
         return topLevel;
-      }
-      if (
-        action.actionType === 'ban'
-          && (action.expiryDate === 'never' || isFuture(action.expiryDate))
-          && !action.lifted
-      ) {
-        return action;
-      }
-      if (topLevel.actionType === 'warn') {
-        return topLevel;
-      }
-      if (action.actionType === 'warn' && !action.lifted) {
-        return action;
-      }
-      return topLevel;
-    }, {}),
-    [history],
+      }, {})),
+    [actionId, history],
   );
 
   return (
@@ -380,13 +384,13 @@ export function UserBanHistory({ username, history, showBanButton }) {
               {' '}
             </Typography>
             <Expiration
-              actionType={topLevelAction.actionType}
-              expiryDate={topLevelAction.expiryDate}
-              isLifted={!!topLevelAction.lifted}
+              actionType={topLevelAction?.actionType}
+              expiryDate={topLevelAction?.expiryDate}
+              isLifted={!!topLevelAction?.lifted}
               ignorePastBans
             />
           </Box>
-          {topLevelAction.reason && (
+          {topLevelAction?.reason && (
             <Typography className={classes.italics}>
               {topLevelAction.reason}
             </Typography>
@@ -421,7 +425,7 @@ export function UserBanHistory({ username, history, showBanButton }) {
       </Box>
       {showHistory
         && history.map((action) => (
-          <HistoryItem key={action.actionID} action={action} />
+          <HistoryItem key={action.actionId} action={action} />
         ))}
     </Box>
   );
@@ -436,14 +440,14 @@ SearchResults.propTypes = {
 const actionType = PropTypes.shape({
   issueDate: PropTypes.instanceOf(Date).isRequired,
   modName: PropTypes.string.isRequired,
-  contestID: PropTypes.string.isRequired,
+  contestId: PropTypes.string.isRequired,
   actionType: PropTypes.oneOf(['ban', 'warn']).isRequired,
   expiryDate: PropTypes.oneOfType([
     PropTypes.oneOf(['never']),
     PropTypes.instanceOf(Date),
   ]).isRequired,
   reason: PropTypes.string.isRequired,
-  actionID: PropTypes.string.isRequired,
+  actionId: PropTypes.string.isRequired,
   lifted: PropTypes.bool,
   liftedDate: PropTypes.instanceOf(Date),
   liftedMod: PropTypes.string,

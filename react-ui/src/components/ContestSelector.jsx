@@ -21,7 +21,7 @@ const useStyles = makeStyles({
  * @param {string} contestId - Contest primary key
  * @param {function} onChange - useState setter
  */
-function ContestSelector({ contestId, onChange }) {
+function ContestSelector({ contestId, onChange, disabled }) {
   const classes = useStyles();
   const { data: contests } = useSwrContests();
   const formattedContest = (name, date) => `${name} (${format(parseISO(date), 'MMM yy')})`;
@@ -31,13 +31,14 @@ function ContestSelector({ contestId, onChange }) {
     <Box>
       <Select
         className={classes.selector}
-        value={contestId}
+        value={contestId || ''}
         renderValue={() => (!selectedContest
           ? 'Select a contest'
           : formattedContest(selectedContest.name, selectedContest.date))}
         onChange={(event) => onChange(event.target.value)}
         displayEmpty
         defaultValue=""
+        disabled={disabled}
       >
         {contests.map((c) => (
           <MenuItem key={c.id} value={c.id}>
@@ -54,8 +55,10 @@ export default ContestSelector;
 ContestSelector.propTypes = {
   contestId: PropTypes.string,
   onChange: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
 };
 
 ContestSelector.defaultProps = {
-  contestId: undefined,
+  contestId: '',
+  disabled: false,
 };

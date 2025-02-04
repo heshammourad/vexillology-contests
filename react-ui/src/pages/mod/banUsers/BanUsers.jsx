@@ -1,42 +1,68 @@
+/*
+Pre-fill contestId based on most likely?
+*/
+
 import Box from '@material-ui/core/Box';
-import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
-import Checkbox from '@mui/material/Checkbox';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormGroup from '@mui/material/FormGroup';
-import FormHelperText from '@mui/material/FormHelperText';
-import Paper from '@mui/material/Paper';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { ProtectedRoute, ContestSelector } from '../../../components';
+import useSwrContests from '../../../data/useSwrContests';
 import SectionTitleWithButtons from '../analyzeVotes/SectionTitleWithButtons';
-import { BANNED_USERS, UserBanHistory } from '../viewBans/ViewBans';
+import { SEARCH_RESULTS, UserBanHistory } from '../viewBans/ViewBans';
 
-const { format, addMonths, endOfMonth } = require('date-fns');
+import {
+  ActionSelectorForMultipleUsers,
+  ActionSelectorForOneUser,
+} from './ActionSelectors';
+import BanLength from './BanLength';
+import EditTypeSelector from './EditTypeSelector';
 
-const BAN_ORIGINS = {
-  newIndividual: 'newIndividual',
-  editIndividual: 'editIndividual',
+const {
+  format,
+  addMonths,
+  endOfMonth,
+  differenceInMonths,
+  parseISO,
+} = require('date-fns');
+
+const DEV_OPTIONS = {
+  createNew: 'createNew',
+  editBan: 'editBan',
+  editWarning: 'editWarning',
   fromContest: 'fromContest',
 };
-const BAN_ORIGIN = BAN_ORIGINS.editIndividual;
 
-const USER_STATUSES = {
-  newIndividual: BANNED_USERS[0],
-  editIndividual: BANNED_USERS[0],
-  fromContest: BANNED_USERS,
+const DEV_OPTION = DEV_OPTIONS.editBan;
+
+const useRefreshOnDevOptionChange = () => {
+  useEffect(() => {
+    const STORAGE_KEY = 'last_dev_option';
+    const storedValue = localStorage.getItem(STORAGE_KEY);
+
+    if (storedValue !== DEV_OPTION) {
+      // Update stored value to prevent infinite reloads
+      localStorage.setItem(STORAGE_KEY, DEV_OPTION);
+      window.location.reload();
+    }
+  }, []);
+};
+
+const USER_BAN_QUERY_RESULT = SEARCH_RESULTS[0];
+
+const SEARCH_PARAMS = {
+  contestId: DEV_OPTION === DEV_OPTIONS.fromContest ? 'sep23' : null,
+  usernames:
+    DEV_OPTION === DEV_OPTIONS.fromContest ? ['joshuauiux', 'WorkingKing'] : [],
+  // eslint-disable-next-line no-nested-ternary
+  actionId:
+    DEV_OPTION === DEV_OPTIONS.editBan
+      ? 'as1'
+      : DEV_OPTION === DEV_OPTIONS.editWarning
+        ? 'as4'
+        : null,
 };
 
 const useStyles = makeStyles({
@@ -55,53 +81,103 @@ const useStyles = makeStyles({
   },
 });
 
+function formatDate(date) {
+  if (!(date instanceof Date)) {
+    return null;
+  }
+  return format(date, 'MMM d, yyyy');
+}
+
 /**
  * The page for moderators to create / edit a ban / warning
  */
 function BanUsers() {
+  // FOR DEV PURPOSES ONLY
+  useRefreshOnDevOptionChange();
+
   const classes = useStyles();
-  const error = {};
 
-  const [contestId, setContestId] = useState('');
-  const [months, setMonths] = useState(1);
-  const [actionType, setActionType] = useState('ban');
-  const [banIssueDate, setBanIssueDate] = useState(new Date());
-  const [isPermanentBan, setIsPermanentBan] = useState(false);
+  const { actionId, contestId, usernames } = SEARCH_PARAMS;
 
+  // HELPER VARIABLES
+  const action = USER_BAN_QUERY_RESULT.history.find(
+    (a) => a.actionId === actionId,
+  );
+  const isNewAction = !actionId;
+  const isEditAction = !!actionId;
+  const isFromContest = !!contestId;
+
+  // ACTION TYPE STATE
+  const [isBan, setIsBan] = useState(
+    isNewAction || action?.actionType === 'ban',
+  );
   const [dqVoters, setDqVoters] = useState(new Set());
   const [removeEntrants, setRemoveEntrants] = useState(new Set());
   const [warnUsers, setWarnUsers] = useState(new Set());
   const [banUsers, setBanUsers] = useState(new Set());
 
-  const usernames = USER_STATUSES.fromContest.map((u) => u.username);
+  // EDIT TYPE STATE
+  const [editType, setEditType] = useState('edit');
+  const isEdit = editType === 'edit';
+  const isLockedEdit = editType !== 'edit';
 
-  const sectionHeader = () => {
-    if (BAN_ORIGIN === BAN_ORIGINS.newIndividual) {
-      return `Ban ${USER_STATUSES.newIndividual.username}`;
-    }
-    if (BAN_ORIGIN === BAN_ORIGINS.editIndividual) {
-      return `Edit ban on ${USER_STATUSES.editIndividual.username}`;
-    }
-    if (USER_STATUSES.fromContest.length > 2) {
-      return `Take action on ${USER_STATUSES.fromContest.length} users`;
-    }
-    return `Take action on ${USER_STATUSES.fromContest[0].username}`;
-  };
+  // CONTEST / START DATE STATE
+  const initialContestId = action?.contestId || contestId;
+  const [selectedContestId, setSelectedContestId] = useState(initialContestId);
+  const { data: contests } = useSwrContests();
+  const selectedContest = contests.find((c) => c.id === selectedContestId);
+  const startDate = selectedContest
+    && addMonths(new Date(...selectedContest.date.split('-')), -1);
 
-  const isBan = (BAN_ORIGIN !== BAN_ORIGINS.fromContest && actionType === 'ban')
-    || (BAN_ORIGIN === BAN_ORIGINS.fromContest && !!banUsers.size);
+  // BAN LENGTH / END DATE STATE
+  // MUST CALCULATE MONTHS FROM ACTION
+  const initialMonths = action?.expiryDate !== 'never'
+    ? differenceInMonths(
+      parseISO(action.expiryDate),
+      parseISO(action.startDate),
+    )
+    : 1;
+  const [months, setMonths] = useState(initialMonths);
+  const initialIsPermanentBan = action?.expiryDate === 'never';
+  const [isPermanentBan, setIsPermanentBan] = useState(initialIsPermanentBan);
+  const expiryDate = startDate && endOfMonth(addMonths(startDate, months - 1));
 
-  const banExpiryDate = endOfMonth(addMonths(banIssueDate, months));
+  // REASONS
+  const initialReason = action?.reason || '';
+  const [reason, setReason] = useState(initialReason);
+  const initialRemovalReason = action?.liftedReason || '';
+  const [removalReason, setRemovalReason] = useState(
+    action?.liftedReason || '',
+  );
+  const removalText = editType === 'pardon'
+    ? 'pardon'
+    : (editType === 'lift'
+          || (isEditAction && editType === 'edit' && action.lifted))
+        && 'lifting';
+
+  const sectionHeader = useMemo(() => {
+    if (isFromContest) {
+      const numUsers = SEARCH_PARAMS.usernames.length === 1
+        ? '1 user'
+        : `${SEARCH_PARAMS.usernames.length} users`;
+      return `Take action against ${numUsers}`;
+    }
+    if (isNewAction) {
+      return 'Ban / warn user';
+    }
+    return `Edit ${isBan ? 'ban' : 'warning'}`;
+  }, [isFromContest, isNewAction, isBan]);
 
   return (
-    <ProtectedRoute errorStatus={error?.response?.status}>
+    <ProtectedRoute>
       <br />
       <br />
       <br />
+
       <h1 className={classes.sectionHeader}>{sectionHeader}</h1>
 
-      {BAN_ORIGIN === BAN_ORIGINS.fromContest ? (
-        <BanMultipleUsers
+      {isFromContest ? (
+        <ActionSelectorForMultipleUsers
           {...{
             dqVoters,
             setDqVoters,
@@ -115,376 +191,164 @@ function BanUsers() {
           }}
         />
       ) : (
-        <Box sx={{ backgroundColor: '#ddd', padding: '8px' }}>
-          <UserBanHistory
-            username={USER_STATUSES[BAN_ORIGIN].username}
-            history={USER_STATUSES[BAN_ORIGIN].history}
-          />
-        </Box>
+        <>
+          <Box sx={{ backgroundColor: '#ddd', padding: '8px' }}>
+            <UserBanHistory
+              username={USER_BAN_QUERY_RESULT.username}
+              history={USER_BAN_QUERY_RESULT.history}
+              actionId={actionId}
+            />
+          </Box>
+          <br />
+          <ActionSelectorForOneUser {...{ isBan, setIsBan, isNewAction }} />
+        </>
       )}
 
-      <h1 className={classes.sectionHeader}>
-        {BAN_ORIGIN === BAN_ORIGINS.editIndividual ? 'Edit' : 'New'}
-        {' '}
-        ban/warning
-      </h1>
+      <Separator />
 
-      <Typography>
-        <b>Warn or ban?</b>
-      </Typography>
+      {isEditAction && (
+        <>
+          <EditTypeSelector {...{ isBan, editType, setEditType }} />
+          <Separator />
+        </>
+      )}
 
-      <FormControl sx={{ ml: '16px' }}>
-        <RadioGroup
-          row
-          aria-labelledby="ban-or-warning-radio-buttons-group"
-          name="ban-or-warning-radio-buttons-group"
-          defaultValue="ban"
-        >
-          <FormControlLabel
-            value="warn"
-            control={<Radio onClick={() => setActionType('warn')} />}
-            label="Warn"
-          />
-          <FormControlLabel
-            // disabled={BAN_ORIGIN !== BAN_ORIGINS.editIndividual}
-            value="ban"
-            control={<Radio onClick={() => setActionType('ban')} />}
-            label="Ban"
-          />
-        </RadioGroup>
-      </FormControl>
+      <SectionTitleWithButtons
+        title="Contest / start date"
+        buttons={
+          isEdit
+            ? [
+              {
+                text: 'Reset',
+                color: 'primary',
+                onClick: () => setSelectedContestId(initialContestId),
+                disabled:
+                    !selectedContestId
+                    || selectedContestId === initialContestId,
+              },
+            ]
+            : []
+        }
+      />
+
+      <Box sx={{ marginTop: 10 }}>
+        <ContestSelector
+          contestId={isLockedEdit ? action.contestId : selectedContestId}
+          onChange={setSelectedContestId}
+          disabled={isFromContest || isLockedEdit}
+        />
+      </Box>
+
+      {isBan && startDate && (
+        <Box sx={{ marginTop: 10 }}>
+          <Typography className={classes.italics}>
+            {`Ban will be given a start date of ${formatDate(startDate)}`}
+          </Typography>
+        </Box>
+      )}
 
       <Separator />
 
       {isBan && (
         <>
-          <Typography>
-            <b>Ban length</b>
-          </Typography>
-          <Box display="flex" sx={{ alignItems: 'center' }}>
-            <TextField
-              id="banLength"
-              variant="outlined"
-              size="small"
-              type={isPermanentBan ? 'text' : 'number'}
-              value={isPermanentBan ? '∞' : months}
-              onChange={(event) => setMonths(event.target.value)}
-              style={{ width: 100 }}
-              disabled={isPermanentBan}
-            />
-            <Typography component="span">&nbsp;&nbsp;months</Typography>
-
-            <FormControl sx={{ ml: '16px' }}>
-              <RadioGroup
-                row
-                aria-labelledby="demo-row-radio-buttons-group-label"
-                name="row-radio-buttons-group"
-                defaultValue="today"
-              >
-                <FormControlLabel
-                  disabled={isPermanentBan}
-                  value="today"
-                  control={
-                    <Radio onClick={() => setBanIssueDate(new Date())} />
-                  }
-                  label="from today"
-                />
-                <FormControlLabel
-                  disabled={
-                    isPermanentBan || BAN_ORIGIN !== BAN_ORIGINS.editIndividual
-                  }
-                  value="issue"
-                  control={(
-                    <Radio
-                      onClick={() => setBanIssueDate(
-                        USER_STATUSES.editIndividual.action.issueDate,
-                      )}
-                    />
-                  )}
-                  label="from the issue date"
-                />
-              </RadioGroup>
-            </FormControl>
-          </Box>
-
-          <FormGroup style={{ margin: '8px 0' }}>
-            <FormControlLabel
-              control={(
-                <Checkbox
-                  checked={isPermanentBan}
-                  onChange={() => setIsPermanentBan((prev) => !prev)}
-                />
-              )}
-              label="This is a permanent ban"
-            />
-          </FormGroup>
-
-          <Typography className={classes.italics}>
-            {isPermanentBan
-              ? 'This ban will not expire'
-              : `This ban will expire on ${format(
-                banExpiryDate,
-                'MMM d, yyyy',
-              )}`}
-          </Typography>
-
+          <SectionTitleWithButtons
+            title="Ban length / end date"
+            buttons={
+              isEdit
+                ? [
+                  {
+                    text: 'Reset',
+                    color: 'primary',
+                    onClick: () => {
+                      setMonths(initialMonths);
+                      setIsPermanentBan(initialIsPermanentBan);
+                    },
+                    disabled:
+                        (isPermanentBan && initialIsPermanentBan)
+                        || months === initialMonths,
+                  },
+                ]
+                : []
+            }
+          />
+          <BanLength
+            {...{
+              months,
+              setMonths,
+              isPermanentBan,
+              setIsPermanentBan,
+              expiryDate,
+            }}
+            disabled={isLockedEdit}
+          />
           <Separator />
         </>
       )}
 
-      <Typography>
-        <b>{`${actionType === 'ban' ? 'Ban' : 'Warning'} reason`}</b>
-      </Typography>
-
-      <Box sx={{ width: '100%' }}>
-        <TextField id="reason" variant="outlined" multiline fullWidth />
-      </Box>
-
-      <Separator />
-
       <SectionTitleWithButtons
-        title={
-          BAN_ORIGIN === BAN_ORIGINS.fromContest
-            ? 'Contest'
-            : 'Contest (optional)'
-        }
+        title={`${isBan ? 'Ban' : 'Warning'} reason`}
         buttons={
-          BAN_ORIGIN === BAN_ORIGINS.fromContest
-            ? []
-            : [
+          isEdit
+            ? [
               {
-                text: 'Clear contest',
-                disabled: !contestId,
-                onClick: () => setContestId(null),
+                text: 'Reset',
+                color: 'primary',
+                onClick: () => setReason(initialReason),
+                disabled: reason === initialReason,
               },
             ]
+            : []
         }
       />
 
-      <Box>
-        <ContestSelector
-          contestId={contestId}
-          onChange={setContestId}
-          disabled={BAN_ORIGINS.fromContest}
+      <Box sx={{ width: '100%', marginTop: 10 }}>
+        <TextField
+          id="reason"
+          variant="outlined"
+          multiline
+          fullWidth
+          value={isLockedEdit ? action.reason : reason}
+          onChange={(event) => setReason(event.target.value)}
+          disabled={isLockedEdit}
         />
       </Box>
 
-      <Separator />
+      {!!removalText && (
+        <>
+          <Separator />
+          <SectionTitleWithButtons
+            title={`Reason for ${removalText}`}
+            buttons={
+              initialRemovalReason
+                ? [
+                  {
+                    text: 'Reset',
+                    color: 'primary',
+                    onClick: () => setRemovalReason(initialRemovalReason),
+                    disabled: removalReason === initialRemovalReason,
+                  },
+                ]
+                : []
+            }
+          />
 
-      {/* eslint-disable-next-line max-len */}
-      <Typography>
-        <b>EXCEPTIONAL CIRCUMSTANCES</b>
-      </Typography>
-
-      <FormControlLabel
-        control={<Checkbox />}
-        label={`This ${actionType} replaces the previous ${actionType}`}
-      />
-      <FormHelperText>
-        {`The original ${actionType} will be deleted and replaced with this ban / warning.
-        Use when correcting a mistake or typo, eg.`}
-      </FormHelperText>
+          <Box sx={{ width: '100%', marginTop: 10 }}>
+            <TextField
+              id="removalReason"
+              variant="outlined"
+              multiline
+              fullWidth
+              value={removalReason}
+              onChange={(event) => setRemovalReason(event.target.value)}
+            />
+          </Box>
+        </>
+      )}
 
       <br />
-      <Button color="primary" variant="outlined">
-        Pardon user
-      </Button>
-      <FormHelperText>
-        {`A pardon deletes all history of this ${actionType}.
-        ${
-          actionType === 'ban'
-            ? ' In most cases, lift the current ban instead'
-            : ''
-        }`}
-      </FormHelperText>
-
       <br />
       <br />
-
-      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-        <Button
-          color="secondary"
-          variant="contained"
-          style={{ color: 'white', width: '30%' }}
-        >
-          Save
-        </Button>
-      </Box>
     </ProtectedRoute>
-  );
-}
-
-function BanMultipleUsers({
-  dqVoters,
-  setDqVoters,
-  removeEntrants,
-  setRemoveEntrants,
-  warnUsers,
-  setWarnUsers,
-  banUsers,
-  setBanUsers,
-  usernames,
-}) {
-  const handleCheckAll = (event) => {
-    let fn;
-    switch (event.target.id) {
-      case 'dq':
-        fn = setDqVoters;
-        break;
-      case 'remove':
-        fn = setRemoveEntrants;
-        break;
-      case 'warn':
-        fn = setWarnUsers;
-        break;
-      case 'ban':
-        fn = setBanUsers;
-        break;
-      default:
-        return;
-    }
-    fn((prev) => (prev.size ? new Set() : new Set(usernames)));
-  };
-
-  const handleCheckOne = (event) => {
-    let fn;
-    switch (event.target.id) {
-      case 'dq':
-        fn = setDqVoters;
-        break;
-      case 'remove':
-        fn = setRemoveEntrants;
-        break;
-      case 'warn':
-        fn = setWarnUsers;
-        break;
-      case 'ban':
-        fn = setBanUsers;
-        break;
-      default:
-        return;
-    }
-    fn((prev) => {
-      const newSet = new Set(prev); // Create a new Set
-      if (event.target.checked) {
-        newSet.add(event.target.name);
-      } else {
-        newSet.delete(event.target.name);
-      }
-      return newSet;
-    });
-  };
-
-  return (
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <TableCell>User</TableCell>
-            <TableCell align="center">
-              <Checkbox
-                style={{ padding: '0 8px 0 0' }}
-                onClick={handleCheckAll}
-                checked={!!dqVoters.size}
-                id="dq"
-              />
-              Exclude votes
-            </TableCell>
-            <TableCell align="center">
-              <Checkbox
-                style={{ padding: '0 8px 0 0' }}
-                onClick={handleCheckAll}
-                checked={!!removeEntrants.size}
-                id="remove"
-              />
-              DQ entries
-            </TableCell>
-            <TableCell align="center">
-              <Checkbox
-                style={{ padding: '0 8px 0 0' }}
-                onClick={handleCheckAll}
-                checked={!!warnUsers.size}
-                id="warn"
-              />
-              Warn
-            </TableCell>
-            <TableCell align="center">
-              <Checkbox
-                style={{ padding: '0 8px 0 0' }}
-                onClick={handleCheckAll}
-                checked={!!banUsers.size}
-                id="ban"
-              />
-              Ban
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {usernames.map((u) => (
-            <TableRow
-              key={u}
-              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-            >
-              <TableCell component="th" scope="row">
-                {u}
-              </TableCell>
-              <TableCell align="center">
-                <FormControlLabel
-                  control={(
-                    <Checkbox
-                      style={{ paddingTop: 0, paddingBottom: 0 }}
-                      checked={dqVoters.has(u)}
-                      onChange={handleCheckOne}
-                      name={u}
-                      id="dq"
-                    />
-                  )}
-                />
-              </TableCell>
-              <TableCell align="center">
-                <FormControlLabel
-                  control={(
-                    <Checkbox
-                      style={{ paddingTop: 0, paddingBottom: 0 }}
-                      checked={removeEntrants.has(u)}
-                      onChange={handleCheckOne}
-                      name={u}
-                      id="remove"
-                    />
-                  )}
-                />
-              </TableCell>
-              <TableCell align="center">
-                <FormControlLabel
-                  control={(
-                    <Checkbox
-                      style={{ paddingTop: 0, paddingBottom: 0 }}
-                      checked={warnUsers.has(u)}
-                      onChange={handleCheckOne}
-                      name={u}
-                      id="warn"
-                    />
-                  )}
-                />
-              </TableCell>
-              <TableCell align="center">
-                <FormControlLabel
-                  control={(
-                    <Checkbox
-                      style={{ paddingTop: 0, paddingBottom: 0 }}
-                      checked={banUsers.has(u)}
-                      onChange={handleCheckOne}
-                      name={u}
-                      id="ban"
-                    />
-                  )}
-                />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
   );
 }
 
@@ -499,15 +363,3 @@ function Separator() {
 }
 
 export default BanUsers;
-
-BanMultipleUsers.propTypes = {
-  dqVoters: PropTypes.instanceOf(Set).isRequired,
-  setDqVoters: PropTypes.func.isRequired,
-  removeEntrants: PropTypes.instanceOf(Set).isRequired,
-  setRemoveEntrants: PropTypes.func.isRequired,
-  warnUsers: PropTypes.instanceOf(Set).isRequired,
-  setWarnUsers: PropTypes.func.isRequired,
-  banUsers: PropTypes.instanceOf(Set).isRequired,
-  setBanUsers: PropTypes.func.isRequired,
-  usernames: PropTypes.arrayOf(PropTypes.string).isRequired,
-};
