@@ -1,4 +1,6 @@
+import Block from '@mui/icons-material/Block';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
+import GroupRemove from '@mui/icons-material/GroupRemove';
 import InsightsIcon from '@mui/icons-material/Insights';
 import List from '@mui/material/List';
 import PropTypes from 'prop-types';
@@ -15,6 +17,14 @@ const MODERATOR_MENU_ITEMS = {
   analyze: {
     Icon: InsightsIcon,
     text: 'Analyze Votes',
+  },
+  banUsers: {
+    Icon: Block,
+    text: 'TEMP Ban Users', // delete this once analyze and viewBans are complete
+  },
+  viewBans: {
+    Icon: GroupRemove,
+    text: 'View Bans',
   },
 };
 
