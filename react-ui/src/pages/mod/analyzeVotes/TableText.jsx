@@ -31,7 +31,8 @@ function GreyTableText({ children }) {
   );
 }
 
-const RED_ABOVE_SCORE = 70;
+const RED_ABOVE_VALUE = 70;
+const PURPLE_BELOW_VALUE = 0;
 const RED = 0;
 const PURPLE = 275;
 const MIN_LIGHTNESS = 30;
@@ -40,18 +41,29 @@ const MIN_DARK_HUE = 80;
 const MAX_DARK_HUE = 160;
 const HUE_GRADIENT_DISTANCE = 40;
 
-function getHueFromScore(value) {
-  return value > RED_ABOVE_SCORE
-    ? RED
-    : (RED_ABOVE_SCORE - value) * (PURPLE / RED_ABOVE_SCORE);
-}
-
 /**
  * 0 = red; 275 = purple
  * @param {*} hue
  * @returns
  */
-function getColorFromHue(hue) {
+function getColorFromValue(
+  value,
+  redAboveValue = RED_ABOVE_VALUE,
+  purpleBelowValue = PURPLE_BELOW_VALUE,
+) {
+  if (value < 0) {
+    return 'hsl(0, 0%, 50%)';
+  }
+
+  let hue;
+  if (value >= redAboveValue) {
+    hue = RED;
+  } else if (value <= purpleBelowValue) {
+    hue = PURPLE;
+  } else {
+    hue = (redAboveValue - value) * (PURPLE / redAboveValue);
+  }
+
   // Map score onto HSL color wheel
   // 70+ = red; 0 = purple
   // Lowers brightness of yellows, greens, and teals
@@ -84,7 +96,7 @@ function ScoreTableText({ children }) {
   return (
     <TableCell
       style={{
-        color: getColorFromHue(getHueFromScore(children)),
+        color: getColorFromValue(children),
         fontWeight: 'bolder',
         textAlign: 'center',
       }}
@@ -143,7 +155,7 @@ export {
   BanStatusTableText,
   VoteStatusTableText,
   EntryStatusTableText,
-  getColorFromHue,
+  getColorFromValue,
 };
 
 RedTableText.propTypes = {

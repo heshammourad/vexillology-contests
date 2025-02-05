@@ -23,7 +23,15 @@ import {
   VoteStatusTableText,
 } from './TableText';
 import TakeActionButton from './TakeActionButton';
-import { AccountAgeText } from './VoteBreakdownText';
+import { RUBRIC, VoterBreakdownText } from './VoteBreakdownText';
+
+const VOTER_METRICS = {
+  age: 1,
+  karma: 20,
+  fives: [undefined, 4, 2],
+  zero: false,
+  history: [2, 2, 2],
+};
 
 export const ENTRANT_VOTERS = [
   {
@@ -208,9 +216,14 @@ function VoterRow({
                 justifyContent: 'center',
               }}
             >
-              <Box>
-                <AccountAgeText age={50} />
-                <AccountAgeText age={70} />
+              <Box sx={{ marginTop: 6, marginBottom: 6 }}>
+                {Object.entries(VOTER_METRICS).map(([key, value]) => (
+                  <VoterBreakdownText
+                    key={key}
+                    text={RUBRIC[key].getText(value)}
+                    score={RUBRIC[key].getScore(value)}
+                  />
+                ))}
               </Box>
             </Box>
           </Collapse>
