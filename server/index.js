@@ -124,7 +124,7 @@ if (!IS_DEV && cluster.isMaster) {
 
   apiRouter.get('/accessToken/:code', accessToken.get);
   apiRouter.get('/contests', contests.get);
-  apiRouter.get('/contests/:id', processUser(false), contest.get);
+  apiRouter.get('/contests/:contestId', processUser(false), contest.get);
   apiRouter.get('/hallOfFame', hallOfFame.get);
   apiRouter.get('/init', processUser(true), init.get);
   apiRouter.get('/revokeToken/:refreshToken', revokeToken.get);
