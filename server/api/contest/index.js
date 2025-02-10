@@ -142,6 +142,18 @@ const sortEntriesRandomly = (entries, username) => {
     });
 };
 
+/**
+ * Retrieves contest data based on the contest ID. If username is provided, user votes are added.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} req.params - The request parameters.
+ * @param {string} req.params.contestId - The ID of the contest.
+ * @param {string} [req.username] - The username of the user (optional).
+ * @param {Object} res - The response object.
+ *
+ * @returns {Promise<void>} A promise that resolves when the contest data is retrieved
+ * and sent in the response.
+ */
 exports.get = async ({ params: { contestId }, username }, res) => {
   try {
     const [contest] = await db.getContest(contestId);
