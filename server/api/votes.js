@@ -5,7 +5,7 @@ const { getVoteDates } = require('../db/queries');
 const { createLogger } = require('../logger');
 const { camelizeObjectKeys } = require('../util');
 
-const logger = createLogger('API/CONTEST');
+const logger = createLogger('API/VOTES');
 
 exports.all = async ({ body: { contestId } }, res, next) => {
   try {
@@ -15,28 +15,37 @@ exports.all = async ({ body: { contestId } }, res, next) => {
 
       if (!voteDates || !voteDates.length) {
         const message = 'contestId not found';
-        logger.warn(message);
+        logger.warn(`${message}: ${contestId}`);
         res.status(400).send(message);
         return;
       }
 
-      const [{ now, voteStart, voteEnd }] = voteDates;
+      const [{
+        localVoting, now, voteStart, voteEnd,
+      }] = voteDates;
+      if (!localVoting) {
+        const message = 'Contest does not allow local voting';
+        logger.warn(`${message}: ${contestId}`);
+        res.status(400).send(message);
+        return;
+      }
+
       if (!voteStart || !voteEnd) {
         const message = 'Unable to find voting dates for contest';
         logger.error(`${message}: ${contestId}`);
-        res.status(500).send(message);
+        res.status(400).send(message);
         return;
       }
 
       if (isBefore(now, voteStart)) {
         logger.error('Vote submitted before voting window opened');
-        res.status(403).send(`Voting window doesn't open until ${voteStart}`);
+        res.status(400).send(`Voting window doesn't open until ${voteStart}`);
         return;
       }
 
       if (isAfter(now, voteEnd)) {
         logger.warn('Vote submitted after voting window closed');
-        res.status(403).send(`Voting window closed at ${voteEnd}`);
+        res.status(400).send(`Voting window closed at ${voteEnd}`);
         return;
       }
     }
