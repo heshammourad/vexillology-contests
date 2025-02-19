@@ -38,7 +38,7 @@ exports.all = async ({ body: { contestId } }, res, next) => {
       }
 
       if (isBefore(now, voteStart)) {
-        logger.error('Vote submitted before voting window opened');
+        logger.warn('Vote submitted before voting window opened');
         res.status(400).send(`Voting window doesn't open until ${voteStart}`);
         return;
       }
