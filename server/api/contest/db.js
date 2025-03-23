@@ -18,17 +18,17 @@ const logger = createLogger('API/CONTEST/DB');
  *   - repeatedIds: An array of IDs that were found to be repeated.
  */
 const filterRepeatedIds = (data, idField) => {
-  const ids = new Set();
+  const ids = [];
   const filteredData = [];
   const repeatedIds = [];
   data.forEach((datum) => {
     const id = datum[idField];
-    if (ids.has(id)) {
+    if (ids.includes(id)) {
       repeatedIds.push(id);
     } else {
       filteredData.push(datum);
+      ids.push(id);
     }
-    ids.add(id);
   });
   return { filteredData, repeatedIds };
 };
