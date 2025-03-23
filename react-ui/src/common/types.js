@@ -39,11 +39,14 @@ export const defaultProps = {
   },
 };
 
+const backgroundColor = oneOf(['#000000', '#FFFFFF', '#4B91E3', '#808080']);
+
 const types = {
   AppBar: shape({ ...objects.AppBar }),
+  backgroundColor,
   color,
   submission: shape({
-    backgroundColor: oneOf(['#000000', '#FFFFFF', '#4B91E3', '#808080']),
+    backgroundColor,
     category: string,
     description: string,
     id: string,

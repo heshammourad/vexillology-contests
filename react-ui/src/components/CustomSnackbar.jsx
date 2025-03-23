@@ -12,6 +12,9 @@ import snackbarTypes from '../common/snackbarTypes';
 import useComponentsState from '../common/useComponentsState';
 
 const TYPES = {
+  [snackbarTypes.CERTIFY_RESULTS_ERROR]:
+    'Error updating results certification. Please try again later.',
+  [snackbarTypes.CERTIFY_RESULTS_SUCCESS]: 'Results certification updated',
   [snackbarTypes.REVIEW_SUBMISSION_ERROR]:
     'Error updating submission. Please try again later.',
   [snackbarTypes.REVIEW_SUBMISSION_SUCCESS]: 'Submission updated',
