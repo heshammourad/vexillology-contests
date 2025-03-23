@@ -20,11 +20,12 @@ function CertifyButton({ contestId, resultsCertified, voteEnd }) {
   };
 
   const handleCertifyResults = async () => {
-    const payload = { id: contestId, resultsCertified: !resultsCertified };
+    const newResultsCertified = !resultsCertified;
+    const payload = { id: contestId, resultsCertified: newResultsCertified };
     trigger(payload, {
       optimisticData: (current) => ({
         ...current,
-        resultsCertified: !resultsCertified,
+        resultsCertified: newResultsCertified,
       }),
       revalidate: false,
       populateCache: (response, current) => {
@@ -34,7 +35,7 @@ function CertifyButton({ contestId, resultsCertified, voteEnd }) {
         }
 
         updateSnackbarState(snackbarTypes.CERTIFY_RESULTS_SUCCESS);
-        return { ...current, resultsCertified: !resultsCertified };
+        return { ...current, resultsCertified: newResultsCertified };
       },
       onError: showError,
     });
