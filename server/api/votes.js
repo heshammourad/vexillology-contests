@@ -24,6 +24,7 @@ exports.all = async ({ body: { contestId } }, res, next) => {
         localVoting, now, voteStart, voteEnd,
       }] = voteDates;
       if (!localVoting) {
+        // Older contest from when voting was done in Reddit
         const message = 'Contest does not allow local voting';
         logger.warn(`${message}: ${contestId}`);
         res.status(400).send(message);
