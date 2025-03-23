@@ -59,7 +59,10 @@
     "prettier-eslint-cli": "^7.1.0"
   },
   "lint-staged": {
-    "*.{js,jsx}": "prettier-eslint --write",
+    "*.{js,jsx}": [
+      "prettier-eslint --write",
+      "eslint --fix"
+    ],
     "!(*.{js,jsx})": "prettier --ignore-unknown --write"
   }
 }
