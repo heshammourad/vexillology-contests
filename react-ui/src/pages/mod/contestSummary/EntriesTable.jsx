@@ -6,13 +6,16 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
 import LazyLoad from 'react-lazyload';
 
 import types from '../../../common/types';
-// eslint-disable-next-line no-restricted-imports
+/* eslint-disable no-restricted-imports */
+import CenteredContent from '../../../components/CenteredContent';
 import Submission from '../../../components/Submission';
+/* eslint-enable no-restricted-imports */
 
 const ROW_HEIGHT = 50;
 
@@ -27,7 +30,7 @@ function EntriesTable({ categories, entries }) {
 
   const hasCategories = categories.length > 0;
 
-  return (
+  return entries?.length > 0 ? (
     <TableContainer component={Paper} sx={{ maxHeight: 667 }}>
       <Table aria-label="entries" stickyHeader size="small">
         <TableHead>
@@ -147,6 +150,12 @@ function EntriesTable({ categories, entries }) {
         </TableBody>
       </Table>
     </TableContainer>
+  ) : (
+    <CenteredContent>
+      <Typography component="div" variant="h6">
+        No results found
+      </Typography>
+    </CenteredContent>
   );
 }
 
