@@ -10,9 +10,10 @@ const helmet = require('helmet');
 const accessToken = require('./api/accessToken');
 const analyzeVotes = require('./api/analyzeVotes');
 const {
+  processUser,
   requireAuthentication,
   requireModerator,
-  processUser,
+  requireRole,
 } = require('./api/authentication');
 const contest = require('./api/contest');
 const contests = require('./api/contests');
@@ -27,6 +28,7 @@ const staticContent = require('./api/staticContent');
 const submission = require('./api/submission');
 const { checkRequiredFields } = require('./api/validation');
 const votes = require('./api/votes');
+const UserPermissions = require('./db/userPermissions');
 const { IS_DEV, BACKEND_PORT } = require('./env');
 const { createLogger } = require('./logger');
 
@@ -138,7 +140,7 @@ if (!IS_DEV && cluster.isMaster) {
     .route('/submission')
     .get(processUser(false), submission.get)
     .post(
-      requireAuthentication,
+      requireRole(UserPermissions.PARTICIPATE_IN_CONTEST),
       checkRequiredFields('description', 'height', 'name', 'url', 'width'),
       submission.post,
     )

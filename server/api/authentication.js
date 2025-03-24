@@ -2,6 +2,7 @@
  * @exports processUser adds username and moderator status to request
  * @exports requireAuthentication confirm authentication
  * @exports requireModerator confirm moderator
+ * @exports requireRole confirm role
  */
 
 const db = require('../db');
@@ -18,7 +19,7 @@ const isModerator = async (username) => {
   return !!moderator;
 };
 
-exports.processUser = (checkModerator) => async (req, res, next) => {
+const processUser = (checkModerator) => async (req, res, next) => {
   const {
     headers: { accesstoken, refreshtoken },
   } = req;
@@ -69,15 +70,13 @@ const requireAuthentication = async (req, res, next) => {
   }
 };
 
-exports.requireAuthentication = requireAuthentication;
-
-exports.requireModerator = [
+const requireModerator = [
   requireAuthentication,
   async (req, res, next) => {
     try {
       const moderator = await isModerator(req.username);
       if (!moderator) {
-        res.status(403).send('Must be moderator to access resource');
+        res.status(403).send('Must be a moderator to access resource');
         return;
       }
 
@@ -88,3 +87,32 @@ exports.requireModerator = [
     }
   },
 ];
+
+const requireRole = (role) => [
+  requireAuthentication,
+  async (req, res, next) => {
+    try {
+      const result = await db.select(
+        'SELECT * FROM has_user_permission($1, $2)',
+        [req.username, role],
+        true,
+      );
+      if (!result?.hasUserPermission) {
+        res.status(403).send(`Must have role "${role}" to access resource`);
+        return;
+      }
+
+      next();
+    } catch (e) {
+      logger.error(`Error validating role: ${e}`);
+      next(e);
+    }
+  },
+];
+
+module.exports = {
+  processUser,
+  requireAuthentication,
+  requireModerator,
+  requireRole,
+};
