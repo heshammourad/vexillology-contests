@@ -21,19 +21,14 @@ import {
   PageContainer,
   PageWithDrawer,
   RedditLogInDialog,
-  StaticContent,
 } from '../../components';
 import useSwrContest from '../../data/useSwrContest';
 
 import ContestAppBarMain from './ContestAppBarMain';
 import ContestAppBarRight from './ContestAppBarRight';
-import ContestCategorySelector from './ContestCategorySelector';
-import ContestGrid from './ContestGrid';
-import ContestResultsNotCertified from './ContestResultsNotCertified';
+import ContestContent from './ContestContent';
 import ContestSettings from './ContestSettings';
 import ContestSponsor from './ContestSponsor';
-import ContestUnderReview from './ContestUnderReview';
-import ContestWinners from './ContestWinners';
 import useContestSizing from './useContestSizing';
 
 const scrollInstantlyTo = (scrollY, options = {}) => {
@@ -179,15 +174,7 @@ function Contest() {
 
   const { headingVariant } = useContestSizing();
 
-  const {
-    categories,
-    isContestMode,
-    name,
-    resultsCertified,
-    votingWindowOpen,
-    winners,
-    prompt,
-  } = contest;
+  const { name, prompt } = contest;
 
   // Prevents display of stale, cached data
   if (isValidating) {
@@ -260,29 +247,8 @@ function Contest() {
               <FormattedContent content={prompt} markdown />
             </AccordionDetails>
           </Accordion>
-
-          {votingWindowOpen === false && (
-            <ContestUnderReview {...{ isValidating, mutate }} />
-          )}
-          {resultsCertified === false && (
-            <ContestResultsNotCertified {...{ isValidating, mutate }} />
-          )}
-          {isContestMode && (
-            <Box marginBottom={3}>
-              <Typography component="div" variant="subtitle1">
-                <StaticContent id="voting_instructions" />
-              </Typography>
-            </Box>
-          )}
-          <ContestCategorySelector
-            {...{ categories, selectedCategories, setSelectedCategories }}
-          />
-          <ContestWinners {...{ winners }} />
-          <ContestGrid
-            {...{
-              selectedCategories,
-              setDrawer,
-            }}
+          <ContestContent
+            {...{ selectedCategories, setDrawer, setSelectedCategories }}
           />
         </PageContainer>
       )}
