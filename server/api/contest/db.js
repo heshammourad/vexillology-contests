@@ -85,6 +85,7 @@ exports.getContest = async (contestId) => db.select(
     local_voting,
     name,
     prompt,
+    results_certified,
     submission_end,
     submission_start,
     subtext,
