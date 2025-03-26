@@ -27,11 +27,14 @@ function ContestContent({
   } = contest;
 
   if (votingWindowOpen === false) {
-    // votingWindowOpen is false when there are pending entries
+    // votingWindowOpen is false when there are entries that haven't been
+    // approved by moderators yet
     return <ContestUnderReview {...{ isValidating, mutate }} />;
   }
 
   if (resultsCertified === false) {
+    // resultsCertified is false when voting is done, but the results haven't
+    // been certified by an admin yet
     return <ContestResultsNotCertified {...{ isValidating, mutate }} />;
   }
 
