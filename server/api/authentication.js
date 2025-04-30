@@ -40,6 +40,7 @@ const processUser = (checkModerator) => async (req, res, next) => {
       req.moderator = moderator;
     }
   } catch (e) {
+    req.username = null;
     logger.warn(`Error retrieving username: ${e}`);
   }
 

@@ -71,8 +71,14 @@ function AccountMenu({ color }) {
   const sendUserToAuthUrl = useRedditLogIn();
 
   const {
-    data: { moderator, submissionsToReview },
+    data: { loginExpired, moderator, submissionsToReview },
   } = useSwrInit();
+
+  useEffect(() => {
+    if (loginExpired) {
+      setAuthState({});
+    }
+  }, [loginExpired]);
 
   const toggleMenu = () => {
     setMenuOpen((prevOpen) => !prevOpen);

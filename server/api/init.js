@@ -19,6 +19,7 @@ exports.get = async ({ moderator, userAttributes, username }, res) => {
 
     const response = {
       experiments,
+      loginExpired: username === null,
       title: TITLE,
       webAppClientId: WEB_APP_CLIENT_ID,
     };
