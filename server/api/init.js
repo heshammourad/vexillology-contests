@@ -9,7 +9,12 @@ const { WEB_APP_CLIENT_ID } = process.env;
 
 const logger = createLogger('API/INIT');
 
-exports.get = async ({ moderator, userAttributes, username }, res) => {
+exports.get = async (
+  {
+    loginExpired, moderator, userAttributes, username,
+  },
+  res,
+) => {
   try {
     const experimentsData = await db.select('SELECT * FROM experiments');
     const experiments = experimentsData.reduce((acc, { active, name }) => {
@@ -19,7 +24,7 @@ exports.get = async ({ moderator, userAttributes, username }, res) => {
 
     const response = {
       experiments,
-      loginExpired: username === null,
+      loginExpired,
       title: TITLE,
       webAppClientId: WEB_APP_CLIENT_ID,
     };
