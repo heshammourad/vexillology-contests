@@ -41,6 +41,9 @@ const processUser = (checkModerator) => async (req, res, next) => {
     }
   } catch (e) {
     logger.warn(`Error retrieving username: ${e}`);
+    if (e?.statusCode === 400) {
+      req.loginExpired = true;
+    }
   }
 
   next();
