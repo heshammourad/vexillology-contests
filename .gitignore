@@ -8,6 +8,7 @@ npm-debug.log
 *.dev
 .DS_Store
 jsconfig.json
+.cursorrules
 
 # Docker
 Dockerfile

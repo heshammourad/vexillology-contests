@@ -213,7 +213,7 @@ function VoterRow({
             <Box
               sx={{
                 display: 'flex',
-                justifyContent: 'center',
+                marginLeft: '40px',
               }}
             >
               <Box sx={{ marginTop: 6, marginBottom: 6 }}>

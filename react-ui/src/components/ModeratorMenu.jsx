@@ -20,7 +20,7 @@ const MODERATOR_MENU_ITEMS = {
   },
   banUsers: {
     Icon: Block,
-    text: 'TEMP Ban Users', // delete this once analyze and viewBans are complete
+    text: 'NOT DIRECTLY ACCESSIBLE', // delete this once analyze and viewBans are complete
   },
   viewBans: {
     Icon: GroupRemove,
