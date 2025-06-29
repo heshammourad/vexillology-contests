@@ -56,9 +56,13 @@ function AnalyzeVotes() {
           size="small"
           style={{ marginLeft: 10 }}
           disabled={!contestId}
-          onClick={() => navigate(`/contests/${contestId}`)}
+          onClick={() => window.open(
+            `/contests/${contestId}`,
+            '_blank',
+            'noopener,noreferrer',
+          )}
         >
-          GO TO CONTEST
+          OPEN CONTEST IN NEW TAB
         </Button>
       </Box>
 
