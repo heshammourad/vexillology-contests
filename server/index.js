@@ -118,6 +118,7 @@ if (!IS_DEV && cluster.isMaster) {
     .get(reviewSubmissions.get)
     .put(checkRequiredFields('id', 'status'), reviewSubmissions.put);
   modRouter.route('/analyzeVotes/:id').get(analyzeVotes.get);
+  modRouter.route('/analyzeVotes/:id/voters').get(analyzeVotes.getVoters);
 
   const apiRouter = express.Router();
   apiRouter.use(express.json());

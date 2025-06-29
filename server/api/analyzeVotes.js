@@ -3,9 +3,28 @@
  */
 
 const db = require('../db');
+const { getVotersData } = require('../db/queries');
 const { createLogger } = require('../logger');
 
 const logger = createLogger('API/ANALYZE_VOTES');
+
+exports.getVoters = async ({ params: { id } }, res) => {
+  try {
+    console.log('getVotersData: ', id);
+    const votersData = await getVotersData(id);
+    console.log('getVotersData 2: ', votersData);
+
+    if (!votersData.length) {
+      res.status(404).send();
+      return;
+    }
+
+    res.send({ voters: votersData });
+  } catch (err) {
+    logger.error(`Error getting /analyzeVotes/${id}/voters: ${err}`);
+    res.status(500).send();
+  }
+};
 
 exports.get = async ({ params: { id } }, res) => {
   try {
