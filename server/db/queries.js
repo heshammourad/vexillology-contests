@@ -89,6 +89,5 @@ exports.getVotersData = async (contestId) => {
     [contestId],
   );
 
-  console.log(votersData, contestId);
   return votersData;
 };

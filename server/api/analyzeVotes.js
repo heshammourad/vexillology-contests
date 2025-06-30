@@ -10,9 +10,7 @@ const logger = createLogger('API/ANALYZE_VOTES');
 
 exports.getVoters = async ({ params: { id } }, res) => {
   try {
-    console.log('getVotersData: ', id);
     const votersData = await getVotersData(id);
-    console.log('getVotersData 2: ', votersData);
 
     if (!votersData.length) {
       res.status(404).send();

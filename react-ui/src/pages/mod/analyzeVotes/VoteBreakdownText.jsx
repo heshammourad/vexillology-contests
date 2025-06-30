@@ -49,7 +49,7 @@ const RUBRIC = {
         return `Voter gave flag a ${vote1}`;
       }
       if (!vote2) {
-        return `Voter gave flags ${vote1} and X`;
+        return `Voter gave flag a ${vote1} (skipped other flag)`;
       }
       return `Voter gave flags ${vote1} and ${vote2}`;
     },
