@@ -210,7 +210,7 @@ VoteStatusTableText.defaultProps = {
 };
 
 EntryStatusTableText.propTypes = {
-  entryStatus: PropTypes.oneOf(['dq']),
+  entryStatus: PropTypes.oneOf(['dq', null]),
 };
 
 EntryStatusTableText.defaultProps = {

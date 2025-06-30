@@ -36,14 +36,14 @@ export const ENTRANTS = [
   },
   {
     username: 'TorteApp',
-    entryStatus: '',
+    entryStatus: null,
     banStatus: '',
     cheating: 21,
     suspicious: 1,
   },
   {
     username: 'heshammourad',
-    entryStatus: '',
+    entryStatus: null,
     banStatus: '',
     cheating: 0,
     suspicious: 0,
