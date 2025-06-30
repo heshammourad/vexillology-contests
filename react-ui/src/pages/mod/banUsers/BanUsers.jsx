@@ -21,11 +21,7 @@ import BanLength from './BanLength';
 import EditTypeSelector from './EditTypeSelector';
 
 const {
-  format,
-  addMonths,
-  endOfMonth,
-  differenceInMonths,
-  parseISO,
+  format, addMonths, endOfMonth, differenceInMonths,
 } = require('date-fns');
 
 const DEV_OPTIONS = {
@@ -52,17 +48,21 @@ const useRefreshOnDevOptionChange = () => {
 
 const USER_BAN_QUERY_RESULT = SEARCH_RESULTS[0];
 
+const getActionId = () => {
+  if (DEV_OPTION === DEV_OPTIONS.editBan) {
+    return 'as1';
+  }
+  if (DEV_OPTION === DEV_OPTIONS.editWarning) {
+    return 'as4';
+  }
+  return null;
+};
+
 const SEARCH_PARAMS = {
   contestId: DEV_OPTION === DEV_OPTIONS.fromContest ? 'sep23' : null,
   usernames:
     DEV_OPTION === DEV_OPTIONS.fromContest ? ['joshuauiux', 'WorkingKing'] : [],
-  // eslint-disable-next-line no-nested-ternary
-  actionId:
-    DEV_OPTION === DEV_OPTIONS.editBan
-      ? 'as1'
-      : DEV_OPTION === DEV_OPTIONS.editWarning
-        ? 'as4'
-        : null,
+  actionId: getActionId(),
 };
 
 const useStyles = makeStyles({
@@ -131,16 +131,13 @@ function BanUsers() {
 
   // BAN LENGTH / END DATE STATE
   // MUST CALCULATE MONTHS FROM ACTION
-  const initialMonths = action?.expiryDate !== 'never'
-    ? differenceInMonths(
-      parseISO(action.expiryDate),
-      parseISO(action.startDate),
-    )
+  const initialMonths = action?.endDate !== null
+    ? differenceInMonths(action.endDate, action.startDate)
     : 1;
   const [months, setMonths] = useState(initialMonths);
-  const initialIsPermanentBan = action?.expiryDate === 'never';
+  const initialIsPermanentBan = action?.endDate === null;
   const [isPermanentBan, setIsPermanentBan] = useState(initialIsPermanentBan);
-  const expiryDate = startDate && endOfMonth(addMonths(startDate, months - 1));
+  const endDate = startDate && endOfMonth(addMonths(startDate, months - 1));
 
   // REASONS
   const initialReason = action?.reason || '';
@@ -277,7 +274,7 @@ function BanUsers() {
               setMonths,
               isPermanentBan,
               setIsPermanentBan,
-              expiryDate,
+              endDate,
             }}
             disabled={isLockedEdit}
           />

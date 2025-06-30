@@ -16,7 +16,7 @@ function BanLength({
   setMonths,
   isPermanentBan,
   setIsPermanentBan,
-  expiryDate,
+  endDate,
   disabled,
 }) {
   return (
@@ -55,8 +55,8 @@ function BanLength({
             // eslint-disable-next-line no-nested-ternary
             isPermanentBan
               ? 'This ban will not expire'
-              : expiryDate
-                ? `This ban will expire on ${format(expiryDate, 'MMM d, yyyy')}`
+              : endDate
+                ? `This ban will expire on ${format(endDate, 'MMM d, yyyy')}`
                 : 'Select a contest to get the end date'
           }
         </em>
@@ -73,9 +73,12 @@ BanLength.propTypes = {
   setMonths: PropTypes.func.isRequired,
   isPermanentBan: PropTypes.bool.isRequired,
   setIsPermanentBan: PropTypes.func.isRequired,
-  expiryDate: PropTypes.instanceOf(Date),
+  endDate: PropTypes.oneOfType([
+    PropTypes.instanceOf(Date),
+    PropTypes.oneOf([null]),
+  ]),
 };
 
 BanLength.defaultProps = {
-  expiryDate: undefined,
+  endDate: undefined,
 };
