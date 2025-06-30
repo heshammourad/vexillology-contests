@@ -39,11 +39,6 @@ exports.getVoters = async ({ params: { id } }, res) => {
   try {
     const votersData = await getVotersData(id);
 
-    if (!votersData.length) {
-      res.status(404).send();
-      return;
-    }
-
     res.send({ voters: votersData });
   } catch (err) {
     logger.error(`Error getting /analyzeVotes/${id}/voters: ${err}`);
