@@ -80,6 +80,12 @@ function VotersTable() {
   const { contestId } = useParams();
   const [sortField, setSortField] = useState('username');
   const [sortDirection, setSortDirection] = useState('asc');
+  // Fetch voters data using proper authentication
+  const {
+    data: { voters: votersData = [] },
+    error,
+    isLoading,
+  } = useSwrAuth(`/mod/analyzeVotes/${contestId}/voters`);
 
   const buttons = useMemo(
     () => [
@@ -106,13 +112,6 @@ function VotersTable() {
       setSortDirection('asc');
     }
   };
-
-  // Fetch voters data using proper authentication
-  const {
-    data: { voters: votersData = [] },
-    error,
-    isLoading,
-  } = useSwrAuth(`/mod/analyzeVotes/${contestId}/voters`);
 
   // Sort the data
   const sortedVotersData = useMemo(
