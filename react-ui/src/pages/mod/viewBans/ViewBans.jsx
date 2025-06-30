@@ -32,34 +32,34 @@ export const SEARCH_RESULTS = [
     username: 'ASmallEye',
     history: [
       {
-        issueDate: new Date(2024, 7, 29),
-        modName: 'TorteApp',
+        startDate: new Date(2024, 7, 29),
+        moderator: 'TorteApp',
         contestId: 'sep23',
         actionType: 'ban',
-        expiryDate: 'never',
+        endDate: 'never',
         reason: 'Syke',
         actionId: 'as1',
         lifted: false,
       },
       {
-        issueDate: new Date(2024, 6, 20),
-        modName: 'TorteApp',
+        startDate: new Date(2024, 6, 20),
+        moderator: 'TorteApp',
         contestId: '',
         actionType: 'ban',
-        expiryDate: new Date(2024, 7, 31),
+        endDate: new Date(2024, 7, 31),
         reason: 'Voted with alt account again',
         actionId: 'as3',
         lifted: true,
         liftedDate: new Date(2024, 6, 30),
-        liftedMod: 'TorteApp',
+        liftedModerator: 'TorteApp',
         liftedReason: 'Contrition',
       },
       {
-        issueDate: new Date(2024, 5, 2),
-        modName: 'TorteApp',
+        startDate: new Date(2024, 5, 2),
+        moderator: 'TorteApp',
         contestId: '',
         actionType: 'warn',
-        expiryDate: 'never',
+        endDate: 'never',
         reason: 'Voted with alt account',
         actionId: 'as4',
         lifted: false,
@@ -73,11 +73,11 @@ export const BANNED_USERS = [
     username: 'joshuauiux',
     history: [
       {
-        issueDate: new Date(2024, 11, 17),
-        modName: 'TorteApp',
+        startDate: new Date(2024, 11, 17),
+        moderator: 'TorteApp',
         contestId: '',
         actionType: 'ban',
-        expiryDate: 'never',
+        endDate: 'never',
         reason: 'Created 40 fake accounts to boost score in Jan 25 contest.',
         actionId: 'as5',
         lifted: false,
@@ -88,11 +88,11 @@ export const BANNED_USERS = [
     username: 'WorkingKing',
     history: [
       {
-        issueDate: new Date(2024, 11, 17),
-        modName: 'bakonydraco',
+        startDate: new Date(2024, 11, 17),
+        moderator: 'bakonydraco',
         contestId: '',
         actionType: 'ban',
-        expiryDate: endOfMonth(addMonths(new Date(), 3)),
+        endDate: endOfMonth(addMonths(new Date(), 3)),
         reason: 'Created 3 fake accounts to boost score in Jan 25 contest.',
         lifted: false,
       },
@@ -228,13 +228,13 @@ function SearchResults({ searchTerm }) {
 function HistoryItem({
   action: {
     actionType,
-    issueDate,
-    expiryDate,
-    modName,
+    startDate,
+    endDate,
+    moderator,
     reason,
     lifted,
     liftedDate,
-    liftedMod,
+    liftedModerator,
     liftedReason,
   },
 }) {
@@ -245,15 +245,18 @@ function HistoryItem({
       <Box sx={{ float: 'right' }}>
         <Button color="primary">Edit</Button>
       </Box>
-      <Expiration {...{ actionType, expiryDate }} isLifted={!!lifted} />
+      <Expiration {...{ actionType, endDate }} isLifted={!!lifted} />
       <Typography>
-        {`Issued ${format(issueDate, 'MMM d, yyyy')} by ${modName}`}
+        {`Issued ${format(startDate, 'MMM d, yyyy')} by ${moderator}`}
       </Typography>
       <Typography className={classes.italics}>{reason}</Typography>
       {!!lifted && (
         <>
           <Typography>
-            {`Lifted ${format(liftedDate, 'MMM d, yyyy')} by ${liftedMod}`}
+            {`Lifted ${format(
+              liftedDate,
+              'MMM d, yyyy',
+            )} by ${liftedModerator}`}
           </Typography>
           <Typography className={classes.italics}>
             {liftedReason || 'No reason given'}
@@ -265,7 +268,7 @@ function HistoryItem({
 }
 
 function Expiration({
-  actionType, expiryDate, isLifted, ignorePastBans,
+  actionType, endDate, isLifted, ignorePastBans,
 }) {
   const classes = useStyles();
   const prefix = isLifted ? '(LIFTED) ' : '';
@@ -289,7 +292,7 @@ function Expiration({
       </Typography>
     );
   }
-  if (expiryDate === 'never') {
+  if (endDate === 'never') {
     return (
       <Typography
         className={isLifted ? classes.neutralGrey : classes.banRed}
@@ -302,7 +305,7 @@ function Expiration({
       </Typography>
     );
   }
-  const inTheFuture = isFuture(expiryDate);
+  const inTheFuture = isFuture(endDate);
   if (!inTheFuture) {
     if (ignorePastBans) {
       return (
@@ -317,7 +320,7 @@ function Expiration({
           {prefix}
           BAN EXPIRED
           {' '}
-          {format(expiryDate, 'MMM d, yyyy').toUpperCase()}
+          {format(endDate, 'MMM d, yyyy').toUpperCase()}
         </b>
       </Typography>
     );
@@ -331,7 +334,7 @@ function Expiration({
         {prefix}
         BANNED UNTIL
         {' '}
-        {format(expiryDate, 'MMM d, yyyy').toUpperCase()}
+        {format(endDate, 'MMM d, yyyy').toUpperCase()}
       </b>
     </Typography>
   );
@@ -354,7 +357,7 @@ export function UserBanHistory({
         }
         if (
           action.actionType === 'ban'
-              && (action.expiryDate === 'never' || isFuture(action.expiryDate))
+              && (action.endDate === 'never' || isFuture(action.endDate))
               && !action.lifted
         ) {
           return action;
@@ -385,7 +388,7 @@ export function UserBanHistory({
             </Typography>
             <Expiration
               actionType={topLevelAction?.actionType}
-              expiryDate={topLevelAction?.expiryDate}
+              endDate={topLevelAction?.endDate}
               isLifted={!!topLevelAction?.lifted}
               ignorePastBans
             />
@@ -413,7 +416,7 @@ export function UserBanHistory({
             <Button
               disabled={
                 topLevelAction.actionType === 'ban'
-                && topLevelAction.expiryDate === 'never'
+                && topLevelAction.endDate === 'never'
               }
               color="primary"
               onClick={() => navigate('/mod/banUsers')}
@@ -438,11 +441,11 @@ SearchResults.propTypes = {
 };
 
 const actionType = PropTypes.shape({
-  issueDate: PropTypes.instanceOf(Date).isRequired,
-  modName: PropTypes.string.isRequired,
+  startDate: PropTypes.instanceOf(Date).isRequired,
+  moderator: PropTypes.string.isRequired,
   contestId: PropTypes.string.isRequired,
   actionType: PropTypes.oneOf(['ban', 'warn']).isRequired,
-  expiryDate: PropTypes.oneOfType([
+  endDate: PropTypes.oneOfType([
     PropTypes.oneOf(['never']),
     PropTypes.instanceOf(Date),
   ]).isRequired,
@@ -450,7 +453,7 @@ const actionType = PropTypes.shape({
   actionId: PropTypes.string.isRequired,
   lifted: PropTypes.bool,
   liftedDate: PropTypes.instanceOf(Date),
-  liftedMod: PropTypes.string,
+  liftedModerator: PropTypes.string,
   liftedReason: PropTypes.string,
 });
 
@@ -464,7 +467,7 @@ UserBanHistory.propTypes = PropTypes.shape({
 
 Expiration.propTypes = {
   actionType: PropTypes.oneOf(['ban', 'warn']).isRequired,
-  expiryDate: PropTypes.oneOfType([
+  endDate: PropTypes.oneOfType([
     PropTypes.oneOf(['never']),
     PropTypes.instanceOf(Date),
   ]).isRequired,
