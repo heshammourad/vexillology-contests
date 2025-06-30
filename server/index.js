@@ -8,13 +8,13 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 
 const accessToken = require('./api/accessToken');
-const analyzeVotes = require('./api/analyzeVotes');
 const {
   requireAuthentication,
   requireModerator,
   processUser,
 } = require('./api/authentication');
 const contest = require('./api/contest');
+const contestVoters = require('./api/contestVoters');
 const contests = require('./api/contests');
 const dev = require('./api/dev');
 const hallOfFame = require('./api/hallOfFame');
@@ -118,8 +118,7 @@ if (!IS_DEV && cluster.isMaster) {
     .route('/reviewSubmissions')
     .get(reviewSubmissions.get)
     .put(checkRequiredFields('id', 'status'), reviewSubmissions.put);
-  modRouter.route('/analyzeVotes/:id').get(analyzeVotes.get);
-  modRouter.route('/analyzeVotes/:id/voters').get(analyzeVotes.getVoters);
+  modRouter.route('/analyzeVotes/:id/voters').get(contestVoters.get);
   modRouter.route('/userSearch').get(userSearch.searchUsers);
 
   const apiRouter = express.Router();
