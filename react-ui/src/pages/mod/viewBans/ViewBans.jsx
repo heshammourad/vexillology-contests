@@ -262,14 +262,22 @@ function HistoryItem({
     liftedDate,
     liftedModerator,
     liftedReason,
+    actionId,
   },
+  username,
 }) {
   const classes = useStyles();
+  const navigate = useNavigate();
 
   return (
     <Box className={clsx(classes.row, classes.historyItem)}>
       <Box sx={{ float: 'right' }}>
-        <Button color="primary">Edit</Button>
+        <Button
+          color="primary"
+          onClick={() => navigate(`/mod/banUsers?u=${username}&a=${actionId}`)}
+        >
+          Edit
+        </Button>
       </Box>
       <Expiration {...{ actionType, endDate }} isLifted={!!lifted} />
       <Typography>
@@ -424,7 +432,7 @@ export function UserBanHistory({
           </Box>
           {topLevelAction?.reason && (
             <Typography className={classes.italics}>
-              {topLevelAction.reason}
+              {topLevelAction?.reason}
             </Typography>
           )}
         </Box>
@@ -444,11 +452,11 @@ export function UserBanHistory({
           {showBanButton && (
             <Button
               disabled={
-                topLevelAction.actionType === 'ban'
-                && topLevelAction.endDate === null
+                topLevelAction?.actionType === 'ban'
+                && topLevelAction?.endDate === null
               }
               color="primary"
-              onClick={() => navigate('/mod/banUsers')}
+              onClick={() => navigate(`/mod/banUsers?u=${username}`)}
             >
               BAN
             </Button>
@@ -457,7 +465,11 @@ export function UserBanHistory({
       </Box>
       {showHistory
         && history.map((action) => (
-          <HistoryItem key={action.actionId} action={action} />
+          <HistoryItem
+            key={action.actionId}
+            action={action}
+            username={username}
+          />
         ))}
     </Box>
   );
@@ -486,7 +498,10 @@ const actionType = PropTypes.shape({
   liftedReason: PropTypes.string,
 });
 
-HistoryItem.propTypes = { ...actionType };
+HistoryItem.propTypes = {
+  action: actionType.isRequired,
+  username: PropTypes.string.isRequired,
+};
 
 UserBanHistory.propTypes = PropTypes.shape({
   username: PropTypes.string.isRequired,
@@ -495,15 +510,17 @@ UserBanHistory.propTypes = PropTypes.shape({
 }).isRequired;
 
 Expiration.propTypes = {
-  actionType: PropTypes.oneOf(['ban', 'warn']).isRequired,
+  actionType: PropTypes.oneOf(['ban', 'warn']),
   endDate: PropTypes.oneOfType([
     PropTypes.instanceOf(Date),
     PropTypes.oneOf([null]),
-  ]).isRequired,
+  ]),
   isLifted: PropTypes.bool.isRequired,
   ignorePastBans: PropTypes.bool,
 };
 
 Expiration.defaultProps = {
+  actionType: undefined,
+  endDate: undefined,
   ignorePastBans: false,
 };

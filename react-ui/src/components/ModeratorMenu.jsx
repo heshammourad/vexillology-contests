@@ -18,7 +18,7 @@ const MODERATOR_MENU_ITEMS = {
     Icon: InsightsIcon,
     text: 'Analyze Votes',
   },
-  banUsers: {
+  'banUsers?u=ASmallEye': {
     Icon: Block,
     text: 'NOT DIRECTLY ACCESSIBLE', // delete this once analyze and viewBans are complete
   },

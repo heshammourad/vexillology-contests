@@ -3,10 +3,12 @@ Pre-fill contestId based on most likely?
 */
 
 import Box from '@material-ui/core/Box';
+import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { ProtectedRoute, ContestSelector } from '../../../components';
 import useSwrContests from '../../../data/useSwrContests';
@@ -24,46 +26,7 @@ const {
   format, addMonths, endOfMonth, differenceInMonths,
 } = require('date-fns');
 
-const DEV_OPTIONS = {
-  createNew: 'createNew',
-  editBan: 'editBan',
-  editWarning: 'editWarning',
-  fromContest: 'fromContest',
-};
-
-const DEV_OPTION = DEV_OPTIONS.editBan;
-
-const useRefreshOnDevOptionChange = () => {
-  useEffect(() => {
-    const STORAGE_KEY = 'last_dev_option';
-    const storedValue = localStorage.getItem(STORAGE_KEY);
-
-    if (storedValue !== DEV_OPTION) {
-      // Update stored value to prevent infinite reloads
-      localStorage.setItem(STORAGE_KEY, DEV_OPTION);
-      window.location.reload();
-    }
-  }, []);
-};
-
 const USER_BAN_QUERY_RESULT = SEARCH_RESULTS[0];
-
-const getActionId = () => {
-  if (DEV_OPTION === DEV_OPTIONS.editBan) {
-    return 'as1';
-  }
-  if (DEV_OPTION === DEV_OPTIONS.editWarning) {
-    return 'as4';
-  }
-  return null;
-};
-
-const SEARCH_PARAMS = {
-  contestId: DEV_OPTION === DEV_OPTIONS.fromContest ? 'sep23' : null,
-  usernames:
-    DEV_OPTION === DEV_OPTIONS.fromContest ? ['joshuauiux', 'WorkingKing'] : [],
-  actionId: getActionId(),
-};
 
 const useStyles = makeStyles({
   italics: {
@@ -92,12 +55,52 @@ function formatDate(date) {
  * The page for moderators to create / edit a ban / warning
  */
 function BanUsers() {
-  // FOR DEV PURPOSES ONLY
-  useRefreshOnDevOptionChange();
-
   const classes = useStyles();
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const { actionId, contestId, usernames } = SEARCH_PARAMS;
+  // Parse URL search parameters
+  const searchParams = new URLSearchParams(location.search);
+  const actionId = searchParams.get('a');
+  const contestId = searchParams.get('c');
+  const usernamesParam = searchParams.get('u');
+  const usernames = usernamesParam ? usernamesParam.split(',') : [];
+
+  // Check if we have a username for individual user actions
+  const hasUsername = actionId || usernames.length > 0;
+
+  // Show error page if no username is provided
+  if (!hasUsername) {
+    return (
+      <ProtectedRoute>
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          minHeight="50vh"
+          textAlign="center"
+          padding={3}
+        >
+          <Typography variant="h4" gutterBottom>
+            No User Selected
+          </Typography>
+          <Typography variant="body1" color="textSecondary" paragraph>
+            You need to select a user to ban or warn. Please search for a user
+            first.
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate('/mod/viewBans')}
+            size="large"
+          >
+            Search for Users
+          </Button>
+        </Box>
+      </ProtectedRoute>
+    );
+  }
 
   // HELPER VARIABLES
   const action = USER_BAN_QUERY_RESULT.history.find(
@@ -106,6 +109,39 @@ function BanUsers() {
   const isNewAction = !actionId;
   const isEditAction = !!actionId;
   const isFromContest = !!contestId;
+
+  // Check if actionId is provided but action is not found
+  if (actionId && !action) {
+    return (
+      <ProtectedRoute>
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          minHeight="50vh"
+          textAlign="center"
+          padding={3}
+        >
+          <Typography variant="h4" gutterBottom>
+            Action Not Found
+          </Typography>
+          <Typography variant="body1" color="textSecondary" paragraph>
+            The specified action could not be found. Please search for the user
+            again.
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate('/mod/viewBans')}
+            size="large"
+          >
+            Search for Users
+          </Button>
+        </Box>
+      </ProtectedRoute>
+    );
+  }
 
   // ACTION TYPE STATE
   const [isBan, setIsBan] = useState(
@@ -132,7 +168,7 @@ function BanUsers() {
   // BAN LENGTH / END DATE STATE
   // MUST CALCULATE MONTHS FROM ACTION
   const initialMonths = action?.endDate !== null
-    ? differenceInMonths(action.endDate, action.startDate)
+    ? differenceInMonths(action?.endDate, action?.startDate)
     : 1;
   const [months, setMonths] = useState(initialMonths);
   const initialIsPermanentBan = action?.endDate === null;
@@ -149,21 +185,19 @@ function BanUsers() {
   const removalText = editType === 'pardon'
     ? 'pardon'
     : (editType === 'lift'
-          || (isEditAction && editType === 'edit' && action.lifted))
+          || (isEditAction && editType === 'edit' && action?.lifted))
         && 'lifting';
 
   const sectionHeader = useMemo(() => {
     if (isFromContest) {
-      const numUsers = SEARCH_PARAMS.usernames.length === 1
-        ? '1 user'
-        : `${SEARCH_PARAMS.usernames.length} users`;
+      const numUsers = usernames.length === 1 ? '1 user' : `${usernames.length} users`;
       return `Take action against ${numUsers}`;
     }
     if (isNewAction) {
       return 'Ban / warn user';
     }
     return `Edit ${isBan ? 'ban' : 'warning'}`;
-  }, [isFromContest, isNewAction, isBan]);
+  }, [isFromContest, isNewAction, isBan, usernames]);
 
   return (
     <ProtectedRoute>
@@ -230,7 +264,7 @@ function BanUsers() {
 
       <Box sx={{ marginTop: 10 }}>
         <ContestSelector
-          contestId={isLockedEdit ? action.contestId : selectedContestId}
+          contestId={isLockedEdit ? action?.contestId : selectedContestId}
           onChange={setSelectedContestId}
           disabled={isFromContest || isLockedEdit}
         />
@@ -304,7 +338,7 @@ function BanUsers() {
           variant="outlined"
           multiline
           fullWidth
-          value={isLockedEdit ? action.reason : reason}
+          value={isLockedEdit ? action?.reason : reason}
           onChange={(event) => setReason(event.target.value)}
           disabled={isLockedEdit}
         />
