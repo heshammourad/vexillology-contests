@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { ProtectedRoute } from '../../../components';
+import useSwrAuth from '../../../data/useSwrAuth';
 
 const {
   format, isFuture, endOfMonth, addMonths,
@@ -200,6 +201,13 @@ function ViewBans() {
 function SearchResults({ searchTerm }) {
   const classes = useStyles();
 
+  // Fetch users from API when search term is provided
+  const { data: searchData, error: searchError } = useSwrAuth(
+    searchTerm
+      ? `/mod/userSearch?searchTerm=${encodeURIComponent(searchTerm)}`
+      : null,
+  );
+
   if (!searchTerm) {
     return (
       <Box>
@@ -210,7 +218,19 @@ function SearchResults({ searchTerm }) {
       </Box>
     );
   }
-  if (SEARCH_STATUS === SEARCH_STATUSES.failedSearch) {
+
+  if (searchError) {
+    return (
+      <Box>
+        <br />
+        <Typography className={classes.italics}>
+          Error searching for users
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (!searchData?.users || searchData.users.length === 0) {
     return (
       <Box>
         <br />
@@ -220,8 +240,14 @@ function SearchResults({ searchTerm }) {
       </Box>
     );
   }
-  return SEARCH_RESULTS.map(({ username, history }) => (
-    <UserBanHistory key={username} {...{ username, history }} showBanButton />
+
+  return searchData.users.map(({ username }) => (
+    <UserBanHistory
+      key={username}
+      username={username}
+      history={[]}
+      showBanButton
+    />
   ));
 }
 

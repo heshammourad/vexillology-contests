@@ -25,6 +25,7 @@ const revokeToken = require('./api/revokeToken');
 const settings = require('./api/settings');
 const staticContent = require('./api/staticContent');
 const submission = require('./api/submission');
+const userSearch = require('./api/userSearch');
 const { checkRequiredFields } = require('./api/validation');
 const votes = require('./api/votes');
 const { IS_DEV, BACKEND_PORT } = require('./env');
@@ -119,6 +120,7 @@ if (!IS_DEV && cluster.isMaster) {
     .put(checkRequiredFields('id', 'status'), reviewSubmissions.put);
   modRouter.route('/analyzeVotes/:id').get(analyzeVotes.get);
   modRouter.route('/analyzeVotes/:id/voters').get(analyzeVotes.getVoters);
+  modRouter.route('/userSearch').get(userSearch.searchUsers);
 
   const apiRouter = express.Router();
   apiRouter.use(express.json());
