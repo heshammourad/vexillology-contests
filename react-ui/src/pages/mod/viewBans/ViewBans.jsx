@@ -37,7 +37,7 @@ export const SEARCH_RESULTS = [
         moderator: 'TorteApp',
         contestId: 'sep23',
         actionType: 'ban',
-        endDate: 'never',
+        endDate: null,
         reason: 'Syke',
         actionId: 'as1',
         lifted: false,
@@ -60,7 +60,7 @@ export const SEARCH_RESULTS = [
         moderator: 'TorteApp',
         contestId: '',
         actionType: 'warn',
-        endDate: 'never',
+        endDate: null,
         reason: 'Voted with alt account',
         actionId: 'as4',
         lifted: false,
@@ -78,7 +78,7 @@ export const BANNED_USERS = [
         moderator: 'TorteApp',
         contestId: '',
         actionType: 'ban',
-        endDate: 'never',
+        endDate: null,
         reason: 'Created 40 fake accounts to boost score in Jan 25 contest.',
         actionId: 'as5',
         lifted: false,
@@ -241,11 +241,11 @@ function SearchResults({ searchTerm }) {
     );
   }
 
-  return searchData.users.map(({ username }) => (
+  return searchData.users.map(({ username, history }) => (
     <UserBanHistory
       key={username}
       username={username}
-      history={[]}
+      history={history}
       showBanButton
     />
   ));
@@ -318,7 +318,7 @@ function Expiration({
       </Typography>
     );
   }
-  if (endDate === 'never') {
+  if (endDate === null) {
     return (
       <Typography
         className={isLifted ? classes.neutralGrey : classes.banRed}
@@ -367,7 +367,10 @@ function Expiration({
 }
 
 export function UserBanHistory({
-  username, history, showBanButton, actionId,
+  username,
+  history = [],
+  showBanButton,
+  actionId,
 }) {
   const classes = useStyles();
   const navigate = useNavigate();
@@ -383,7 +386,7 @@ export function UserBanHistory({
         }
         if (
           action.actionType === 'ban'
-              && (action.endDate === 'never' || isFuture(action.endDate))
+              && (action.endDate === null || isFuture(action.endDate))
               && !action.lifted
         ) {
           return action;
@@ -442,7 +445,7 @@ export function UserBanHistory({
             <Button
               disabled={
                 topLevelAction.actionType === 'ban'
-                && topLevelAction.endDate === 'never'
+                && topLevelAction.endDate === null
               }
               color="primary"
               onClick={() => navigate('/mod/banUsers')}
@@ -472,8 +475,8 @@ const actionType = PropTypes.shape({
   contestId: PropTypes.string.isRequired,
   actionType: PropTypes.oneOf(['ban', 'warn']).isRequired,
   endDate: PropTypes.oneOfType([
-    PropTypes.oneOf(['never']),
     PropTypes.instanceOf(Date),
+    PropTypes.oneOf([null]),
   ]).isRequired,
   reason: PropTypes.string.isRequired,
   actionId: PropTypes.string.isRequired,
@@ -494,8 +497,8 @@ UserBanHistory.propTypes = PropTypes.shape({
 Expiration.propTypes = {
   actionType: PropTypes.oneOf(['ban', 'warn']).isRequired,
   endDate: PropTypes.oneOfType([
-    PropTypes.oneOf(['never']),
     PropTypes.instanceOf(Date),
+    PropTypes.oneOf([null]),
   ]).isRequired,
   isLifted: PropTypes.bool.isRequired,
   ignorePastBans: PropTypes.bool,
