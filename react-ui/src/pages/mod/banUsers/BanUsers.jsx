@@ -7,13 +7,15 @@ import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
+import PropTypes from 'prop-types';
 import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { ProtectedRoute, ContestSelector } from '../../../components';
+import useSwrAuth from '../../../data/useSwrAuth';
 import useSwrContests from '../../../data/useSwrContests';
 import SectionTitleWithButtons from '../analyzeVotes/SectionTitleWithButtons';
-import { SEARCH_RESULTS, UserBanHistory } from '../viewBans/ViewBans';
+import { UserBanHistory } from '../viewBans/ViewBans';
 
 import {
   ActionSelectorForMultipleUsers,
@@ -25,8 +27,6 @@ import EditTypeSelector from './EditTypeSelector';
 const {
   format, addMonths, endOfMonth, differenceInMonths,
 } = require('date-fns');
-
-const USER_BAN_QUERY_RESULT = SEARCH_RESULTS[0];
 
 const useStyles = makeStyles({
   italics: {
@@ -52,12 +52,67 @@ function formatDate(date) {
 }
 
 /**
+ * Reusable error page component
+ */
+function ErrorPage({
+  title,
+  message,
+  buttonText = 'Back to Search',
+  onButtonClick,
+}) {
+  const navigate = useNavigate();
+  const handleClick = onButtonClick || (() => navigate('/mod/viewBans'));
+
+  return (
+    <ProtectedRoute>
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="50vh"
+        textAlign="center"
+        padding={3}
+      >
+        <Typography variant="h4" gutterBottom>
+          {title}
+        </Typography>
+        <Typography variant="body1" color="textSecondary" paragraph>
+          {message}
+        </Typography>
+        {buttonText && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleClick}
+            size="large"
+          >
+            {buttonText}
+          </Button>
+        )}
+      </Box>
+    </ProtectedRoute>
+  );
+}
+
+ErrorPage.propTypes = {
+  title: PropTypes.string.isRequired,
+  message: PropTypes.string.isRequired,
+  buttonText: PropTypes.string,
+  onButtonClick: PropTypes.func,
+};
+
+ErrorPage.defaultProps = {
+  buttonText: 'Back to Search',
+  onButtonClick: null,
+};
+
+/**
  * The page for moderators to create / edit a ban / warning
  */
 function BanUsers() {
   const classes = useStyles();
   const location = useLocation();
-  const navigate = useNavigate();
 
   // Parse URL search parameters
   const searchParams = new URLSearchParams(location.search);
@@ -69,79 +124,26 @@ function BanUsers() {
   // Check if we have a username for individual user actions
   const hasUsername = actionId || usernames.length > 0;
 
-  // Show error page if no username is provided
-  if (!hasUsername) {
-    return (
-      <ProtectedRoute>
-        <Box
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          minHeight="50vh"
-          textAlign="center"
-          padding={3}
-        >
-          <Typography variant="h4" gutterBottom>
-            No User Selected
-          </Typography>
-          <Typography variant="body1" color="textSecondary" paragraph>
-            You need to select a user to ban or warn. Please search for a user
-            first.
-          </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => navigate('/mod/viewBans')}
-            size="large"
-          >
-            Search for Users
-          </Button>
-        </Box>
-      </ProtectedRoute>
-    );
-  }
+  // Fetch ban history for usernames
+  const {
+    data: userData,
+    error: userError,
+    isLoading,
+  } = useSwrAuth(
+    usernames.length > 0
+      ? `/mod/userBanHistory?usernames=${usernames.join(',')}`
+      : null,
+  );
+
+  // Get the first user for single user actions (when actionId is provided)
+  const firstUser = userData?.users?.[0];
+  const userHistory = firstUser?.history || [];
 
   // HELPER VARIABLES
-  const action = USER_BAN_QUERY_RESULT.history.find(
-    (a) => a.actionId === actionId,
-  );
+  const action = userHistory.find((a) => a.actionId === actionId);
   const isNewAction = !actionId;
   const isEditAction = !!actionId;
   const isFromContest = !!contestId;
-
-  // Check if actionId is provided but action is not found
-  if (actionId && !action) {
-    return (
-      <ProtectedRoute>
-        <Box
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          minHeight="50vh"
-          textAlign="center"
-          padding={3}
-        >
-          <Typography variant="h4" gutterBottom>
-            Action Not Found
-          </Typography>
-          <Typography variant="body1" color="textSecondary" paragraph>
-            The specified action could not be found. Please search for the user
-            again.
-          </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => navigate('/mod/viewBans')}
-            size="large"
-          >
-            Search for Users
-          </Button>
-        </Box>
-      </ProtectedRoute>
-    );
-  }
 
   // ACTION TYPE STATE
   const [isBan, setIsBan] = useState(
@@ -167,9 +169,21 @@ function BanUsers() {
 
   // BAN LENGTH / END DATE STATE
   // MUST CALCULATE MONTHS FROM ACTION
-  const initialMonths = action?.endDate !== null
-    ? differenceInMonths(action?.endDate, action?.startDate)
-    : 1;
+  const initialMonths = (() => {
+    if (action?.endDate === null) {
+      return 1; // Permanent ban
+    }
+    if (
+      action?.endDate
+      && action?.startDate
+      && action.endDate instanceof Date
+      && action.startDate instanceof Date
+    ) {
+      const months = differenceInMonths(action.endDate, action.startDate);
+      return Number.isNaN(months) ? 1 : Math.max(1, months);
+    }
+    return 1; // Default to 1 month if dates are invalid
+  })();
   const [months, setMonths] = useState(initialMonths);
   const initialIsPermanentBan = action?.endDate === null;
   const [isPermanentBan, setIsPermanentBan] = useState(initialIsPermanentBan);
@@ -199,6 +213,74 @@ function BanUsers() {
     return `Edit ${isBan ? 'ban' : 'warning'}`;
   }, [isFromContest, isNewAction, isBan, usernames]);
 
+  // Validation checks after all hooks are declared
+  if (!hasUsername) {
+    return (
+      <ErrorPage
+        title="No User Selected"
+        message="You need to select a user to ban or warn. Please search for a user first."
+      />
+    );
+  }
+
+  // Check for loading state - useSwrAuth returns empty object {} during loading
+  if (usernames.length > 0 && isLoading) {
+    return (
+      <ErrorPage
+        title="Loading User Data..."
+        message=""
+        buttonText=""
+        onButtonClick={() => {}}
+      />
+    );
+  }
+
+  if (userError || (userData && userData.error)) {
+    return (
+      <ErrorPage
+        title="Error Loading User Data"
+        message="Failed to load user information. Please try again."
+      />
+    );
+  }
+
+  // More specific check for invalid data format
+  if (
+    usernames.length > 0
+    && userData
+    && typeof userData === 'object'
+    && !Array.isArray(userData.users)
+  ) {
+    return (
+      <ErrorPage
+        title="Invalid Data Format"
+        message="Received invalid data format from server. Please try again."
+      />
+    );
+  }
+
+  if (
+    usernames.length > 0
+    && userData
+    && (!userData.users || userData.users.length === 0)
+  ) {
+    return (
+      <ErrorPage
+        title="User Not Found"
+        message="The specified user could not be found. Please check the username and try again."
+      />
+    );
+  }
+
+  if (actionId && !action) {
+    return (
+      <ErrorPage
+        title="Action Not Found"
+        message="The specified action could not be found. Please search for the user again."
+      />
+    );
+  }
+
   return (
     <ProtectedRoute>
       <br />
@@ -225,8 +307,8 @@ function BanUsers() {
         <>
           <Box sx={{ backgroundColor: '#ddd', padding: '8px' }}>
             <UserBanHistory
-              username={USER_BAN_QUERY_RESULT.username}
-              history={USER_BAN_QUERY_RESULT.history}
+              username={firstUser?.username}
+              history={userHistory}
               actionId={actionId}
             />
           </Box>
@@ -394,3 +476,7 @@ function Separator() {
 }
 
 export default BanUsers;
+
+BanUsers.propTypes = {
+  // Add any necessary prop types here
+};

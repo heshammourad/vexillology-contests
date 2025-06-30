@@ -120,6 +120,7 @@ if (!IS_DEV && cluster.isMaster) {
     .put(checkRequiredFields('id', 'status'), reviewSubmissions.put);
   modRouter.route('/analyzeVotes/:id/voters').get(contestVoters.get);
   modRouter.route('/userSearch').get(userSearch.searchUsers);
+  modRouter.route('/userBanHistory').get(userSearch.getUserBanHistory);
 
   const apiRouter = express.Router();
   apiRouter.use(express.json());
