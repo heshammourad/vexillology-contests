@@ -40,6 +40,9 @@ const formatKarma = (karma) => {
   if (karma > 1000) {
     return '>1000';
   }
+  if (!karma) {
+    return 'unk';
+  }
   return karma.toString();
 };
 
