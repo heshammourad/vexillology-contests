@@ -199,46 +199,31 @@ function ViewBans() {
 }
 
 function SearchResults({ searchTerm }) {
-  const classes = useStyles();
-
   // Fetch users from API when search term is provided
-  const { data: searchData, error: searchError } = useSwrAuth(
+  const {
+    data: searchData,
+    error: searchError,
+    isLoading,
+  } = useSwrAuth(
     searchTerm
       ? `/mod/userSearch?searchTerm=${encodeURIComponent(searchTerm)}`
       : null,
   );
 
   if (!searchTerm) {
-    return (
-      <Box>
-        <br />
-        <Typography className={classes.italics}>
-          Search for a user above
-        </Typography>
-      </Box>
-    );
+    return <SearchMessages text="Search for a user above" />;
+  }
+
+  if (isLoading) {
+    return <SearchMessages text="Searching for users..." />;
   }
 
   if (searchError) {
-    return (
-      <Box>
-        <br />
-        <Typography className={classes.italics}>
-          Error searching for users
-        </Typography>
-      </Box>
-    );
+    return <SearchMessages text="Error searching for users" />;
   }
 
   if (!searchData?.users || searchData.users.length === 0) {
-    return (
-      <Box>
-        <br />
-        <Typography className={classes.italics}>
-          {`No results for "${searchTerm}"`}
-        </Typography>
-      </Box>
-    );
+    return <SearchMessages text={`No results for "${searchTerm}"`} />;
   }
 
   return searchData.users.map(({ username, history }) => (
@@ -249,6 +234,17 @@ function SearchResults({ searchTerm }) {
       showBanButton
     />
   ));
+}
+
+function SearchMessages({ text }) {
+  const classes = useStyles();
+
+  return (
+    <Box>
+      <br />
+      <Typography className={classes.italics}>{text}</Typography>
+    </Box>
+  );
 }
 
 function HistoryItem({
@@ -479,6 +475,10 @@ export default ViewBans;
 
 SearchResults.propTypes = {
   searchTerm: PropTypes.string.isRequired,
+};
+
+SearchMessages.propTypes = {
+  text: PropTypes.string.isRequired,
 };
 
 const actionType = PropTypes.shape({
