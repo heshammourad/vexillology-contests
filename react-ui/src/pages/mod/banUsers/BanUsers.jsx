@@ -301,12 +301,6 @@ function BanUsers() {
 
   const navigate = useNavigate();
 
-  // Reset form function
-  const handleResetForm = () => {
-    setSubmitSuccess(null);
-    setSubmitError(null);
-  };
-
   // Form submission handler
   const handleSubmit = () => {
     if (!isFormValid || isMutating) {
@@ -441,18 +435,13 @@ function BanUsers() {
           <Typography variant="body1" color="textSecondary" paragraph>
             {submitSuccess}
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => navigate('/mod/viewBans')}
-            >
-              View All Bans
-            </Button>
-            <Button variant="outlined" onClick={handleResetForm}>
-              Create Another
-            </Button>
-          </Box>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate(-1)}
+          >
+            Go Back
+          </Button>
         </Box>
       </ProtectedRoute>
     );
