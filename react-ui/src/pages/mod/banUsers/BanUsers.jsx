@@ -12,8 +12,10 @@ import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { ProtectedRoute, ContestSelector } from '../../../components';
+import { postData } from '../../../data/api';
 import useSwrAuth from '../../../data/useSwrAuth';
 import useSwrContests from '../../../data/useSwrContests';
+import useSwrMutation from '../../../data/useSwrMutation';
 import SectionTitleWithButtons from '../analyzeVotes/SectionTitleWithButtons';
 import { UserBanHistory } from '../viewBans/ViewBans';
 
@@ -135,6 +137,9 @@ function BanUsers() {
       : null,
   );
 
+  // Form submission mutation
+  const { isMutating, trigger } = useSwrMutation('/mod/saveUserBan', postData);
+
   // Get the first user for single user actions (when actionId is provided)
   const firstUser = userData?.users?.[0];
   const userHistory = firstUser?.history || [];
@@ -202,6 +207,87 @@ function BanUsers() {
           || (isEditAction && editType === 'edit' && action?.lifted))
         && 'lifting';
 
+  // Form submission state
+  const [submitError, setSubmitError] = useState(null);
+  const [submitSuccess, setSubmitSuccess] = useState(null);
+
+  // Validation function to check if all required fields are complete
+  const isFormValid = useMemo(() => {
+    // For contest-based actions (multiple users)
+    if (isFromContest) {
+      // At least one action must be selected
+      const hasAnyAction = dqVoters.size > 0
+        || removeEntrants.size > 0
+        || warnUsers.size > 0
+        || banUsers.size > 0;
+
+      if (!hasAnyAction) {
+        return false;
+      }
+
+      // If banning users, contest must be selected
+      if (banUsers.size > 0 && !selectedContestId) {
+        return false;
+      }
+
+      // If warning users, contest must be selected
+      if (warnUsers.size > 0 && !selectedContestId) {
+        return false;
+      }
+
+      // If banning users, reason is required
+      if (banUsers.size > 0 && !reason.trim()) {
+        return false;
+      }
+
+      // If warning users, reason is required
+      if (warnUsers.size > 0 && !reason.trim()) {
+        return false;
+      }
+
+      // If lifting/pardoning, removal reason is required
+      if (removalText && !removalReason.trim()) {
+        return false;
+      }
+
+      return true;
+    }
+
+    // For single user actions
+    // Username must be present
+    if (!firstUser?.username) {
+      return false;
+    }
+
+    // Contest must be selected
+    if (!selectedContestId) {
+      return false;
+    }
+
+    // Reason is required
+    if (!reason.trim()) {
+      return false;
+    }
+
+    // If lifting/pardoning, removal reason is required
+    if (removalText && !removalReason.trim()) {
+      return false;
+    }
+
+    return true;
+  }, [
+    isFromContest,
+    dqVoters.size,
+    removeEntrants.size,
+    warnUsers.size,
+    banUsers.size,
+    selectedContestId,
+    reason,
+    removalReason,
+    removalText,
+    firstUser?.username,
+  ]);
+
   const sectionHeader = useMemo(() => {
     if (isFromContest) {
       const numUsers = usernames.length === 1 ? '1 user' : `${usernames.length} users`;
@@ -212,6 +298,61 @@ function BanUsers() {
     }
     return `Edit ${isBan ? 'ban' : 'warning'}`;
   }, [isFromContest, isNewAction, isBan, usernames]);
+
+  const navigate = useNavigate();
+
+  // Reset form function
+  const handleResetForm = () => {
+    setSubmitSuccess(null);
+    setSubmitError(null);
+  };
+
+  // Form submission handler
+  const handleSubmit = () => {
+    if (!isFormValid || isMutating) {
+      return;
+    }
+
+    setSubmitError(null);
+
+    // For contest-based actions, we need to handle multiple users
+    if (isFromContest) {
+      // TODO: Implement multiple user submission logic
+      setSubmitError('Multiple user submission not yet implemented');
+      return;
+    }
+
+    // For single user actions
+    const submitData = {
+      actionId: actionId || null,
+      username: firstUser.username,
+      contestId: selectedContestId,
+      actionType: isBan ? 'ban' : 'warn',
+      startDate: startDate?.toISOString(),
+      endDate: isPermanentBan ? null : endDate?.toISOString(),
+      reason: reason.trim(),
+      editType: isEditAction ? editType : null,
+      removalReason: removalText ? removalReason.trim() : null,
+    };
+
+    trigger(submitData, {
+      onSuccess: (response) => {
+        if (response?.data?.success) {
+          setSubmitSuccess(
+            response.data.message || 'Ban/warning saved successfully',
+          );
+        } else {
+          setSubmitError('Failed to save ban/warning. Please try again.');
+        }
+      },
+      onError: (error) => {
+        setSubmitError(
+          error.response?.data?.error
+            || 'An error occurred while saving. Please try again.',
+        );
+      },
+    });
+  };
 
   // Validation checks after all hooks are declared
   if (!hasUsername) {
@@ -278,6 +419,42 @@ function BanUsers() {
         title="Action Not Found"
         message="The specified action could not be found. Please search for the user again."
       />
+    );
+  }
+
+  // Show success page if submission was successful
+  if (submitSuccess) {
+    return (
+      <ProtectedRoute>
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          minHeight="50vh"
+          textAlign="center"
+          padding={3}
+        >
+          <Typography variant="h4" gutterBottom color="primary">
+            Success!
+          </Typography>
+          <Typography variant="body1" color="textSecondary" paragraph>
+            {submitSuccess}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => navigate('/mod/viewBans')}
+            >
+              View All Bans
+            </Button>
+            <Button variant="outlined" onClick={handleResetForm}>
+              Create Another
+            </Button>
+          </Box>
+        </Box>
+      </ProtectedRoute>
     );
   }
 
@@ -460,6 +637,35 @@ function BanUsers() {
 
       <br />
       <br />
+
+      {submitError && (
+        <Box sx={{ marginBottom: 2 }}>
+          <Typography color="error" variant="body2">
+            {submitError}
+          </Typography>
+        </Box>
+      )}
+
+      <Box sx={{ display: 'flex', marginTop: 3 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          size="large"
+          disabled={!isFormValid || isMutating}
+          onClick={handleSubmit}
+        >
+          {(() => {
+            if (isMutating) {
+              return 'Saving...';
+            }
+            if (isNewAction) {
+              return 'Save';
+            }
+            return 'Edit';
+          })()}
+        </Button>
+      </Box>
+
       <br />
     </ProtectedRoute>
   );

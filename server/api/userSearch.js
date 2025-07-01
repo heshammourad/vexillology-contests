@@ -124,8 +124,6 @@ exports.getUserBanHistory = async ({ query: { usernames } }, res) => {
       )
       : [];
 
-    console.log('uwb: ', usersWithBans);
-
     // Group users with their ban history
     const groupedUsers = {};
 
@@ -165,6 +163,133 @@ exports.getUserBanHistory = async ({ query: { usernames } }, res) => {
     logger.error(
       `Error getting ban history for usernames "${usernames}": ${err}`,
     );
+    res.status(500).send({ error: 'Internal server error' });
+  }
+};
+
+exports.saveUserBan = async ({ body, username: moderator }, res) => {
+  try {
+    const {
+      actionId,
+      username,
+      contestId,
+      actionType,
+      startDate,
+      endDate,
+      reason,
+      editType,
+      removalReason,
+    } = body;
+
+    // Validate required fields
+    if (!username || !actionType || !reason || !contestId || !startDate) {
+      res
+        .status(400)
+        .send({
+          error:
+            'Username, action type, reason, contest ID, and start date are required',
+        });
+      return;
+    }
+
+    if (!['ban', 'warn'].includes(actionType)) {
+      res.status(400).send({ error: 'Action type must be "ban" or "warn"' });
+      return;
+    }
+
+    if (!moderator) {
+      res.status(401).send({ error: 'Moderator authentication required' });
+      return;
+    }
+
+    // Handle pardon (delete the entire row)
+    if (actionId && editType === 'pardon') {
+      await db.del('user_bans', { id: actionId });
+      res.send({ success: true, message: 'Ban/warning pardoned successfully' });
+      return;
+    }
+
+    // Handle lift (update lifted fields)
+    if (actionId && editType === 'lift') {
+      if (!removalReason?.trim()) {
+        res
+          .status(400)
+          .send({
+            error: 'Removal reason is required when lifting a ban/warning',
+          });
+        return;
+      }
+
+      const updateData = {
+        id: actionId,
+        lifted: true,
+        lifted_date: new Date(),
+        lifted_moderator: moderator,
+        lifted_reason: removalReason.trim(),
+      };
+
+      await db.update(
+        'user_bans',
+        [updateData],
+        ['?id', 'lifted', 'lifted_date', 'lifted_moderator', 'lifted_reason'],
+        ['id'],
+      );
+      res.send({ success: true, message: 'Ban/warning lifted successfully' });
+      return;
+    }
+
+    // Handle new ban/warning or edit
+    const banData = {
+      username,
+      contest_id: contestId,
+      type: actionType,
+      start_date: new Date(startDate),
+      end_date: endDate ? new Date(endDate) : null,
+      reason: reason.trim(),
+      moderator,
+      lifted: false,
+      lifted_date: null,
+      lifted_moderator: null,
+      lifted_reason: null,
+    };
+
+    if (actionId) {
+      // Update existing ban/warning
+      banData.id = actionId;
+      await db.update(
+        'user_bans',
+        [banData],
+        [
+          '?id',
+          'username',
+          'contest_id',
+          'type',
+          'start_date',
+          'end_date',
+          'reason',
+          'moderator',
+          'lifted',
+          'lifted_date',
+          'lifted_moderator',
+          'lifted_reason',
+        ],
+        ['id'],
+      );
+      res.send({ success: true, message: 'Ban/warning updated successfully' });
+    } else {
+      // Insert new ban/warning (ID will be auto-generated)
+      const result = await db.insert('user_bans', [banData], {
+        returning: ['id'],
+      });
+      res.send({
+        success: true,
+        message: 'Ban/warning created successfully',
+        actionId: result[0]?.id,
+      });
+    }
+  } catch (err) {
+    console.log(`Error saving user ban: ${err}`);
+    logger.error(`Error saving user ban: ${err}`);
     res.status(500).send({ error: 'Internal server error' });
   }
 };

@@ -28,7 +28,12 @@ function BanLength({
           size="small"
           type={isPermanentBan ? 'text' : 'number'}
           value={isPermanentBan ? '∞' : months}
-          onChange={(event) => event.target.value > 0 && setMonths(event.target.value)}
+          onChange={(event) => {
+            const value = parseInt(event.target.value, 10);
+            if (value > 0) {
+              setMonths(value);
+            }
+          }}
           style={{ width: 100 }}
           disabled={isPermanentBan || disabled}
         />

@@ -121,6 +121,7 @@ if (!IS_DEV && cluster.isMaster) {
   modRouter.route('/analyzeVotes/:id/voters').get(contestVoters.get);
   modRouter.route('/userSearch').get(userSearch.searchUsers);
   modRouter.route('/userBanHistory').get(userSearch.getUserBanHistory);
+  modRouter.route('/saveUserBan').post(userSearch.saveUserBan);
 
   const apiRouter = express.Router();
   apiRouter.use(express.json());
