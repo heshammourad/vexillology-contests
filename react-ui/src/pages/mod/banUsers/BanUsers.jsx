@@ -11,6 +11,7 @@ import PropTypes from 'prop-types';
 import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import useBanHistoryTransform from '../../../common/useBanHistoryTransform';
 import { ProtectedRoute, ContestSelector } from '../../../components';
 import { postData } from '../../../data/api';
 import useSwrAuth from '../../../data/useSwrAuth';
@@ -137,11 +138,14 @@ function BanUsers() {
       : null,
   );
 
+  // Transform the data to convert date strings to Date objects
+  const transformedUserData = useBanHistoryTransform(userData);
+
   // Form submission mutation
   const { isMutating, trigger } = useSwrMutation('/mod/saveUserBan', postData);
 
   // Get the first user for single user actions (when actionId is provided)
-  const firstUser = userData?.users?.[0];
+  const firstUser = transformedUserData?.users?.[0];
   const userHistory = firstUser?.history || [];
 
   // HELPER VARIABLES

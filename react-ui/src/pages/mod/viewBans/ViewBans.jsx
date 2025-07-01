@@ -11,22 +11,16 @@ import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import useBanHistoryTransform from '../../../common/useBanHistoryTransform';
 import { ProtectedRoute } from '../../../components';
 import useSwrAuth from '../../../data/useSwrAuth';
 
 const {
   format, isFuture, endOfMonth, addMonths,
 } = require('date-fns');
-
-const SEARCH_STATUSES = {
-  noSearchTerm: 'noSearchTerm',
-  failedSearch: 'failedSearch',
-  successfulSearch: 'successfulSearch',
-};
-const SEARCH_STATUS = SEARCH_STATUSES.successfulSearch;
 
 export const SEARCH_RESULTS = [
   {
@@ -198,6 +192,9 @@ function SearchResults({ searchTerm }) {
       : null,
   );
 
+  // Transform the data to convert date strings to Date objects
+  const transformedData = useBanHistoryTransform(searchData);
+
   if (!searchTerm) {
     return <SearchMessages text="Search for a user above" />;
   }
@@ -210,11 +207,11 @@ function SearchResults({ searchTerm }) {
     return <SearchMessages text="Error searching for users" />;
   }
 
-  if (!searchData?.users || searchData.users.length === 0) {
+  if (!transformedData?.users || transformedData.users.length === 0) {
     return <SearchMessages text={`No results for "${searchTerm}"`} />;
   }
 
-  return searchData.users.map(({ username, history }) => (
+  return transformedData.users.map(({ username, history }) => (
     <UserBanHistory
       key={username}
       username={username}
