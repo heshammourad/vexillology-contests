@@ -142,18 +142,6 @@ function ViewBans() {
   const error = {};
   const [searchTerm, setSearchTerm] = useState('');
 
-  // FOR DEV PURPOSES ONLY
-  useEffect(() => {
-    setSearchTerm(
-      // eslint-disable-next-line no-nested-ternary
-      SEARCH_STATUS === SEARCH_STATUSES.noSearchTerm
-        ? ''
-        : SEARCH_STATUS === SEARCH_STATUSES.failedSearch
-          ? 'quoix'
-          : 'asmall',
-    );
-  }, [SEARCH_STATUS]);
-
   return (
     <ProtectedRoute errorStatus={error?.response?.status}>
       <br />

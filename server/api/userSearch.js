@@ -46,24 +46,24 @@ exports.searchUsers = async ({ query: { searchTerm } }, res) => {
         };
       }
 
-      // Add ban history if there's a ban record (action_id is not null)
-      if (row.action_id) {
+      // Add ban history if there's a ban record (actionId is not null)
+      if (row.actionId) {
         groupedUsers[row.username].history.push({
-          actionId: row.action_id,
+          actionId: row.actionId,
           username: row.username,
-          actionType: row.action_type,
-          startDate: new Date(row.start_date),
-          endDate: row.end_date === null ? null : new Date(row.end_date),
+          actionType: row.actionType,
+          startDate: new Date(row.startDate),
+          endDate: row.endDate === null ? null : new Date(row.endDate),
           reason: row.reason,
-          contestId: row.contest_id || '',
+          contestId: row.contestId || '',
           moderator: row.moderator,
           lifted: row.lifted,
-          liftedDate: row.lifted_date ? new Date(row.lifted_date) : null,
-          liftedModerator: row.lifted_moderator,
-          liftedReason: row.lifted_reason,
+          liftedDate: row.liftedDate ? new Date(row.liftedDate) : null,
+          liftedModerator: row.liftedModerator,
+          liftedReason: row.liftedReason,
         });
       }
-      // If action_id is null, the user has no bans but is still included with empty history
+      // If actionId is null, the user has no bans but is still included with empty history
     });
 
     const users = Object.values(groupedUsers);
@@ -137,21 +137,21 @@ exports.getUserBanHistory = async ({ query: { usernames } }, res) => {
 
     // Add ban history for users that have it
     usersWithBans.forEach((row) => {
-      // Add ban history if there's a ban record (action_id is not null)
-      if (row.action_id) {
+      // Add ban history if there's a ban record (actionId is not null)
+      if (row.actionId) {
         groupedUsers[row.username].history.push({
-          actionId: row.action_id,
+          actionId: row.actionId,
           username: row.username,
-          actionType: row.action_type,
-          startDate: new Date(row.start_date),
-          endDate: row.end_date === null ? null : new Date(row.end_date),
+          actionType: row.actionType,
+          startDate: new Date(row.startDate),
+          endDate: row.endDate === null ? null : new Date(row.endDate),
           reason: row.reason,
-          contestId: row.contest_id || '',
+          contestId: row.contestId || '',
           moderator: row.moderator,
           lifted: row.lifted,
-          liftedDate: row.lifted_date ? new Date(row.lifted_date) : null,
-          liftedModerator: row.lifted_moderator,
-          liftedReason: row.lifted_reason,
+          liftedDate: row.liftedDate ? new Date(row.liftedDate) : null,
+          liftedModerator: row.liftedModerator,
+          liftedReason: row.liftedReason,
         });
       }
     });
@@ -183,12 +183,10 @@ exports.saveUserBan = async ({ body, username: moderator }, res) => {
 
     // Validate required fields
     if (!username || !actionType || !reason || !contestId || !startDate) {
-      res
-        .status(400)
-        .send({
-          error:
-            'Username, action type, reason, contest ID, and start date are required',
-        });
+      res.status(400).send({
+        error:
+          'Username, action type, reason, contest ID, and start date are required',
+      });
       return;
     }
 
@@ -212,11 +210,9 @@ exports.saveUserBan = async ({ body, username: moderator }, res) => {
     // Handle lift (update lifted fields)
     if (actionId && editType === 'lift') {
       if (!removalReason?.trim()) {
-        res
-          .status(400)
-          .send({
-            error: 'Removal reason is required when lifting a ban/warning',
-          });
+        res.status(400).send({
+          error: 'Removal reason is required when lifting a ban/warning',
+        });
         return;
       }
 
@@ -288,7 +284,6 @@ exports.saveUserBan = async ({ body, username: moderator }, res) => {
       });
     }
   } catch (err) {
-    console.log(`Error saving user ban: ${err}`);
     logger.error(`Error saving user ban: ${err}`);
     res.status(500).send({ error: 'Internal server error' });
   }
