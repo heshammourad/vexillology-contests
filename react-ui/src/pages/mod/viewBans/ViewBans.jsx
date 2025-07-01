@@ -18,9 +18,7 @@ import useBanHistoryTransform from '../../../common/useBanHistoryTransform';
 import { ProtectedRoute } from '../../../components';
 import useSwrAuth from '../../../data/useSwrAuth';
 
-const {
-  format, isFuture, endOfMonth, addMonths,
-} = require('date-fns');
+const { format, isFuture } = require('date-fns');
 
 export const SEARCH_RESULTS = [
   {
@@ -57,38 +55,6 @@ export const SEARCH_RESULTS = [
         endDate: null,
         reason: 'Voted with alt account',
         actionId: 'as4',
-        lifted: false,
-      },
-    ],
-  },
-];
-
-export const BANNED_USERS = [
-  {
-    username: 'joshuauiux',
-    history: [
-      {
-        startDate: new Date(2024, 11, 17),
-        moderator: 'TorteApp',
-        contestId: '',
-        actionType: 'ban',
-        endDate: null,
-        reason: 'Created 40 fake accounts to boost score in Jan 25 contest.',
-        actionId: 'as5',
-        lifted: false,
-      },
-    ],
-  },
-  {
-    username: 'WorkingKing',
-    history: [
-      {
-        startDate: new Date(2024, 11, 17),
-        moderator: 'bakonydraco',
-        contestId: '',
-        actionType: 'ban',
-        endDate: endOfMonth(addMonths(new Date(), 3)),
-        reason: 'Created 3 fake accounts to boost score in Jan 25 contest.',
         lifted: false,
       },
     ],
@@ -133,11 +99,20 @@ const useStyles = makeStyles({
  */
 function ViewBans() {
   const classes = useStyles();
-  const error = {};
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Fetch active bans from API
+  const {
+    data: activeBansData,
+    error: activeBansError,
+    isLoading: activeBansLoading,
+  } = useSwrAuth('/mod/activeBans');
+
+  // Transform the data to convert date strings to Date objects
+  const transformedActiveBans = useBanHistoryTransform(activeBansData);
+
   return (
-    <ProtectedRoute errorStatus={error?.response?.status}>
+    <ProtectedRoute errorStatus={activeBansError?.response?.status}>
       <br />
       <br />
       <br />
@@ -173,9 +148,28 @@ function ViewBans() {
 
       <h1 className={classes.sectionHeader}>Active bans</h1>
 
-      {BANNED_USERS.map(({ username, history }) => (
-        <UserBanHistory key={username} {...{ username, history }} showBanButton />
-      ))}
+      {(() => {
+        if (activeBansLoading) {
+          return <Typography>Loading active bans...</Typography>;
+        }
+        if (activeBansError) {
+          return (
+            <Typography color="error">Error loading active bans</Typography>
+          );
+        }
+        if (transformedActiveBans?.users?.length > 0) {
+          return transformedActiveBans.users.map(({ username, history }) => (
+            <UserBanHistory
+              key={username}
+              {...{ username, history }}
+              showBanButton
+            />
+          ));
+        }
+        return (
+          <Typography className={classes.italics}>No active bans</Typography>
+        );
+      })()}
     </ProtectedRoute>
   );
 }

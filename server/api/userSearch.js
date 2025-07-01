@@ -288,3 +288,62 @@ exports.saveUserBan = async ({ body, username: moderator }, res) => {
     res.status(500).send({ error: 'Internal server error' });
   }
 };
+
+exports.getActiveBans = async (req, res) => {
+  try {
+    // Get all users with active bans (endDate is null or in the future)
+    const usersWithActiveBans = await db.select(
+      `SELECT 
+        u.username,
+        ub.id as action_id,
+        ub.type as action_type,
+        ub.start_date,
+        ub.end_date,
+        ub.reason,
+        ub.contest_id,
+        ub.moderator,
+        ub.lifted,
+        ub.lifted_date,
+        ub.lifted_moderator,
+        ub.lifted_reason
+       FROM users u
+       INNER JOIN user_bans ub ON u.username = ub.username
+       WHERE ub.lifted = false
+         AND (ub.end_date IS NULL OR ub.end_date > NOW())
+       ORDER BY u.username ASC, ub.start_date DESC`,
+    );
+
+    // Group users with their ban history
+    const groupedUsers = {};
+    usersWithActiveBans.forEach((row) => {
+      if (!groupedUsers[row.username]) {
+        groupedUsers[row.username] = {
+          username: row.username,
+          history: [],
+        };
+      }
+
+      groupedUsers[row.username].history.push({
+        actionId: row.actionId,
+        username: row.username,
+        actionType: row.actionType,
+        startDate: new Date(row.startDate),
+        endDate: row.endDate === null ? null : new Date(row.endDate),
+        reason: row.reason,
+        contestId: row.contestId || '',
+        moderator: row.moderator,
+        lifted: row.lifted,
+        liftedDate: row.liftedDate ? new Date(row.liftedDate) : null,
+        liftedModerator: row.liftedModerator,
+        liftedReason: row.liftedReason,
+      });
+    });
+
+    const users = Object.values(groupedUsers);
+
+    res.send({ users });
+  } catch (err) {
+    logger.error(`Error getting active bans: ${err}`);
+    res.status(500).send({ error: 'Internal server error' });
+  }
+};
