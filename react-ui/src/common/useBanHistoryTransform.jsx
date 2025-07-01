@@ -19,6 +19,7 @@ const useBanHistoryTransform = (data) => useMemo(() => {
         startDate: action.startDate ? new Date(action.startDate) : null,
         endDate: action.endDate ? new Date(action.endDate) : null,
         liftedDate: action.liftedDate ? new Date(action.liftedDate) : null,
+        actionId: String(action.actionId),
       })),
     })),
   };

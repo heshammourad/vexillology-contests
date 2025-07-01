@@ -465,10 +465,7 @@ const actionType = PropTypes.shape({
   moderator: PropTypes.string.isRequired,
   contestId: PropTypes.string.isRequired,
   actionType: PropTypes.oneOf(['ban', 'warn']).isRequired,
-  endDate: PropTypes.oneOfType([
-    PropTypes.instanceOf(Date),
-    PropTypes.oneOf([null]),
-  ]).isRequired,
+  endDate: PropTypes.oneOfType([PropTypes.instanceOf(Date)]),
   reason: PropTypes.string.isRequired,
   actionId: PropTypes.string.isRequired,
   lifted: PropTypes.bool,
