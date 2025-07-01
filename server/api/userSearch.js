@@ -170,16 +170,12 @@ exports.getUserBanHistory = async ({ query: { usernames } }, res) => {
 exports.saveUserBan = async ({ body, username: moderator }, res) => {
   try {
     const {
-      actionId,
-      username,
-      contestId,
-      actionType,
-      startDate,
-      endDate,
-      reason,
-      editType,
-      removalReason,
+      username, contestId, actionType, editType, removalReason,
     } = body;
+    const actionId = body.actionId ? parseInt(body.actionId, 10) : null;
+    const startDate = new Date(body.startDate);
+    const endDate = body.endDate ? new Date(body.endDate) : null;
+    const reason = body.reason?.trim();
 
     // Validate required fields
     if (!username || !actionType || !reason || !contestId || !startDate) {
@@ -239,9 +235,9 @@ exports.saveUserBan = async ({ body, username: moderator }, res) => {
       username,
       contest_id: contestId,
       type: actionType,
-      start_date: new Date(startDate),
-      end_date: endDate ? new Date(endDate) : null,
-      reason: reason.trim(),
+      start_date: startDate,
+      end_date: endDate,
+      reason,
       moderator,
       lifted: false,
       lifted_date: null,
@@ -284,6 +280,7 @@ exports.saveUserBan = async ({ body, username: moderator }, res) => {
       });
     }
   } catch (err) {
+    console.log('err: ', err);
     logger.error(`Error saving user ban: ${err}`);
     res.status(500).send({ error: 'Internal server error' });
   }
