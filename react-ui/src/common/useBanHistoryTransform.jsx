@@ -10,8 +10,6 @@ const useBanHistoryTransform = (data) => useMemo(() => {
     return data;
   }
 
-  console.log(data);
-
   return {
     ...data,
     users: data.users.map((user) => ({

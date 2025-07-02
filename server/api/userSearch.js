@@ -374,3 +374,66 @@ exports.getActiveBans = async (req, res) => {
     res.status(500).send({ error: 'Internal server error' });
   }
 };
+
+exports.checkUserBanStatus = async (req, res) => {
+  try {
+    const { username } = req;
+
+    if (!username) {
+      res.status(401).send({ error: 'Authentication required' });
+      return;
+    }
+
+    // Check for active bans for the requesting user
+    const activeBans = await db.select(
+      `SELECT 
+        ub.id as action_id,
+        ub.type as action_type,
+        ub.end_date,
+        ub.created_date,
+        ub.reason,
+       FROM user_bans ub
+       WHERE ub.username = $1
+         AND ub.lifted = false
+         AND ub.type = 'ban'
+         AND (ub.end_date IS NULL OR ub.end_date > NOW())
+       ORDER BY ub.created_date DESC
+       LIMIT 1`,
+      [username],
+    );
+
+    if (activeBans.length === 0) {
+      res.send({
+        isBanned: false,
+      });
+      return;
+    }
+
+    // Transform the ban data to match the expected format
+    const transformedBans = activeBans.map((ban) => ({
+      actionId: ban.actionId,
+      username: ban.username,
+      actionType: ban.actionType,
+      createdDate: new Date(ban.createdDate),
+      startDate: new Date(ban.startDate),
+      endDate: ban.endDate === null ? null : new Date(ban.endDate),
+      reason: ban.reason,
+      contestId: ban.contestId || '',
+      moderator: ban.moderator,
+      lifted: ban.lifted,
+      liftedDate: ban.liftedDate ? new Date(ban.liftedDate) : null,
+      liftedModerator: ban.liftedModerator,
+      liftedReason: ban.liftedReason,
+    }));
+
+    res.send({
+      isBanned: true,
+      activeBan: transformedBans[0],
+    });
+  } catch (err) {
+    logger.error(
+      `Error checking user ban status for "${req.username}": ${err}`,
+    );
+    res.status(500).send({ error: 'Internal server error' });
+  }
+};

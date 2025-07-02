@@ -10,6 +10,8 @@ import {
 import { SWRConfig } from 'swr';
 
 import { AppHelmet, CustomSnackbar, CustomThemeProvider } from './components';
+/* eslint-disable no-restricted-imports */
+import BanProtectedRoute from './components/BanProtectedRoute';
 import localStorageProvider from './data/LocalStorageProvider';
 import { getData } from './data/api';
 import {
@@ -27,7 +29,6 @@ import {
   Submission,
   ViewBans,
 } from './pages';
-/* eslint-disable no-restricted-imports */
 import Mod from './pages/mod/Mod';
 import EntrantVotersTable from './pages/mod/analyzeVotes/EntrantVotersTable';
 import EntrantsTable from './pages/mod/analyzeVotes/EntrantsTable';
@@ -51,7 +52,9 @@ function App() {
           <div className="app">
             <BrowserRouter>
               <AppHelmet />
-              <ModalSwitch />
+              <BanProtectedRoute>
+                <ModalSwitch />
+              </BanProtectedRoute>
             </BrowserRouter>
             <CustomSnackbar />
           </div>

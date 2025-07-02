@@ -157,6 +157,9 @@ if (!IS_DEV && cluster.isMaster) {
     .all(requireAuthentication, votes.all)
     .put(checkRequiredFields('contestId', 'entryId', 'rating'), votes.put)
     .delete(checkRequiredFields('contestId', 'entryId'), votes.delete);
+  apiRouter
+    .route('/checkBanStatus')
+    .get(requireAuthentication, userSearch.checkUserBanStatus);
   apiRouter.use('/mod', modRouter);
 
   if (IS_DEV) {
