@@ -159,11 +159,7 @@ function ViewBans() {
         }
         if (transformedActiveBans?.users?.length > 0) {
           return transformedActiveBans.users.map(({ username, history }) => (
-            <UserBanHistory
-              key={username}
-              {...{ username, history }}
-              showBanButton
-            />
+            <UserBanHistory key={username} {...{ username, history }} />
           ));
         }
         return (
@@ -206,12 +202,7 @@ function SearchResults({ searchTerm }) {
   }
 
   return transformedData.users.map(({ username, history }) => (
-    <UserBanHistory
-      key={username}
-      username={username}
-      history={history}
-      showBanButton
-    />
+    <UserBanHistory key={username} username={username} history={history} />
   ));
 }
 
@@ -240,20 +231,23 @@ function HistoryItem({
     actionId,
   },
   username,
+  hideActionButtons,
 }) {
   const classes = useStyles();
   const navigate = useNavigate();
 
   return (
     <Box className={clsx(classes.row, classes.historyItem)}>
-      <Box sx={{ float: 'right' }}>
-        <Button
-          color="primary"
-          onClick={() => navigate(`/mod/banUsers?u=${username}&a=${actionId}`)}
-        >
-          Edit
-        </Button>
-      </Box>
+      {!hideActionButtons && (
+        <Box sx={{ float: 'right' }}>
+          <Button
+            color="primary"
+            onClick={() => navigate(`/mod/banUsers?u=${username}&a=${actionId}`)}
+          >
+            Edit
+          </Button>
+        </Box>
+      )}
       <Expiration {...{ actionType, endDate }} isLifted={!!lifted} />
       <Typography>
         {`Issued ${format(startDate, 'MMM d, yyyy')} by ${moderator}`}
@@ -352,7 +346,7 @@ function Expiration({
 export function UserBanHistory({
   username,
   history = [],
-  showBanButton,
+  hideActionButtons,
   actionId,
 }) {
   const classes = useStyles();
@@ -424,7 +418,7 @@ export function UserBanHistory({
                 : 'Hide'
               : 'No history'}
           </Button>
-          {showBanButton && (
+          {!hideActionButtons && (
             <Button
               disabled={
                 topLevelAction?.actionType === 'ban'
@@ -444,6 +438,7 @@ export function UserBanHistory({
             key={action.actionId}
             action={action}
             username={username}
+            hideActionButtons={hideActionButtons}
           />
         ))}
     </Box>
@@ -477,12 +472,17 @@ const actionType = PropTypes.shape({
 HistoryItem.propTypes = {
   action: actionType.isRequired,
   username: PropTypes.string.isRequired,
+  hideActionButtons: PropTypes.bool,
+};
+
+HistoryItem.defaultProps = {
+  hideActionButtons: false,
 };
 
 UserBanHistory.propTypes = PropTypes.shape({
   username: PropTypes.string.isRequired,
   history: PropTypes.arrayOf(actionType).isRequired,
-  showBanButton: PropTypes.bool,
+  hideActionButtons: PropTypes.bool,
 }).isRequired;
 
 Expiration.propTypes = {

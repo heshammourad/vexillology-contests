@@ -471,6 +471,7 @@ function BanUsers() {
               username={firstUser?.username}
               history={userHistory}
               actionId={actionId}
+              hideActionButtons
             />
           </Box>
           <br />
