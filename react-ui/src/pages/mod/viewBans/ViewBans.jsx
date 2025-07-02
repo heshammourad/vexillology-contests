@@ -20,47 +20,6 @@ import useSwrAuth from '../../../data/useSwrAuth';
 
 const { format, isFuture } = require('date-fns');
 
-export const SEARCH_RESULTS = [
-  {
-    username: 'ASmallEye',
-    history: [
-      {
-        startDate: new Date(2024, 7, 29),
-        moderator: 'TorteApp',
-        contestId: 'sep23',
-        actionType: 'ban',
-        endDate: null,
-        reason: 'Syke',
-        actionId: 'as1',
-        lifted: false,
-      },
-      {
-        startDate: new Date(2024, 6, 20),
-        moderator: 'TorteApp',
-        contestId: '',
-        actionType: 'ban',
-        endDate: new Date(2024, 7, 31),
-        reason: 'Voted with alt account again',
-        actionId: 'as3',
-        lifted: true,
-        liftedDate: new Date(2024, 6, 30),
-        liftedModerator: 'TorteApp',
-        liftedReason: 'Contrition',
-      },
-      {
-        startDate: new Date(2024, 5, 2),
-        moderator: 'TorteApp',
-        contestId: '',
-        actionType: 'warn',
-        endDate: null,
-        reason: 'Voted with alt account',
-        actionId: 'as4',
-        lifted: false,
-      },
-    ],
-  },
-];
-
 const useStyles = makeStyles({
   banRed: {
     color: '#EB0000',
@@ -220,7 +179,7 @@ function SearchMessages({ text }) {
 function HistoryItem({
   action: {
     actionType,
-    startDate,
+    createdDate,
     endDate,
     moderator,
     reason,
@@ -250,7 +209,7 @@ function HistoryItem({
       )}
       <Expiration {...{ actionType, endDate }} isLifted={!!lifted} />
       <Typography>
-        {`Issued ${format(startDate, 'MMM d, yyyy')} by ${moderator}`}
+        {`Issued ${format(createdDate, 'MMM d, yyyy')} by ${moderator}`}
       </Typography>
       <Typography className={classes.italics}>{reason}</Typography>
       {!!lifted && (
@@ -456,6 +415,7 @@ SearchMessages.propTypes = {
 };
 
 const actionType = PropTypes.shape({
+  createdDate: PropTypes.instanceOf(Date).isRequired,
   startDate: PropTypes.instanceOf(Date).isRequired,
   moderator: PropTypes.string.isRequired,
   contestId: PropTypes.string.isRequired,

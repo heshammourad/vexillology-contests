@@ -10,12 +10,15 @@ const useBanHistoryTransform = (data) => useMemo(() => {
     return data;
   }
 
+  console.log(data);
+
   return {
     ...data,
     users: data.users.map((user) => ({
       ...user,
       history: user.history.map((action) => ({
         ...action,
+        createdDate: new Date(action.createdDate),
         startDate: action.startDate ? new Date(action.startDate) : null,
         endDate: action.endDate ? new Date(action.endDate) : null,
         liftedDate: action.liftedDate ? new Date(action.liftedDate) : null,

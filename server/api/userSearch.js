@@ -21,6 +21,7 @@ exports.searchUsers = async ({ query: { searchTerm } }, res) => {
         ub.type as action_type,
         ub.start_date,
         ub.end_date,
+        ub.created_date,
         ub.reason,
         ub.contest_id,
         ub.moderator,
@@ -31,7 +32,7 @@ exports.searchUsers = async ({ query: { searchTerm } }, res) => {
        FROM users u
        LEFT JOIN user_bans ub ON u.username = ub.username
        WHERE u.username ILIKE $1
-       ORDER BY u.username ASC, ub.start_date DESC
+       ORDER BY u.username ASC, ub.created_date DESC
        LIMIT 100`,
       [`${searchTerm}%`],
     );
@@ -52,6 +53,7 @@ exports.searchUsers = async ({ query: { searchTerm } }, res) => {
           actionId: row.actionId,
           username: row.username,
           actionType: row.actionType,
+          createdDate: new Date(row.createdDate),
           startDate: new Date(row.startDate),
           endDate: row.endDate === null ? null : new Date(row.endDate),
           reason: row.reason,
@@ -109,6 +111,7 @@ exports.getUserBanHistory = async ({ query: { usernames } }, res) => {
         ub.type as action_type,
         ub.start_date,
         ub.end_date,
+        ub.created_date,
         ub.reason,
         ub.contest_id,
         ub.moderator,
@@ -119,7 +122,7 @@ exports.getUserBanHistory = async ({ query: { usernames } }, res) => {
        FROM users u
        LEFT JOIN user_bans ub ON u.username = ub.username
        WHERE u.username IN (${placeholders})
-       ORDER BY u.username ASC, ub.start_date DESC`,
+       ORDER BY u.username ASC, ub.created_date DESC`,
         existingUsers.map((u) => u.username),
       )
       : [];
@@ -143,6 +146,7 @@ exports.getUserBanHistory = async ({ query: { usernames } }, res) => {
           actionId: row.actionId,
           username: row.username,
           actionType: row.actionType,
+          createdDate: new Date(row.createdDate),
           startDate: new Date(row.startDate),
           endDate: row.endDate === null ? null : new Date(row.endDate),
           reason: row.reason,
@@ -280,7 +284,6 @@ exports.saveUserBan = async ({ body, username: moderator }, res) => {
       });
     }
   } catch (err) {
-    console.log('err: ', err);
     logger.error(`Error saving user ban: ${err}`);
     res.status(500).send({ error: 'Internal server error' });
   }
@@ -288,14 +291,34 @@ exports.saveUserBan = async ({ body, username: moderator }, res) => {
 
 exports.getActiveBans = async (req, res) => {
   try {
-    // Get all users with active bans (endDate is null or in the future)
+    // First, get all users who have active bans
     const usersWithActiveBans = await db.select(
+      `SELECT DISTINCT u.username
+       FROM users u
+       INNER JOIN user_bans ub ON u.username = ub.username
+       WHERE ub.lifted = false
+         AND ub.type = 'ban'
+         AND (ub.end_date IS NULL OR ub.end_date > NOW())`,
+    );
+
+    if (usersWithActiveBans.length === 0) {
+      res.send({ users: [] });
+      return;
+    }
+
+    // Get usernames of users with active bans
+    const usernames = usersWithActiveBans.map((row) => row.username);
+    const placeholders = usernames.map((_, index) => `$${index + 1}`).join(',');
+
+    // Get complete ban history for all users with active bans
+    const completeBanHistory = await db.select(
       `SELECT 
         u.username,
         ub.id as action_id,
         ub.type as action_type,
         ub.start_date,
         ub.end_date,
+        ub.created_date,
         ub.reason,
         ub.contest_id,
         ub.moderator,
@@ -304,36 +327,43 @@ exports.getActiveBans = async (req, res) => {
         ub.lifted_moderator,
         ub.lifted_reason
        FROM users u
-       INNER JOIN user_bans ub ON u.username = ub.username
-       WHERE ub.lifted = false
-         AND (ub.end_date IS NULL OR ub.end_date > NOW())
-       ORDER BY u.username ASC, ub.start_date DESC`,
+       LEFT JOIN user_bans ub ON u.username = ub.username
+       WHERE u.username IN (${placeholders})
+       ORDER BY u.username ASC, ub.created_date DESC`,
+      usernames,
     );
 
-    // Group users with their ban history
+    // Group users with their complete ban history
     const groupedUsers = {};
-    usersWithActiveBans.forEach((row) => {
-      if (!groupedUsers[row.username]) {
-        groupedUsers[row.username] = {
-          username: row.username,
-          history: [],
-        };
-      }
 
-      groupedUsers[row.username].history.push({
-        actionId: row.actionId,
-        username: row.username,
-        actionType: row.actionType,
-        startDate: new Date(row.startDate),
-        endDate: row.endDate === null ? null : new Date(row.endDate),
-        reason: row.reason,
-        contestId: row.contestId || '',
-        moderator: row.moderator,
-        lifted: row.lifted,
-        liftedDate: row.liftedDate ? new Date(row.liftedDate) : null,
-        liftedModerator: row.liftedModerator,
-        liftedReason: row.liftedReason,
-      });
+    // Initialize all users with empty history
+    usernames.forEach((username) => {
+      groupedUsers[username] = {
+        username,
+        history: [],
+      };
+    });
+
+    // Add ban history for users that have it
+    completeBanHistory.forEach((row) => {
+      // Add ban history if there's a ban record (actionId is not null)
+      if (row.actionId) {
+        groupedUsers[row.username].history.push({
+          actionId: row.actionId,
+          username: row.username,
+          actionType: row.actionType,
+          createdDate: new Date(row.createdDate),
+          startDate: new Date(row.startDate),
+          endDate: row.endDate === null ? null : new Date(row.endDate),
+          reason: row.reason,
+          contestId: row.contestId || '',
+          moderator: row.moderator,
+          lifted: row.lifted,
+          liftedDate: row.liftedDate ? new Date(row.liftedDate) : null,
+          liftedModerator: row.liftedModerator,
+          liftedReason: row.liftedReason,
+        });
+      }
     });
 
     const users = Object.values(groupedUsers);
