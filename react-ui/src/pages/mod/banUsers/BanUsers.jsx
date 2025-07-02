@@ -229,28 +229,18 @@ function BanUsers() {
         return false;
       }
 
-      // If banning users, contest must be selected
-      if (banUsers.size > 0 && !selectedContestId) {
+      // Contest must be selected
+      if (!selectedContestId) {
         return false;
       }
 
-      // If warning users, contest must be selected
-      if (warnUsers.size > 0 && !selectedContestId) {
+      // If banning or warning users, reason is required
+      if ((banUsers.size > 0 || warnUsers.size > 0) && !reason.trim()) {
         return false;
       }
 
-      // If banning users, reason is required
-      if (banUsers.size > 0 && !reason.trim()) {
-        return false;
-      }
-
-      // If warning users, reason is required
-      if (warnUsers.size > 0 && !reason.trim()) {
-        return false;
-      }
-
-      // If lifting/pardoning, removal reason is required
-      if (removalText && !removalReason.trim()) {
+      // If lifting, removal reason is required
+      if (editType === 'lift' && !removalReason.trim()) {
         return false;
       }
 
@@ -274,12 +264,13 @@ function BanUsers() {
     }
 
     // If lifting/pardoning, removal reason is required
-    if (removalText && !removalReason.trim()) {
+    if (editType === 'lift' && !removalReason.trim()) {
       return false;
     }
 
     return true;
   }, [
+    editType,
     isFromContest,
     dqVoters.size,
     removeEntrants.size,
@@ -596,11 +587,11 @@ function BanUsers() {
         />
       </Box>
 
-      {!!removalText && (
+      {editType === 'lift' && (
         <>
           <Separator />
           <SectionTitleWithButtons
-            title={`Reason for ${removalText}`}
+            title="Reason for lifting"
             buttons={
               initialRemovalReason
                 ? [
