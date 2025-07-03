@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 
-import useBanStatus from '../common/useBanStatus';
+// import useBanStatus from '../common/useBanStatus';
 
 /**
  * Component that checks if the user is banned and redirects them to the ban notice page
