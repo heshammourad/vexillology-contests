@@ -15,8 +15,6 @@ function BanNotice() {
   const classes = useStyles();
   const { activeBan, isLoading } = useBanStatus(false); // No redirect on ban page
 
-  console.log('ab: ', ab);
-
   // Get the most recent active ban
   const isPermanentBan = activeBan?.endDate === null;
   const banExpiry = activeBan?.endDate

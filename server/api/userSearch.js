@@ -437,3 +437,77 @@ exports.checkUserBanStatus = async (req, res) => {
     res.status(500).send({ error: 'Internal server error' });
   }
 };
+
+/**
+ * Get the most recent ban/warning status for users active during a specific contest period
+ *
+ * This endpoint:
+ * 1. Takes a contestId parameter
+ * 2. Gets the contest date from the contests table
+ * 3. Converts the contest date to the last day of that month
+ * 4. Returns the most recent ban/warning status for each user active during that period
+ *
+ * A ban/warning is considered "active" if:
+ * - start_date < contestDate (ban started before contest)
+ * - end_date IS NULL OR end_date > contestDate (ban hasn't expired or doesn't expire)
+ * - lifted = false OR lifted_date > contestDate (ban wasn't lifted or was lifted after contest)
+ *
+ * @param {Object} req - Express request object
+ * @param {Object} req.query - Query parameters
+ * @param {string} req.query.contestId - The contest ID to check bans for
+ * @param {Object} res - Express response object
+ */
+exports.getContestBans = async ({ query: { contestId } }, res) => {
+  try {
+    if (!contestId) {
+      res.status(400).send({ error: 'Contest ID is required' });
+      return;
+    }
+
+    // Get the contest date from the contests table
+    const contestResult = await db.select(
+      'SELECT date FROM contests WHERE id = $1',
+      [contestId],
+    );
+
+    if (contestResult.length === 0) {
+      res.status(404).send({ error: 'Contest not found' });
+      return;
+    }
+
+    const contestDate = contestResult[0].date;
+
+    // Convert contest date to the last day of the month
+    const lastDayOfMonth = new Date(
+      contestDate.getFullYear(),
+      contestDate.getMonth() + 1,
+      0,
+    );
+
+    // Get the most recent ban/warning for each user active during the contest period
+    const usersWithBans = await db.select(
+      `SELECT DISTINCT ON (ub.username) 
+        ub.username,
+        ub.type as action_type
+       FROM user_bans ub
+       WHERE ub.start_date < $1
+         AND (ub.end_date IS NULL OR ub.end_date > $1)
+         AND (ub.lifted = false OR ub.lifted_date > $1)
+       ORDER BY ub.username ASC, ub.created_date DESC`,
+      [lastDayOfMonth],
+    );
+
+    // Convert to the desired format: {[username: string]: "warn" | "ban"}
+    const userBanStatus = {};
+    usersWithBans.forEach((row) => {
+      userBanStatus[row.username] = row.actionType;
+    });
+
+    res.send({ userBanStatus });
+  } catch (err) {
+    logger.error(
+      `Error getting contest bans for contest "${contestId}": ${err}`,
+    );
+    res.status(500).send({ error: 'Internal server error' });
+  }
+};

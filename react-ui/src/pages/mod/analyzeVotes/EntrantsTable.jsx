@@ -10,6 +10,7 @@ import { Outlet, useParams, useNavigate } from 'react-router-dom';
 
 import { UserSelector } from '../../../components';
 
+import { ContestBansProvider, useContestBansContext } from './ContestBansContext';
 import SectionTitleWithButtons from './SectionTitleWithButtons';
 import {
   BanStatusTableText,
@@ -53,10 +54,13 @@ export const ENTRANTS = [
 /**
  * The page for moderators to review contest submissions.
  */
-function EntrantsTable() {
+function EntrantsTableContent() {
   const navigate = useNavigate();
 
   const { contestId, entrantId } = useParams();
+
+  // Use the contest bans context
+  const { userBanStatus } = useContestBansContext();
 
   const voters = ENTRANTS.map((e) => e.username);
 
@@ -108,32 +112,45 @@ function EntrantsTable() {
             <TableRow>
               <TableCell>Entrant</TableCell>
               <TableCell align="center">Entry DQ</TableCell>
-              <TableCell align="center">Site ban</TableCell>
+              <TableCell align="center">Warning status</TableCell>
               <TableCell align="center">Cheating</TableCell>
-              <TableCell align="center">Suscipious</TableCell>
+              <TableCell align="center">Suspicious</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {ENTRANTS.map((entrant) => (
               <TableRow
-                key={entrant.username}
+                key={entrant}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 onClick={() => handleEntrantSelection(entrant.username)}
                 hover
               >
                 <TableCell component="th" scope="row">
-                  {entrant.username}
+                  {userBanStatus.entryStatus}
                 </TableCell>
-                <EntryStatusTableText entryStatus={entrant.entryStatus} />
-                <BanStatusTableText banStatus={entrant.banStatus} />
-                <RedTableText>{entrant.cheating}</RedTableText>
-                <OrangeTableText>{entrant.suspicious}</OrangeTableText>
+                <EntryStatusTableText entryStatus={null} />
+                <BanStatusTableText banStatus={userBanStatus[userBanStatus]} />
+                <RedTableText>0</RedTableText>
+                <OrangeTableText>0</OrangeTableText>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
     </>
+  );
+}
+
+/**
+ * Wrapper component that provides the contest bans context
+ */
+function EntrantsTable() {
+  const { contestId } = useParams();
+
+  return (
+    <ContestBansProvider contestId={contestId}>
+      <EntrantsTableContent />
+    </ContestBansProvider>
   );
 }
 

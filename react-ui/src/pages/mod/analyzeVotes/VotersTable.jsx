@@ -11,6 +11,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 import useSwrAuth from '../../../data/useSwrAuth';
 
+import { useContestBansContext } from './ContestBansContext';
 import SectionTitleWithButtons from './SectionTitleWithButtons';
 import {
   BanStatusTableText,
@@ -89,6 +90,9 @@ function VotersTable() {
     error,
     isLoading,
   } = useSwrAuth(`/mod/analyzeVotes/${contestId}/voters`);
+
+  // Use the contest bans context
+  const { userBanStatus } = useContestBansContext();
 
   const buttons = useMemo(
     () => [
@@ -187,7 +191,7 @@ function VotersTable() {
                 </TableSortLabel>
               </TableCell>
               <TableCell align="center">Vote status</TableCell>
-              <TableCell align="center">Site ban</TableCell>
+              <TableCell align="center">Warning status</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -235,7 +239,7 @@ function VotersTable() {
 
                 <VoteStatusTableText voteStatus={voter.voteStatus} />
 
-                <BanStatusTableText banStatus={voter.banStatus} />
+                <BanStatusTableText banStatus={userBanStatus[voter.username]} />
               </TableRow>
             ))}
           </TableBody>

@@ -23,7 +23,9 @@ const ChipContext = createContext(null);
 const useChipContext = () => {
   const context = useContext(ChipContext);
   if (!context) {
-    throw new Error('useParentContext must be used within a ParentProvider');
+    throw new Error(
+      'useChipContext must be used within a ChipContext.Provider',
+    );
   }
   return context;
 };

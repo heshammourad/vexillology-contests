@@ -122,6 +122,7 @@ if (!IS_DEV && cluster.isMaster) {
   modRouter.route('/userSearch').get(userSearch.searchUsers);
   modRouter.route('/userBanHistory').get(userSearch.getUserBanHistory);
   modRouter.route('/activeBans').get(userSearch.getActiveBans);
+  modRouter.route('/contestBans').get(userSearch.getContestBans);
   modRouter.route('/saveUserBan').post(userSearch.saveUserBan);
 
   const apiRouter = express.Router();
