@@ -1,21 +1,34 @@
-import { makeStyles } from '@material-ui/core/styles';
 import GavelIcon from '@mui/icons-material/Gavel';
 import Fab from '@mui/material/Fab';
 import PropTypes from 'prop-types';
-
-const useStyles = makeStyles({});
+import { useNavigate, useParams } from 'react-router-dom';
 
 /**
- * Floating action button to report users
+ * Floating action button to take action against users
  */
-function TakeActionButton({ users, contestId }) {
+function TakeActionButton({ users }) {
+  const { contestId } = useParams();
+  const navigate = useNavigate();
+
   if (!users.size) {
     return null;
   }
+
+  const handleClick = () => {
+    const usernames = Array.from(users).join(',');
+    const searchParams = new URLSearchParams({
+      u: usernames,
+      ...(contestId && { c: contestId }),
+    });
+
+    navigate(`/mod/banUsers?${searchParams.toString()}`);
+  };
+
   return (
     <Fab
       color="secondary"
       variant="extended"
+      onClick={handleClick}
       sx={{
         position: 'absolute',
         bottom: 16,
