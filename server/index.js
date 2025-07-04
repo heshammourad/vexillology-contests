@@ -25,7 +25,7 @@ const revokeToken = require('./api/revokeToken');
 const settings = require('./api/settings');
 const staticContent = require('./api/staticContent');
 const submission = require('./api/submission');
-const userSearch = require('./api/userSearch');
+const userBans = require('./api/userBans');
 const { checkRequiredFields } = require('./api/validation');
 const votes = require('./api/votes');
 const { IS_DEV, BACKEND_PORT } = require('./env');
@@ -119,11 +119,11 @@ if (!IS_DEV && cluster.isMaster) {
     .get(reviewSubmissions.get)
     .put(checkRequiredFields('id', 'status'), reviewSubmissions.put);
   modRouter.route('/analyzeVotes/:id/voters').get(contestVoters.get);
-  modRouter.route('/userSearch').get(userSearch.searchUsers);
-  modRouter.route('/userBanHistory').get(userSearch.getUserBanHistory);
-  modRouter.route('/activeBans').get(userSearch.getActiveBans);
-  modRouter.route('/contestBans').get(userSearch.getContestBans);
-  modRouter.route('/saveUserBan').post(userSearch.saveUserBan);
+  modRouter.route('/userBansSearch').get(userBans.userBansSearch);
+  modRouter.route('/usersBanHistories').get(userBans.getUsersBanHistories);
+  modRouter.route('/activeBans').get(userBans.getActiveBans);
+  modRouter.route('/contestBans').get(userBans.getContestBans);
+  modRouter.route('/saveUserBan').post(userBans.saveUserBan);
 
   const apiRouter = express.Router();
   apiRouter.use(express.json());
@@ -160,7 +160,7 @@ if (!IS_DEV && cluster.isMaster) {
     .delete(checkRequiredFields('contestId', 'entryId'), votes.delete);
   apiRouter
     .route('/checkBanStatus')
-    .get(requireAuthentication, userSearch.checkUserBanStatus);
+    .get(requireAuthentication, userBans.checkUserBanStatus);
   apiRouter.use('/mod', modRouter);
 
   if (IS_DEV) {

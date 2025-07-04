@@ -134,7 +134,7 @@ function BanUsers() {
     isLoading,
   } = useSwrAuth(
     usernames.length > 0
-      ? `/mod/userBanHistory?usernames=${usernames.join(',')}`
+      ? `/mod/usersBanHistories?usernames=${usernames.join(',')}`
       : null,
   );
 

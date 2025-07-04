@@ -7,7 +7,7 @@ const { createLogger } = require('../logger');
 
 const logger = createLogger('API/USER_SEARCH');
 
-exports.searchUsers = async ({ query: { searchTerm } }, res) => {
+exports.userBansSearch = async ({ query: { searchTerm } }, res) => {
   try {
     if (!searchTerm) {
       res.status(400).send({ error: 'Search term is required' });
@@ -77,7 +77,7 @@ exports.searchUsers = async ({ query: { searchTerm } }, res) => {
   }
 };
 
-exports.getUserBanHistory = async ({ query: { usernames } }, res) => {
+exports.getUsersBanHistories = async ({ query: { usernames } }, res) => {
   try {
     if (!usernames) {
       res.status(400).send({ error: 'Usernames parameter is required' });
@@ -91,22 +91,10 @@ exports.getUserBanHistory = async ({ query: { usernames } }, res) => {
       return;
     }
 
-    // Create placeholders for the IN clause
-    const placeholders = usernameList
-      .map((_, index) => `$${index + 1}`)
-      .join(',');
-
-    // First, get all the users to ensure they exist
-    const existingUsers = await db.select(
-      `SELECT username FROM users WHERE username IN (${placeholders})`,
-      usernameList,
-    );
-
-    // Get ban history for existing users
-    const usersWithBans = existingUsers.length > 0
-      ? await db.select(
-        `SELECT 
-        u.username,
+    // Get ban history for the specified usernames
+    const usersWithBans = await db.select(
+      `SELECT 
+        ub.username,
         ub.id as action_id,
         ub.type as action_type,
         ub.start_date,
@@ -119,13 +107,11 @@ exports.getUserBanHistory = async ({ query: { usernames } }, res) => {
         ub.lifted_date,
         ub.lifted_moderator,
         ub.lifted_reason
-       FROM users u
-       LEFT JOIN user_bans ub ON u.username = ub.username
-       WHERE u.username IN (${placeholders})
-       ORDER BY u.username ASC, ub.created_date DESC`,
-        existingUsers.map((u) => u.username),
-      )
-      : [];
+       FROM user_bans ub
+       WHERE ub.username = ANY($1)
+       ORDER BY ub.username ASC, ub.created_date DESC`,
+      [usernameList],
+    );
 
     // Group users with their ban history
     const groupedUsers = {};
@@ -291,29 +277,10 @@ exports.saveUserBan = async ({ body, username: moderator }, res) => {
 
 exports.getActiveBans = async (req, res) => {
   try {
-    // First, get all users who have active bans
-    const usersWithActiveBans = await db.select(
-      `SELECT DISTINCT u.username
-       FROM users u
-       INNER JOIN user_bans ub ON u.username = ub.username
-       WHERE ub.lifted = false
-         AND ub.type = 'ban'
-         AND (ub.end_date IS NULL OR ub.end_date > NOW())`,
-    );
-
-    if (usersWithActiveBans.length === 0) {
-      res.send({ users: [] });
-      return;
-    }
-
-    // Get usernames of users with active bans
-    const usernames = usersWithActiveBans.map((row) => row.username);
-    const placeholders = usernames.map((_, index) => `$${index + 1}`).join(',');
-
     // Get complete ban history for all users with active bans
     const completeBanHistory = await db.select(
       `SELECT 
-        u.username,
+        ub.username,
         ub.id as action_id,
         ub.type as action_type,
         ub.start_date,
@@ -326,26 +293,25 @@ exports.getActiveBans = async (req, res) => {
         ub.lifted_date,
         ub.lifted_moderator,
         ub.lifted_reason
-       FROM users u
-       LEFT JOIN user_bans ub ON u.username = ub.username
-       WHERE u.username IN (${placeholders})
-       ORDER BY u.username ASC, ub.created_date DESC`,
-      usernames,
+       FROM user_bans ub
+       WHERE ub.lifted = false
+         AND ub.type = 'ban'
+         AND (ub.end_date IS NULL OR ub.end_date > NOW())
+       ORDER BY ub.username ASC, ub.created_date DESC`,
     );
 
     // Group users with their complete ban history
     const groupedUsers = {};
 
-    // Initialize all users with empty history
-    usernames.forEach((username) => {
-      groupedUsers[username] = {
-        username,
-        history: [],
-      };
-    });
-
     // Add ban history for users that have it
     completeBanHistory.forEach((row) => {
+      if (!groupedUsers[row.username]) {
+        groupedUsers[row.username] = {
+          username: row.username,
+          history: [],
+        };
+      }
+
       // Add ban history if there's a ban record (actionId is not null)
       if (row.actionId) {
         groupedUsers[row.username].history.push({

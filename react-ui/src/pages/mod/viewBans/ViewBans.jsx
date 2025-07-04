@@ -137,7 +137,7 @@ function SearchResults({ searchTerm }) {
     isLoading,
   } = useSwrAuth(
     searchTerm
-      ? `/mod/userSearch?searchTerm=${encodeURIComponent(searchTerm)}`
+      ? `/mod/userBansSearch?searchTerm=${encodeURIComponent(searchTerm)}`
       : null,
   );
 
