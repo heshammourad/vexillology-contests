@@ -10,7 +10,7 @@ import { Outlet, useParams, useNavigate } from 'react-router-dom';
 
 import { UserSelector } from '../../../components';
 
-import { ContestBansProvider, useContestBansContext } from './ContestBansContext';
+import { ContestProvider, useContestContext } from './ContestContext';
 import SectionTitleWithButtons from './SectionTitleWithButtons';
 import {
   BanStatusTableText,
@@ -59,8 +59,8 @@ function EntrantsTableContent() {
 
   const { contestId, entrantId } = useParams();
 
-  // Use the contest bans context
-  const { userBanStatus } = useContestBansContext();
+  // Use the contest context
+  const { userBanStatus } = useContestContext();
 
   const voters = ENTRANTS.map((e) => e.username);
 
@@ -142,15 +142,15 @@ function EntrantsTableContent() {
 }
 
 /**
- * Wrapper component that provides the contest bans context
+ * Wrapper component that provides the contest context
  */
 function EntrantsTable() {
   const { contestId } = useParams();
 
   return (
-    <ContestBansProvider contestId={contestId}>
+    <ContestProvider contestId={contestId}>
       <EntrantsTableContent />
-    </ContestBansProvider>
+    </ContestProvider>
   );
 }
 

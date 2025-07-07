@@ -9,9 +9,7 @@ import TableSortLabel from '@mui/material/TableSortLabel';
 import { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
-import useSwrAuth from '../../../data/useSwrAuth';
-
-import { useContestBansContext } from './ContestBansContext';
+import { useContestContext } from './ContestContext';
 import SectionTitleWithButtons from './SectionTitleWithButtons';
 import {
   BanStatusTableText,
@@ -84,15 +82,13 @@ function VotersTable() {
   const { contestId } = useParams();
   const [sortField, setSortField] = useState('username');
   const [sortDirection, setSortDirection] = useState('asc');
-  // Fetch voters data using proper authentication
+  // Use the contest context for all data
   const {
-    data: { voters: votersData = [] },
-    error,
-    isLoading,
-  } = useSwrAuth(`/mod/analyzeVotes/${contestId}/voters`);
-
-  // Use the contest bans context
-  const { userBanStatus } = useContestBansContext();
+    votersData,
+    votersError: error,
+    votersLoading: isLoading,
+    userBanStatus,
+  } = useContestContext();
 
   const buttons = useMemo(
     () => [
