@@ -2,13 +2,12 @@ import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
-import { useMemo, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
 import { ContestSelector, ProtectedRoute } from '../../../components';
 import useContestId from '../../../data/useContestId';
 
-import { CHIPS, ChipContext } from './ChipContext';
+import { ChipProvider } from './ChipContext';
 
 const useStyles = makeStyles({
   sectionHeader: {
@@ -37,20 +36,13 @@ function AnalyzeVotes() {
     const targetPath = isVotersRoute ? `./${cId}/voters` : `./${cId}`;
     navigate(targetPath);
   };
-  const [chips, setChips] = useState(
-    Object.fromEntries(
-      Object.entries(CHIPS).map(([key, value]) => [key, value.defaultValue]),
-    ),
-  );
-
-  const chipsContextValue = useMemo(() => ({ chips, setChips }), [chips]);
 
   return (
     <ProtectedRoute errorStatus={error?.response?.status}>
       <br />
       <br />
       <br />
-      <h1 className={classes.sectionHeader}>Anaylze votes</h1>
+      <h1 className={classes.sectionHeader}>Analyze votes</h1>
 
       <Box display="flex" sx={{ alignItems: 'center' }}>
         <Typography>
@@ -79,9 +71,9 @@ function AnalyzeVotes() {
 
       <br />
 
-      <ChipContext.Provider value={chipsContextValue}>
+      <ChipProvider>
         <Outlet />
-      </ChipContext.Provider>
+      </ChipProvider>
     </ProtectedRoute>
   );
 }

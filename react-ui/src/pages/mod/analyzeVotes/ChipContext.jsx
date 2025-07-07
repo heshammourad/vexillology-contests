@@ -1,4 +1,7 @@
-import { createContext, useContext } from 'react';
+import PropTypes from 'prop-types';
+import {
+  createContext, useContext, useMemo, useState,
+} from 'react';
 
 const CHIPS = {
   hideExcluded: {
@@ -30,4 +33,22 @@ const useChipContext = () => {
   return context;
 };
 
-export { CHIPS, ChipContext, useChipContext };
+function ChipProvider({ children }) {
+  const [chips, setChips] = useState(
+    Object.fromEntries(
+      Object.entries(CHIPS).map(([key, value]) => [key, value.defaultValue]),
+    ),
+  );
+
+  const value = useMemo(() => ({ chips, setChips }), [chips]);
+
+  return <ChipContext.Provider value={value}>{children}</ChipContext.Provider>;
+}
+
+ChipProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+export {
+  CHIPS, ChipContext, ChipProvider, useChipContext,
+};
