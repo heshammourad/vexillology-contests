@@ -26,6 +26,7 @@ function ContestProvider({ contestId, children }) {
     isLoading: bansLoading,
   } = useSwrAuth(contestId ? `/mod/contestBans?contestId=${contestId}` : null, {
     dedupingInterval: DEDUPING_INTERVAL,
+    revalidateOnFocus: false,
   });
 
   // Fetch contest voters data
@@ -35,6 +36,7 @@ function ContestProvider({ contestId, children }) {
     isLoading: votersLoading,
   } = useSwrAuth(contestId ? `/mod/analyzeVotes/${contestId}/voters` : null, {
     dedupingInterval: DEDUPING_INTERVAL,
+    revalidateOnFocus: false,
   });
 
   const value = useMemo(
