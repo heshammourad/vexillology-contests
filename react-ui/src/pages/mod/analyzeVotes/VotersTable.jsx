@@ -11,6 +11,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 import { useContestContext } from './ContestContext';
 import SectionTitleWithButtons from './SectionTitleWithButtons';
+import TableBodyWrapper from './TableBodyWrapper';
 import {
   BanStatusTableText,
   BlackTableText,
@@ -85,9 +86,11 @@ function VotersTable() {
   // Use the contest context for all data
   const {
     votersData,
-    votersError: error,
-    votersLoading: isLoading,
-    userBanStatus,
+    votersError,
+    votersLoading,
+    bansData,
+    bansError,
+    bansLoading,
   } = useContestContext();
 
   const buttons = useMemo(
@@ -118,27 +121,16 @@ function VotersTable() {
 
   // Sort the data
   const sortedVotersData = useMemo(
-    () => sortData(votersData, sortField, sortDirection),
+    () => sortData(
+      Object.entries(votersData).map(([username, values]) => ({
+        username,
+        ...values,
+      })),
+      sortField,
+      sortDirection,
+    ),
     [votersData, sortField, sortDirection],
   );
-
-  if (isLoading) {
-    return (
-      <>
-        <SectionTitleWithButtons title="Voters" buttons={buttons} />
-        <div>Loading voters data...</div>
-      </>
-    );
-  }
-
-  if (error) {
-    return (
-      <>
-        <SectionTitleWithButtons title="Voters" buttons={buttons} />
-        <div>Error loading voters data. Please try again.</div>
-      </>
-    );
-  }
 
   return (
     <>
@@ -190,55 +182,61 @@ function VotersTable() {
               <TableCell align="center">Warning status</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {sortedVotersData.map((voter) => (
-              <TableRow
-                key={voter.username}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                onClick={() => handleVoterSelection(voter.username)}
-                hover
-              >
-                <TableCell component="th" scope="row">
-                  {voter.username}
-                </TableCell>
+          <TableBodyWrapper
+            error={votersError}
+            errorText="Error occurred loading voters"
+            loading={votersLoading}
+          >
+            <TableBody>
+              {sortedVotersData.map((voter) => (
+                <TableRow
+                  key={voter.username}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  onClick={() => handleVoterSelection(voter.username)}
+                  hover
+                >
+                  <TableCell component="th" scope="row">
+                    {voter.username}
+                  </TableCell>
 
-                {
-                  // eslint-disable-next-line no-nested-ternary
-                  voter.ageInDays < 30 ? (
-                    <RedTableText>{formatAge(voter.ageInDays)}</RedTableText>
-                  ) : voter.ageInDays < 365 ? (
-                    <OrangeTableText>
-                      {formatAge(voter.ageInDays)}
-                    </OrangeTableText>
+                  {
+                    // eslint-disable-next-line no-nested-ternary
+                    voter.ageInDays < 30 ? (
+                      <RedTableText>{formatAge(voter.ageInDays)}</RedTableText>
+                    ) : voter.ageInDays < 365 ? (
+                      <OrangeTableText>
+                        {formatAge(voter.ageInDays)}
+                      </OrangeTableText>
+                    ) : (
+                      <BlackTableText bold center>
+                        {formatAge(voter.ageInDays)}
+                      </BlackTableText>
+                    )
+                  }
+
+                  {voter.karma < KARMA_THRESHOLD ? (
+                    <RedTableText>{formatKarma(voter.karma)}</RedTableText>
                   ) : (
                     <BlackTableText bold center>
-                      {formatAge(voter.ageInDays)}
+                      {formatKarma(voter.karma)}
                     </BlackTableText>
-                  )
-                }
+                  )}
 
-                {voter.karma < KARMA_THRESHOLD ? (
-                  <RedTableText>{formatKarma(voter.karma)}</RedTableText>
-                ) : (
-                  <BlackTableText bold center>
-                    {formatKarma(voter.karma)}
-                  </BlackTableText>
-                )}
+                  {voter.votePercentage < VOTED_THRESHOLD ? (
+                    <RedTableText>{voter.votePercentage}</RedTableText>
+                  ) : (
+                    <BlackTableText bold center>
+                      {voter.votePercentage}
+                    </BlackTableText>
+                  )}
 
-                {voter.votePercentage < VOTED_THRESHOLD ? (
-                  <RedTableText>{voter.votePercentage}</RedTableText>
-                ) : (
-                  <BlackTableText bold center>
-                    {voter.votePercentage}
-                  </BlackTableText>
-                )}
+                  <VoteStatusTableText voteStatus={voter.voteStatus} />
 
-                <VoteStatusTableText voteStatus={voter.voteStatus} />
-
-                <BanStatusTableText banStatus={userBanStatus[voter.username]} />
-              </TableRow>
-            ))}
-          </TableBody>
+                  <BanStatusTableText banStatus={bansData[voter.username]} />
+                </TableRow>
+              ))}
+            </TableBody>
+          </TableBodyWrapper>
         </Table>
       </TableContainer>
     </>

@@ -18,10 +18,16 @@ const useContestContext = () => {
   return context;
 };
 
+// Abstract hook for fetching contest analysis data
+const useContestAnalysisData = (contestId, endpoint) => useSwrAuth(contestId ? `/mod/analyzeVotes/${contestId}/${endpoint}` : null, {
+  dedupingInterval: DEDUPING_INTERVAL,
+  revalidateOnFocus: false,
+});
+
 function ContestProvider({ contestId, children }) {
   // Fetch contest bans data with 5-minute deduplication
   const {
-    data: contestBansData,
+    data: bansData,
     error: bansError,
     isLoading: bansLoading,
   } = useSwrAuth(contestId ? `/mod/contestBans?contestId=${contestId}` : null, {
@@ -29,41 +35,93 @@ function ContestProvider({ contestId, children }) {
     revalidateOnFocus: false,
   });
 
-  // Fetch contest voters data
+  // Fetch contest entries analysis
   const {
-    data: contestVotersData,
+    data: entriesData,
+    error: entriesError,
+    isLoading: entriesLoading,
+  } = useContestAnalysisData(contestId, 'entries');
+
+  // Fetch contest voters analysis
+  const {
+    data: votersData,
     error: votersError,
     isLoading: votersLoading,
-  } = useSwrAuth(contestId ? `/mod/analyzeVotes/${contestId}/voters` : null, {
-    dedupingInterval: DEDUPING_INTERVAL,
-    revalidateOnFocus: false,
-  });
+  } = useContestAnalysisData(contestId, 'voters');
+
+  // Fetch contest voter patterns analysis
+  const {
+    data: voterPatternsData,
+    error: voterPatternsError,
+    isLoading: voterPatternsLoading,
+  } = useContestAnalysisData(contestId, 'voterPatterns');
+
+  // Fetch contest voting matrix analysis
+  const {
+    data: votingMatrixData,
+    error: votingMatrixError,
+    isLoading: votingMatrixLoading,
+  } = useContestAnalysisData(contestId, 'votingMatrix');
 
   const value = useMemo(
     () => ({
       // Contest bans data
-      userBanStatus: contestBansData?.userBanStatus || {},
+      bansData: bansData || {},
       bansError,
       bansLoading,
 
-      // Contest voters data
-      votersData: contestVotersData || {},
+      // Contest entries analysis
+      entriesData: entriesData || {},
+      entriesError,
+      entriesLoading,
+
+      // Contest voters analysis
+      votersData: votersData || {},
       votersError,
       votersLoading,
+
+      // Contest voter patterns analysis
+      voterPatternsData: voterPatternsData || {},
+      voterPatternsError,
+      voterPatternsLoading,
+
+      // Contest voting matrix analysis
+      votingMatrixData: votingMatrixData || [],
+      votingMatrixError,
+      votingMatrixLoading,
 
       // Combined loading state
-      isLoading: bansLoading || votersLoading,
+      isLoading:
+        bansLoading
+        || entriesLoading
+        || votersLoading
+        || voterPatternsLoading
+        || votingMatrixLoading,
 
       // Combined error state
-      error: bansError || votersError,
+      error:
+        bansError
+        || entriesError
+        || votersError
+        || voterPatternsError
+        || votingMatrixError,
     }),
     [
-      contestBansData?.userBanStatus,
-      contestVotersData,
+      bansData,
+      entriesData,
+      votersData,
+      voterPatternsData,
+      votingMatrixData,
       bansError,
+      entriesError,
       votersError,
+      voterPatternsError,
+      votingMatrixError,
       bansLoading,
+      entriesLoading,
       votersLoading,
+      voterPatternsLoading,
+      votingMatrixLoading,
     ],
   );
 

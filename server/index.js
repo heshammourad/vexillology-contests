@@ -8,13 +8,13 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 
 const accessToken = require('./api/accessToken');
+const analyzeContest = require('./api/analyzeContest');
 const {
   requireAuthentication,
   requireModerator,
   processUser,
 } = require('./api/authentication');
 const contest = require('./api/contest');
-const contestVoters = require('./api/contestVoters');
 const contests = require('./api/contests');
 const dev = require('./api/dev');
 const hallOfFame = require('./api/hallOfFame');
@@ -118,7 +118,14 @@ if (!IS_DEV && cluster.isMaster) {
     .route('/reviewSubmissions')
     .get(reviewSubmissions.get)
     .put(checkRequiredFields('id', 'status'), reviewSubmissions.put);
-  modRouter.route('/analyzeVotes/:id/voters').get(contestVoters.get);
+  modRouter.route('/analyzeVotes/:id/entries').get(analyzeContest.entries);
+  modRouter.route('/analyzeVotes/:id/voters').get(analyzeContest.voters);
+  modRouter
+    .route('/analyzeVotes/:id/voterPatterns')
+    .get(analyzeContest.voterPatterns);
+  modRouter
+    .route('/analyzeVotes/:id/votingMatrix')
+    .get(analyzeContest.votingMatrix);
   modRouter.route('/userBansSearch').get(userBans.userBansSearch);
   modRouter.route('/usersBanHistories').get(userBans.getUsersBanHistories);
   modRouter.route('/activeBans').get(userBans.getActiveBans);

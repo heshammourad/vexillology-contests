@@ -464,12 +464,12 @@ exports.getContestBans = async ({ query: { contestId } }, res) => {
     );
 
     // Convert to the desired format: {[username: string]: "warn" | "ban"}
-    const userBanStatus = {};
+    const userContestBans = {};
     usersWithBans.forEach((row) => {
-      userBanStatus[row.username] = row.actionType;
+      userContestBans[row.username] = row.actionType;
     });
 
-    res.send({ userBanStatus });
+    res.send(userContestBans);
   } catch (err) {
     logger.error(
       `Error getting contest bans for contest "${contestId}": ${err}`,

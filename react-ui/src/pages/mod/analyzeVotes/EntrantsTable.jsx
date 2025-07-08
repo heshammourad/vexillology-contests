@@ -12,6 +12,7 @@ import { UserSelector } from '../../../components';
 
 import { ContestProvider, useContestContext } from './ContestContext';
 import SectionTitleWithButtons from './SectionTitleWithButtons';
+import TableBodyWrapper from './TableBodyWrapper';
 import {
   BanStatusTableText,
   EntryStatusTableText,
@@ -60,7 +61,7 @@ function EntrantsTableContent() {
   const { contestId, entrantId } = useParams();
 
   // Use the contest context
-  const { userBanStatus } = useContestContext();
+  const { bansData, bansError, bansLoading } = useContestContext();
 
   const voters = ENTRANTS.map((e) => e.username);
 
@@ -117,24 +118,26 @@ function EntrantsTableContent() {
               <TableCell align="center">Suspicious</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {ENTRANTS.map((entrant) => (
-              <TableRow
-                key={entrant}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                onClick={() => handleEntrantSelection(entrant.username)}
-                hover
-              >
-                <TableCell component="th" scope="row">
-                  {userBanStatus.entryStatus}
-                </TableCell>
-                <EntryStatusTableText entryStatus={null} />
-                <BanStatusTableText banStatus={userBanStatus[userBanStatus]} />
-                <RedTableText>0</RedTableText>
-                <OrangeTableText>0</OrangeTableText>
-              </TableRow>
-            ))}
-          </TableBody>
+          <TableBodyWrapper>
+            <TableBody>
+              {ENTRANTS.map((entrant) => (
+                <TableRow
+                  key={entrant}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  onClick={() => handleEntrantSelection(entrant.username)}
+                  hover
+                >
+                  <TableCell component="th" scope="row">
+                    {bansData.entryStatus}
+                  </TableCell>
+                  <EntryStatusTableText entryStatus={null} />
+                  <BanStatusTableText banStatus={bansData[entrant.username]} />
+                  <RedTableText>0</RedTableText>
+                  <OrangeTableText>0</OrangeTableText>
+                </TableRow>
+              ))}
+            </TableBody>
+          </TableBodyWrapper>
         </Table>
       </TableContainer>
     </>

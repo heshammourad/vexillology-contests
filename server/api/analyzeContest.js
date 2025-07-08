@@ -32,10 +32,10 @@ exports.entries = async ({ params: { id } }, res) => {
 
     // Build the response object
     const entries = {};
-    approvedEntries.forEach(({ entry_id: entryId, user, dq }) => {
-      entries[entryId] = {
-        user,
-        dq,
+    approvedEntries.forEach((entry) => {
+      entries[entry.entryId] = {
+        user: entry.user,
+        dq: entry.dq,
       };
     });
 
@@ -115,7 +115,7 @@ exports.voterPatterns = async ({ params: { id } }, res) => {
       let voteCount = 0;
 
       userVotes.forEach((vote) => {
-        const entryAvg = entryAverages.find((e) => e.entryId === vote.entryId)?.average || 0;
+        const entryAvg = entryAverages.find((e) => e.entry_id === vote.entryId)?.average || 0;
         if (entryAvg > 0) {
           totalDeviation += Math.abs(vote.rating - entryAvg);
           voteCount += 1;
@@ -166,9 +166,9 @@ exports.voterPatterns = async ({ params: { id } }, res) => {
         userVotes[vote.username] = [];
       }
       userVotes[vote.username].push({
-        entryId: vote.entryId,
+        entryId: vote.entry_id,
         rating: vote.rating,
-        lastModified: vote.lastModified,
+        lastModified: vote.last_modified,
       });
     });
 
