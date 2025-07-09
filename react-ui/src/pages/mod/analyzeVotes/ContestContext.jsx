@@ -37,10 +37,10 @@ function ContestProvider({ contestId, children }) {
 
   // Fetch contest entries analysis
   const {
-    data: entriesData,
-    error: entriesError,
-    isLoading: entriesLoading,
-  } = useContestAnalysisData(contestId, 'entries');
+    data: { entrants: entrantsData, numberOfEntries },
+    error: entrantsError,
+    isLoading: entrantsLoading,
+  } = useContestAnalysisData(contestId, 'entrants');
 
   // Fetch contest voters analysis
   const {
@@ -71,10 +71,10 @@ function ContestProvider({ contestId, children }) {
       bansLoading,
 
       // Contest entries analysis
-      entriesData: entriesData || {},
-      entriesError,
-      entriesLoading,
-      numberOfEntries: Object.keys(entriesData || {}).length,
+      entrantsData: entrantsData || {},
+      entrantsError,
+      entrantsLoading,
+      numberOfEntries,
 
       // Contest voters analysis
       votersData: votersData || {},
@@ -94,7 +94,7 @@ function ContestProvider({ contestId, children }) {
       // Combined loading state
       isLoading:
         bansLoading
-        || entriesLoading
+        || entrantsLoading
         || votersLoading
         || voterPatternsLoading
         || votingMatrixLoading,
@@ -102,24 +102,25 @@ function ContestProvider({ contestId, children }) {
       // Combined error state
       error:
         bansError
-        || entriesError
+        || entrantsError
         || votersError
         || voterPatternsError
         || votingMatrixError,
     }),
     [
       bansData,
-      entriesData,
+      entrantsData,
+      numberOfEntries,
       votersData,
       voterPatternsData,
       votingMatrixData,
       bansError,
-      entriesError,
+      entrantsError,
       votersError,
       voterPatternsError,
       votingMatrixError,
       bansLoading,
-      entriesLoading,
+      entrantsLoading,
       votersLoading,
       voterPatternsLoading,
       votingMatrixLoading,

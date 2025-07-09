@@ -4,11 +4,11 @@ const { createLogger } = require('../logger');
 const logger = createLogger('API/ANALYZE_CONTEST');
 
 /**
- * Get contest entries analysis
+ * Get contest entrants analysis
  */
-exports.entries = async ({ params: { id } }, res) => {
+exports.entrants = async ({ params: { id } }, res) => {
   try {
-    logger.debug(`Entries analysis requested for contest: ${id}`);
+    logger.debug(`Entrants analysis requested for contest: ${id}`);
 
     // Get all approved entries for the contest with DQ status in a single query
     const approvedEntries = await db.select(
@@ -30,18 +30,21 @@ exports.entries = async ({ params: { id } }, res) => {
       return;
     }
 
-    // Build the response object
-    const entries = {};
-    approvedEntries.forEach((entry) => {
-      entries[entry.entryId] = {
-        user: entry.user,
-        dq: entry.dq,
-      };
+    // Build the response object - group by username with arrays of entries
+    const entrants = {};
+    approvedEntries.forEach(({ user, dq, entryId }) => {
+      if (!entrants[user]) {
+        entrants[user] = [];
+      }
+      entrants[user].push({
+        entryId,
+        dq,
+      });
     });
 
-    res.status(200).send(entries);
+    res.status(200).send({ entrants, numberOfEntries: approvedEntries.length });
   } catch (err) {
-    logger.error(`Error in entries analysis: ${err}`);
+    logger.error(`Error in entrants analysis: ${err}`);
     res.status(500).send();
   }
 };

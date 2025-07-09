@@ -118,7 +118,7 @@ if (!IS_DEV && cluster.isMaster) {
     .route('/reviewSubmissions')
     .get(reviewSubmissions.get)
     .put(checkRequiredFields('id', 'status'), reviewSubmissions.put);
-  modRouter.route('/analyzeVotes/:id/entries').get(analyzeContest.entries);
+  modRouter.route('/analyzeVotes/:id/entrants').get(analyzeContest.entrants);
   modRouter.route('/analyzeVotes/:id/voters').get(analyzeContest.voters);
   modRouter
     .route('/analyzeVotes/:id/voterPatterns')

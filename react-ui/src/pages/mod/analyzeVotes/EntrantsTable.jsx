@@ -15,9 +15,10 @@ import SectionTitleWithButtons from './SectionTitleWithButtons';
 import TableBodyWrapper from './TableBodyWrapper';
 import {
   BanStatusTableText,
-  EntryStatusTableText,
+  EntriesStatusTableText,
   OrangeTableText,
   RedTableText,
+  TableTextWrapper,
 } from './TableText';
 import VotersTable from './VotersTable';
 
@@ -61,7 +62,14 @@ function EntrantsTableContent() {
   const { contestId, entrantId } = useParams();
 
   // Use the contest context
-  const { bansData, bansError, bansLoading } = useContestContext();
+  const {
+    entrantsData,
+    entrantsError,
+    entrantsLoading,
+    bansData,
+    bansError,
+    bansLoading,
+  } = useContestContext();
 
   const voters = ENTRANTS.map((e) => e.username);
 
@@ -112,26 +120,32 @@ function EntrantsTableContent() {
           <TableHead>
             <TableRow>
               <TableCell>Entrant</TableCell>
-              <TableCell align="center">Entry DQ</TableCell>
+              <TableCell align="center">Entry DQs</TableCell>
               <TableCell align="center">Warning status</TableCell>
               <TableCell align="center">Cheating</TableCell>
               <TableCell align="center">Suspicious</TableCell>
             </TableRow>
           </TableHead>
-          <TableBodyWrapper>
+          <TableBodyWrapper
+            error={entrantsError}
+            errorText="Error occurred loading entrants"
+            loading={entrantsLoading}
+          >
             <TableBody>
-              {ENTRANTS.map((entrant) => (
+              {Object.entries(entrantsData).map(([username, entries]) => (
                 <TableRow
-                  key={entrant}
+                  key={username}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  onClick={() => handleEntrantSelection(entrant.username)}
+                  onClick={() => handleEntrantSelection(username)}
                   hover
                 >
                   <TableCell component="th" scope="row">
-                    {bansData.entryStatus}
+                    {username}
                   </TableCell>
-                  <EntryStatusTableText entryStatus={null} />
-                  <BanStatusTableText banStatus={bansData[entrant.username]} />
+                  <EntriesStatusTableText entries={entries} />
+                  <TableTextWrapper loading={bansLoading} error={bansError}>
+                    <BanStatusTableText banStatus={bansData[username]} />
+                  </TableTextWrapper>
                   <RedTableText>0</RedTableText>
                   <OrangeTableText>0</OrangeTableText>
                 </TableRow>

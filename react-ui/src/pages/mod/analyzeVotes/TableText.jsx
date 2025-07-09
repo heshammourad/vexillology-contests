@@ -155,9 +155,10 @@ function VoteStatusTableText({ voteStatus }) {
   return <BlackTableText />;
 }
 
-function EntryStatusTableText({ entryStatus }) {
-  if (entryStatus === 'dq') {
-    return <RedTableText>DQ</RedTableText>;
+function EntriesStatusTableText({ entries }) {
+  const dqs = entries.reduce((acc, curr) => acc + (curr.dq ? 1 : 0), 0);
+  if (dqs) {
+    return <RedTableText>{`${dqs}/${entries.length}`}</RedTableText>;
   }
   return <BlackTableText />;
 }
@@ -170,7 +171,7 @@ export {
   ScoreTableText,
   BanStatusTableText,
   VoteStatusTableText,
-  EntryStatusTableText,
+  EntriesStatusTableText,
   TableTextWrapper,
   getColorFromValue,
 };
@@ -238,10 +239,11 @@ VoteStatusTableText.defaultProps = {
   voteStatus: undefined,
 };
 
-EntryStatusTableText.propTypes = {
-  entryStatus: PropTypes.oneOf(['dq', null]),
-};
-
-EntryStatusTableText.defaultProps = {
-  entryStatus: undefined,
+EntriesStatusTableText.propTypes = {
+  entries: PropTypes.arrayOf(
+    PropTypes.shape({
+      entryId: PropTypes.string.isRequired,
+      dq: PropTypes.bool.isRequired,
+    }),
+  ).isRequired,
 };
