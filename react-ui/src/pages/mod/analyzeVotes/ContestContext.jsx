@@ -74,6 +74,7 @@ function ContestProvider({ contestId, children }) {
       entriesData: entriesData || {},
       entriesError,
       entriesLoading,
+      numberOfEntries: Object.keys(entriesData || {}).length,
 
       // Contest voters analysis
       votersData: votersData || {},

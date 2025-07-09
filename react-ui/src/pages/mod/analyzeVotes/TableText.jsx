@@ -31,6 +31,22 @@ function GreyTableText({ children }) {
   );
 }
 
+function TableTextWrapper({ loading, error, children }) {
+  if (loading) {
+    return (
+      <TableCell style={{ fontStyle: 'italic', color: '#898989' }}>
+        Loading...
+      </TableCell>
+    );
+  }
+
+  if (error) {
+    return <RedTableText>ERROR</RedTableText>;
+  }
+
+  return children;
+}
+
 const RED_ABOVE_VALUE = 70;
 const PURPLE_BELOW_VALUE = 0;
 const RED = 0;
@@ -155,6 +171,7 @@ export {
   BanStatusTableText,
   VoteStatusTableText,
   EntryStatusTableText,
+  TableTextWrapper,
   getColorFromValue,
 };
 
@@ -171,6 +188,18 @@ OrangeTableText.propTypes = {
 GreyTableText.propTypes = {
   children: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     .isRequired,
+};
+
+TableTextWrapper.propTypes = {
+  loading: PropTypes.bool,
+  error: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
+  children: PropTypes.node,
+};
+
+TableTextWrapper.defaultProps = {
+  loading: false,
+  error: null,
+  children: null,
 };
 
 ScoreTableText.propTypes = {

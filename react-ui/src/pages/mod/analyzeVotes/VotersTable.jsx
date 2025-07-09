@@ -17,6 +17,7 @@ import {
   BlackTableText,
   OrangeTableText,
   RedTableText,
+  TableTextWrapper,
   VoteStatusTableText,
 } from './TableText';
 
@@ -88,6 +89,15 @@ function VotersTable() {
     votersData,
     votersError,
     votersLoading,
+
+    numberOfEntries,
+    entriesError,
+    entriesLoading,
+
+    voterPatternsData,
+    voterPatternsError,
+    voterPatternsLoading,
+
     bansData,
     bansError,
     bansLoading,
@@ -125,11 +135,18 @@ function VotersTable() {
       Object.entries(votersData).map(([username, values]) => ({
         username,
         ...values,
+        votePercentage:
+            voterPatternsData && numberOfEntries
+              ? Math.round(
+                (100 * (voterPatternsData[username]?.voteCount || 0))
+                    / numberOfEntries,
+              )
+              : 0,
       })),
       sortField,
       sortDirection,
     ),
-    [votersData, sortField, sortDirection],
+    [votersData, numberOfEntries, voterPatternsData, sortField, sortDirection],
   );
 
   return (
@@ -179,7 +196,7 @@ function VotersTable() {
                 </TableSortLabel>
               </TableCell>
               <TableCell align="center">Vote status</TableCell>
-              <TableCell align="center">Warning status</TableCell>
+              <TableCell align="center">Ban status</TableCell>
             </TableRow>
           </TableHead>
           <TableBodyWrapper
@@ -222,17 +239,26 @@ function VotersTable() {
                     </BlackTableText>
                   )}
 
-                  {voter.votePercentage < VOTED_THRESHOLD ? (
-                    <RedTableText>{voter.votePercentage}</RedTableText>
-                  ) : (
-                    <BlackTableText bold center>
-                      {voter.votePercentage}
-                    </BlackTableText>
-                  )}
+                  <TableTextWrapper
+                    loading={entriesLoading || voterPatternsLoading}
+                    error={entriesError || voterPatternsError}
+                  >
+                    {voter.votePercentage < VOTED_THRESHOLD ? (
+                      <RedTableText>{voter.votePercentage}</RedTableText>
+                    ) : (
+                      <BlackTableText bold center>
+                        {voter.votePercentage}
+                      </BlackTableText>
+                    )}
+                  </TableTextWrapper>
 
-                  <VoteStatusTableText voteStatus={voter.voteStatus} />
+                  <VoteStatusTableText
+                    voteStatus={votersData[voter.username]?.dq}
+                  />
 
-                  <BanStatusTableText banStatus={bansData[voter.username]} />
+                  <TableTextWrapper loading={bansLoading} error={bansError}>
+                    <BanStatusTableText banStatus={bansData[voter.username]} />
+                  </TableTextWrapper>
                 </TableRow>
               ))}
             </TableBody>

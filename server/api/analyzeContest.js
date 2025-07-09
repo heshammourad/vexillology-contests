@@ -53,13 +53,14 @@ exports.voters = async ({ params: { id } }, res) => {
   try {
     logger.debug(`Voters analysis requested for contest: ${id}`);
 
-    // Get all voters with account age and karma who have voted in this contest
+    // Get all voters with account age, karma, and DQ status in a single query
     const votersData = await db.select(
       `SELECT 
         u.username,
         u.karma,
         u.created_date,
-        EXTRACT(EPOCH FROM (NOW() - u.created_date)) / 86400 AS age_in_days
+        EXTRACT(EPOCH FROM (NOW() - u.created_date)) / 86400 AS age_in_days,
+        (SELECT vd2.type FROM voter_dqs vd2 WHERE vd2.username = u.username AND vd2.contest_id = $1 LIMIT 1) as dq_type
       FROM users u
       JOIN votes v ON u.username = v.username
       WHERE v.contest_id = $1
@@ -76,10 +77,13 @@ exports.voters = async ({ params: { id } }, res) => {
 
     // Build the response object
     const voters = {};
-    votersData.forEach(({ username, karma, age_in_days: ageInDays }) => {
+    votersData.forEach(({
+      username, karma, ageInDays, dqType,
+    }) => {
       voters[username] = {
         karma,
         ageInDays: Math.round(ageInDays),
+        dq: dqType || '',
       };
     });
 
