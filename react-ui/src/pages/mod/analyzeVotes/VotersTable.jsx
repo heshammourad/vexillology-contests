@@ -244,10 +244,14 @@ function VotersTable() {
                     error={entriesError || voterPatternsError}
                   >
                     {voter.votePercentage < VOTED_THRESHOLD ? (
-                      <RedTableText>{voter.votePercentage}</RedTableText>
+                      <RedTableText>
+                        {voter.votePercentage}
+                        %
+                      </RedTableText>
                     ) : (
                       <BlackTableText bold center>
                         {voter.votePercentage}
+                        %
                       </BlackTableText>
                     )}
                   </TableTextWrapper>
