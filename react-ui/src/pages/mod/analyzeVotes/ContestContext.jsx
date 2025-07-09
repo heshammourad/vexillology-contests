@@ -37,7 +37,7 @@ function ContestProvider({ contestId, children }) {
 
   // Fetch contest entries analysis
   const {
-    data: { entrants: entrantsData, numberOfEntries },
+    data: { entrants: entrantsData = {}, numberOfEntries = 0 } = {},
     error: entrantsError,
     isLoading: entrantsLoading,
   } = useContestAnalysisData(contestId, 'entrants');
