@@ -207,6 +207,15 @@ exports.voterPatterns = async ({ params: { id } }, res) => {
       // d) Whether user has given any 0 ratings
       const hasGivenZeroRatings = votes.some((vote) => vote.rating === 0);
 
+      // e) Average vote rating
+      const averageVoteRating = votes.length > 0
+        ? Math.round(
+          (votes.reduce((sum, vote) => sum + vote.rating, 0)
+                / votes.length)
+                * 100,
+        ) / 100
+        : 0;
+
       patterns[username] = {
         voteCount,
         randomnessMetric: Math.round(randomnessMetric * 100) / 100, // Round to 2 decimal places
@@ -214,6 +223,7 @@ exports.voterPatterns = async ({ params: { id } }, res) => {
           ? Math.round(medianTimeBetweenVotes)
           : null,
         hasGivenZeroRatings,
+        averageVoteRating,
       };
     });
 
@@ -234,22 +244,37 @@ exports.votingMatrix = async ({ params: { id } }, res) => {
     // Get voting matrix for voters who participated in the specified contest
     const matrix = await db.select(
       `SELECT
-        v.username AS voter,
-        e.user AS contestant,
-        COUNT(*) AS total_votes,
-        COUNT(*) FILTER (WHERE v.rating BETWEEN 4 AND 5) AS high_rating,
-        COUNT(*) FILTER (WHERE v.rating BETWEEN 2 AND 3) AS mid_rating,
-        COUNT(*) FILTER (WHERE v.rating BETWEEN 0 AND 1) AS low_rating
-      FROM votes v
-      LEFT JOIN entries e ON v.entry_id = e.id
-      WHERE v.username IN (
-        SELECT DISTINCT v2.username
-        FROM votes v2
-        JOIN contest_entries ce ON v2.entry_id = ce.entry_id
+        v.username as voter,
+        e.user as entrant,
+        COUNT(*) as total_votes,
+        COUNT(*) FILTER (WHERE v.rating BETWEEN 4 AND 5) as high_rating,
+        COUNT(*) FILTER (WHERE v.rating BETWEEN 2 AND 3) as mid_rating,
+        COUNT(*) FILTER (WHERE v.rating BETWEEN 0 AND 1) as low_rating
+      FROM vexillology_contests.votes v
+      LEFT JOIN vexillology_contests.entries e ON v.entry_id = e.id
+      WHERE e.user IN (
+        SELECT DISTINCT e2.user 
+        FROM vexillology_contests.entries e2
+        JOIN contest_entries ce ON e2.id = ce.entry_id
         WHERE ce.contest_id = $1
       )
       GROUP BY v.username, e.user
-      ORDER BY voter, contestant`,
+      ORDER BY voter, entrant`,
+      [id],
+    );
+
+    // Get contest-specific average ratings for the provided contest_id
+    const contestAverages = await db.select(
+      `SELECT
+        v.username as voter,
+        e.user as entrant,
+        AVG(v.rating) as contest_average_rating
+      FROM vexillology_contests.votes v
+      LEFT JOIN vexillology_contests.entries e ON v.entry_id = e.id
+      JOIN contest_entries ce ON e.id = ce.entry_id
+      WHERE ce.contest_id = $1
+      GROUP BY v.username, e.user
+      ORDER BY voter, entrant`,
       [id],
     );
 
@@ -259,7 +284,33 @@ exports.votingMatrix = async ({ params: { id } }, res) => {
       return;
     }
 
-    res.status(200).send(matrix);
+    // Create a lookup map for contest averages
+    const contestAveragesMap = {};
+    contestAverages.forEach(({ voter, entrant, contestAverageRating }) => {
+      if (!contestAveragesMap[entrant]) {
+        contestAveragesMap[entrant] = {};
+      }
+      contestAveragesMap[entrant][voter] = contestAverageRating;
+    });
+
+    // Restructure the matrix to group by entrant, then by voter
+    const restructuredMatrix = {};
+    matrix.forEach(({ entrant, voter, ...stats }) => {
+      if (!restructuredMatrix[entrant]) {
+        restructuredMatrix[entrant] = {};
+      }
+
+      // Add contest average rating if available
+      const contestAverageRating = contestAveragesMap[entrant]?.[voter];
+      restructuredMatrix[entrant][voter] = {
+        ...stats,
+        contestAverageRating: contestAverageRating
+          ? Math.round(contestAverageRating * 10) / 10
+          : null,
+      };
+    });
+
+    res.status(200).send(restructuredMatrix);
   } catch (err) {
     logger.error(`Error in voting matrix analysis: ${err}`);
     res.status(500).send();
