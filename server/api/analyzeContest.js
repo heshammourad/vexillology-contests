@@ -1,5 +1,6 @@
 const db = require('../db');
 const { createLogger } = require('../logger');
+const { getHash } = require('../util');
 
 const logger = createLogger('API/ANALYZE_CONTEST');
 
@@ -166,6 +167,67 @@ exports.voterPatterns = async ({ params: { id } }, res) => {
       [id],
     );
 
+    // Get all entry IDs for the current contest and sort them using getHash
+    const contestEntries = await db.select(
+      `SELECT e.id as entry_id
+       FROM entries e
+       JOIN contest_entries ce ON e.id = ce.entry_id
+       WHERE ce.contest_id = $1 AND e.submission_status = 'approved'
+       ORDER BY e.id`,
+      [id],
+    );
+
+    // Sort entry IDs using getHash function (using a dummy username for consistent sorting)
+    const sortedEntryIds = contestEntries
+      .map((entry) => entry.entry_id)
+      .sort((a, b) => getHash('dummy', a) - getHash('dummy', b));
+
+    // Helper function to determine voting order pattern
+    const determineVotingOrder = (userVotes, entryIdsSorted) => {
+      if (userVotes.length < 2) return null; // Not enough votes to determine pattern
+
+      const userVoteEntryIds = userVotes.map((vote) => vote.entryId);
+      const totalFlags = entryIdsSorted.length;
+      const votePercentage = userVoteEntryIds.length / totalFlags;
+
+      // If user voted on over 60% of flags, determine if they started from first flag
+      if (votePercentage > 0.6) {
+        const firstFlag = entryIdsSorted[0];
+        const votedOnFirstFlag = userVoteEntryIds.includes(firstFlag);
+
+        if (votedOnFirstFlag) {
+          return 'start';
+        }
+        return 'straight';
+      }
+
+      // Check if user voted on sequential flags
+      let sequentialCount = 0;
+      let currentIndex = 0;
+
+      userVoteEntryIds.forEach((voteEntryId) => {
+        const expectedIndex = entryIdsSorted.indexOf(voteEntryId);
+        if (expectedIndex >= currentIndex) {
+          sequentialCount += 1;
+          currentIndex = expectedIndex + 1;
+        }
+      });
+
+      const sequentialRatio = sequentialCount / userVoteEntryIds.length;
+
+      if (sequentialRatio >= 0.8) {
+        // Check if user voted on the first flag
+        const firstFlag = entryIdsSorted[0];
+        const votedOnFirstFlag = userVoteEntryIds.includes(firstFlag);
+
+        if (votedOnFirstFlag) {
+          return 'start';
+        }
+        return 'straight';
+      }
+      return 'random';
+    };
+
     // Group votes by user
     const userVotes = {};
     votersData.forEach((vote) => {
@@ -216,6 +278,9 @@ exports.voterPatterns = async ({ params: { id } }, res) => {
         ) / 100
         : 0;
 
+      // f) Voting order pattern
+      const votingOrder = determineVotingOrder(votes, sortedEntryIds);
+
       patterns[username] = {
         voteCount,
         randomnessMetric: Math.round(randomnessMetric * 100) / 100, // Round to 2 decimal places
@@ -224,6 +289,7 @@ exports.voterPatterns = async ({ params: { id } }, res) => {
           : null,
         hasGivenZeroRatings,
         averageVoteRating,
+        votingOrder,
       };
     });
 
