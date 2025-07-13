@@ -57,7 +57,7 @@ const useFraudScores = (voterPatternsData, votingMatrixData, entrantsData) => us
 
       if (matrixData.contestAverageRating < 4.5) {
         entrantFavoredFraud = 0;
-        entrantFavoredText = 'Did not vote strongly for entrant';
+        entrantFavoredText = `Did not vote strongly for entrant (${matrixData.contestAverageRating})`;
       } else if (patternData.averageVoteRating < 2) {
         entrantFavoredFraud = 1;
         entrantFavoredText = `Very low average vote rating (${patternData.averageVoteRating.toFixed(
