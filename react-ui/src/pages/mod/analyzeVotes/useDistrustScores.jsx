@@ -26,8 +26,13 @@ const useDistrustScores = (votersData, voterPatternsData, numberOfEntries) => us
 
     // Calculate all distrust metrics in one pass
     const karmaDistrust = 1 - Math.min(voterData.karma / 1000, 1);
+    const karmaText = `${voterData.karma}`;
+
     const ageDistrust = 1 - Math.min(voterData.ageInDays / 365, 1);
+    const ageText = `${voterData.ageInDays} days`;
+
     const percentVotedDistrust = 1 - Math.min(patternData.voteCount / numberOfEntries, 1);
+    const percentVotedText = `Voted on ${patternData.voteCount}/${numberOfEntries} entries`;
 
     const timeBetweenVotesDistrust = patternData.medianTimeBetweenVotes
       ? Math.max(
@@ -35,9 +40,21 @@ const useDistrustScores = (votersData, voterPatternsData, numberOfEntries) => us
         Math.min(1, (10 - patternData.medianTimeBetweenVotes) / 7),
       )
       : 0.5;
+    const timeBetweenVotesText = patternData.medianTimeBetweenVotes
+      ? `Median time between votes: ${patternData.medianTimeBetweenVotes.toFixed(
+        1,
+      )} minutes`
+      : 'No time data available';
 
     const ratedZerosDistrust = patternData.hasGivenZeroRatings ? 1 : 0;
+    const ratedZerosText = patternData.hasGivenZeroRatings
+      ? 'Has given zero ratings'
+      : 'No zero ratings given';
+
     const randomnessDistrust = 1 - Math.exp(-patternData.randomnessMetric);
+    const randomnessText = `Randomness metric: ${patternData.randomnessMetric.toFixed(
+      2,
+    )}`;
 
     // Calculate weighted distrust score
     const weightedDistrust = (karmaDistrust * VOTER_TRUST_WEIGHTS.karma
@@ -58,6 +75,12 @@ const useDistrustScores = (votersData, voterPatternsData, numberOfEntries) => us
       timeBetweenVotesDistrust,
       ratedZerosDistrust,
       randomnessDistrust,
+      karmaText,
+      ageText,
+      percentVotedText,
+      timeBetweenVotesText,
+      ratedZerosText,
+      randomnessText,
       score: Math.round(weightedDistrust * 100),
     };
   });

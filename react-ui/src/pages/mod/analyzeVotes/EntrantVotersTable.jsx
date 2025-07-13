@@ -247,9 +247,20 @@ function VoterRow({ username, isChecked, handleCheckOne }) {
               sx={{
                 display: 'flex',
                 marginLeft: '40px',
+                gap: 2,
               }}
             >
-              <Box sx={{ marginTop: 6, marginBottom: 6 }}>
+              <Box
+                sx={{
+                  marginTop: 6,
+                  marginBottom: 6,
+                  flex: '1 1 50%',
+                  paddingRight: 2,
+                }}
+              >
+                <Typography variant="h6" sx={{ marginBottom: 2 }}>
+                  Entrant-Voter Fraud Analysis
+                </Typography>
                 {voterFraudData ? (
                   <>
                     <VoterBreakdownText
@@ -272,6 +283,62 @@ function VoterRow({ username, isChecked, handleCheckOne }) {
                 ) : (
                   <Typography>
                     No fraud data available for this voter
+                  </Typography>
+                )}
+              </Box>
+              <Box
+                sx={{
+                  marginTop: 6,
+                  marginBottom: 6,
+                  flex: '1 1 50%',
+                  paddingLeft: 2,
+                }}
+              >
+                <Typography variant="h6" sx={{ marginBottom: 2 }}>
+                  Voter Distrust Analysis
+                </Typography>
+                {distrustScores[username] ? (
+                  <>
+                    <VoterBreakdownText
+                      text={`Karma: ${distrustScores[username].karmaText}`}
+                      score={Math.round(
+                        distrustScores[username].karmaDistrust * 100,
+                      )}
+                    />
+                    <VoterBreakdownText
+                      text={`Account age: ${distrustScores[username].ageText}`}
+                      score={Math.round(
+                        distrustScores[username].ageDistrust * 100,
+                      )}
+                    />
+                    <VoterBreakdownText
+                      text={`Vote participation: ${distrustScores[username].percentVotedText}`}
+                      score={Math.round(
+                        distrustScores[username].percentVotedDistrust * 100,
+                      )}
+                    />
+                    <VoterBreakdownText
+                      text={`Time between votes: ${distrustScores[username].timeBetweenVotesText}`}
+                      score={Math.round(
+                        distrustScores[username].timeBetweenVotesDistrust * 100,
+                      )}
+                    />
+                    <VoterBreakdownText
+                      text={`Zero ratings: ${distrustScores[username].ratedZerosText}`}
+                      score={Math.round(
+                        distrustScores[username].ratedZerosDistrust * 100,
+                      )}
+                    />
+                    <VoterBreakdownText
+                      text={`Randomness: ${distrustScores[username].randomnessText}`}
+                      score={Math.round(
+                        distrustScores[username].randomnessDistrust * 100,
+                      )}
+                    />
+                  </>
+                ) : (
+                  <Typography>
+                    No distrust data available for this voter
                   </Typography>
                 )}
               </Box>
