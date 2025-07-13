@@ -1,7 +1,10 @@
-import PropTypes from 'prop-types';
+import PropTypes, { number } from 'prop-types';
 import { createContext, useContext, useMemo } from 'react';
 
 import useSwrAuth from '../../../data/useSwrAuth';
+
+import useDistrustScores from './useDistrustScores';
+import useFraudScores from './useFraudScores';
 
 // 5 minutes in milliseconds for deduplication
 const DEDUPING_INTERVAL = 300000;
@@ -63,6 +66,17 @@ function ContestProvider({ contestId, children }) {
     isLoading: votingMatrixLoading,
   } = useContestAnalysisData(contestId, 'votingMatrix');
 
+  const distrustScores = useDistrustScores(
+    votersData,
+    voterPatternsData,
+    numberOfEntries,
+  );
+  const fraudScores = useFraudScores(
+    voterPatternsData,
+    votingMatrixData,
+    entrantsData,
+  );
+
   const value = useMemo(
     () => ({
       // Contest bans data
@@ -91,21 +105,16 @@ function ContestProvider({ contestId, children }) {
       votingMatrixError,
       votingMatrixLoading,
 
-      // Combined loading state
-      isLoading:
-        bansLoading
-        || entrantsLoading
-        || votersLoading
-        || voterPatternsLoading
-        || votingMatrixLoading,
+      distrustScores,
+      distrustScoresError: votersError || voterPatternsError || entrantsError,
+      distrustScoresLoading:
+        votersLoading || voterPatternsLoading || entrantsLoading,
 
-      // Combined error state
-      error:
-        bansError
-        || entrantsError
-        || votersError
-        || voterPatternsError
-        || votingMatrixError,
+      fraudScores,
+      fraudScoresError:
+        voterPatternsError || votingMatrixError || entrantsError,
+      fraudScoresLoading:
+        voterPatternsLoading || votingMatrixLoading || entrantsLoading,
     }),
     [
       bansData,
@@ -124,6 +133,7 @@ function ContestProvider({ contestId, children }) {
       votersLoading,
       voterPatternsLoading,
       votingMatrixLoading,
+      distrustScores,
     ],
   );
 

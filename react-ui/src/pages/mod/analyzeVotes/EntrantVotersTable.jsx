@@ -17,9 +17,12 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { CHIPS, useChipContext } from './ChipContext';
+import { useContestContext } from './ContestContext';
+import TableBodyWrapper from './TableBodyWrapper';
 import {
   BanStatusTableText,
   ScoreTableText,
+  TableTextWrapper,
   VoteStatusTableText,
 } from './TableText';
 import TakeActionButton from './TakeActionButton';
@@ -76,9 +79,9 @@ export const ENTRANT_VOTERS = [
  * Breaks down voter stats for the selected entrant
  */
 function EntrantVotersTable() {
-  const { entrantId } = useParams();
   const [checkedVoters, setCheckedVoters] = useState(new Set());
   const { chips, setChips } = useChipContext(); // {[field]: bool}
+  const { votersData, votersError, votersLoading } = useContestContext();
 
   const handleChip = (event) => {
     const field = event.currentTarget.getAttribute('data-chip');
@@ -128,20 +131,26 @@ function EntrantVotersTable() {
               </TableCell>
               <TableCell align="center">Vote status</TableCell>
               <TableCell align="center">Site ban</TableCell>
-              <TableCell align="center">Cheat score</TableCell>
+              <TableCell align="center">Voter distrust</TableCell>
+              <TableCell align="center">Fraud score</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {ENTRANT_VOTERS.map((voter) => (
-              <VoterRow
-                key={voter.username}
-                voter={voter}
-                isEntrant={voter.username === entrantId}
-                isChecked={checkedVoters.has(voter.username)}
-                handleCheckOne={handleCheckOne}
-              />
-            ))}
-          </TableBody>
+          <TableBodyWrapper
+            error={votersError}
+            errorText="Error occurred loading voters"
+            loading={votersLoading}
+          >
+            <TableBody>
+              {Object.keys(votersData).map((username) => (
+                <VoterRow
+                  key={username}
+                  username={username}
+                  isChecked={checkedVoters.has(username)}
+                  handleCheckOne={handleCheckOne}
+                />
+              ))}
+            </TableBody>
+          </TableBodyWrapper>
         </Table>
       </TableContainer>
       <TakeActionButton users={checkedVoters} />
@@ -149,24 +158,40 @@ function EntrantVotersTable() {
   );
 }
 
-function VoterRow({
-  voter, isEntrant, isChecked, handleCheckOne,
-}) {
+function VoterRow({ username, isChecked, handleCheckOne }) {
+  const {
+    bansData,
+    bansError,
+    bansLoading,
+    votersData,
+    votersError,
+    votersLoading,
+    distrustScores,
+    distrustScoresError,
+    distrustScoresLoading,
+    fraudScores,
+    fraudScoresError,
+    fraudScoresLoading,
+  } = useContestContext();
+  const { entrantId } = useParams();
+
   const [showVoter, setShowVoter] = useState(false);
   const { chips } = useChipContext(); // {[field]: bool}
 
-  if (chips.hideExcluded && voter.voteStatus === 'exclude') {
+  const isEntrant = username === entrantId;
+  const voteStatus = votersData?.[username]?.dq;
+
+  if (chips.hideExcluded && voteStatus === 'exclude') {
     return null;
   }
 
-  if (chips.hideAutofiltered && voter.voteStatus === 'autofilter') {
+  if (chips.hideAutofiltered && voteStatus === 'autofilter') {
     return null;
   }
 
   return (
     <>
       <TableRow
-        key={voter.username}
         sx={{
           '&:last-child td, &:last-child th': { border: 0 },
           '& > *': { borderBottom: 'unset' },
@@ -181,18 +206,35 @@ function VoterRow({
                 style={{ paddingTop: 0, paddingBottom: 0 }}
                 checked={isChecked}
                 onChange={handleCheckOne}
-                name={voter.username}
+                name={username}
               />
             )}
-            label={`${voter.username}${isEntrant ? ' (entrant)' : ''}`}
+            label={`${username}${isEntrant ? ' (entrant)' : ''}`}
           />
         </TableCell>
 
-        <VoteStatusTableText voteStatus={voter.voteStatus} />
+        <TableTextWrapper loading={votersLoading} error={votersError}>
+          <VoteStatusTableText voteStatus={voteStatus} />
+        </TableTextWrapper>
 
-        <BanStatusTableText banStatus={voter.banStatus} />
+        <TableTextWrapper loading={bansLoading} error={bansError}>
+          <BanStatusTableText banStatus={bansData[username]} />
+        </TableTextWrapper>
 
-        <ScoreTableText>{voter.score}</ScoreTableText>
+        <TableTextWrapper
+          loading={distrustScoresLoading}
+          error={distrustScoresError}
+        >
+          <ScoreTableText>
+            {distrustScores[username]?.weightedDistrustScore}
+          </ScoreTableText>
+        </TableTextWrapper>
+
+        <TableTextWrapper loading={fraudScoresLoading} error={fraudScoresError}>
+          <ScoreTableText>
+            {fraudScores[entrantId]?.[username]?.weightedFraudScore}
+          </ScoreTableText>
+        </TableTextWrapper>
       </TableRow>
       <TableRow onClick={() => setShowVoter(false)}>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
@@ -236,13 +278,7 @@ function VoterRow({
 export default EntrantVotersTable;
 
 VoterRow.propTypes = {
-  voter: PropTypes.shape({
-    username: PropTypes.string.isRequired,
-    voteStatus: PropTypes.oneOf(['exclude', 'autofilter', '']).isRequired,
-    banStatus: PropTypes.oneOf(['ban', 'warn', '']).isRequired,
-    score: PropTypes.number,
-  }).isRequired,
-  isEntrant: PropTypes.bool.isRequired,
+  username: PropTypes.string.isRequired,
   isChecked: PropTypes.bool.isRequired,
   handleCheckOne: PropTypes.func.isRequired,
 };
