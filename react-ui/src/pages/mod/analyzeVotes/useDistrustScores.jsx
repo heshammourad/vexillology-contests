@@ -41,20 +41,16 @@ const useDistrustScores = (votersData, voterPatternsData, numberOfEntries) => us
       )
       : 0.5;
     const timeBetweenVotesText = patternData.medianTimeBetweenVotes
-      ? `Median time between votes: ${patternData.medianTimeBetweenVotes.toFixed(
-        1,
-      )} minutes`
+      ? `${patternData.medianTimeBetweenVotes.toFixed(1)} seconds`
       : 'No time data available';
 
     const ratedZerosDistrust = patternData.hasGivenZeroRatings ? 1 : 0;
     const ratedZerosText = patternData.hasGivenZeroRatings
-      ? 'Has given zero ratings'
+      ? 'Gave zero ratings'
       : 'No zero ratings given';
 
     const randomnessDistrust = 1 - Math.exp(-patternData.randomnessMetric);
-    const randomnessText = `Randomness metric: ${patternData.randomnessMetric.toFixed(
-      2,
-    )}`;
+    const randomnessText = `${patternData.randomnessMetric.toFixed(2)}`;
 
     // Calculate weighted distrust score
     const weightedDistrust = (karmaDistrust * VOTER_TRUST_WEIGHTS.karma

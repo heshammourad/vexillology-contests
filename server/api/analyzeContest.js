@@ -235,9 +235,9 @@ exports.voterPatterns = async ({ params: { id } }, res) => {
         userVotes[vote.username] = [];
       }
       userVotes[vote.username].push({
-        entryId: vote.entry_id,
+        entryId: vote.entryId,
         rating: vote.rating,
-        lastModified: vote.last_modified,
+        lastModified: vote.lastModified,
       });
     });
 
