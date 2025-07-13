@@ -26,15 +26,7 @@ import {
   VoteStatusTableText,
 } from './TableText';
 import TakeActionButton from './TakeActionButton';
-import { RUBRIC, VoterBreakdownText } from './VoteBreakdownText';
-
-const VOTER_METRICS = {
-  age: 1,
-  karma: 20,
-  fives: [undefined, 4, 2],
-  zero: false,
-  history: [2, 2, 2],
-};
+import { VoterBreakdownText } from './VoteBreakdownText';
 
 /**
  * Breaks down voter stats for the selected entrant
@@ -144,6 +136,20 @@ function EntrantVotersTable() {
   );
 }
 
+// Helper function for voting order text
+const getVotingOrderText = (outOfOrderFraud) => {
+  if (outOfOrderFraud >= 0.8) {
+    return 'Random voting pattern';
+  }
+  if (outOfOrderFraud >= 0.5) {
+    return 'Mixed voting pattern';
+  }
+  if (outOfOrderFraud >= 0.3) {
+    return 'Straight voting pattern';
+  }
+  return 'Start voting pattern';
+};
+
 function VoterRow({ username, isChecked, handleCheckOne }) {
   const {
     bansData,
@@ -166,6 +172,7 @@ function VoterRow({ username, isChecked, handleCheckOne }) {
 
   const isEntrant = username === entrantId;
   const voteStatus = votersData?.[username]?.dq;
+  const voterFraudData = fraudScores[entrantId]?.[username];
 
   if (chips.hideExcluded && voteStatus === 'exclude') {
     return null;
@@ -243,13 +250,30 @@ function VoterRow({ username, isChecked, handleCheckOne }) {
               }}
             >
               <Box sx={{ marginTop: 6, marginBottom: 6 }}>
-                {Object.entries(VOTER_METRICS).map(([key, value]) => (
-                  <VoterBreakdownText
-                    key={key}
-                    text={RUBRIC[key].getText(value)}
-                    score={RUBRIC[key].getScore(value)}
-                  />
-                ))}
+                {voterFraudData ? (
+                  <>
+                    <VoterBreakdownText
+                      text={`Voting order: ${getVotingOrderText(
+                        voterFraudData.outOfOrderFraud,
+                      )}`}
+                      score={Math.round(voterFraudData.outOfOrderFraud * 100)}
+                    />
+                    <VoterBreakdownText
+                      text={`Entrant favored: ${voterFraudData.entrantFavoredText}`}
+                      score={Math.round(
+                        voterFraudData.entrantFavoredFraud * 100,
+                      )}
+                    />
+                    <VoterBreakdownText
+                      text={`Historical pattern: ${voterFraudData.historicalText} (H/M/L)`}
+                      score={Math.round(voterFraudData.historicalFraud * 100)}
+                    />
+                  </>
+                ) : (
+                  <Typography>
+                    No fraud data available for this voter
+                  </Typography>
+                )}
               </Box>
             </Box>
           </Collapse>

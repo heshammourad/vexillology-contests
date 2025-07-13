@@ -53,16 +53,29 @@ const useFraudScores = (voterPatternsData, votingMatrixData, entrantsData) => us
 
       // entrantFavored: complex logic based on multiple factors
       let entrantFavoredFraud = 0;
+      let entrantFavoredText = 'No favoritism detected';
+
       if (matrixData.contestAverageRating < 4.5) {
         entrantFavoredFraud = 0;
+        entrantFavoredText = 'Did not vote strongly for entrant';
       } else if (patternData.averageVoteRating < 2) {
         entrantFavoredFraud = 1;
+        entrantFavoredText = `Very low average vote rating (${patternData.averageVoteRating.toFixed(
+          1,
+        )})`;
       } else if (patternData.randomnessMetric > 1) {
         entrantFavoredFraud = 0.8;
+        entrantFavoredText = `High randomness metric (${patternData.randomnessMetric.toFixed(
+          2,
+        )})`;
       } else if (patternData.averageVoteRating < 3) {
         entrantFavoredFraud = 0.6;
+        entrantFavoredText = `Low average vote rating (${patternData.averageVoteRating.toFixed(
+          1,
+        )})`;
       } else {
         entrantFavoredFraud = 0.2;
+        entrantFavoredText = 'Voted strongly for entrant';
       }
 
       // historical: percentage of high ratings
@@ -70,6 +83,7 @@ const useFraudScores = (voterPatternsData, votingMatrixData, entrantsData) => us
           + Number(matrixData.midRating)
           + Number(matrixData.lowRating);
       const historicalFraud = totalVotes > 4 ? matrixData.highRating / totalVotes : 0;
+      const historicalText = `${matrixData.highRating}/${matrixData.midRating}/${matrixData.lowRating}`;
 
       // Calculate weighted fraud score
       const weightedFraud = (outOfOrderFraud * VOTER_FRAUD_WEIGHTS.outOfOrder
@@ -85,11 +99,13 @@ const useFraudScores = (voterPatternsData, votingMatrixData, entrantsData) => us
         outOfOrderFraud,
         entrantFavoredFraud,
         historicalFraud,
+        entrantFavoredText,
+        historicalText,
         score,
       };
 
       // Update highest score if this score is higher
-      if (score > highest) {
+      if (username !== entrantId && score > highest) {
         highest = score;
       }
     });
