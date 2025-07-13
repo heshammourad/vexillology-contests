@@ -16,8 +16,7 @@ import TableBodyWrapper from './TableBodyWrapper';
 import {
   BanStatusTableText,
   EntriesStatusTableText,
-  OrangeTableText,
-  RedTableText,
+  ScoreTableText,
   TableTextWrapper,
 } from './TableText';
 import VotersTable from './VotersTable';
@@ -38,9 +37,18 @@ function EntrantsTableContent() {
     bansData,
     bansError,
     bansLoading,
+    fraudScores,
+    fraudScoresError,
+    fraudScoresLoading,
   } = useContestContext();
 
   const entrants = Object.keys(entrantsData).sort();
+
+  const sortedEntrants = Object.keys(entrantsData).sort((a, b) => {
+    const scoreA = fraudScores[a]?.highest ?? 0;
+    const scoreB = fraudScores[b]?.highest ?? 0;
+    return scoreB - scoreA; // Descending order (highest first)
+  });
 
   const handleEntrantSelection = (eId) => navigate(`./${eId}`);
 
@@ -91,8 +99,7 @@ function EntrantsTableContent() {
               <TableCell>Entrant</TableCell>
               <TableCell align="center">Entry DQs</TableCell>
               <TableCell align="center">Warning status</TableCell>
-              <TableCell align="center">Cheating</TableCell>
-              <TableCell align="center">Suspicious</TableCell>
+              <TableCell align="center">Top fraud</TableCell>
             </TableRow>
           </TableHead>
           <TableBodyWrapper
@@ -101,7 +108,7 @@ function EntrantsTableContent() {
             loading={entrantsLoading}
           >
             <TableBody>
-              {Object.entries(entrantsData).map(([username, entries]) => (
+              {sortedEntrants.map((username) => (
                 <TableRow
                   key={username}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -111,12 +118,18 @@ function EntrantsTableContent() {
                   <TableCell component="th" scope="row">
                     {username}
                   </TableCell>
-                  <EntriesStatusTableText entries={entries} />
+                  <EntriesStatusTableText entries={entrantsData[username]} />
                   <TableTextWrapper loading={bansLoading} error={bansError}>
                     <BanStatusTableText banStatus={bansData[username]} />
                   </TableTextWrapper>
-                  <RedTableText>0</RedTableText>
-                  <OrangeTableText>0</OrangeTableText>
+                  <TableTextWrapper
+                    loading={fraudScoresLoading}
+                    error={fraudScoresError}
+                  >
+                    <ScoreTableText>
+                      {fraudScores[username]?.highest || 'ERR'}
+                    </ScoreTableText>
+                  </TableTextWrapper>
                 </TableRow>
               ))}
             </TableBody>

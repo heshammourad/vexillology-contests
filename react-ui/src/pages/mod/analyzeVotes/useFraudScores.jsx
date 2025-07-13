@@ -16,6 +16,7 @@ const useFraudScores = (voterPatternsData, votingMatrixData, entrantsData) => us
   // Iterate through all entrants
   Object.keys(entrantsData).forEach((entrantId) => {
     result[entrantId] = {};
+    let highest = 0; // Track highest score for this entrant
 
     // Iterate through all voters for this entrant
     Object.keys(voterPatternsData).forEach((username) => {
@@ -79,13 +80,22 @@ const useFraudScores = (voterPatternsData, votingMatrixData, entrantsData) => us
             0,
           );
 
+      const score = Math.round(weightedFraud * 100);
       result[entrantId][username] = {
         outOfOrderFraud,
         entrantFavoredFraud,
         historicalFraud,
-        score: Math.round(weightedFraud * 100),
+        score,
       };
+
+      // Update highest score if this score is higher
+      if (score > highest) {
+        highest = score;
+      }
     });
+
+    // Store the highest score for this entrant
+    result[entrantId].highest = highest;
   });
 
   return result;
