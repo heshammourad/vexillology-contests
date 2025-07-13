@@ -58,7 +58,7 @@ const useDistrustScores = (votersData, voterPatternsData, numberOfEntries) => us
       timeBetweenVotesDistrust,
       ratedZerosDistrust,
       randomnessDistrust,
-      weightedDistrustScore: Math.round(weightedDistrust * 100),
+      score: Math.round(weightedDistrust * 100),
     };
   });
 

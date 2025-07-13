@@ -13,7 +13,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { CHIPS, useChipContext } from './ChipContext';
@@ -36,59 +36,45 @@ const VOTER_METRICS = {
   history: [2, 2, 2],
 };
 
-export const ENTRANT_VOTERS = [
-  {
-    username: 'joshuauiux',
-    voteStatus: 'exclude',
-    banStatus: 'ban',
-    score: null,
-  },
-  {
-    username: 'Examination-4706',
-    voteStatus: 'exclude',
-    banStatus: 'ban',
-    score: 97,
-  },
-  {
-    username: 'Taco-Man123',
-    voteStatus: 'exclude',
-    banStatus: 'warn',
-    score: 81,
-  },
-  {
-    username: 'TorteApp',
-    voteStatus: '',
-    banStatus: '',
-    score: 47,
-  },
-  {
-    username: 'heshammourad',
-    voteStatus: '',
-    banStatus: '',
-    score: 13,
-  },
-  {
-    username: 'LowVotingAcct',
-    voteStatus: 'autofilter',
-    banStatus: '',
-    score: 10,
-  },
-];
-
 /**
  * Breaks down voter stats for the selected entrant
  */
 function EntrantVotersTable() {
   const [checkedVoters, setCheckedVoters] = useState(new Set());
   const { chips, setChips } = useChipContext(); // {[field]: bool}
-  const { votersData, votersError, votersLoading } = useContestContext();
+  const {
+    votersData, votersError, votersLoading, distrustScores, fraudScores,
+  } = useContestContext();
+  const { entrantId } = useParams();
+
+  const sortedVoters = useMemo(() => {
+    const entrantFraud = fraudScores[entrantId];
+    return Object.keys(votersData).sort((a, b) => {
+      // First compare entrantFraud scores (highest first)
+      const fraudScoreA = entrantFraud?.[a]?.score ?? 0;
+      const fraudScoreB = entrantFraud?.[b]?.score ?? 0;
+      if (fraudScoreA !== fraudScoreB) {
+        return fraudScoreB - fraudScoreA; // Descending order
+      }
+
+      // Then compare distrustScores (highest first)
+      const distrustScoreA = distrustScores[a]?.score ?? 0;
+      const distrustScoreB = distrustScores[b]?.score ?? 0;
+      if (distrustScoreA !== distrustScoreB) {
+        return distrustScoreB - distrustScoreA; // Descending order
+      }
+
+      // Finally compare username strings
+      return a.localeCompare(b);
+    });
+  }, [votersData, distrustScores, fraudScores, entrantId]);
 
   const handleChip = (event) => {
     const field = event.currentTarget.getAttribute('data-chip');
     setChips((prev) => ({ ...prev, [field]: !prev[field] }));
   };
   const handleCheckAll = () => {
-    setCheckedVoters((prev) => (prev.size ? new Set() : new Set(ENTRANT_VOTERS.map((v) => v.username))));
+    setCheckedVoters(() => new Set());
   };
   const handleCheckOne = (event) => {
     event.stopPropagation();
@@ -141,7 +127,7 @@ function EntrantVotersTable() {
             loading={votersLoading}
           >
             <TableBody>
-              {Object.keys(votersData).map((username) => (
+              {sortedVoters.map((username) => (
                 <VoterRow
                   key={username}
                   username={username}
@@ -225,14 +211,12 @@ function VoterRow({ username, isChecked, handleCheckOne }) {
           loading={distrustScoresLoading}
           error={distrustScoresError}
         >
-          <ScoreTableText>
-            {distrustScores[username]?.weightedDistrustScore}
-          </ScoreTableText>
+          <ScoreTableText>{distrustScores[username]?.score}</ScoreTableText>
         </TableTextWrapper>
 
         <TableTextWrapper loading={fraudScoresLoading} error={fraudScoresError}>
           <ScoreTableText>
-            {fraudScores[entrantId]?.[username]?.weightedFraudScore}
+            {fraudScores[entrantId]?.[username]?.score}
           </ScoreTableText>
         </TableTextWrapper>
       </TableRow>

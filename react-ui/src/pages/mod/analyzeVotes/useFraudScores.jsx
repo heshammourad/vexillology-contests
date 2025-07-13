@@ -28,7 +28,7 @@ const useFraudScores = (voterPatternsData, votingMatrixData, entrantsData) => us
 
       // Check if there's voting matrix data for this entrant-voter pair
       if (!matrixData || matrixData.contestAverageRating === null) {
-        result[entrantId][username] = '-';
+        result[entrantId][username] = null;
         return;
       }
 
@@ -65,8 +65,10 @@ const useFraudScores = (voterPatternsData, votingMatrixData, entrantsData) => us
       }
 
       // historical: percentage of high ratings
-      const totalVotes = matrixData.highRating + matrixData.midRating + matrixData.lowRating;
-      const historicalFraud = totalVotes > 0 ? matrixData.highRating / totalVotes : 0;
+      const totalVotes = Number(matrixData.highRating)
+          + Number(matrixData.midRating)
+          + Number(matrixData.lowRating);
+      const historicalFraud = totalVotes > 4 ? matrixData.highRating / totalVotes : 0;
 
       // Calculate weighted fraud score
       const weightedFraud = (outOfOrderFraud * VOTER_FRAUD_WEIGHTS.outOfOrder
@@ -81,7 +83,7 @@ const useFraudScores = (voterPatternsData, votingMatrixData, entrantsData) => us
         outOfOrderFraud,
         entrantFavoredFraud,
         historicalFraud,
-        weightedFraudScore: Math.round(weightedFraud * 100),
+        score: Math.round(weightedFraud * 100),
       };
     });
   });
