@@ -22,37 +22,6 @@ import {
 } from './TableText';
 import VotersTable from './VotersTable';
 
-export const ENTRANTS = [
-  {
-    username: 'joshuauiux',
-    entryStatus: 'dq',
-    banStatus: 'ban',
-    cheating: 21,
-    suspicious: 0,
-  },
-  {
-    username: 'WorkingKing',
-    entryStatus: 'dq',
-    banStatus: 'warn',
-    cheating: 4,
-    suspicious: 2,
-  },
-  {
-    username: 'TorteApp',
-    entryStatus: null,
-    banStatus: '',
-    cheating: 21,
-    suspicious: 1,
-  },
-  {
-    username: 'heshammourad',
-    entryStatus: null,
-    banStatus: '',
-    cheating: 0,
-    suspicious: 0,
-  },
-];
-
 /**
  * The page for moderators to review contest submissions.
  */
@@ -71,7 +40,7 @@ function EntrantsTableContent() {
     bansLoading,
   } = useContestContext();
 
-  const voters = ENTRANTS.map((e) => e.username);
+  const entrants = Object.keys(entrantsData).sort();
 
   const handleEntrantSelection = (eId) => navigate(`./${eId}`);
 
@@ -101,7 +70,7 @@ function EntrantsTableContent() {
       <>
         <SectionTitleWithButtons title="Entrant" buttons={buttons} />
         <UserSelector
-          usernames={voters}
+          usernames={entrants}
           username={entrantId}
           onChange={handleEntrantSelection}
         />

@@ -1,4 +1,4 @@
-import PropTypes, { number } from 'prop-types';
+import PropTypes from 'prop-types';
 import { createContext, useContext, useMemo } from 'react';
 
 import useSwrAuth from '../../../data/useSwrAuth';
