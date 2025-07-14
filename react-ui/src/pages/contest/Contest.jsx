@@ -22,7 +22,6 @@ import {
   PageWithDrawer,
   RedditLogInDialog,
 } from '../../components';
-import ContestStatus from '../../../../shared/ContestStatus';
 import useSwrContest from '../../data/useSwrContest';
 
 import ContestAppBarMain from './ContestAppBarMain';
@@ -69,10 +68,7 @@ function Contest() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerEntryId, setDrawerEntryId] = useState(null);
 
-  if (
-    contest?.contestStatus === ContestStatus.SUBMISSIONS_OPEN
-    && !isValidating
-  ) {
+  if (contest?.contestStatus === 'SUBMISSIONS_OPEN' && !isValidating) {
     navigate('/submission', { replace: true });
   }
 
@@ -92,7 +88,7 @@ function Contest() {
 
   useEffect(() => {
     // Clear cache if the voting window is still closed to force fetch again on next visit
-    if (contest.contestStatus === ContestStatus.SUBMISSIONS_CLOSED) {
+    if (contest.contestStatus === 'SUBMISSIONS_CLOSED') {
       mutate();
     }
   }, [contest.contestStatus]);
