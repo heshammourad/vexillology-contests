@@ -27,6 +27,7 @@ import {
 } from './TableText';
 import TakeActionButton from './TakeActionButton';
 import { VoterBreakdownText } from './VoteBreakdownText';
+import VoterGraph from './VoterGraph';
 
 /**
  * Breaks down voter stats for the selected entrant
@@ -233,15 +234,11 @@ function VoterRow({ username, isChecked, handleCheckOne }) {
             <Box
               sx={{
                 display: 'flex',
-                height: 300,
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: '#adeefa',
               }}
             >
-              <Typography>
-                FUTURE SITE OF BOTH USER VS AVERAGE CHARTS
-              </Typography>
+              <VoterGraph voterId={username} entrantId={entrantId} />
             </Box>
             <Box
               sx={{

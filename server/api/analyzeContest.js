@@ -242,7 +242,7 @@ exports.voterPatterns = async ({ params: { id } }, res) => {
     });
 
     // Calculate patterns for each user
-    const patterns = {};
+    const voterPatterns = {};
     Object.keys(userVotes).forEach((username) => {
       const votes = userVotes[username];
 
@@ -281,7 +281,7 @@ exports.voterPatterns = async ({ params: { id } }, res) => {
       // f) Voting order pattern
       const votingOrder = determineVotingOrder(votes, sortedEntryIds);
 
-      patterns[username] = {
+      voterPatterns[username] = {
         voteCount,
         randomnessMetric: Math.round(randomnessMetric * 100) / 100, // Round to 2 decimal places
         medianTimeBetweenVotes: medianTimeBetweenVotes
@@ -293,7 +293,7 @@ exports.voterPatterns = async ({ params: { id } }, res) => {
       };
     });
 
-    res.status(200).send(patterns);
+    res.status(200).send({ voterPatterns, entryAverages });
   } catch (err) {
     logger.error(`Error in voter patterns analysis: ${err}`);
     res.status(500).send();
@@ -379,6 +379,42 @@ exports.votingMatrix = async ({ params: { id } }, res) => {
     res.status(200).send(restructuredMatrix);
   } catch (err) {
     logger.error(`Error in voting matrix analysis: ${err}`);
+    res.status(500).send();
+  }
+};
+
+/**
+ * Get voter votes for a specific contest
+ */
+exports.voterVotes = async ({ query: { contestId, voterId } }, res) => {
+  try {
+    if (!contestId || !voterId) {
+      const message = 'contestId and voterId are required';
+      logger.warn(message);
+      res.status(400).send(message);
+      return;
+    }
+
+    // Fetch all votes for the specific voter and contest with entrant information
+    const votes = await db.select(
+      `SELECT v.entry_id, v.rating 
+       FROM votes v
+       WHERE v.contest_id = $1 AND v.username = $2`,
+      [contestId, voterId],
+    );
+
+    // Transform the data into {[entryId]: {entrant, rating}} format
+    const votesByEntry = {};
+    votes.forEach((vote) => {
+      votesByEntry[vote.entryId] = vote.rating;
+    });
+
+    logger.debug(
+      `Retrieved ${votes.length} votes for voter ${voterId} in contest ${contestId}`,
+    );
+    res.status(200).send(votesByEntry);
+  } catch (err) {
+    logger.error(`Error getting voter votes: ${err}`);
     res.status(500).send();
   }
 };

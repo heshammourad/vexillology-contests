@@ -168,6 +168,7 @@ if (!IS_DEV && cluster.isMaster) {
   apiRouter
     .route('/checkBanStatus')
     .get(requireAuthentication, userBans.checkUserBanStatus);
+  apiRouter.get('/voter-votes', analyzeContest.voterVotes);
   apiRouter.use('/mod', modRouter);
 
   if (IS_DEV) {

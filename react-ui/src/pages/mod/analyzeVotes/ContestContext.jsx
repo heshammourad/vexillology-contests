@@ -54,7 +54,7 @@ function ContestProvider({ contestId, children }) {
 
   // Fetch contest voter patterns analysis
   const {
-    data: voterPatternsData,
+    data: { voterPatterns: voterPatternsData, entryAverages },
     error: voterPatternsError,
     isLoading: voterPatternsLoading,
   } = useContestAnalysisData(contestId, 'voterPatterns');
@@ -99,6 +99,7 @@ function ContestProvider({ contestId, children }) {
       voterPatternsData: voterPatternsData || {},
       voterPatternsError,
       voterPatternsLoading,
+      entryAverages,
 
       // Contest voting matrix analysis
       votingMatrixData: votingMatrixData || [],
@@ -121,6 +122,7 @@ function ContestProvider({ contestId, children }) {
       entrantsData,
       numberOfEntries,
       votersData,
+      entryAverages,
       voterPatternsData,
       votingMatrixData,
       bansError,
