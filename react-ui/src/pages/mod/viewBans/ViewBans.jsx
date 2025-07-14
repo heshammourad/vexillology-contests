@@ -11,94 +11,14 @@ import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import useBanHistoryTransform from '../../../common/useBanHistoryTransform';
 import { ProtectedRoute } from '../../../components';
+import useSwrAuth from '../../../data/useSwrAuth';
 
-const {
-  format, isFuture, endOfMonth, addMonths,
-} = require('date-fns');
-
-const SEARCH_STATUSES = {
-  noSearchTerm: 'noSearchTerm',
-  failedSearch: 'failedSearch',
-  successfulSearch: 'successfulSearch',
-};
-const SEARCH_STATUS = SEARCH_STATUSES.successfulSearch;
-
-export const SEARCH_RESULTS = [
-  {
-    username: 'ASmallEye',
-    history: [
-      {
-        issueDate: new Date(2024, 7, 29),
-        modName: 'TorteApp',
-        contestId: 'sep23',
-        actionType: 'ban',
-        expiryDate: 'never',
-        reason: 'Syke',
-        actionId: 'as1',
-        lifted: false,
-      },
-      {
-        issueDate: new Date(2024, 6, 20),
-        modName: 'TorteApp',
-        contestId: '',
-        actionType: 'ban',
-        expiryDate: new Date(2024, 7, 31),
-        reason: 'Voted with alt account again',
-        actionId: 'as3',
-        lifted: true,
-        liftedDate: new Date(2024, 6, 30),
-        liftedMod: 'TorteApp',
-        liftedReason: 'Contrition',
-      },
-      {
-        issueDate: new Date(2024, 5, 2),
-        modName: 'TorteApp',
-        contestId: '',
-        actionType: 'warn',
-        expiryDate: 'never',
-        reason: 'Voted with alt account',
-        actionId: 'as4',
-        lifted: false,
-      },
-    ],
-  },
-];
-
-export const BANNED_USERS = [
-  {
-    username: 'joshuauiux',
-    history: [
-      {
-        issueDate: new Date(2024, 11, 17),
-        modName: 'TorteApp',
-        contestId: '',
-        actionType: 'ban',
-        expiryDate: 'never',
-        reason: 'Created 40 fake accounts to boost score in Jan 25 contest.',
-        actionId: 'as5',
-        lifted: false,
-      },
-    ],
-  },
-  {
-    username: 'WorkingKing',
-    history: [
-      {
-        issueDate: new Date(2024, 11, 17),
-        modName: 'bakonydraco',
-        contestId: '',
-        actionType: 'ban',
-        expiryDate: endOfMonth(addMonths(new Date(), 3)),
-        reason: 'Created 3 fake accounts to boost score in Jan 25 contest.',
-        lifted: false,
-      },
-    ],
-  },
-];
+const { format, isFuture } = require('date-fns');
 
 const useStyles = makeStyles({
   banRed: {
@@ -138,23 +58,20 @@ const useStyles = makeStyles({
  */
 function ViewBans() {
   const classes = useStyles();
-  const error = {};
   const [searchTerm, setSearchTerm] = useState('');
 
-  // FOR DEV PURPOSES ONLY
-  useEffect(() => {
-    setSearchTerm(
-      // eslint-disable-next-line no-nested-ternary
-      SEARCH_STATUS === SEARCH_STATUSES.noSearchTerm
-        ? ''
-        : SEARCH_STATUS === SEARCH_STATUSES.failedSearch
-          ? 'quoix'
-          : 'asmall',
-    );
-  }, [SEARCH_STATUS]);
+  // Fetch active bans from API
+  const {
+    data: activeBansData,
+    error: activeBansError,
+    isLoading: activeBansLoading,
+  } = useSwrAuth('/mod/activeBans');
+
+  // Transform the data to convert date strings to Date objects
+  const transformedActiveBans = useBanHistoryTransform(activeBansData);
 
   return (
-    <ProtectedRoute errorStatus={error?.response?.status}>
+    <ProtectedRoute errorStatus={activeBansError?.response?.status}>
       <br />
       <br />
       <br />
@@ -190,70 +107,118 @@ function ViewBans() {
 
       <h1 className={classes.sectionHeader}>Active bans</h1>
 
-      {BANNED_USERS.map(({ username, history }) => (
-        <UserBanHistory key={username} {...{ username, history }} showBanButton />
-      ))}
+      {(() => {
+        if (activeBansLoading) {
+          return <Typography>Loading active bans...</Typography>;
+        }
+        if (activeBansError) {
+          return (
+            <Typography color="error">Error loading active bans</Typography>
+          );
+        }
+        if (transformedActiveBans?.users?.length > 0) {
+          return transformedActiveBans.users.map(({ username, history }) => (
+            <UserBanHistory key={username} {...{ username, history }} />
+          ));
+        }
+        return (
+          <Typography className={classes.italics}>No active bans</Typography>
+        );
+      })()}
     </ProtectedRoute>
   );
 }
 
 function SearchResults({ searchTerm }) {
-  const classes = useStyles();
+  // Fetch users from API when search term is provided
+  const {
+    data: searchData,
+    error: searchError,
+    isLoading,
+  } = useSwrAuth(
+    searchTerm
+      ? `/mod/userBansSearch?searchTerm=${encodeURIComponent(searchTerm)}`
+      : null,
+  );
+
+  // Transform the data to convert date strings to Date objects
+  const transformedData = useBanHistoryTransform(searchData);
 
   if (!searchTerm) {
-    return (
-      <Box>
-        <br />
-        <Typography className={classes.italics}>
-          Search for a user above
-        </Typography>
-      </Box>
-    );
+    return <SearchMessages text="Search for a user above" />;
   }
-  if (SEARCH_STATUS === SEARCH_STATUSES.failedSearch) {
-    return (
-      <Box>
-        <br />
-        <Typography className={classes.italics}>
-          {`No results for "${searchTerm}"`}
-        </Typography>
-      </Box>
-    );
+
+  if (isLoading) {
+    return <SearchMessages text="Searching for users..." />;
   }
-  return SEARCH_RESULTS.map(({ username, history }) => (
-    <UserBanHistory key={username} {...{ username, history }} showBanButton />
+
+  if (searchError) {
+    return <SearchMessages text="Error searching for users" />;
+  }
+
+  if (!transformedData?.users || transformedData.users.length === 0) {
+    return <SearchMessages text={`No results for "${searchTerm}"`} />;
+  }
+
+  return transformedData.users.map(({ username, history }) => (
+    <UserBanHistory key={username} username={username} history={history} />
   ));
+}
+
+function SearchMessages({ text }) {
+  const classes = useStyles();
+
+  return (
+    <Box>
+      <br />
+      <Typography className={classes.italics}>{text}</Typography>
+    </Box>
+  );
 }
 
 function HistoryItem({
   action: {
     actionType,
-    issueDate,
-    expiryDate,
-    modName,
+    createdDate,
+    endDate,
+    moderator,
     reason,
     lifted,
     liftedDate,
-    liftedMod,
+    liftedModerator,
     liftedReason,
+    actionId,
   },
+  username,
+  hideActionButtons,
 }) {
   const classes = useStyles();
+  const navigate = useNavigate();
 
   return (
     <Box className={clsx(classes.row, classes.historyItem)}>
-      <Box sx={{ float: 'right' }}>
-        <Button color="primary">Edit</Button>
-      </Box>
-      <Expiration {...{ actionType, expiryDate }} isLifted={!!lifted} />
+      {!hideActionButtons && (
+        <Box sx={{ float: 'right' }}>
+          <Button
+            color="primary"
+            onClick={() => navigate(`/mod/banUsers?u=${username}&a=${actionId}`)}
+          >
+            Edit
+          </Button>
+        </Box>
+      )}
+      <Expiration {...{ actionType, endDate }} isLifted={!!lifted} />
       <Typography>
-        {`Issued ${format(issueDate, 'MMM d, yyyy')} by ${modName}`}
+        {`Issued ${format(createdDate, 'MMM d, yyyy')} by ${moderator}`}
       </Typography>
       <Typography className={classes.italics}>{reason}</Typography>
       {!!lifted && (
         <>
           <Typography>
-            {`Lifted ${format(liftedDate, 'MMM d, yyyy')} by ${liftedMod}`}
+            {`Lifted ${format(
+              liftedDate,
+              'MMM d, yyyy',
+            )} by ${liftedModerator}`}
           </Typography>
           <Typography className={classes.italics}>
             {liftedReason || 'No reason given'}
@@ -265,7 +230,7 @@ function HistoryItem({
 }
 
 function Expiration({
-  actionType, expiryDate, isLifted, ignorePastBans,
+  actionType, endDate, isLifted, ignorePastBans,
 }) {
   const classes = useStyles();
   const prefix = isLifted ? '(LIFTED) ' : '';
@@ -289,7 +254,7 @@ function Expiration({
       </Typography>
     );
   }
-  if (expiryDate === 'never') {
+  if (endDate === null) {
     return (
       <Typography
         className={isLifted ? classes.neutralGrey : classes.banRed}
@@ -302,7 +267,7 @@ function Expiration({
       </Typography>
     );
   }
-  const inTheFuture = isFuture(expiryDate);
+  const inTheFuture = isFuture(endDate);
   if (!inTheFuture) {
     if (ignorePastBans) {
       return (
@@ -317,7 +282,7 @@ function Expiration({
           {prefix}
           BAN EXPIRED
           {' '}
-          {format(expiryDate, 'MMM d, yyyy').toUpperCase()}
+          {format(endDate, 'MMM d, yyyy').toUpperCase()}
         </b>
       </Typography>
     );
@@ -331,14 +296,17 @@ function Expiration({
         {prefix}
         BANNED UNTIL
         {' '}
-        {format(expiryDate, 'MMM d, yyyy').toUpperCase()}
+        {format(endDate, 'MMM d, yyyy').toUpperCase()}
       </b>
     </Typography>
   );
 }
 
 export function UserBanHistory({
-  username, history, showBanButton, actionId,
+  username,
+  history = [],
+  hideActionButtons,
+  actionId,
 }) {
   const classes = useStyles();
   const navigate = useNavigate();
@@ -354,7 +322,7 @@ export function UserBanHistory({
         }
         if (
           action.actionType === 'ban'
-              && (action.expiryDate === 'never' || isFuture(action.expiryDate))
+              && (action.endDate === null || isFuture(action.endDate))
               && !action.lifted
         ) {
           return action;
@@ -385,14 +353,14 @@ export function UserBanHistory({
             </Typography>
             <Expiration
               actionType={topLevelAction?.actionType}
-              expiryDate={topLevelAction?.expiryDate}
+              endDate={topLevelAction?.endDate}
               isLifted={!!topLevelAction?.lifted}
               ignorePastBans
             />
           </Box>
           {topLevelAction?.reason && (
             <Typography className={classes.italics}>
-              {topLevelAction.reason}
+              {topLevelAction?.reason}
             </Typography>
           )}
         </Box>
@@ -409,14 +377,14 @@ export function UserBanHistory({
                 : 'Hide'
               : 'No history'}
           </Button>
-          {showBanButton && (
+          {!hideActionButtons && (
             <Button
               disabled={
-                topLevelAction.actionType === 'ban'
-                && topLevelAction.expiryDate === 'never'
+                topLevelAction?.actionType === 'ban'
+                && topLevelAction?.endDate === null
               }
               color="primary"
-              onClick={() => navigate('/mod/banUsers')}
+              onClick={() => navigate(`/mod/banUsers?u=${username}`)}
             >
               BAN
             </Button>
@@ -425,7 +393,12 @@ export function UserBanHistory({
       </Box>
       {showHistory
         && history.map((action) => (
-          <HistoryItem key={action.actionId} action={action} />
+          <HistoryItem
+            key={action.actionId}
+            action={action}
+            username={username}
+            hideActionButtons={hideActionButtons}
+          />
         ))}
     </Box>
   );
@@ -437,41 +410,53 @@ SearchResults.propTypes = {
   searchTerm: PropTypes.string.isRequired,
 };
 
+SearchMessages.propTypes = {
+  text: PropTypes.string.isRequired,
+};
+
 const actionType = PropTypes.shape({
-  issueDate: PropTypes.instanceOf(Date).isRequired,
-  modName: PropTypes.string.isRequired,
+  createdDate: PropTypes.instanceOf(Date).isRequired,
+  startDate: PropTypes.instanceOf(Date).isRequired,
+  moderator: PropTypes.string.isRequired,
   contestId: PropTypes.string.isRequired,
   actionType: PropTypes.oneOf(['ban', 'warn']).isRequired,
-  expiryDate: PropTypes.oneOfType([
-    PropTypes.oneOf(['never']),
-    PropTypes.instanceOf(Date),
-  ]).isRequired,
+  endDate: PropTypes.oneOfType([PropTypes.instanceOf(Date)]),
   reason: PropTypes.string.isRequired,
   actionId: PropTypes.string.isRequired,
   lifted: PropTypes.bool,
   liftedDate: PropTypes.instanceOf(Date),
-  liftedMod: PropTypes.string,
+  liftedModerator: PropTypes.string,
   liftedReason: PropTypes.string,
 });
 
-HistoryItem.propTypes = { ...actionType };
+HistoryItem.propTypes = {
+  action: actionType.isRequired,
+  username: PropTypes.string.isRequired,
+  hideActionButtons: PropTypes.bool,
+};
+
+HistoryItem.defaultProps = {
+  hideActionButtons: false,
+};
 
 UserBanHistory.propTypes = PropTypes.shape({
   username: PropTypes.string.isRequired,
   history: PropTypes.arrayOf(actionType).isRequired,
-  showBanButton: PropTypes.bool,
+  hideActionButtons: PropTypes.bool,
 }).isRequired;
 
 Expiration.propTypes = {
-  actionType: PropTypes.oneOf(['ban', 'warn']).isRequired,
-  expiryDate: PropTypes.oneOfType([
-    PropTypes.oneOf(['never']),
+  actionType: PropTypes.oneOf(['ban', 'warn']),
+  endDate: PropTypes.oneOfType([
     PropTypes.instanceOf(Date),
-  ]).isRequired,
+    PropTypes.oneOf([null]),
+  ]),
   isLifted: PropTypes.bool.isRequired,
   ignorePastBans: PropTypes.bool,
 };
 
 Expiration.defaultProps = {
+  actionType: undefined,
+  endDate: undefined,
   ignorePastBans: false,
 };

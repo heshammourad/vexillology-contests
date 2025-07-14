@@ -10,55 +10,45 @@ import { Outlet, useParams, useNavigate } from 'react-router-dom';
 
 import { UserSelector } from '../../../components';
 
+import { ContestProvider, useContestContext } from './ContestContext';
 import SectionTitleWithButtons from './SectionTitleWithButtons';
+import TableBodyWrapper from './TableBodyWrapper';
 import {
   BanStatusTableText,
-  EntryStatusTableText,
-  OrangeTableText,
-  RedTableText,
+  EntriesStatusTableText,
+  ScoreTableText,
+  TableTextWrapper,
 } from './TableText';
 import VotersTable from './VotersTable';
-
-export const ENTRANTS = [
-  {
-    username: 'joshuauiux',
-    entryStatus: 'dq',
-    banStatus: 'ban',
-    cheating: 21,
-    suspicious: 0,
-  },
-  {
-    username: 'WorkingKing',
-    entryStatus: 'dq',
-    banStatus: 'warn',
-    cheating: 4,
-    suspicious: 2,
-  },
-  {
-    username: 'TorteApp',
-    entryStatus: '',
-    banStatus: '',
-    cheating: 21,
-    suspicious: 1,
-  },
-  {
-    username: 'heshammourad',
-    entryStatus: '',
-    banStatus: '',
-    cheating: 0,
-    suspicious: 0,
-  },
-];
 
 /**
  * The page for moderators to review contest submissions.
  */
-function EntrantsTable() {
+function EntrantsTableContent() {
   const navigate = useNavigate();
 
   const { contestId, entrantId } = useParams();
 
-  const voters = ENTRANTS.map((e) => e.username);
+  // Use the contest context
+  const {
+    entrantsData,
+    entrantsError,
+    entrantsLoading,
+    bansData,
+    bansError,
+    bansLoading,
+    fraudScores,
+    fraudScoresError,
+    fraudScoresLoading,
+  } = useContestContext();
+
+  const entrants = Object.keys(entrantsData).sort();
+
+  const sortedEntrants = Object.keys(entrantsData).sort((a, b) => {
+    const scoreA = fraudScores[a]?.highest ?? 0;
+    const scoreB = fraudScores[b]?.highest ?? 0;
+    return scoreB - scoreA; // Descending order (highest first)
+  });
 
   const handleEntrantSelection = (eId) => navigate(`./${eId}`);
 
@@ -88,7 +78,7 @@ function EntrantsTable() {
       <>
         <SectionTitleWithButtons title="Entrant" buttons={buttons} />
         <UserSelector
-          usernames={voters}
+          usernames={entrants}
           username={entrantId}
           onChange={handleEntrantSelection}
         />
@@ -100,40 +90,69 @@ function EntrantsTable() {
 
   return (
     <>
-      <SectionTitleWithButtons title="Entrant" buttons={buttons} />
+      <SectionTitleWithButtons
+        title={`Entrants (${sortedEntrants.length})`}
+        buttons={buttons}
+      />
 
       <TableContainer component={Paper} sx={{ marginTop: 1 }}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
               <TableCell>Entrant</TableCell>
-              <TableCell align="center">Entry DQ</TableCell>
-              <TableCell align="center">Site ban</TableCell>
-              <TableCell align="center">Cheating</TableCell>
-              <TableCell align="center">Suscipious</TableCell>
+              <TableCell align="center">Entry DQs</TableCell>
+              <TableCell align="center">Warning status</TableCell>
+              <TableCell align="center">Top fraud</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {ENTRANTS.map((entrant) => (
-              <TableRow
-                key={entrant.username}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                onClick={() => handleEntrantSelection(entrant.username)}
-                hover
-              >
-                <TableCell component="th" scope="row">
-                  {entrant.username}
-                </TableCell>
-                <EntryStatusTableText entryStatus={entrant.entryStatus} />
-                <BanStatusTableText banStatus={entrant.banStatus} />
-                <RedTableText>{entrant.cheating}</RedTableText>
-                <OrangeTableText>{entrant.suspicious}</OrangeTableText>
-              </TableRow>
-            ))}
-          </TableBody>
+          <TableBodyWrapper
+            error={entrantsError}
+            errorText="Error occurred loading entrants"
+            loading={entrantsLoading}
+          >
+            <TableBody>
+              {sortedEntrants.map((username) => (
+                <TableRow
+                  key={username}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  onClick={() => handleEntrantSelection(username)}
+                  hover
+                >
+                  <TableCell component="th" scope="row">
+                    {username}
+                  </TableCell>
+                  <EntriesStatusTableText entries={entrantsData[username]} />
+                  <TableTextWrapper loading={bansLoading} error={bansError}>
+                    <BanStatusTableText banStatus={bansData[username]} />
+                  </TableTextWrapper>
+                  <TableTextWrapper
+                    loading={fraudScoresLoading}
+                    error={fraudScoresError}
+                  >
+                    <ScoreTableText>
+                      {fraudScores[username]?.highest || 'ERR'}
+                    </ScoreTableText>
+                  </TableTextWrapper>
+                </TableRow>
+              ))}
+            </TableBody>
+          </TableBodyWrapper>
         </Table>
       </TableContainer>
     </>
+  );
+}
+
+/**
+ * Wrapper component that provides the contest context
+ */
+function EntrantsTable() {
+  const { contestId } = useParams();
+
+  return (
+    <ContestProvider contestId={contestId}>
+      <EntrantsTableContent />
+    </ContestProvider>
   );
 }
 

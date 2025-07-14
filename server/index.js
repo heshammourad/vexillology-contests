@@ -8,7 +8,7 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 
 const accessToken = require('./api/accessToken');
-const analyzeVotes = require('./api/analyzeVotes');
+const analyzeContest = require('./api/analyzeContest');
 const {
   requireAuthentication,
   requireModerator,
@@ -25,6 +25,7 @@ const revokeToken = require('./api/revokeToken');
 const settings = require('./api/settings');
 const staticContent = require('./api/staticContent');
 const submission = require('./api/submission');
+const userBans = require('./api/userBans');
 const { checkRequiredFields } = require('./api/validation');
 const votes = require('./api/votes');
 const { IS_DEV, BACKEND_PORT } = require('./env');
@@ -117,7 +118,19 @@ if (!IS_DEV && cluster.isMaster) {
     .route('/reviewSubmissions')
     .get(reviewSubmissions.get)
     .put(checkRequiredFields('id', 'status'), reviewSubmissions.put);
-  modRouter.route('/analyzeVotes/:id').get(analyzeVotes.get);
+  modRouter.route('/analyzeVotes/:id/entrants').get(analyzeContest.entrants);
+  modRouter.route('/analyzeVotes/:id/voters').get(analyzeContest.voters);
+  modRouter
+    .route('/analyzeVotes/:id/voterPatterns')
+    .get(analyzeContest.voterPatterns);
+  modRouter
+    .route('/analyzeVotes/:id/votingMatrix')
+    .get(analyzeContest.votingMatrix);
+  modRouter.route('/userBansSearch').get(userBans.userBansSearch);
+  modRouter.route('/usersBanHistories').get(userBans.getUsersBanHistories);
+  modRouter.route('/activeBans').get(userBans.getActiveBans);
+  modRouter.route('/contestBans').get(userBans.getContestBans);
+  modRouter.route('/saveUserBan').post(userBans.saveUserBan);
 
   const apiRouter = express.Router();
   apiRouter.use(express.json());
@@ -152,6 +165,10 @@ if (!IS_DEV && cluster.isMaster) {
     .all(requireAuthentication, votes.all)
     .put(checkRequiredFields('contestId', 'entryId', 'rating'), votes.put)
     .delete(checkRequiredFields('contestId', 'entryId'), votes.delete);
+  apiRouter
+    .route('/checkBanStatus')
+    .get(requireAuthentication, userBans.checkUserBanStatus);
+  apiRouter.get('/voter-votes', analyzeContest.voterVotes);
   apiRouter.use('/mod', modRouter);
 
   if (IS_DEV) {

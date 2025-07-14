@@ -17,7 +17,7 @@ const imgur = require('../imgur');
 const { createLogger } = require('../logger');
 const memcache = require('../memcache');
 const reddit = require('../reddit');
-const { generateImagePath } = require('../util');
+const { generateImagePath, getHash } = require('../util');
 
 const logger = createLogger('API/CONTEST');
 
@@ -405,24 +405,6 @@ exports.get = async ({ params: { id }, username }, res) => {
     }
 
     if (response.isContestMode && !winnersThreadId) {
-      /**
-       * Reproducible yet random hash function
-       * Concatenates username and entryId for distinct hash
-       * @param {string} entryId
-       * @returns {int}
-       */
-      const getHash = (entryId) => {
-        const seed = username + entryId;
-        let hash = 0;
-        for (let i = 0; i < seed.length; i += 1) {
-          // eslint-disable-next-line no-bitwise
-          hash = (hash << 5) - hash + seed.charCodeAt(i);
-          // eslint-disable-next-line no-bitwise
-          hash |= 0; // Convert to 32bit integer
-        }
-        return hash;
-      };
-
       response.entries = response.entries
         .map(({ rank, user, ...entry }) => entry)
         .sort((a, b) => {
@@ -435,7 +417,7 @@ exports.get = async ({ params: { id }, username }, res) => {
           if (b.rating !== a.rating) {
             return b.rating - a.rating;
           }
-          return getHash(b.id) - getHash(a.id);
+          return getHash(username, b.id) - getHash(username, a.id);
         });
     } else if (localVoting) {
       let voteData = await getVoteData(id);

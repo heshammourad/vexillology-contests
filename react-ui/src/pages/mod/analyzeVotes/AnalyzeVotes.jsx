@@ -2,13 +2,12 @@ import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
-import { useMemo, useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
 import { ContestSelector, ProtectedRoute } from '../../../components';
 import useContestId from '../../../data/useContestId';
 
-import { CHIPS, ChipContext } from './ChipContext';
+import { ChipProvider } from './ChipContext';
 
 const useStyles = makeStyles({
   sectionHeader: {
@@ -30,21 +29,20 @@ function AnalyzeVotes() {
   //   [contests, contestId],
   // );
   const navigate = useNavigate();
-  const handleContestSelection = (cId) => navigate(`./${cId}`);
-  const [chips, setChips] = useState(
-    Object.fromEntries(
-      Object.entries(CHIPS).map(([key, value]) => [key, value.defaultValue]),
-    ),
-  );
-
-  const chipsContextValue = useMemo(() => ({ chips, setChips }), [chips]);
+  const location = useLocation();
+  const handleContestSelection = (cId) => {
+    const currentPath = location.pathname;
+    const isVotersRoute = currentPath.endsWith('/voters');
+    const targetPath = isVotersRoute ? `./${cId}/voters` : `./${cId}`;
+    navigate(targetPath);
+  };
 
   return (
     <ProtectedRoute errorStatus={error?.response?.status}>
       <br />
       <br />
       <br />
-      <h1 className={classes.sectionHeader}>Anaylze votes</h1>
+      <h1 className={classes.sectionHeader}>Analyze votes</h1>
 
       <Box display="flex" sx={{ alignItems: 'center' }}>
         <Typography>
@@ -56,9 +54,13 @@ function AnalyzeVotes() {
           size="small"
           style={{ marginLeft: 10 }}
           disabled={!contestId}
-          onClick={() => navigate(`/contests/${contestId}`)}
+          onClick={() => window.open(
+            `/contests/${contestId}`,
+            '_blank',
+            'noopener,noreferrer',
+          )}
         >
-          GO TO CONTEST
+          OPEN CONTEST IN NEW TAB
         </Button>
       </Box>
 
@@ -69,9 +71,9 @@ function AnalyzeVotes() {
 
       <br />
 
-      <ChipContext.Provider value={chipsContextValue}>
+      <ChipProvider>
         <Outlet />
-      </ChipContext.Provider>
+      </ChipProvider>
     </ProtectedRoute>
   );
 }
