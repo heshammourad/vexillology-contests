@@ -189,6 +189,7 @@ function VoterRow({ username, isChecked, handleCheckOne }) {
         sx={{
           '&:last-child td, &:last-child th': { border: 0 },
           '& > *': { borderBottom: 'unset' },
+          backgroundColor: isEntrant ? '#f1f1f1' : 'inherit',
         }}
         onClick={() => setShowVoter((prev) => !prev)}
         hover
@@ -200,6 +201,7 @@ function VoterRow({ username, isChecked, handleCheckOne }) {
                 style={{ paddingTop: 0, paddingBottom: 0 }}
                 checked={isChecked}
                 onChange={handleCheckOne}
+                onClick={(event) => event.stopPropagation()}
                 name={username}
               />
             )}
