@@ -9,6 +9,7 @@ const { keyBy } = require('lodash');
 const numeral = require('numeral');
 const { v4: uuidv4 } = require('uuid');
 
+const ContestStatus = require('../../../shared/ContestStatus');
 const { getVoteDates, getCategories } = require('../../db/queries');
 const { IGNORE_PENDING_DEV } = require('../../env');
 const { createLogger } = require('../../logger');
@@ -163,9 +164,9 @@ exports.get = async ({ params: { contestId }, username }, res) => {
       winnersThreadId,
     } = contest;
 
-    let response = {
+    const response = {
+      contestStatus: ContestStatus.NOT_STARTED,
       date: date.toJSON().substr(0, 10),
-      isContestMode: false,
       localVoting,
       name,
       prompt,
@@ -185,37 +186,30 @@ exports.get = async ({ params: { contestId }, username }, res) => {
         res.status(404).send();
         return;
       }
-
-      response = { ...response, ...redditContest };
+      response.entries = redditContest.entries;
     }
 
     const [{ now, voteStart, voteEnd }] = await getVoteDates(contestId);
     if (voteStart && voteEnd) {
-      response.isContestMode = isBefore(now, voteEnd);
       response.voteStart = voteStart;
       response.voteEnd = voteEnd;
     }
 
     if (submissionStart) {
       if (isFuture(submissionStart)) {
-        // Contest hasn't started yet
         res.status(404).send(contestId === 'dev' ? { name } : {});
         return;
       }
 
       if (isFuture(submissionEnd)) {
-        // Contest is in submission phase
-        res.send({ submissionWindowOpen: true, name });
+        response.contestStatus = ContestStatus.SUBMISSIONS_OPEN;
+        res.send({ contestStatus: response.contestStatus, name });
         return;
       }
 
-      const votingNotOpenResponse = {
-        name: response.name,
-        votingWindowOpen: false,
-      };
       if (isFuture(voteStart)) {
-        // Contest voting window hasn't opened yet
-        res.send(votingNotOpenResponse);
+        response.contestStatus = ContestStatus.SUBMISSIONS_CLOSED;
+        res.send({ contestStatus: response.contestStatus, name });
         return;
       }
 
@@ -224,36 +218,43 @@ exports.get = async ({ params: { contestId }, username }, res) => {
         'pending',
       );
       if (pendingEntries.length && !IGNORE_PENDING_DEV) {
-        // Contest voting window is open but there are pending entries
-        res.send(votingNotOpenResponse);
+        response.contestStatus = ContestStatus.SUBMISSIONS_CLOSED;
+        res.send({ contestStatus: response.contestStatus, name });
         return;
       }
 
-      const fields = [
-        'e.background_color',
-        'e.description',
-        'e.height',
-        'e.id',
-        "'/i/' || e.id || '.png' AS image_path",
-        'e.markdown',
-        'e.name',
-        'e.width',
-      ];
-      if (isPast(voteEnd)) {
-        // Contest voting window is closed
-        if (!contest.resultsCertified) {
-          // Contest results are not certified yet
-          res.send({ resultsCertified: false, name });
-          return;
-        }
-        fields.push('e.user');
+      if (isFuture(voteEnd)) {
+        response.contestStatus = ContestStatus.VOTING_OPEN;
+      } else {
+        response.contestStatus = contest.resultsCertified
+          ? ContestStatus.RESULTS_CERTIFIED
+          : ContestStatus.VOTING_CLOSED;
       }
-      response.entries = await db.getContestEntriesBySubmissionStatus(
-        contestId,
-        'approved',
-        fields,
-      );
     }
+
+    if (response.contestStatus === ContestStatus.VOTING_CLOSED) {
+      res.send({ contestStatus: response.contestStatus, name });
+      return;
+    }
+
+    const fields = [
+      'e.background_color',
+      'e.description',
+      'e.height',
+      'e.id',
+      "'/i/' || e.id || '.png' AS image_path",
+      'e.markdown',
+      'e.name',
+      'e.width',
+    ];
+    if (response.contestStatus === ContestStatus.RESULTS_CERTIFIED) {
+      fields.push('e.user');
+    }
+    response.entries = await db.getContestEntriesBySubmissionStatus(
+      contestId,
+      'approved',
+      fields,
+    );
 
     // Load contest categories
     const categories = await getCategories(contestId);
@@ -274,7 +275,10 @@ exports.get = async ({ params: { contestId }, username }, res) => {
       );
     }
 
-    if (response.isContestMode && !winnersThreadId) {
+    if (
+      response.contestStatus === ContestStatus.VOTING_OPEN
+      && !winnersThreadId
+    ) {
       // Randomly sort entries during contest mode
       response.entries = sortEntriesRandomly(response.entries, username);
     } else if (localVoting) {

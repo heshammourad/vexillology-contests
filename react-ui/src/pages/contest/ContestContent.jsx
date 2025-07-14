@@ -2,6 +2,7 @@ import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
 
+import ContestStatus from '../../../../shared/ContestStatus';
 /* eslint-disable no-restricted-imports */
 import StaticContent from '../../components/StaticContent';
 import useSwrContest from '../../data/useSwrContest';
@@ -18,29 +19,19 @@ function ContestContent({
   setSelectedCategories,
 }) {
   const { data: contest, isValidating, mutate } = useSwrContest();
-  const {
-    categories,
-    isContestMode,
-    resultsCertified,
-    votingWindowOpen,
-    winners,
-  } = contest;
+  const { categories, contestStatus, winners } = contest;
 
-  if (votingWindowOpen === false) {
-    // votingWindowOpen is false when there are entries that haven't been
-    // approved by moderators yet
+  if (contestStatus === ContestStatus.SUBMISSIONS_CLOSED) {
     return <ContestUnderReview {...{ isValidating, mutate }} />;
   }
 
-  if (resultsCertified === false) {
-    // resultsCertified is false when voting is done, but the results haven't
-    // been certified by an admin yet
+  if (contestStatus === ContestStatus.VOTING_CLOSED) {
     return <ContestResultsNotCertified {...{ isValidating, mutate }} />;
   }
 
   return (
     <>
-      {isContestMode && (
+      {contestStatus === ContestStatus.VOTING_OPEN && (
         <Box marginBottom={3}>
           <Typography component="div" variant="subtitle1">
             <StaticContent id="voting_instructions" />
