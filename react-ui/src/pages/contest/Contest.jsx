@@ -68,7 +68,7 @@ function Contest() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerEntryId, setDrawerEntryId] = useState(null);
 
-  if (contest?.submissionWindowOpen && !isValidating) {
+  if (contest?.contestStatus === 'SUBMISSIONS_OPEN' && !isValidating) {
     navigate('/submission', { replace: true });
   }
 
@@ -88,10 +88,10 @@ function Contest() {
 
   useEffect(() => {
     // Clear cache if the voting window is still closed to force fetch again on next visit
-    if (contest.votingWindowOpen === false) {
+    if (contest.contestStatus === 'SUBMISSIONS_CLOSED') {
       mutate();
     }
-  }, [contest.votingWindowOpen]);
+  }, [contest.contestStatus]);
 
   const handleReload = useCallback(() => {
     scrollInstantlyTo(0);
