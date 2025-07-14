@@ -21,8 +21,8 @@ import {
   ScoreTableText,
   TableTextWrapper,
   VoteStatusTableText,
+  VoterBreakdownText,
 } from './TableText';
-import { VoterBreakdownText } from './VoteBreakdownText';
 import VoterGraph from './VoterGraph';
 
 // Sorting function

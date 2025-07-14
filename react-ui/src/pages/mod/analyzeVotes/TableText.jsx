@@ -1,3 +1,6 @@
+import Typography from '@material-ui/core/Typography';
+import WarningIcon from '@mui/icons-material/Warning';
+import Stack from '@mui/material/Stack';
 import TableCell from '@mui/material/TableCell';
 import PropTypes from 'prop-types';
 
@@ -163,7 +166,27 @@ function EntriesStatusTableText({ entries }) {
   return <BlackTableText />;
 }
 
+function VoterBreakdownText({ text, score }) {
+  const color = getColorFromValue(score);
+  return (
+    <Stack direction="row" spacing={1} sx={{ marginTop: 1, marginBottom: 2 }}>
+      <WarningIcon sx={{ color, opacity: score / 100 }} />
+      <Typography component="span" style={{ color, fontWeight: 'bolder' }}>
+        {text}
+      </Typography>
+    </Stack>
+  );
+}
+
+export {};
+
+VoterBreakdownText.propTypes = {
+  score: PropTypes.number.isRequired,
+  text: PropTypes.string.isRequired,
+};
+
 export {
+  VoterBreakdownText,
   BlackTableText,
   RedTableText,
   OrangeTableText,

@@ -24,9 +24,9 @@ import {
   ScoreTableText,
   TableTextWrapper,
   VoteStatusTableText,
+  VoterBreakdownText,
 } from './TableText';
 import TakeActionButton from './TakeActionButton';
-import { VoterBreakdownText } from './VoteBreakdownText';
 import VoterGraph from './VoterGraph';
 
 /**
@@ -34,7 +34,7 @@ import VoterGraph from './VoterGraph';
  */
 function EntrantVotersTable() {
   const [checkedVoters, setCheckedVoters] = useState(new Set());
-  const { chips, setChips } = useChipContext(); // {[field]: bool}
+  // const { chips, setChips } = useChipContext(); // {[field]: bool}
   const {
     votersData, votersError, votersLoading, distrustScores, fraudScores,
   } = useContestContext();
@@ -62,10 +62,10 @@ function EntrantVotersTable() {
     });
   }, [votersData, distrustScores, fraudScores, entrantId]);
 
-  const handleChip = (event) => {
-    const field = event.currentTarget.getAttribute('data-chip');
-    setChips((prev) => ({ ...prev, [field]: !prev[field] }));
-  };
+  // const handleChip = (event) => {
+  //   const field = event.currentTarget.getAttribute('data-chip');
+  //   setChips((prev) => ({ ...prev, [field]: !prev[field] }));
+  // };
   const handleCheckAll = () => {
     setCheckedVoters(() => new Set());
   };
@@ -84,7 +84,7 @@ function EntrantVotersTable() {
 
   return (
     <>
-      <Stack direction="row" spacing={1} sx={{ marginBottom: 1 }}>
+      {/* <Stack direction="row" spacing={1} sx={{ marginBottom: 1 }}>
         {Object.keys(CHIPS).map((key) => (
           <Chip
             key={key}
@@ -95,7 +95,7 @@ function EntrantVotersTable() {
             onClick={handleChip}
           />
         ))}
-      </Stack>
+      </Stack> */}
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
