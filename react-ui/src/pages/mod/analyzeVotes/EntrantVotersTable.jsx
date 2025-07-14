@@ -1,11 +1,9 @@
 import Box from '@material-ui/core/Box';
 import Checkbox from '@material-ui/core/Checkbox';
 import Typography from '@material-ui/core/Typography';
-import Chip from '@mui/material/Chip';
 import Collapse from '@mui/material/Collapse';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -16,7 +14,7 @@ import PropTypes from 'prop-types';
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { CHIPS, useChipContext } from './ChipContext';
+import { useChipContext } from './ChipContext';
 import { useContestContext } from './ContestContext';
 import SectionTitleWithButtons from './SectionTitleWithButtons';
 import TableBodyWrapper from './TableBodyWrapper';
@@ -145,6 +143,7 @@ function EntrantVotersTable() {
         </Table>
       </TableContainer>
       <TakeActionButton users={checkedVoters} />
+      <Box sx={{ height: 80 }} />
     </>
   );
 }

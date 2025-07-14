@@ -12,7 +12,10 @@ const LARGE = 8;
 const SMALL = 4;
 // size, color, symbol, opacity
 const MARKERS = {
-  entry: { size: LARGE, color: 'green', symbol: 'square' },
+  entry: {
+    targetedEntry: { size: LARGE, color: 'red', symbol: 'square' },
+    other: { size: LARGE, color: 'green', symbol: 'square' },
+  },
   voter: {
     targetedEntry: { size: LARGE, color: 'red' },
     other: { size: SMALL, color: 'gray' },
@@ -95,8 +98,8 @@ function VoterGraph({ voterId, entrantId }) {
   ]);
 
   const entryTraces = createTraces(entryPoints, [
-    { name: 'Average (other)', marker: MARKERS.entry },
-    { name: 'Average (target)', marker: MARKERS.entry },
+    { name: 'Average (other)', marker: MARKERS.entry.other },
+    { name: 'Average (target)', marker: MARKERS.entry.targetedEntry },
   ]);
 
   const data = [...userTraces, ...entryTraces];
