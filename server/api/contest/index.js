@@ -4,7 +4,7 @@
  *  - FROM REDDIT: only applied to older contests before migration
  */
 
-const { isBefore, isFuture, isPast } = require('date-fns');
+const { isFuture } = require('date-fns');
 const { keyBy } = require('lodash');
 const numeral = require('numeral');
 const { v4: uuidv4 } = require('uuid');
@@ -163,7 +163,7 @@ exports.get = async ({ params: { contestId }, username }, res) => {
       winnersThreadId,
     } = contest;
 
-    const response = {
+    let response = {
       contestStatus: 'NOT_STARTED',
       date: date.toJSON().substr(0, 10),
       localVoting,
@@ -185,10 +185,10 @@ exports.get = async ({ params: { contestId }, username }, res) => {
         res.status(404).send();
         return;
       }
-      response.entries = redditContest.entries;
+      response = { ...response, ...redditContest };
     }
 
-    const [{ now, voteStart, voteEnd }] = await getVoteDates(contestId);
+    const [{ voteStart, voteEnd }] = await getVoteDates(contestId);
     if (voteStart && voteEnd) {
       response.voteStart = voteStart;
       response.voteEnd = voteEnd;
@@ -196,17 +196,20 @@ exports.get = async ({ params: { contestId }, username }, res) => {
 
     if (submissionStart) {
       if (isFuture(submissionStart)) {
+        // Contest hasn't started yet
         res.status(404).send(contestId === 'dev' ? { name } : {});
         return;
       }
 
       if (isFuture(submissionEnd)) {
+        // Contest is in submission phase
         response.contestStatus = 'SUBMISSIONS_OPEN';
         res.send({ contestStatus: response.contestStatus, name });
         return;
       }
 
       if (isFuture(voteStart)) {
+        // Contest voting window hasn't opened yet
         response.contestStatus = 'SUBMISSIONS_CLOSED';
         res.send({ contestStatus: response.contestStatus, name });
         return;
@@ -217,6 +220,7 @@ exports.get = async ({ params: { contestId }, username }, res) => {
         'pending',
       );
       if (pendingEntries.length && !IGNORE_PENDING_DEV) {
+        // Contest voting window is open but there are pending entries
         response.contestStatus = 'SUBMISSIONS_CLOSED';
         res.send({ contestStatus: response.contestStatus, name });
         return;
@@ -274,10 +278,7 @@ exports.get = async ({ params: { contestId }, username }, res) => {
       );
     }
 
-    if (
-      response.contestStatus === 'VOTING_OPEN'
-      && !winnersThreadId
-    ) {
+    if (response.contestStatus === 'VOTING_OPEN' && !winnersThreadId) {
       // Randomly sort entries during contest mode
       response.entries = sortEntriesRandomly(response.entries, username);
     } else if (localVoting) {
