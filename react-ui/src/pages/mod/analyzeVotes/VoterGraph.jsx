@@ -70,7 +70,7 @@ function VoterGraph({ voterId, entrantId }) {
       : MARKER_TYPES.other;
     const voterScore = voterVotes[entryId] ?? undefined;
     const text = `Entry ${entryId}<br />Voter: ${
-      voterScore ?? 'unk'
+      voterScore ?? 'N/A'
     }<br />Average: ${roundTwoDecimals(average)}`;
     userPoints.push({
       x: i,
