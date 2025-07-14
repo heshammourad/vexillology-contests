@@ -18,6 +18,7 @@ import { useParams } from 'react-router-dom';
 
 import { CHIPS, useChipContext } from './ChipContext';
 import { useContestContext } from './ContestContext';
+import SectionTitleWithButtons from './SectionTitleWithButtons';
 import TableBodyWrapper from './TableBodyWrapper';
 import {
   BanStatusTableText,
@@ -39,6 +40,14 @@ function EntrantVotersTable() {
     votersData, votersError, votersLoading, distrustScores, fraudScores,
   } = useContestContext();
   const { entrantId } = useParams();
+
+  const numberOfVoters = useMemo(() => {
+    const entrantFraud = fraudScores[entrantId];
+    return Object.keys(votersData).reduce(
+      (acc, voterId) => (entrantFraud?.[voterId] ? acc + 1 : acc),
+      0,
+    );
+  }, [votersData, fraudScores, entrantId]);
 
   const sortedVoters = useMemo(() => {
     const entrantFraud = fraudScores[entrantId];
@@ -84,15 +93,18 @@ function EntrantVotersTable() {
 
   return (
     <>
+      <SectionTitleWithButtons
+        title={`Voters (${numberOfVoters}/${sortedVoters.length})`}
+      />
       {/* <Stack direction="row" spacing={1} sx={{ marginBottom: 1 }}>
         {Object.keys(CHIPS).map((key) => (
           <Chip
-            key={key}
-            data-chip={key}
-            color={CHIPS[key].color}
-            label={CHIPS[key].label}
-            variant={chips[key] ? 'filled' : 'outlined'}
-            onClick={handleChip}
+          key={key}
+          data-chip={key}
+          color={CHIPS[key].color}
+          label={CHIPS[key].label}
+          variant={chips[key] ? 'filled' : 'outlined'}
+          onClick={handleChip}
           />
         ))}
       </Stack> */}

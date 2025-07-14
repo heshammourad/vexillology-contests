@@ -90,7 +90,10 @@ function EntrantsTableContent() {
 
   return (
     <>
-      <SectionTitleWithButtons title="Entrant" buttons={buttons} />
+      <SectionTitleWithButtons
+        title={`Entrants (${sortedEntrants.length})`}
+        buttons={buttons}
+      />
 
       <TableContainer component={Paper} sx={{ marginTop: 1 }}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">

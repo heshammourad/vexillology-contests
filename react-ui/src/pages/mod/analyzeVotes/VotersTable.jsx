@@ -95,7 +95,10 @@ function VotersTable() {
 
   return (
     <>
-      <SectionTitleWithButtons title="Voters" buttons={buttons} />
+      <SectionTitleWithButtons
+        title={`Voters (${sortedVotersData.length})`}
+        buttons={buttons}
+      />
 
       <TableContainer component={Paper} sx={{ marginTop: 1 }}>
         <Table sx={{ minWidth: 650 }} aria-label="sortable table">
