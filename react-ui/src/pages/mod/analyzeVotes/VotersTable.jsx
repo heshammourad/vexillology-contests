@@ -198,6 +198,8 @@ function VoterRow({ username, voteStatus }) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                height: '500px',
+                maxHeight: '500px',
               }}
             >
               <VoterGraph voterId={username} />
