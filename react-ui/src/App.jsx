@@ -9,7 +9,12 @@ import {
 } from 'react-router-dom';
 import { SWRConfig } from 'swr';
 
-import { AppHelmet, CustomSnackbar, CustomThemeProvider } from './components';
+import {
+  AppHelmet,
+  ContestRemindersAlert,
+  CustomSnackbar,
+  CustomThemeProvider,
+} from './components';
 import { getData } from './data/api';
 import {
   AnalyzeVotes,
@@ -44,6 +49,7 @@ function App() {
           <div className="app">
             <BrowserRouter>
               <AppHelmet />
+              <ContestRemindersAlert />
               <ModalSwitch />
             </BrowserRouter>
             <CustomSnackbar />
