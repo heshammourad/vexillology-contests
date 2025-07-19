@@ -5,7 +5,12 @@
 
 import CssBaseline from '@material-ui/core/CssBaseline';
 import {
-  BrowserRouter, Navigate, Route, Routes, Link,
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  Link,
+  useLocation,
 } from 'react-router-dom';
 import { SWRConfig } from 'swr';
 
@@ -49,13 +54,24 @@ function App() {
           <div className="app">
             <BrowserRouter>
               <AppHelmet />
-              <ContestRemindersAlert />
-              <ModalSwitch />
+              <AppContent />
             </BrowserRouter>
             <CustomSnackbar />
           </div>
         </SWRConfig>
       </CustomThemeProvider>
+    </>
+  );
+}
+
+function AppContent() {
+  const location = useLocation();
+  const isSettingsPage = location.pathname === '/profile/settings';
+
+  return (
+    <>
+      {!isSettingsPage && <ContestRemindersAlert />}
+      <ModalSwitch />
     </>
   );
 }

@@ -1,9 +1,26 @@
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
+
+import ExternalLink from './ExternalLink';
+import InternalLink from './InternalLink';
+
+/**
+ * Typography component for list items in the alert
+ */
+function ListItemTypography({ children }) {
+  return (
+    <Typography component="li" variant="body2" sx={{ marginBottom: 0.5 }}>
+      {children}
+    </Typography>
+  );
+}
+
+ListItemTypography.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 /**
  * Alert component for contest reminders setup
@@ -46,58 +63,39 @@ function ContestRemindersAlert({ dismissable = true }) {
         work. If you would like to receive contest reminders:
       </Typography>
       <Box component="ol" sx={{ margin: 0, paddingLeft: 2 }}>
-        <Typography component="li" variant="body2" sx={{ marginBottom: 0.5 }}>
+        <ListItemTypography>
           Make sure &ldquo;Contest reminders&rdquo; is turned on in settings for
           this site (
-          <Link
-            href="/profile/settings"
-            underline="hover"
-            sx={{ color: 'inherit' }}
-          >
-            click here
-          </Link>
+          <InternalLink to="/profile/settings">
+            vexillologycontests.com/profile/settings
+          </InternalLink>
           )
-        </Typography>
-        <Typography component="li" variant="body2" sx={{ marginBottom: 0.5 }}>
+        </ListItemTypography>
+        <ListItemTypography>
           Go to &ldquo;
-          <Link
+          <ExternalLink
             href="https://reddit.com/settings/privacy"
             target="_blank"
-            rel="noopener noreferrer"
-            underline="hover"
-            sx={{ color: 'inherit' }}
           >
             reddit.com/settings/privacy
-          </Link>
-          &rdquo; (
-          <Link
-            href="https://reddit.com/settings/privacy"
-            target="_blank"
-            rel="noopener noreferrer"
-            underline="hover"
-            sx={{ color: 'inherit' }}
-          >
-            click here
-          </Link>
-          )
-        </Typography>
-        <Typography component="li" variant="body2" sx={{ marginBottom: 0.5 }}>
+          </ExternalLink>
+          &rdquo;
+        </ListItemTypography>
+        <ListItemTypography>
           Make sure you are logged in on the same Reddit account as this site.
-        </Typography>
-        <Typography component="li" variant="body2" sx={{ marginBottom: 0.5 }}>
+        </ListItemTypography>
+        <ListItemTypography>
           Under &ldquo;Social interactions&rdquo;, click on &ldquo;Who can send
           you chat requests&rdquo; (~4 lines down)
-        </Typography>
-        <Typography component="li" variant="body2" sx={{ marginBottom: 0.5 }}>
+        </ListItemTypography>
+        <ListItemTypography>
           Under &ldquo;Always allow chat requests from&rdquo;, where it says
           &ldquo;Enter username&rdquo;, type &ldquo;vexy&rdquo; and hit enter.
-        </Typography>
-        <Typography component="li" variant="body2" sx={{ marginBottom: 0.5 }}>
+        </ListItemTypography>
+        <ListItemTypography>
           Confirm you see &ldquo;u/Vexy&rdquo; appear below
-        </Typography>
-        <Typography component="li" variant="body2" sx={{ marginBottom: 0.5 }}>
-          Click &ldquo;Done&rdquo;
-        </Typography>
+        </ListItemTypography>
+        <ListItemTypography>Click &ldquo;Done&rdquo;</ListItemTypography>
       </Box>
     </Alert>
   );
