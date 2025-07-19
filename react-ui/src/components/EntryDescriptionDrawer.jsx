@@ -64,7 +64,7 @@ function EntryDescriptionDrawer({ entryId }) {
 
   const {
     data: {
-      categories, entries = [], isContestMode, localVoting, winners = [],
+      categories, entries = [], contestStatus, localVoting, winners = [],
     },
   } = useSwrContest();
   const {
@@ -116,7 +116,7 @@ function EntryDescriptionDrawer({ entryId }) {
           />
         </Box>
       )}
-      {isContestMode ? (
+      {contestStatus === 'VOTING_OPEN' ? (
         <>
           <DrawerSectionHeader>Submit Vote</DrawerSectionHeader>
           {!isTouchScreen && (
