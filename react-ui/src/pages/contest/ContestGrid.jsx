@@ -116,7 +116,7 @@ function ContestGrid({ selectedCategories, setDrawer }) {
     [density],
   );
 
-  const { categories, entries, isContestMode } = contest;
+  const { categories, entries, contestStatus } = contest;
 
   if (!entries) {
     return null;
@@ -161,7 +161,7 @@ function ContestGrid({ selectedCategories, setDrawer }) {
                     categoryRank,
                     entryName,
                     id,
-                    isContestMode,
+                    contestStatus,
                     rank,
                     rating,
                     setDrawer,
@@ -179,7 +179,7 @@ function ContestGrid({ selectedCategories, setDrawer }) {
                     width={width}
                   />
                 </div>
-                {isContestMode && (
+                {contestStatus === 'VOTING_OPEN' && (
                   <CardActions
                     className={clsx(classes.votingSlider, {
                       [classes.disabledVoting]: votingDisabled,
@@ -205,7 +205,7 @@ function CardContentWrapper({
   categoryRank,
   entryName,
   id,
-  isContestMode, // is this the issue?
+  contestStatus, // is this the issue?
   rank,
   rating,
   setDrawer, // is this the issue?
@@ -246,7 +246,7 @@ function CardContentWrapper({
               />
             </Experiment>
           </Box>
-          {(!isContestMode || category) && (
+          {(contestStatus !== 'VOTING_OPEN' || category) && (
             <div className={classes.entryRatings}>
               {category && (
                 <CategoryLabel
@@ -255,7 +255,7 @@ function CardContentWrapper({
                   categoryRank={categoryRank}
                 />
               )}
-              {!isContestMode && (
+              {contestStatus !== 'VOTING_OPEN' && (
                 <>
                   <Average average={average} fullText={rank === '1'} />
                   {rating > -1 && (
@@ -278,7 +278,7 @@ function CardContentWrapper({
       categoryRank,
       entryName,
       id,
-      isContestMode,
+      contestStatus,
       rank,
       rating,
       setDrawer,
