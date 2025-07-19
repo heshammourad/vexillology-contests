@@ -1,4 +1,5 @@
 export { default as AccountMenu } from './AccountMenu';
+export { default as ContestRemindersAlert } from './ContestRemindersAlert';
 export { default as AppBarDivided } from './AppBarDivided';
 export { default as AppHelmet } from './AppHelmet';
 export { default as RouterLinkIconButton } from './RouterLinkIconButton';

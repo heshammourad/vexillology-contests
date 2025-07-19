@@ -5,11 +5,21 @@
 
 import CssBaseline from '@material-ui/core/CssBaseline';
 import {
-  BrowserRouter, Navigate, Route, Routes, Link,
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  Link,
+  useLocation,
 } from 'react-router-dom';
 import { SWRConfig } from 'swr';
 
-import { AppHelmet, CustomSnackbar, CustomThemeProvider } from './components';
+import {
+  AppHelmet,
+  ContestRemindersAlert,
+  CustomSnackbar,
+  CustomThemeProvider,
+} from './components';
 import { getData } from './data/api';
 import {
   AnalyzeVotes,
@@ -44,12 +54,24 @@ function App() {
           <div className="app">
             <BrowserRouter>
               <AppHelmet />
-              <ModalSwitch />
+              <AppContent />
             </BrowserRouter>
             <CustomSnackbar />
           </div>
         </SWRConfig>
       </CustomThemeProvider>
+    </>
+  );
+}
+
+function AppContent() {
+  const location = useLocation();
+  const isSettingsPage = location.pathname === '/profile/settings';
+
+  return (
+    <>
+      {!isSettingsPage && <ContestRemindersAlert />}
+      <ModalSwitch />
     </>
   );
 }
