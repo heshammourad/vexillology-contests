@@ -31,7 +31,7 @@ function EntriesTable({ categories, entries }) {
   const hasCategories = categories.length > 0;
 
   return entries?.length > 0 ? (
-    <TableContainer component={Paper} sx={{ maxHeight: 667 }}>
+    <TableContainer component={Paper} sx={{ maxHeight: 'calc(100vh - 160px)' }}>
       <Table aria-label="entries" stickyHeader size="small">
         <TableHead>
           <TableRow>
