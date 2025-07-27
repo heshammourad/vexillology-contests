@@ -39,6 +39,7 @@ import Fieldset from './Fieldset';
 import FormattedContent from './FormattedContent';
 import RedditUserAttribution from './RedditUserAttribution';
 import SpinnerButton from './SpinnerButton';
+import Submission from './Submission';
 
 const useStyles = makeStyles((theme) => ({
   actions: {
@@ -459,13 +460,12 @@ function SubmissionRow({
           {isSmUp && (
             <div className={classes.imageContainer}>
               {!open && (
-                <img
-                  className={classes.image}
-                  alt=""
-                  src={imagePath}
-                  style={{
-                    border: `2px solid ${backgroundColor}`,
+                <Submission
+                  {...{
                     backgroundColor,
+                    className: classes.image,
+                    imagePath,
+                    name: entryName,
                   }}
                 />
               )}
