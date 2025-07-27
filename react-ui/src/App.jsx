@@ -5,21 +5,11 @@
 
 import CssBaseline from '@material-ui/core/CssBaseline';
 import {
-  BrowserRouter,
-  Navigate,
-  Route,
-  Routes,
-  Link,
-  useLocation,
+  BrowserRouter, Navigate, Route, Routes, Link,
 } from 'react-router-dom';
 import { SWRConfig } from 'swr';
 
-import {
-  AppHelmet,
-  ContestRemindersAlert,
-  CustomSnackbar,
-  CustomThemeProvider,
-} from './components';
+import { AppHelmet, CustomSnackbar, CustomThemeProvider } from './components';
 import { getData } from './data/api';
 import {
   AnalyzeVotes,
@@ -65,18 +55,6 @@ function App() {
 }
 
 function AppContent() {
-  const location = useLocation();
-  const isSettingsPage = location.pathname === '/profile/settings';
-
-  return (
-    <>
-      {!isSettingsPage && <ContestRemindersAlert />}
-      <ModalSwitch />
-    </>
-  );
-}
-
-function ModalSwitch() {
   return (
     <div>
       <Routes>

@@ -20,6 +20,7 @@ import types from '../common/types';
 import { VIEW_DEV_BAR } from '../env';
 
 import AppBarDivided from './AppBarDivided';
+import ContestRemindersAlert from './ContestRemindersAlert';
 
 const drawerWidth = 360;
 
@@ -110,6 +111,7 @@ function PageWithDrawer({
       >
         {VIEW_DEV_BAR && !isModal && <Toolbar variant="dense" />}
         <Toolbar />
+        <ContestRemindersAlert />
         {children}
       </main>
       <Drawer
