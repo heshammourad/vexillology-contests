@@ -198,6 +198,8 @@ exports.get = async ({ params: { contestId }, username }, res) => {
         return;
       }
       response = { ...response, ...redditContest };
+      res.send(response);
+      return;
     }
 
     const [{ voteStart, voteEnd }] = await getVoteDates(contestId);
