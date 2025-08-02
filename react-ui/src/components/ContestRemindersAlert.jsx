@@ -1,5 +1,10 @@
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
@@ -23,40 +28,13 @@ ListItemTypography.propTypes = {
 };
 
 /**
- * Alert component for contest reminders setup
+ * Alert content component that can be used in both dialog and alert
  */
-function ContestRemindersAlert({ dismissable = true }) {
-  // Start as dismissed, will be updated after localStorage check
-  const [dismissed, setDismissed] = useState(true);
-
-  useEffect(() => {
-    // Check localStorage on component mount
-    const isDismissed = localStorage.getItem('contestRemindersAlertDismissed') === 'true';
-    setDismissed(isDismissed);
-  }, []);
-
-  const handleDismiss = () => {
-    setDismissed(true);
-    localStorage.setItem('contestRemindersAlertDismissed', 'true');
-  };
-
-  if (dismissed && dismissable) {
-    return null;
-  }
-
+function ContestRemindersContent() {
   return (
-    <Alert
-      severity="info"
-      onClose={dismissable ? handleDismiss : undefined}
-      sx={{
-        margin: 2,
-        '& .MuiAlert-message': {
-          width: '100%',
-        },
-      }}
-    >
+    <>
       <Typography variant="body1" sx={{ fontWeight: 'bold', marginBottom: 1 }}>
-        IMPORTANT IF YOU WANT / HAVE CONTEST REMINDERS
+        IF YOU WANT / HAVE CONTEST REMINDERS
       </Typography>
       <Typography variant="body2" sx={{ marginBottom: 1 }}>
         Breaking changes on Reddit means our current contest reminders will not
@@ -97,16 +75,74 @@ function ContestRemindersAlert({ dismissable = true }) {
         </ListItemTypography>
         <ListItemTypography>Click &ldquo;Done&rdquo;</ListItemTypography>
       </Box>
+    </>
+  );
+}
+
+ContestRemindersContent.propTypes = {};
+
+ContestRemindersContent.defaultProps = {};
+
+/**
+ * Dialog version of contest reminders alert
+ */
+function ContestRemindersDialog() {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    // Check localStorage on component mount
+    const isDismissed = localStorage.getItem('contestRemindersAlertDismissed') === 'true';
+    if (!isDismissed) {
+      setOpen(true);
+    }
+  }, []);
+
+  const handleDismiss = () => {
+    localStorage.setItem('contestRemindersAlertDismissed', 'true');
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onClose={handleDismiss} maxWidth="md" fullWidth>
+      <DialogTitle>IMPORTANT</DialogTitle>
+      <DialogContent>
+        <ContestRemindersContent />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleDismiss} color="primary">
+          Got it
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+ContestRemindersDialog.propTypes = {};
+
+ContestRemindersDialog.defaultProps = {};
+
+/**
+ * Alert version of contest reminders alert
+ */
+function ContestRemindersAlert() {
+  return (
+    <Alert
+      severity="info"
+      sx={{
+        margin: 2,
+        '& .MuiAlert-message': {
+          width: '100%',
+        },
+      }}
+    >
+      <ContestRemindersContent />
     </Alert>
   );
 }
 
-ContestRemindersAlert.propTypes = {
-  dismissable: PropTypes.bool,
-};
+ContestRemindersAlert.propTypes = {};
 
-ContestRemindersAlert.defaultProps = {
-  dismissable: true,
-};
+ContestRemindersAlert.defaultProps = {};
 
-export default ContestRemindersAlert;
+export default ContestRemindersDialog;
+export { ContestRemindersAlert };

@@ -15,7 +15,6 @@ import { useLocation } from 'react-router-dom';
 import { FeatureBanner, SCREENS } from '../../common/FeatureBanner';
 import {
   AppBarDivided,
-  ContestRemindersAlert,
   CustomIconButton,
   ExternalLink,
   InternalLink,
@@ -95,7 +94,6 @@ function Home() {
     <>
       <AppBarDivided color="default" position="sticky" />
       <Container>
-        <ContestRemindersAlert />
         <FeatureBanner screen={SCREENS.HOME} />
         <Typography className={classes.heading} component="h1" variant="h6">
           Welcome to Vexillology Contests!
