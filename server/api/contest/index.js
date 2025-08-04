@@ -176,7 +176,6 @@ exports.get = async ({ params: { contestId }, username }, res) => {
     } = contest;
 
     let response = {
-      contestStatus: 'NOT_STARTED',
       date: date.toJSON().substr(0, 10),
       localVoting,
       name,
@@ -190,7 +189,7 @@ exports.get = async ({ params: { contestId }, username }, res) => {
     };
 
     // Check if this is a reddit contest, i.e. legacy contest
-    if (validRedditId) {
+    if (!localVoting && validRedditId) {
       const redditContest = await reddit.getContest(contestId, winnersThreadId);
       if (!redditContest.entries.length) {
         logger.warn(`Unable to retrieve entries for contest: '${contestId}'`);
@@ -208,45 +207,43 @@ exports.get = async ({ params: { contestId }, username }, res) => {
       response.voteEnd = voteEnd;
     }
 
-    if (submissionStart) {
-      if (isFuture(submissionStart)) {
-        // Contest hasn't started yet
-        res.status(404).send(contestId === 'dev' ? { name } : {});
-        return;
-      }
+    if (submissionStart && isFuture(submissionStart)) {
+      // Contest hasn't started yet
+      res.status(404).send(contestId === 'dev' ? { name } : {});
+      return;
+    }
 
-      if (isFuture(submissionEnd)) {
-        // Contest is in submission phase
-        response.contestStatus = 'SUBMISSIONS_OPEN';
-        res.send({ contestStatus: response.contestStatus, name });
-        return;
-      }
+    if (submissionEnd && isFuture(submissionEnd)) {
+      // Contest is in submission phase
+      response.contestStatus = 'SUBMISSIONS_OPEN';
+      res.send({ contestStatus: response.contestStatus, name });
+      return;
+    }
 
-      if (isFuture(voteStart)) {
-        // Contest voting window hasn't opened yet
-        response.contestStatus = 'SUBMISSIONS_CLOSED';
-        res.send({ contestStatus: response.contestStatus, name });
-        return;
-      }
+    if (isFuture(voteStart)) {
+      // Contest voting window hasn't opened yet
+      response.contestStatus = 'SUBMISSIONS_CLOSED';
+      res.send({ contestStatus: response.contestStatus, name });
+      return;
+    }
 
-      const pendingEntries = await db.getContestEntriesBySubmissionStatus(
-        contestId,
-        'pending',
-      );
-      if (pendingEntries.length && !IGNORE_PENDING_DEV) {
-        // Contest voting window is open but there are pending entries
-        response.contestStatus = 'SUBMISSIONS_CLOSED';
-        res.send({ contestStatus: response.contestStatus, name });
-        return;
-      }
+    const pendingEntries = await db.getContestEntriesBySubmissionStatus(
+      contestId,
+      'pending',
+    );
+    if (pendingEntries.length && !IGNORE_PENDING_DEV) {
+      // Contest voting window is open but there are pending entries
+      response.contestStatus = 'SUBMISSIONS_CLOSED';
+      res.send({ contestStatus: response.contestStatus, name });
+      return;
+    }
 
-      if (isFuture(voteEnd)) {
-        response.contestStatus = 'VOTING_OPEN';
-      } else {
-        response.contestStatus = contest.resultsCertified
-          ? 'RESULTS_CERTIFIED'
-          : 'VOTING_CLOSED';
-      }
+    if (isFuture(voteEnd)) {
+      response.contestStatus = 'VOTING_OPEN';
+    } else {
+      response.contestStatus = contest.resultsCertified
+        ? 'RESULTS_CERTIFIED'
+        : 'VOTING_CLOSED';
     }
 
     if (response.contestStatus === 'VOTING_CLOSED') {
