@@ -118,7 +118,7 @@ function Settings() {
                 />
               </div>
             </div>
-            <ContestRemindersAlert dismissable={false} />
+            <ContestRemindersAlert />
           </div>
         </ProtectedRoute>
       </PageContainer>
