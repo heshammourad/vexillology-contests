@@ -5,7 +5,9 @@
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { ExternalLink, FmpIcon } from '../../components';
+import {
+  ExternalLink, FmpIcon, FmpLink, FmpText,
+} from '../../components';
 
 const useStyles = makeStyles((theme) => ({
   sponsorBanner: {
@@ -32,12 +34,12 @@ function ContestSponsor() {
   return (
     <ExternalLink
       className={classes.sponsorBanner}
-      href="https://flagmaker-print.com/"
+      href={FmpLink}
       target="_blank"
     >
       <FmpIcon className={classes.sponsorIcon} />
       <Typography component="span" variant="subtitle2">
-        Powered by Flagmaker & Print ~ Design and Print your own flags!
+        {FmpText}
       </Typography>
     </ExternalLink>
   );

@@ -20,7 +20,7 @@ import CategoryLabel from './CategoryLabel';
 import Countdown from './Countdown';
 import DrawerSectionHeader from './DrawerSectionHeader';
 import FiveStar from './FiveStar';
-import FmpIcon from './FmpIcon';
+import { FmpIcon, FmpLink } from './Fmp';
 import FormattedContent from './FormattedContent';
 import ListItemButton from './ListItemButton';
 import RedditUserAttribution from './RedditUserAttribution';
@@ -163,12 +163,7 @@ function EntryDescriptionDrawer({ entryId }) {
           Icon={FlagTwoToneIcon}
           text="Open FlagWaver"
         />
-        <ListItemButton
-          href="https://flagmaker-print.com/"
-          Icon={FmpIcon}
-          target="_blank"
-          text="Design & Print your own flag with FMP"
-        />
+        <ListItemButton href={FmpLink} Icon={FmpIcon} target="_blank" />
       </List>
     </div>
   );
