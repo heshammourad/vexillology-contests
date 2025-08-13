@@ -20,7 +20,7 @@ import CategoryLabel from './CategoryLabel';
 import Countdown from './Countdown';
 import DrawerSectionHeader from './DrawerSectionHeader';
 import FiveStar from './FiveStar';
-import { FmpIcon, FmpLink } from './Fmp';
+import { FmpIcon, FMP_LINK } from './Fmp';
 import FormattedContent from './FormattedContent';
 import ListItemButton from './ListItemButton';
 import RedditUserAttribution from './RedditUserAttribution';
@@ -163,7 +163,7 @@ function EntryDescriptionDrawer({ entryId }) {
           Icon={FlagTwoToneIcon}
           text="Open FlagWaver"
         />
-        <ListItemButton href={FmpLink} Icon={FmpIcon} target="_blank" />
+        <ListItemButton href={FMP_LINK} Icon={FmpIcon} target="_blank" />
       </List>
     </div>
   );

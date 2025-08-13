@@ -6,7 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 
 import {
-  ExternalLink, FmpIcon, FmpLink, FmpText,
+  ExternalLink, FmpIcon, FMP_LINK, FMP_TEXT,
 } from '../../components';
 
 const useStyles = makeStyles((theme) => ({
@@ -34,12 +34,12 @@ function ContestSponsor() {
   return (
     <ExternalLink
       className={classes.sponsorBanner}
-      href={FmpLink}
+      href={FMP_LINK}
       target="_blank"
     >
       <FmpIcon className={classes.sponsorIcon} />
       <Typography component="span" variant="subtitle2">
-        {FmpText}
+        {FMP_TEXT}
       </Typography>
     </ExternalLink>
   );
