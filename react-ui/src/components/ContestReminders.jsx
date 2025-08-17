@@ -79,10 +79,6 @@ function ContestRemindersContent() {
   );
 }
 
-ContestRemindersContent.propTypes = {};
-
-ContestRemindersContent.defaultProps = {};
-
 /**
  * Dialog version of contest reminders alert
  */
@@ -117,10 +113,6 @@ function ContestRemindersDialog() {
   );
 }
 
-ContestRemindersDialog.propTypes = {};
-
-ContestRemindersDialog.defaultProps = {};
-
 /**
  * Alert version of contest reminders alert
  */
@@ -140,9 +132,4 @@ function ContestRemindersAlert() {
   );
 }
 
-ContestRemindersAlert.propTypes = {};
-
-ContestRemindersAlert.defaultProps = {};
-
-export default ContestRemindersDialog;
-export { ContestRemindersAlert };
+export { ContestRemindersDialog, ContestRemindersAlert };
