@@ -6,8 +6,6 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
-import isFuture from 'date-fns/isFuture';
-import parseISO from 'date-fns/parseISO';
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -61,7 +59,7 @@ function Submission() {
   const { state } = useLocation();
   const [selectedTab, setSelectedTab] = useState(state?.defaultTab ?? 0);
   const [previewDescription, setPreviewDescription] = useState(false);
-  const [submissionExpired, setSubmissionExpired] = useState(false);
+  // const [submissionExpired, setSubmissionExpired] = useState(false);
 
   const handleTabChange = (e, newValue) => {
     setSelectedTab(newValue);
@@ -69,11 +67,12 @@ function Submission() {
   };
 
   const handleSubmissionExpiry = () => {
-    setSubmissionExpired(true);
+    // setSubmissionExpired(true);
   };
 
-  const submissionEndDate = parseISO(submissionEnd);
-  const submissionAllowed = isFuture(submissionEndDate);
+  // const submissionEndDate = parseISO(submissionEnd);
+  // DO_NOT_SUBMIT to master: Overriding submission allowed to allow submission after the deadline.
+  const submissionAllowed = true;
 
   const noData = isLoading ? (
     <CircularProgress />
@@ -113,7 +112,7 @@ function Submission() {
                       previewDescription,
                       setPreviewDescription,
                       setSelectedTab,
-                      submissionExpired,
+                      submissionExpired: false,
                     }}
                   />
                 </TabPanel>

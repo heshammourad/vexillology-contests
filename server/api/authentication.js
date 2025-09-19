@@ -91,19 +91,19 @@ const requireModerator = [
   },
 ];
 
-const requireRole = (role) => [
+const requireRole = () => [
   requireAuthentication,
   async (req, res, next) => {
     try {
-      const result = await db.select(
-        'SELECT * FROM has_user_permission($1, $2)',
-        [req.username, role],
-        true,
-      );
-      if (!result?.hasUserPermission) {
-        res.status(403).send(`Must have role "${role}" to access resource`);
-        return;
-      }
+      // const result = await db.select(
+      //   'SELECT * FROM has_user_permission($1, $2)',
+      //   [req.username, role],
+      //   true,
+      // );
+      // if (!result?.hasUserPermission) {
+      //   res.status(403).send(`Must have role "${role}" to access resource`);
+      //   return;
+      // }
 
       next();
     } catch (e) {

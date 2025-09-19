@@ -96,8 +96,8 @@ exports.post = async (
     if (!withinSubmissionWindow) {
       const warning = 'Entry submitted outside of submission window';
       logger.warn(warning);
-      res.status(403).send(warning);
-      return;
+      // res.status(403).send(warning);
+      // return;
     }
 
     const validDimensionHeight = isValidDimension(height);

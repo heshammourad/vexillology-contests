@@ -22,6 +22,9 @@ const app = initializeApp({
   measurementId: 'G-DD6MTL11SP',
 });
 
+if (process.env.NODE_ENV === 'development') {
+  window.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+}
 initializeAppCheck(app, {
   provider: new ReCaptchaV3Provider('6LdVdzMlAAAAACClyDjipqu8966AvQBm_Eb5gNuE'),
   isTokenAutoRefreshEnabled: true,
