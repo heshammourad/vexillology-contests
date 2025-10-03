@@ -186,7 +186,10 @@ exports.put = async ({ body: { id, submissionStatus }, username }, res) => {
         [
           '?id',
           'modified_by',
-          { name: 'submission_status', cast: 'submission_status' },
+          {
+            name: 'submission_status',
+            cast: 'vexillology_contests_common.submission_status',
+          },
         ],
         ['id', 'submission_status'],
       );
