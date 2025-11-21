@@ -1,11 +1,9 @@
 import Box from '@material-ui/core/Box';
 import Checkbox from '@material-ui/core/Checkbox';
 import Typography from '@material-ui/core/Typography';
-import Chip from '@mui/material/Chip';
 import Collapse from '@mui/material/Collapse';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -13,79 +11,70 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { CHIPS, useChipContext } from './ChipContext';
+import { useChipContext } from './ChipContext';
+import { useContestContext } from './ContestContext';
+import SectionTitleWithButtons from './SectionTitleWithButtons';
+import TableBodyWrapper from './TableBodyWrapper';
 import {
   BanStatusTableText,
   ScoreTableText,
+  TableTextWrapper,
   VoteStatusTableText,
+  VoterBreakdownText,
 } from './TableText';
 import TakeActionButton from './TakeActionButton';
-import { RUBRIC, VoterBreakdownText } from './VoteBreakdownText';
-
-const VOTER_METRICS = {
-  age: 1,
-  karma: 20,
-  fives: [undefined, 4, 2],
-  zero: false,
-  history: [2, 2, 2],
-};
-
-export const ENTRANT_VOTERS = [
-  {
-    username: 'joshuauiux',
-    voteStatus: 'exclude',
-    banStatus: 'ban',
-    score: null,
-  },
-  {
-    username: 'Examination-4706',
-    voteStatus: 'exclude',
-    banStatus: 'ban',
-    score: 97,
-  },
-  {
-    username: 'Taco-Man123',
-    voteStatus: 'exclude',
-    banStatus: 'warn',
-    score: 81,
-  },
-  {
-    username: 'TorteApp',
-    voteStatus: '',
-    banStatus: '',
-    score: 47,
-  },
-  {
-    username: 'heshammourad',
-    voteStatus: '',
-    banStatus: '',
-    score: 13,
-  },
-  {
-    username: 'LowVotingAcct',
-    voteStatus: 'autofilter',
-    banStatus: '',
-    score: 10,
-  },
-];
+import VoterGraph from './VoterGraph';
 
 /**
  * Breaks down voter stats for the selected entrant
  */
 function EntrantVotersTable() {
-  const { entrantId } = useParams();
   const [checkedVoters, setCheckedVoters] = useState(new Set());
-  const { chips, setChips } = useChipContext(); // {[field]: bool}
+  // const { chips, setChips } = useChipContext(); // {[field]: bool}
+  const {
+    votersData, votersError, votersLoading, distrustScores, fraudScores,
+  } = useContestContext();
+  const { entrantId } = useParams();
 
-  const handleChip = (event) => {
-    const field = event.currentTarget.getAttribute('data-chip');
-    setChips((prev) => ({ ...prev, [field]: !prev[field] }));
-  };
+  const numberOfVoters = useMemo(() => {
+    const entrantFraud = fraudScores[entrantId];
+    return Object.keys(votersData).reduce(
+      (acc, voterId) => (entrantFraud?.[voterId] ? acc + 1 : acc),
+      0,
+    );
+  }, [votersData, fraudScores, entrantId]);
+
+  const sortedVoters = useMemo(() => {
+    const entrantFraud = fraudScores[entrantId];
+    return Object.keys(votersData).sort((a, b) => {
+      // First compare entrantFraud scores (highest first)
+      const fraudScoreA = entrantFraud?.[a]?.score ?? 0;
+      const fraudScoreB = entrantFraud?.[b]?.score ?? 0;
+      if (fraudScoreA !== fraudScoreB) {
+        return fraudScoreB - fraudScoreA; // Descending order
+      }
+
+      // Then compare distrustScores (highest first)
+      const distrustScoreA = distrustScores[a]?.score ?? 0;
+      const distrustScoreB = distrustScores[b]?.score ?? 0;
+      if (distrustScoreA !== distrustScoreB) {
+        return distrustScoreB - distrustScoreA; // Descending order
+      }
+
+      // Finally compare username strings
+      return a.localeCompare(b);
+    });
+  }, [votersData, distrustScores, fraudScores, entrantId]);
+
+  // const handleChip = (event) => {
+  //   const field = event.currentTarget.getAttribute('data-chip');
+  //   setChips((prev) => ({ ...prev, [field]: !prev[field] }));
+  // };
   const handleCheckAll = () => {
-    setCheckedVoters((prev) => (prev.size ? new Set() : new Set(ENTRANT_VOTERS.map((v) => v.username))));
+    setCheckedVoters(() => new Set());
   };
   const handleCheckOne = (event) => {
     event.stopPropagation();
@@ -102,18 +91,21 @@ function EntrantVotersTable() {
 
   return (
     <>
-      <Stack direction="row" spacing={1} sx={{ marginBottom: 1 }}>
+      <SectionTitleWithButtons
+        title={`Voters (${numberOfVoters}/${sortedVoters.length})`}
+      />
+      {/* <Stack direction="row" spacing={1} sx={{ marginBottom: 1 }}>
         {Object.keys(CHIPS).map((key) => (
           <Chip
-            key={key}
-            data-chip={key}
-            color={CHIPS[key].color}
-            label={CHIPS[key].label}
-            variant={chips[key] ? 'filled' : 'outlined'}
-            onClick={handleChip}
+          key={key}
+          data-chip={key}
+          color={CHIPS[key].color}
+          label={CHIPS[key].label}
+          variant={chips[key] ? 'filled' : 'outlined'}
+          onClick={handleChip}
           />
         ))}
-      </Stack>
+      </Stack> */}
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
@@ -128,48 +120,87 @@ function EntrantVotersTable() {
               </TableCell>
               <TableCell align="center">Vote status</TableCell>
               <TableCell align="center">Site ban</TableCell>
-              <TableCell align="center">Cheat score</TableCell>
+              <TableCell align="center">Voter distrust</TableCell>
+              <TableCell align="center">Fraud score</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {ENTRANT_VOTERS.map((voter) => (
-              <VoterRow
-                key={voter.username}
-                voter={voter}
-                isEntrant={voter.username === entrantId}
-                isChecked={checkedVoters.has(voter.username)}
-                handleCheckOne={handleCheckOne}
-              />
-            ))}
-          </TableBody>
+          <TableBodyWrapper
+            error={votersError}
+            errorText="Error occurred loading voters"
+            loading={votersLoading}
+          >
+            <TableBody>
+              {sortedVoters.map((username) => (
+                <VoterRow
+                  key={username}
+                  username={username}
+                  isChecked={checkedVoters.has(username)}
+                  handleCheckOne={handleCheckOne}
+                />
+              ))}
+            </TableBody>
+          </TableBodyWrapper>
         </Table>
       </TableContainer>
       <TakeActionButton users={checkedVoters} />
+      <Box sx={{ height: 80 }} />
     </>
   );
 }
 
-function VoterRow({
-  voter, isEntrant, isChecked, handleCheckOne,
-}) {
+// Helper function for voting order text
+const getVotingOrderText = (outOfOrderFraud) => {
+  if (outOfOrderFraud >= 0.8) {
+    return 'Random voting pattern';
+  }
+  if (outOfOrderFraud >= 0.5) {
+    return 'Mixed voting pattern';
+  }
+  if (outOfOrderFraud >= 0.3) {
+    return 'Straight voting pattern';
+  }
+  return 'Start voting pattern';
+};
+
+function VoterRow({ username, isChecked, handleCheckOne }) {
+  const {
+    bansData,
+    bansError,
+    bansLoading,
+    votersData,
+    votersError,
+    votersLoading,
+    distrustScores,
+    distrustScoresError,
+    distrustScoresLoading,
+    fraudScores,
+    fraudScoresError,
+    fraudScoresLoading,
+  } = useContestContext();
+  const { entrantId } = useParams();
+
   const [showVoter, setShowVoter] = useState(false);
   const { chips } = useChipContext(); // {[field]: bool}
 
-  if (chips.hideExcluded && voter.voteStatus === 'exclude') {
+  const isEntrant = username === entrantId;
+  const voteStatus = votersData?.[username]?.dq;
+  const voterFraudData = fraudScores[entrantId]?.[username];
+
+  if (chips.hideExcluded && voteStatus === 'exclude') {
     return null;
   }
 
-  if (chips.hideAutofiltered && voter.voteStatus === 'autofilter') {
+  if (chips.hideAutofiltered && voteStatus === 'autofilter') {
     return null;
   }
 
   return (
     <>
       <TableRow
-        key={voter.username}
         sx={{
           '&:last-child td, &:last-child th': { border: 0 },
           '& > *': { borderBottom: 'unset' },
+          backgroundColor: isEntrant ? '#f1f1f1' : 'inherit',
         }}
         onClick={() => setShowVoter((prev) => !prev)}
         hover
@@ -181,18 +212,34 @@ function VoterRow({
                 style={{ paddingTop: 0, paddingBottom: 0 }}
                 checked={isChecked}
                 onChange={handleCheckOne}
-                name={voter.username}
+                onClick={(event) => event.stopPropagation()}
+                name={username}
               />
             )}
-            label={`${voter.username}${isEntrant ? ' (entrant)' : ''}`}
+            label={`${username}${isEntrant ? ' (entrant)' : ''}`}
           />
         </TableCell>
 
-        <VoteStatusTableText voteStatus={voter.voteStatus} />
+        <TableTextWrapper loading={votersLoading} error={votersError}>
+          <VoteStatusTableText voteStatus={voteStatus} />
+        </TableTextWrapper>
 
-        <BanStatusTableText banStatus={voter.banStatus} />
+        <TableTextWrapper loading={bansLoading} error={bansError}>
+          <BanStatusTableText banStatus={bansData[username]} />
+        </TableTextWrapper>
 
-        <ScoreTableText>{voter.score}</ScoreTableText>
+        <TableTextWrapper
+          loading={distrustScoresLoading}
+          error={distrustScoresError}
+        >
+          <ScoreTableText>{distrustScores[username]?.score}</ScoreTableText>
+        </TableTextWrapper>
+
+        <TableTextWrapper loading={fraudScoresLoading} error={fraudScoresError}>
+          <ScoreTableText>
+            {fraudScores[entrantId]?.[username]?.score}
+          </ScoreTableText>
+        </TableTextWrapper>
       </TableRow>
       <TableRow onClick={() => setShowVoter(false)}>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
@@ -200,30 +247,112 @@ function VoterRow({
             <Box
               sx={{
                 display: 'flex',
-                height: 300,
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: '#adeefa',
+                height: '500px',
+                maxHeight: '500px',
               }}
             >
-              <Typography>
-                FUTURE SITE OF BOTH USER VS AVERAGE CHARTS
-              </Typography>
+              <VoterGraph voterId={username} entrantId={entrantId} />
             </Box>
             <Box
               sx={{
                 display: 'flex',
-                justifyContent: 'center',
+                marginLeft: '40px',
+                gap: 2,
               }}
             >
-              <Box sx={{ marginTop: 6, marginBottom: 6 }}>
-                {Object.entries(VOTER_METRICS).map(([key, value]) => (
-                  <VoterBreakdownText
-                    key={key}
-                    text={RUBRIC[key].getText(value)}
-                    score={RUBRIC[key].getScore(value)}
-                  />
-                ))}
+              <Box
+                sx={{
+                  marginTop: 6,
+                  marginBottom: 6,
+                  flex: '1 1 50%',
+                  paddingRight: 2,
+                }}
+              >
+                <Typography variant="h6" sx={{ marginBottom: 2 }}>
+                  Entrant-Voter Fraud Analysis
+                </Typography>
+                {voterFraudData ? (
+                  <>
+                    <VoterBreakdownText
+                      text={`Voting order: ${getVotingOrderText(
+                        voterFraudData.outOfOrderFraud,
+                      )}`}
+                      score={Math.round(voterFraudData.outOfOrderFraud * 100)}
+                    />
+                    <VoterBreakdownText
+                      text={`Entrant favored: ${voterFraudData.entrantFavoredText}`}
+                      score={Math.round(
+                        voterFraudData.entrantFavoredFraud * 100,
+                      )}
+                    />
+                    <VoterBreakdownText
+                      text={`Historical pattern: ${voterFraudData.historicalText} (H/M/L)`}
+                      score={Math.round(voterFraudData.historicalFraud * 100)}
+                    />
+                  </>
+                ) : (
+                  <Typography>
+                    No fraud data available for this voter
+                  </Typography>
+                )}
+              </Box>
+              <Box
+                sx={{
+                  marginTop: 6,
+                  marginBottom: 6,
+                  flex: '1 1 50%',
+                  paddingLeft: 2,
+                }}
+              >
+                <Typography variant="h6" sx={{ marginBottom: 2 }}>
+                  Voter Distrust Analysis
+                </Typography>
+                {distrustScores[username] ? (
+                  <>
+                    <VoterBreakdownText
+                      text={`Karma: ${distrustScores[username].karmaText}`}
+                      score={Math.round(
+                        distrustScores[username].karmaDistrust * 100,
+                      )}
+                    />
+                    <VoterBreakdownText
+                      text={`Account age: ${distrustScores[username].ageText}`}
+                      score={Math.round(
+                        distrustScores[username].ageDistrust * 100,
+                      )}
+                    />
+                    <VoterBreakdownText
+                      text={`Vote participation: ${distrustScores[username].percentVotedText}`}
+                      score={Math.round(
+                        distrustScores[username].percentVotedDistrust * 100,
+                      )}
+                    />
+                    <VoterBreakdownText
+                      text={`Time between votes: ${distrustScores[username].timeBetweenVotesText}`}
+                      score={Math.round(
+                        distrustScores[username].timeBetweenVotesDistrust * 100,
+                      )}
+                    />
+                    <VoterBreakdownText
+                      text={`Zero ratings: ${distrustScores[username].ratedZerosText}`}
+                      score={Math.round(
+                        distrustScores[username].ratedZerosDistrust * 100,
+                      )}
+                    />
+                    <VoterBreakdownText
+                      text={`Randomness: ${distrustScores[username].randomnessText}`}
+                      score={Math.round(
+                        distrustScores[username].randomnessDistrust * 100,
+                      )}
+                    />
+                  </>
+                ) : (
+                  <Typography>
+                    No distrust data available for this voter
+                  </Typography>
+                )}
               </Box>
             </Box>
           </Collapse>
@@ -236,13 +365,7 @@ function VoterRow({
 export default EntrantVotersTable;
 
 VoterRow.propTypes = {
-  voter: PropTypes.shape({
-    username: PropTypes.string.isRequired,
-    voteStatus: PropTypes.oneOf(['exclude', 'autofilter', '']).isRequired,
-    banStatus: PropTypes.oneOf(['ban', 'warn', '']).isRequired,
-    score: PropTypes.number,
-  }).isRequired,
-  isEntrant: PropTypes.bool.isRequired,
+  username: PropTypes.string.isRequired,
   isChecked: PropTypes.bool.isRequired,
   handleCheckOne: PropTypes.func.isRequired,
 };

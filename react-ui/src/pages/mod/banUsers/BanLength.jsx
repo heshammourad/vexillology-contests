@@ -16,7 +16,7 @@ function BanLength({
   setMonths,
   isPermanentBan,
   setIsPermanentBan,
-  expiryDate,
+  endDate,
   disabled,
 }) {
   return (
@@ -28,7 +28,12 @@ function BanLength({
           size="small"
           type={isPermanentBan ? 'text' : 'number'}
           value={isPermanentBan ? '∞' : months}
-          onChange={(event) => event.target.value > 0 && setMonths(event.target.value)}
+          onChange={(event) => {
+            const value = parseInt(event.target.value, 10);
+            if (value > 0) {
+              setMonths(value);
+            }
+          }}
           style={{ width: 100 }}
           disabled={isPermanentBan || disabled}
         />
@@ -55,8 +60,8 @@ function BanLength({
             // eslint-disable-next-line no-nested-ternary
             isPermanentBan
               ? 'This ban will not expire'
-              : expiryDate
-                ? `This ban will expire on ${format(expiryDate, 'MMM d, yyyy')}`
+              : endDate
+                ? `This ban will expire on ${format(endDate, 'MMM d, yyyy')}`
                 : 'Select a contest to get the end date'
           }
         </em>
@@ -73,9 +78,12 @@ BanLength.propTypes = {
   setMonths: PropTypes.func.isRequired,
   isPermanentBan: PropTypes.bool.isRequired,
   setIsPermanentBan: PropTypes.func.isRequired,
-  expiryDate: PropTypes.instanceOf(Date),
+  endDate: PropTypes.oneOfType([
+    PropTypes.instanceOf(Date),
+    PropTypes.oneOf([null]),
+  ]),
 };
 
 BanLength.defaultProps = {
-  expiryDate: undefined,
+  endDate: undefined,
 };

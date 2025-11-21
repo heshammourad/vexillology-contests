@@ -84,7 +84,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Home() {
-  const { data: contests } = useSwrContests();
+  const {
+    data: { contests },
+  } = useSwrContests();
   const location = useLocation();
 
   const classes = useStyles();
@@ -119,8 +121,7 @@ function Home() {
             , check out
             {' '}
             <InternalLink to="/contests">older contests</InternalLink>
-            , or view the
-            {' '}
+            {', or view the '}
             <InternalLink to="/hallOfFame">Hall of Fame</InternalLink>
             .
           </p>

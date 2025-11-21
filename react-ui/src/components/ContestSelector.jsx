@@ -23,7 +23,9 @@ const useStyles = makeStyles({
  */
 function ContestSelector({ contestId, onChange, disabled }) {
   const classes = useStyles();
-  const { data: contests } = useSwrContests();
+  const {
+    data: { contests = [] },
+  } = useSwrContests();
   const formattedContest = (name, date) => `${name} (${format(parseISO(date), 'MMM yy')})`;
   const selectedContest = contests.find((c) => c.id === contestId);
 

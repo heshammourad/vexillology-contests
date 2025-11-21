@@ -8,25 +8,30 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 
 const accessToken = require('./api/accessToken');
-const analyzeVotes = require('./api/analyzeVotes');
+const analyzeContest = require('./api/analyzeContest');
 const {
+  processUser,
   requireAuthentication,
   requireModerator,
-  processUser,
+  requireRole,
 } = require('./api/authentication');
 const contest = require('./api/contest');
+const contestSummary = require('./api/contestSummary');
 const contests = require('./api/contests');
 const dev = require('./api/dev');
 const hallOfFame = require('./api/hallOfFame');
 const images = require('./api/images');
 const init = require('./api/init');
+const manageContest = require('./api/manageContest');
 const reviewSubmissions = require('./api/reviewSubmissions');
 const revokeToken = require('./api/revokeToken');
 const settings = require('./api/settings');
 const staticContent = require('./api/staticContent');
 const submission = require('./api/submission');
+const userBans = require('./api/userBans');
 const { checkRequiredFields } = require('./api/validation');
 const votes = require('./api/votes');
+const UserPermissions = require('./db/userPermissions');
 const { IS_DEV, BACKEND_PORT } = require('./env');
 const { createLogger } = require('./logger');
 
@@ -113,18 +118,41 @@ if (!IS_DEV && cluster.isMaster) {
   modRouter.use(express.json());
 
   modRouter.all('*', requireModerator);
+  modRouter.route('/contestSummary').get(contestSummary.get);
+  modRouter
+    .route('/manageContest')
+    .put(checkRequiredFields('id', 'resultsCertified'), manageContest.put);
   modRouter
     .route('/reviewSubmissions')
     .get(reviewSubmissions.get)
     .put(checkRequiredFields('id', 'status'), reviewSubmissions.put);
-  modRouter.route('/analyzeVotes/:id').get(analyzeVotes.get);
+  modRouter
+    .route('/analyzeVotes/:id/entrants')
+    .get(requireRole(UserPermissions.VIEW_SCORES), analyzeContest.entrants);
+  modRouter
+    .route('/analyzeVotes/:id/voters')
+    .get(requireRole(UserPermissions.VIEW_SCORES), analyzeContest.voters);
+  modRouter
+    .route('/analyzeVotes/:id/voterPatterns')
+    .get(
+      requireRole(UserPermissions.VIEW_SCORES),
+      analyzeContest.voterPatterns,
+    );
+  modRouter
+    .route('/analyzeVotes/:id/votingMatrix')
+    .get(requireRole(UserPermissions.VIEW_SCORES), analyzeContest.votingMatrix);
+  modRouter.route('/userBansSearch').get(userBans.userBansSearch);
+  modRouter.route('/usersBanHistories').get(userBans.getUsersBanHistories);
+  modRouter.route('/activeBans').get(userBans.getActiveBans);
+  modRouter.route('/contestBans').get(userBans.getContestBans);
+  modRouter.route('/saveUserBan').post(userBans.saveUserBan);
 
   const apiRouter = express.Router();
   apiRouter.use(express.json());
 
   apiRouter.get('/accessToken/:code', accessToken.get);
   apiRouter.get('/contests', contests.get);
-  apiRouter.get('/contests/:id', processUser(false), contest.get);
+  apiRouter.get('/contests/:contestId', processUser(false), contest.get);
   apiRouter.get('/hallOfFame', hallOfFame.get);
   apiRouter.get('/init', processUser(true), init.get);
   apiRouter.get('/revokeToken/:refreshToken', revokeToken.get);
@@ -138,7 +166,7 @@ if (!IS_DEV && cluster.isMaster) {
     .route('/submission')
     .get(processUser(false), submission.get)
     .post(
-      requireAuthentication,
+      requireRole(UserPermissions.PARTICIPATE_IN_CONTEST),
       checkRequiredFields('description', 'height', 'name', 'url', 'width'),
       submission.post,
     )
@@ -152,6 +180,10 @@ if (!IS_DEV && cluster.isMaster) {
     .all(requireAuthentication, votes.all)
     .put(checkRequiredFields('contestId', 'entryId', 'rating'), votes.put)
     .delete(checkRequiredFields('contestId', 'entryId'), votes.delete);
+  apiRouter
+    .route('/checkBanStatus')
+    .get(requireAuthentication, userBans.checkUserBanStatus);
+  apiRouter.get('/voter-votes', analyzeContest.voterVotes);
   apiRouter.use('/mod', modRouter);
 
   if (IS_DEV) {

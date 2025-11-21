@@ -76,10 +76,11 @@ const insert = async (table, values, additionalOptions = {}) => {
   return result;
 };
 
-const select = async (queryStr, values) => {
+const select = async (queryStr, values, isOne = false) => {
   try {
-    const data = await db.any(queryStr, values);
-    return data;
+    return isOne
+      ? await db.oneOrNone(queryStr, values)
+      : await db.any(queryStr, values);
   } catch (err) {
     logger.error(`SELECT failed. ${err}`);
   }
@@ -87,7 +88,27 @@ const select = async (queryStr, values) => {
 };
 
 const update = async (table, data, columns, returning = []) => {
-  const cs = new pgp.helpers.ColumnSet(columns, { table });
+  // Detect date columns by checking if any data contains Date objects
+  const sampleData = data[0] || {};
+  const dateColumns = new Set();
+
+  Object.keys(sampleData).forEach((key) => {
+    if (sampleData[key] instanceof Date) {
+      dateColumns.add(key);
+    }
+  });
+
+  // Create ColumnSet with automatic type casting for detected date columns
+  const columnDefs = columns.map((col) => {
+    const colName = typeof col === 'string' ? col : col.name;
+    const cleanColName = colName.replace('?', '');
+    if (dateColumns.has(cleanColName)) {
+      return { name: colName, cast: 'timestamp' };
+    }
+    return col;
+  });
+
+  const cs = new pgp.helpers.ColumnSet(columnDefs, { table });
   const whereCondition = columns.reduce((acc, cur, idx) => {
     const name = typeof cur === 'string' ? cur : cur.name;
     if (!name.startsWith('?')) {

@@ -283,9 +283,9 @@ function SubmissionForm({
   };
 
   const handleImageLoad = ({ target: { naturalHeight, naturalWidth } }) => {
-    if (naturalHeight > 3000 || naturalWidth > 3000) {
+    if (naturalHeight > 6000 || naturalWidth > 6000) {
       clearFile();
-      updateError('file', 'Image dimensions cannot be more than 3000px');
+      updateError('file', 'Image dimensions cannot be more than 6000px');
       return;
     }
     setFileDimensions({ height: naturalHeight, width: naturalWidth });

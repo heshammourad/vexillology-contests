@@ -39,6 +39,7 @@ function Mod() {
       <Drawer
         variant="permanent"
         sx={{
+          display: { xs: 'none', sm: 'block' },
           flexShrink: 0,
           width: DRAWER_WIDTH,
           '& .MuiDrawer-paper': {

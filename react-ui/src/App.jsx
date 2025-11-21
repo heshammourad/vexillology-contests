@@ -9,8 +9,14 @@ import {
 } from 'react-router-dom';
 import { SWRConfig } from 'swr';
 
-import { AppHelmet, CustomSnackbar, CustomThemeProvider } from './components';
-import localStorageProvider from './data/LocalStorageProvider';
+import {
+  AppHelmet,
+  ContestRemindersDialog,
+  CustomSnackbar,
+  CustomThemeProvider,
+} from './components';
+/* eslint-disable no-restricted-imports */
+import BanProtectedRoute from './components/BanProtectedRoute';
 import { getData } from './data/api';
 import {
   AnalyzeVotes,
@@ -27,10 +33,10 @@ import {
   Submission,
   ViewBans,
 } from './pages';
-/* eslint-disable no-restricted-imports */
 import Mod from './pages/mod/Mod';
 import EntrantVotersTable from './pages/mod/analyzeVotes/EntrantVotersTable';
 import EntrantsTable from './pages/mod/analyzeVotes/EntrantsTable';
+import ContestSummary from './pages/mod/contestSummary/ContestSummary';
 import ContestRules from './pages/submission/ContestRules';
 /* eslint-enable no-restricted-imports */
 
@@ -42,7 +48,6 @@ function App() {
         <SWRConfig
           value={{
             fetcher: (arr) => getData(...arr),
-            provider: localStorageProvider,
             revalidateOnMount: true,
             revalidateOnFocus: false,
             revalidateOnReconnect: false,
@@ -51,7 +56,10 @@ function App() {
           <div className="app">
             <BrowserRouter>
               <AppHelmet />
-              <ModalSwitch />
+              <ContestRemindersDialog />
+              <BanProtectedRoute>
+                <ModalSwitch />
+              </BanProtectedRoute>
             </BrowserRouter>
             <CustomSnackbar />
           </div>
@@ -83,6 +91,7 @@ function ModalSwitch() {
               <Route path=":entrantId" element={<EntrantVotersTable />} />
             </Route>
           </Route>
+          <Route path="contestSummary" element={<ContestSummary />} />
           <Route path="viewBans" element={<ViewBans />} />
           <Route path="banUsers" element={<BanUsers />} />
           <Route path="review" element={<ReviewSubmissions />} />

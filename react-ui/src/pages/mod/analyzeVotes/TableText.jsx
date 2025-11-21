@@ -1,3 +1,6 @@
+import Typography from '@material-ui/core/Typography';
+import WarningIcon from '@mui/icons-material/Warning';
+import Stack from '@mui/material/Stack';
 import TableCell from '@mui/material/TableCell';
 import PropTypes from 'prop-types';
 
@@ -29,6 +32,22 @@ function GreyTableText({ children }) {
       {children}
     </TableCell>
   );
+}
+
+function TableTextWrapper({ loading, error, children }) {
+  if (loading) {
+    return (
+      <TableCell style={{ fontStyle: 'italic', color: '#898989' }}>
+        Loading...
+      </TableCell>
+    );
+  }
+
+  if (error) {
+    return <RedTableText>ERROR</RedTableText>;
+  }
+
+  return children;
 }
 
 const RED_ABOVE_VALUE = 70;
@@ -139,14 +158,35 @@ function VoteStatusTableText({ voteStatus }) {
   return <BlackTableText />;
 }
 
-function EntryStatusTableText({ entryStatus }) {
-  if (entryStatus === 'dq') {
-    return <RedTableText>DQ</RedTableText>;
+function EntriesStatusTableText({ entries }) {
+  const dqs = entries.reduce((acc, curr) => acc + (curr.dq ? 1 : 0), 0);
+  if (dqs) {
+    return <RedTableText>{`${dqs}/${entries.length}`}</RedTableText>;
   }
   return <BlackTableText />;
 }
 
+function VoterBreakdownText({ text, score }) {
+  const color = getColorFromValue(score);
+  return (
+    <Stack direction="row" spacing={1} sx={{ marginTop: 1, marginBottom: 2 }}>
+      <WarningIcon sx={{ color, opacity: score / 100 }} />
+      <Typography component="span" style={{ color, fontWeight: 'bolder' }}>
+        {text}
+      </Typography>
+    </Stack>
+  );
+}
+
+export {};
+
+VoterBreakdownText.propTypes = {
+  score: PropTypes.number.isRequired,
+  text: PropTypes.string.isRequired,
+};
+
 export {
+  VoterBreakdownText,
   BlackTableText,
   RedTableText,
   OrangeTableText,
@@ -154,7 +194,8 @@ export {
   ScoreTableText,
   BanStatusTableText,
   VoteStatusTableText,
-  EntryStatusTableText,
+  EntriesStatusTableText,
+  TableTextWrapper,
   getColorFromValue,
 };
 
@@ -171,6 +212,18 @@ OrangeTableText.propTypes = {
 GreyTableText.propTypes = {
   children: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     .isRequired,
+};
+
+TableTextWrapper.propTypes = {
+  loading: PropTypes.bool,
+  error: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
+  children: PropTypes.node,
+};
+
+TableTextWrapper.defaultProps = {
+  loading: false,
+  error: null,
+  children: null,
 };
 
 ScoreTableText.propTypes = {
@@ -209,10 +262,11 @@ VoteStatusTableText.defaultProps = {
   voteStatus: undefined,
 };
 
-EntryStatusTableText.propTypes = {
-  entryStatus: PropTypes.oneOf(['dq']),
-};
-
-EntryStatusTableText.defaultProps = {
-  entryStatus: undefined,
+EntriesStatusTableText.propTypes = {
+  entries: PropTypes.arrayOf(
+    PropTypes.shape({
+      entryId: PropTypes.string.isRequired,
+      dq: PropTypes.bool.isRequired,
+    }),
+  ).isRequired,
 };

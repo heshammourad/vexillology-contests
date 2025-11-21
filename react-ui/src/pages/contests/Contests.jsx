@@ -32,7 +32,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Contests() {
-  const { data: contests } = useSwrContests();
+  const {
+    data: { contests },
+  } = useSwrContests();
   const { pathname, state = {} } = useLocation();
 
   const [openYear, setOpenYear] = useState(null);

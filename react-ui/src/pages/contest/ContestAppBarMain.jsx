@@ -15,13 +15,13 @@ export default function ContestAppBarMain({ handleReload, contest }) {
 
   const backLink = (state || {}).back || '/contests';
 
-  const { date, isContestMode, voteEnd } = contest;
+  const { date, contestStatus, voteEnd } = contest;
 
   return (
     <>
       {/* date allows Contests page to know which year is expanded  */}
       <RouterLinkIconButton state={{ date }} to={backLink} />
-      {isContestMode && voteEnd && (
+      {contestStatus === 'VOTING_OPEN' && voteEnd && (
         <Box display="inline-flex" paddingLeft={1.5}>
           <Countdown endDate={voteEndDate} handleReload={handleReload} />
         </Box>
@@ -33,8 +33,8 @@ export default function ContestAppBarMain({ handleReload, contest }) {
 ContestAppBarMain.propTypes = {
   handleReload: PropTypes.func.isRequired,
   contest: PropTypes.shape({
+    contestStatus: PropTypes.string,
     date: PropTypes.string.isRequired,
-    isContestMode: PropTypes.bool,
     name: PropTypes.string,
     voteEnd: PropTypes.string,
   }),
@@ -42,7 +42,7 @@ ContestAppBarMain.propTypes = {
 
 ContestAppBarMain.defaultProps = {
   contest: {
-    isContestMode: PropTypes.false,
+    contestStatus: undefined,
     name: undefined,
     voteEnd: null,
   },

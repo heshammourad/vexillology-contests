@@ -20,7 +20,7 @@ import CategoryLabel from './CategoryLabel';
 import Countdown from './Countdown';
 import DrawerSectionHeader from './DrawerSectionHeader';
 import FiveStar from './FiveStar';
-import FmpIcon from './FmpIcon';
+import { FmpIcon, FMP_LINK } from './Fmp';
 import FormattedContent from './FormattedContent';
 import ListItemButton from './ListItemButton';
 import RedditUserAttribution from './RedditUserAttribution';
@@ -64,7 +64,7 @@ function EntryDescriptionDrawer({ entryId }) {
 
   const {
     data: {
-      categories, entries = [], isContestMode, localVoting, winners = [],
+      categories, entries = [], contestStatus, localVoting, winners = [],
     },
   } = useSwrContest();
   const {
@@ -116,7 +116,7 @@ function EntryDescriptionDrawer({ entryId }) {
           />
         </Box>
       )}
-      {isContestMode ? (
+      {contestStatus === 'VOTING_OPEN' ? (
         <>
           <DrawerSectionHeader>Submit Vote</DrawerSectionHeader>
           {!isTouchScreen && (
@@ -163,12 +163,7 @@ function EntryDescriptionDrawer({ entryId }) {
           Icon={FlagTwoToneIcon}
           text="Open FlagWaver"
         />
-        <ListItemButton
-          href="https://flagmaker-print.com/"
-          Icon={FmpIcon}
-          target="_blank"
-          text="Design & Print your own flag with FMP"
-        />
+        <ListItemButton href={FMP_LINK} Icon={FmpIcon} target="_blank" />
       </List>
     </div>
   );
