@@ -68,7 +68,7 @@ exports.get = async ({ username }, res) => {
 };
 
 // eslint-disable-next-line max-len
-const isValidDimension = (dimension) => Number.isInteger(dimension) && dimension >= 0 && dimension <= 3000;
+const isValidDimension = (dimension) => Number.isInteger(dimension) && dimension >= 0 && dimension <= 6000;
 
 const isWithinSubmissionWindow = async () => {
   const { now, submissionStart, submissionEnd } = await getCurrentContest();
@@ -186,7 +186,10 @@ exports.put = async ({ body: { id, submissionStatus }, username }, res) => {
         [
           '?id',
           'modified_by',
-          { name: 'submission_status', cast: 'submission_status' },
+          {
+            name: 'submission_status',
+            cast: 'vexillology_contests_common.submission_status',
+          },
         ],
         ['id', 'submission_status'],
       );

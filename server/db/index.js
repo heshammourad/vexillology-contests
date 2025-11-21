@@ -76,10 +76,11 @@ const insert = async (table, values, additionalOptions = {}) => {
   return result;
 };
 
-const select = async (queryStr, values) => {
+const select = async (queryStr, values, isOne = false) => {
   try {
-    const data = await db.any(queryStr, values);
-    return data;
+    return isOne
+      ? await db.oneOrNone(queryStr, values)
+      : await db.any(queryStr, values);
   } catch (err) {
     logger.error(`SELECT failed. ${err}`);
   }

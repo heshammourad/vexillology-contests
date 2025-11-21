@@ -10,26 +10,30 @@ const helmet = require('helmet');
 const accessToken = require('./api/accessToken');
 const analyzeContest = require('./api/analyzeContest');
 const {
+  processUser,
   requireAuthentication,
   requireModerator,
-  processUser,
+  requireRole,
 } = require('./api/authentication');
 const contest = require('./api/contest');
+const contestSummary = require('./api/contestSummary');
 const contests = require('./api/contests');
 const dev = require('./api/dev');
 const hallOfFame = require('./api/hallOfFame');
 const images = require('./api/images');
 const init = require('./api/init');
+const manageContest = require('./api/manageContest');
 const reviewSubmissions = require('./api/reviewSubmissions');
 const revokeToken = require('./api/revokeToken');
 const settings = require('./api/settings');
 const staticContent = require('./api/staticContent');
 const submission = require('./api/submission');
 const userBans = require('./api/userBans');
-const { checkRequiredFields } = require('./api/validation');
+const {checkRequiredFields} = require('./api/validation');
 const votes = require('./api/votes');
-const { IS_DEV, BACKEND_PORT } = require('./env');
-const { createLogger } = require('./logger');
+const UserPermissions = require('./db/userPermissions');
+const {IS_DEV, BACKEND_PORT} = require('./env');
+const {createLogger} = require('./logger');
 
 const logger = createLogger('INDEX', {
   handleExceptions: true,
@@ -54,9 +58,7 @@ if (!IS_DEV && cluster.isMaster) {
   const app = express();
 
   app.enable('trust proxy');
-  app.use(({
-    hostname, protocol, secure, url,
-  }, res, next) => {
+  app.use(({hostname, protocol, secure, url}, res, next) => {
     const isOldDomain = hostname === 'vexillology-contests.herokuapp.com';
     if (!IS_DEV && (!secure || isOldDomain)) {
       const newDomain = isOldDomain ? 'www.vexillologycontests.com' : hostname;
@@ -114,6 +116,10 @@ if (!IS_DEV && cluster.isMaster) {
   modRouter.use(express.json());
 
   modRouter.all('*', requireModerator);
+  modRouter.route('/contestSummary').get(contestSummary.get);
+  modRouter
+    .route('/manageContest')
+    .put(checkRequiredFields('id', 'resultsCertified'), manageContest.put);
   modRouter
     .route('/reviewSubmissions')
     .get(reviewSubmissions.get)
@@ -137,7 +143,7 @@ if (!IS_DEV && cluster.isMaster) {
 
   apiRouter.get('/accessToken/:code', accessToken.get);
   apiRouter.get('/contests', contests.get);
-  apiRouter.get('/contests/:id', processUser(false), contest.get);
+  apiRouter.get('/contests/:contestId', processUser(false), contest.get);
   apiRouter.get('/hallOfFame', hallOfFame.get);
   apiRouter.get('/init', processUser(true), init.get);
   apiRouter.get('/revokeToken/:refreshToken', revokeToken.get);
@@ -151,7 +157,7 @@ if (!IS_DEV && cluster.isMaster) {
     .route('/submission')
     .get(processUser(false), submission.get)
     .post(
-      requireAuthentication,
+      requireRole(UserPermissions.PARTICIPATE_IN_CONTEST),
       checkRequiredFields('description', 'height', 'name', 'url', 'width'),
       submission.post,
     )

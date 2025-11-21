@@ -1,13 +1,13 @@
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import {makeStyles} from '@material-ui/core/styles';
+import {Outlet, useNavigate, useLocation} from 'react-router-dom';
 
-import { ContestSelector, ProtectedRoute } from '../../../components';
+import {ContestSelector, ProtectedRoute} from '../../../components';
 import useContestId from '../../../data/useContestId';
 
-import { ChipProvider } from './ChipContext';
+import {ChipProvider} from './ChipContext';
 
 const useStyles = makeStyles({
   sectionHeader: {
@@ -44,7 +44,7 @@ function AnalyzeVotes() {
       <br />
       <h1 className={classes.sectionHeader}>Analyze votes</h1>
 
-      <Box display="flex" sx={{ alignItems: 'center' }}>
+      <Box display="flex" sx={{alignItems: 'center'}}>
         <Typography>
           <b>Contest</b>
         </Typography>
@@ -52,14 +52,15 @@ function AnalyzeVotes() {
           color="secondary"
           variant="outlined"
           size="small"
-          style={{ marginLeft: 10 }}
+          style={{marginLeft: 10}}
           disabled={!contestId}
-          onClick={() => window.open(
-            `/contests/${contestId}`,
-            '_blank',
-            'noopener,noreferrer',
-          )}
-        >
+          onClick={() =>
+            window.open(
+              `/contests/${contestId}`,
+              '_blank',
+              'noopener,noreferrer',
+            )
+          }>
           OPEN CONTEST IN NEW TAB
         </Button>
       </Box>

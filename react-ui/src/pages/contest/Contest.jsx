@@ -21,18 +21,14 @@ import {
   PageContainer,
   PageWithDrawer,
   RedditLogInDialog,
-  StaticContent,
 } from '../../components';
 import useSwrContest from '../../data/useSwrContest';
 
 import ContestAppBarMain from './ContestAppBarMain';
 import ContestAppBarRight from './ContestAppBarRight';
-import ContestCategorySelector from './ContestCategorySelector';
-import ContestGrid from './ContestGrid';
+import ContestContent from './ContestContent';
 import ContestSettings from './ContestSettings';
 import ContestSponsor from './ContestSponsor';
-import ContestUnderReview from './ContestUnderReview';
-import ContestWinners from './ContestWinners';
 import useContestSizing from './useContestSizing';
 
 const scrollInstantlyTo = (scrollY, options = {}) => {
@@ -72,7 +68,7 @@ function Contest() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerEntryId, setDrawerEntryId] = useState(null);
 
-  if (contest?.submissionWindowOpen && !isValidating) {
+  if (contest?.contestStatus === 'SUBMISSIONS_OPEN' && !isValidating) {
     navigate('/submission', { replace: true });
   }
 
@@ -92,10 +88,10 @@ function Contest() {
 
   useEffect(() => {
     // Clear cache if the voting window is still closed to force fetch again on next visit
-    if (contest.votingWindowOpen === false) {
+    if (contest.contestStatus === 'SUBMISSIONS_CLOSED') {
       mutate();
     }
-  }, [contest.votingWindowOpen]);
+  }, [contest.contestStatus]);
 
   const handleReload = useCallback(() => {
     scrollInstantlyTo(0);
@@ -178,9 +174,7 @@ function Contest() {
 
   const { headingVariant } = useContestSizing();
 
-  const {
-    categories, isContestMode, name, votingWindowOpen, winners, prompt,
-  } = contest;
+  const { name, prompt } = contest;
 
   // Prevents display of stale, cached data
   if (isValidating) {
@@ -246,30 +240,15 @@ function Contest() {
               {' '}
               contest prompt
             </AccordionSummary>
-            <AccordionDetails onClick={togglePromptOpen} style={{ cursor: 'pointer' }}>
+            <AccordionDetails
+              onClick={togglePromptOpen}
+              style={{ cursor: 'pointer' }}
+            >
               <FormattedContent content={prompt} markdown />
             </AccordionDetails>
           </Accordion>
-
-          {votingWindowOpen === false && (
-            <ContestUnderReview {...{ isValidating, mutate }} />
-          )}
-          {isContestMode && (
-            <Box marginBottom={3}>
-              <Typography component="div" variant="subtitle1">
-                <StaticContent id="voting_instructions" />
-              </Typography>
-            </Box>
-          )}
-          <ContestCategorySelector
-            {...{ categories, selectedCategories, setSelectedCategories }}
-          />
-          <ContestWinners {...{ winners }} />
-          <ContestGrid
-            {...{
-              selectedCategories,
-              setDrawer,
-            }}
+          <ContestContent
+            {...{ selectedCategories, setDrawer, setSelectedCategories }}
           />
         </PageContainer>
       )}

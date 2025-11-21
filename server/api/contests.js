@@ -18,12 +18,12 @@ exports.get = async (req, res) => {
        ORDER BY date DESC`,
       [CONTEST_ENV_LEVEL],
     );
-    res.send(
-      result.map(({ date, ...rest }) => ({
+    res.send({
+      contests: result.map(({ date, ...rest }) => ({
         ...rest,
         date: date.toJSON().substr(0, 10),
       })),
-    );
+    });
   } catch (err) {
     logger.error(`Error getting /contests: ${err}`);
     res.status(500).send();

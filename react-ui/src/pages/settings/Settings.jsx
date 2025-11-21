@@ -9,6 +9,7 @@ import { useLocation } from 'react-router-dom';
 import snackbarTypes from '../../common/snackbarTypes';
 import useSnackbarState from '../../common/useSnackbarState';
 import {
+  ContestRemindersAlert,
   CustomSwitch,
   Header,
   PageContainer,
@@ -117,6 +118,7 @@ function Settings() {
                 />
               </div>
             </div>
+            <ContestRemindersAlert />
           </div>
         </ProtectedRoute>
       </PageContainer>

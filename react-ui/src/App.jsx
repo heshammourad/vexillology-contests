@@ -4,16 +4,18 @@
  */
 
 import CssBaseline from '@material-ui/core/CssBaseline';
-import {
-  BrowserRouter, Navigate, Route, Routes, Link,
-} from 'react-router-dom';
-import { SWRConfig } from 'swr';
+import {BrowserRouter, Navigate, Route, Routes, Link} from 'react-router-dom';
+import {SWRConfig} from 'swr';
 
-import { AppHelmet, CustomSnackbar, CustomThemeProvider } from './components';
+import {
+  AppHelmet,
+  ContestRemindersDialog,
+  CustomSnackbar,
+  CustomThemeProvider,
+} from './components';
 /* eslint-disable no-restricted-imports */
 import BanProtectedRoute from './components/BanProtectedRoute';
-import localStorageProvider from './data/LocalStorageProvider';
-import { getData } from './data/api';
+import {getData} from './data/api';
 import {
   AnalyzeVotes,
   AuthorizeCallback,
@@ -30,6 +32,7 @@ import {
   ViewBans,
 } from './pages';
 import Mod from './pages/mod/Mod';
+import ContestSummary from './pages/mod/contestSummary/ContestSummary';
 import EntrantVotersTable from './pages/mod/analyzeVotes/EntrantVotersTable';
 import EntrantsTable from './pages/mod/analyzeVotes/EntrantsTable';
 import ContestRules from './pages/submission/ContestRules';
@@ -43,15 +46,14 @@ function App() {
         <SWRConfig
           value={{
             fetcher: (arr) => getData(...arr),
-            provider: localStorageProvider,
             revalidateOnMount: true,
             revalidateOnFocus: false,
             revalidateOnReconnect: false,
-          }}
-        >
+          }}>
           <div className="app">
             <BrowserRouter>
               <AppHelmet />
+              <ContestRemindersDialog />
               <BanProtectedRoute>
                 <ModalSwitch />
               </BanProtectedRoute>
@@ -86,6 +88,7 @@ function ModalSwitch() {
               <Route path=":entrantId" element={<EntrantVotersTable />} />
             </Route>
           </Route>
+          <Route path="contestSummary" element={<ContestSummary />} />
           <Route path="viewBans" element={<ViewBans />} />
           <Route path="banUsers" element={<BanUsers />} />
           <Route path="review" element={<ReviewSubmissions />} />
@@ -96,7 +99,7 @@ function ModalSwitch() {
         <Route
           path="/submit"
           element={
-            <Navigate replace state={{ defaultTab: 1 }} to="/submission" />
+            <Navigate replace state={{defaultTab: 1}} to="/submission" />
           }
         />
         <Route path="/hallOfFame" element={<HallOfFame />} />
@@ -109,7 +112,7 @@ function ModalSwitch() {
 
 function NotFound() {
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{padding: '20px'}}>
       <h1>404 not found</h1>
       <p>Please go back or</p>
       <Link to="/">Return Home</Link>
