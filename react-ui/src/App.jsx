@@ -4,8 +4,10 @@
  */
 
 import CssBaseline from '@material-ui/core/CssBaseline';
-import {BrowserRouter, Navigate, Route, Routes, Link} from 'react-router-dom';
-import {SWRConfig} from 'swr';
+import {
+  BrowserRouter, Navigate, Route, Routes, Link,
+} from 'react-router-dom';
+import { SWRConfig } from 'swr';
 
 import {
   AppHelmet,
@@ -15,7 +17,7 @@ import {
 } from './components';
 /* eslint-disable no-restricted-imports */
 import BanProtectedRoute from './components/BanProtectedRoute';
-import {getData} from './data/api';
+import { getData } from './data/api';
 import {
   AnalyzeVotes,
   AuthorizeCallback,
@@ -32,9 +34,9 @@ import {
   ViewBans,
 } from './pages';
 import Mod from './pages/mod/Mod';
-import ContestSummary from './pages/mod/contestSummary/ContestSummary';
 import EntrantVotersTable from './pages/mod/analyzeVotes/EntrantVotersTable';
 import EntrantsTable from './pages/mod/analyzeVotes/EntrantsTable';
+import ContestSummary from './pages/mod/contestSummary/ContestSummary';
 import ContestRules from './pages/submission/ContestRules';
 /* eslint-enable no-restricted-imports */
 
@@ -49,7 +51,8 @@ function App() {
             revalidateOnMount: true,
             revalidateOnFocus: false,
             revalidateOnReconnect: false,
-          }}>
+          }}
+        >
           <div className="app">
             <BrowserRouter>
               <AppHelmet />
@@ -99,7 +102,7 @@ function ModalSwitch() {
         <Route
           path="/submit"
           element={
-            <Navigate replace state={{defaultTab: 1}} to="/submission" />
+            <Navigate replace state={{ defaultTab: 1 }} to="/submission" />
           }
         />
         <Route path="/hallOfFame" element={<HallOfFame />} />
@@ -112,7 +115,7 @@ function ModalSwitch() {
 
 function NotFound() {
   return (
-    <div style={{padding: '20px'}}>
+    <div style={{ padding: '20px' }}>
       <h1>404 not found</h1>
       <p>Please go back or</p>
       <Link to="/">Return Home</Link>

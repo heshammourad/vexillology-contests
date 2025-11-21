@@ -5,7 +5,7 @@ import GradingIcon from '@mui/icons-material/Grading';
 import InsightsIcon from '@mui/icons-material/Insights';
 import List from '@mui/material/List';
 import PropTypes from 'prop-types';
-import {useLocation} from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 import CustomBadge from './CustomBadge';
 import MenuItemLink from './MenuItemLink';
@@ -54,14 +54,16 @@ function badgedIcon(badgedIcons, Icon, item) {
  *
  * @returns {JSX.Element} The rendered ModeratorMenu component.
  */
-function ModeratorMenu({badgedIcons, highlightSelected, onClick, sx}) {
-  const {pathname} = useLocation();
+function ModeratorMenu({
+  badgedIcons, highlightSelected, onClick, sx,
+}) {
+  const { pathname } = useLocation();
 
   const paths = pathname.split('/');
 
   return (
-    <List {...{sx}}>
-      {Object.entries(MODERATOR_MENU_ITEMS).map(([item, {Icon, text}]) => (
+    <List {...{ sx }}>
+      {Object.entries(MODERATOR_MENU_ITEMS).map(([item, { Icon, text }]) => (
         <MenuItemLink
           key={item}
           Icon={badgedIcon(badgedIcons, Icon, item)}

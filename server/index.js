@@ -29,11 +29,11 @@ const settings = require('./api/settings');
 const staticContent = require('./api/staticContent');
 const submission = require('./api/submission');
 const userBans = require('./api/userBans');
-const {checkRequiredFields} = require('./api/validation');
+const { checkRequiredFields } = require('./api/validation');
 const votes = require('./api/votes');
 const UserPermissions = require('./db/userPermissions');
-const {IS_DEV, BACKEND_PORT} = require('./env');
-const {createLogger} = require('./logger');
+const { IS_DEV, BACKEND_PORT } = require('./env');
+const { createLogger } = require('./logger');
 
 const logger = createLogger('INDEX', {
   handleExceptions: true,
@@ -58,7 +58,9 @@ if (!IS_DEV && cluster.isMaster) {
   const app = express();
 
   app.enable('trust proxy');
-  app.use(({hostname, protocol, secure, url}, res, next) => {
+  app.use(({
+    hostname, protocol, secure, url,
+  }, res, next) => {
     const isOldDomain = hostname === 'vexillology-contests.herokuapp.com';
     if (!IS_DEV && (!secure || isOldDomain)) {
       const newDomain = isOldDomain ? 'www.vexillologycontests.com' : hostname;
