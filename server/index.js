@@ -126,14 +126,21 @@ if (!IS_DEV && cluster.isMaster) {
     .route('/reviewSubmissions')
     .get(reviewSubmissions.get)
     .put(checkRequiredFields('id', 'status'), reviewSubmissions.put);
-  modRouter.route('/analyzeVotes/:id/entrants').get(analyzeContest.entrants);
-  modRouter.route('/analyzeVotes/:id/voters').get(analyzeContest.voters);
+  modRouter
+    .route('/analyzeVotes/:id/entrants')
+    .get(requireRole(UserPermissions.VIEW_SCORES), analyzeContest.entrants);
+  modRouter
+    .route('/analyzeVotes/:id/voters')
+    .get(requireRole(UserPermissions.VIEW_SCORES), analyzeContest.voters);
   modRouter
     .route('/analyzeVotes/:id/voterPatterns')
-    .get(analyzeContest.voterPatterns);
+    .get(
+      requireRole(UserPermissions.VIEW_SCORES),
+      analyzeContest.voterPatterns,
+    );
   modRouter
     .route('/analyzeVotes/:id/votingMatrix')
-    .get(analyzeContest.votingMatrix);
+    .get(requireRole(UserPermissions.VIEW_SCORES), analyzeContest.votingMatrix);
   modRouter.route('/userBansSearch').get(userBans.userBansSearch);
   modRouter.route('/usersBanHistories').get(userBans.getUsersBanHistories);
   modRouter.route('/activeBans').get(userBans.getActiveBans);
