@@ -34,4 +34,23 @@ const camelizeObjectKeys = (obj) => {
  */
 const generateImagePath = (id) => `/i/${id}.png`;
 
-module.exports = { camelizeObjectKeys, generateImagePath };
+/**
+ * Reproducible yet random hash function
+ * Concatenates username and entryId for distinct hash
+ * @param {string} username - The username
+ * @param {string} entryId - The entry ID
+ * @returns {number} - 32-bit integer hash
+ */
+const getHash = (username, entryId) => {
+  const seed = username + entryId;
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    // eslint-disable-next-line no-bitwise
+    hash = (hash << 5) - hash + seed.charCodeAt(i);
+    // eslint-disable-next-line no-bitwise
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+};
+
+module.exports = { camelizeObjectKeys, generateImagePath, getHash };

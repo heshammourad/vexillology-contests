@@ -8,6 +8,7 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 
 const accessToken = require('./api/accessToken');
+const analyzeContest = require('./api/analyzeContest');
 const analyzeVotes = require('./api/analyzeVotes');
 const {
   processUser,
@@ -126,6 +127,21 @@ if (!IS_DEV && cluster.isMaster) {
     .route('/reviewSubmissions')
     .get(reviewSubmissions.get)
     .put(checkRequiredFields('id', 'status'), reviewSubmissions.put);
+  modRouter
+    .route('/analyzeContest/:id/entrants')
+    .get(requireRole(UserPermissions.VIEW_SCORES), analyzeContest.entrants);
+  modRouter
+    .route('/analyzeContest/:id/voters')
+    .get(requireRole(UserPermissions.VIEW_SCORES), analyzeContest.voters);
+  modRouter
+    .route('/analyzeContest/:id/voterPatterns')
+    .get(
+      requireRole(UserPermissions.VIEW_SCORES),
+      analyzeContest.voterPatterns,
+    );
+  modRouter
+    .route('/analyzeContest/:id/votingMatrix')
+    .get(requireRole(UserPermissions.VIEW_SCORES), analyzeContest.votingMatrix);
 
   const apiRouter = express.Router();
   apiRouter.use(express.json());
@@ -160,6 +176,7 @@ if (!IS_DEV && cluster.isMaster) {
     .all(requireAuthentication, votes.all)
     .put(checkRequiredFields('contestId', 'entryId', 'rating'), votes.put)
     .delete(checkRequiredFields('contestId', 'entryId'), votes.delete);
+  apiRouter.get('/voter-votes', analyzeContest.voterVotes);
   apiRouter.use('/mod', modRouter);
 
   if (IS_DEV) {
