@@ -58,7 +58,7 @@ The fraud detection system implements a comprehensive heuristic scoring algorith
 
 ### Backend API
 
-- **Endpoint**: `/mod/analyzeVotes/:contestId/voters`
+- **Endpoint**: `/mod/analyzeContest/:contestId/voters`
 - **Enhancement**: Now includes `fraudScore` and `fraudBreakdown` fields
 - **Calculation**: Real-time calculation for each voter
 

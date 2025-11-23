@@ -22,10 +22,13 @@ const useContestContext = () => {
 };
 
 // Abstract hook for fetching contest analysis data
-const useContestAnalysisData = (contestId, endpoint) => useSwrAuth(contestId ? `/mod/analyzeVotes/${contestId}/${endpoint}` : null, {
-  dedupingInterval: DEDUPING_INTERVAL,
-  revalidateOnFocus: false,
-});
+const useContestAnalysisData = (contestId, endpoint) => useSwrAuth(
+  contestId ? `/mod/analyzeContest/${contestId}/${endpoint}` : null,
+  {
+    dedupingInterval: DEDUPING_INTERVAL,
+    revalidateOnFocus: false,
+  },
+);
 
 function ContestProvider({ contestId, children }) {
   // Fetch contest bans data with 5-minute deduplication
