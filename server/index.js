@@ -9,7 +9,6 @@ const helmet = require('helmet');
 
 const accessToken = require('./api/accessToken');
 const analyzeContest = require('./api/analyzeContest');
-const analyzeVotes = require('./api/analyzeVotes');
 const {
   processUser,
   requireAuthentication,
@@ -118,7 +117,6 @@ if (!IS_DEV && cluster.isMaster) {
   modRouter.use(express.json());
 
   modRouter.all('*', requireModerator);
-  modRouter.route('/analyzeVotes/:id').get(analyzeVotes.get);
   modRouter.route('/contestSummary').get(contestSummary.get);
   modRouter
     .route('/manageContest')
