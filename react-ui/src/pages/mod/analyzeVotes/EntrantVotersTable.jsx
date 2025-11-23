@@ -25,6 +25,7 @@ import {
   VoteStatusTableText,
   VoterBreakdownText,
 } from './TableText';
+import TakeActionButton from './TakeActionButton';
 import VoterGraph from './VoterGraph';
 
 /**
@@ -141,6 +142,7 @@ function EntrantVotersTable() {
           </TableBodyWrapper>
         </Table>
       </TableContainer>
+      <TakeActionButton users={checkedVoters} />
       <Box sx={{ height: 80 }} />
     </>
   );

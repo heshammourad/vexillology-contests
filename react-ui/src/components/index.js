@@ -7,6 +7,7 @@ export { default as AppBarDivided } from './AppBarDivided';
 export { default as AppHelmet } from './AppHelmet';
 export { default as RouterLinkIconButton } from './RouterLinkIconButton';
 export { default as Average } from './Average';
+export { default as BanProtectedRoute } from './BanProtectedRoute';
 export { default as CategoryLabel } from './CategoryLabel';
 export { default as Countdown } from './Countdown';
 export { default as ContestSelector } from './ContestSelector';
