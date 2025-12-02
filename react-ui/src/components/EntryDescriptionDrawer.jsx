@@ -72,10 +72,10 @@ function EntryDescriptionDrawer({ entryId }) {
     category,
     categoryRank,
     description,
+    id,
     imagePath,
     imgurId,
-    id,
-    markdown,
+    isMarkdown,
     name,
     permalink,
     rank,
@@ -148,7 +148,7 @@ function EntryDescriptionDrawer({ entryId }) {
         </Box>
       )}
       <DrawerSectionHeader>Description</DrawerSectionHeader>
-      <FormattedContent content={description} markdown={markdown} />
+      <FormattedContent content={description} isMarkdown={isMarkdown} />
       <DrawerSectionHeader>Links</DrawerSectionHeader>
       <List>
         {!localVoting && (

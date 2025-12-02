@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import HtmlWrapper from './HtmlWrapper';
 import RedditMarkdown from './RedditMarkdown';
 
-function FormattedContent({ className, content, markdown }) {
-  return markdown ? (
+function FormattedContent({ className, content, isMarkdown }) {
+  return isMarkdown ? (
     <RedditMarkdown {...{ className, text: content }} />
   ) : (
     <HtmlWrapper {...{ className, html: content }} />
@@ -14,12 +14,12 @@ function FormattedContent({ className, content, markdown }) {
 FormattedContent.propTypes = {
   className: PropTypes.string,
   content: PropTypes.string.isRequired,
-  markdown: PropTypes.bool,
+  isMarkdown: PropTypes.bool,
 };
 
 FormattedContent.defaultProps = {
   className: '',
-  markdown: false,
+  isMarkdown: false,
 };
 
 export default FormattedContent;
