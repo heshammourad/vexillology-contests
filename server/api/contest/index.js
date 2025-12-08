@@ -257,7 +257,7 @@ exports.get = async ({ params: { contestId }, username }, res) => {
       'e.height',
       'e.id',
       "'/i/' || e.id || '.png' AS image_path",
-      'e.markdown',
+      'e.is_markdown',
       'e.name',
       'e.width',
     ];

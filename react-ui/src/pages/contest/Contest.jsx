@@ -244,7 +244,7 @@ function Contest() {
               onClick={togglePromptOpen}
               style={{ cursor: 'pointer' }}
             >
-              <FormattedContent content={prompt} markdown />
+              <FormattedContent content={prompt} isMarkdown />
             </AccordionDetails>
           </Accordion>
           <ContestContent

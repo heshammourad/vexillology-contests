@@ -13,13 +13,13 @@ function SubmissionPrompt({ contestId, prompt }) {
   if (!prompt) {
     return null;
   }
-  let content = <FormattedContent content={prompt} markdown />;
-  if (contestId === 'may23') {
-    content = <May23 />;
-  }
   return (
     <>
-      {content}
+      {contestId === 'may23' ? (
+        <May23 />
+      ) : (
+        <FormattedContent content={prompt} isMarkdown />
+      )}
       <InternalLink to="rules">
         <Typography component="span" variant="h6">
           Please read the contest rules in full before submitting.
