@@ -9,6 +9,7 @@ import LoadingContent from '../../../components/LoadingContent';
 import useSwrModContestSummary from '../../../data/useSwrModContestSummary';
 
 import CertifyButton from './CertifyButton';
+import CopyResultsButton from './CopyResultsButton';
 import EntriesTable from './EntriesTable';
 
 const getErrorMessage = (entries, errorStatus, visibilityLimited, voteEnd) => {
@@ -40,6 +41,7 @@ function ContestSummary() {
       contestId,
       entries,
       resultsCertified,
+      resultsMarkdown,
       visibilityLimited,
       voteEnd,
     } = {},
@@ -71,7 +73,10 @@ function ContestSummary() {
             Contest Summary
           </Typography>
           {!isValidating && entries?.length > 0 && (
-            <CertifyButton {...{ contestId, resultsCertified, voteEnd }} />
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <CopyResultsButton resultsMarkdown={resultsMarkdown} />
+              <CertifyButton {...{ contestId, resultsCertified, voteEnd }} />
+            </Box>
           )}
         </Box>
         <LoadingContent loading={isValidating}>
