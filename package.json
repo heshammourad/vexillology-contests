@@ -16,7 +16,7 @@
     "axios": "^1.13.5",
     "cors": "^2.8.5",
     "date-fns": "^2.29.3",
-    "express": "^4.21.1",
+    "express": "^4.22.1",
     "express-rate-limit": "^6.7.0",
     "firebase-admin": "^12.0.0",
     "helmet": "^6.0.1",
