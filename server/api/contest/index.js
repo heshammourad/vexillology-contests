@@ -12,6 +12,7 @@ const { v4: uuidv4 } = require('uuid');
 const { getVoteDates, getCategories } = require('../../db/queries');
 const { IGNORE_PENDING_DEV } = require('../../env');
 const { createLogger } = require('../../logger');
+const { getHash } = require('../../util');
 
 const db = require('./db');
 const reddit = require('./reddit');
@@ -107,40 +108,20 @@ const addUserVotesToEntries = async (contestId, username, entries) => {
  * @param {string} username - The username used to generate reproducible randomness.
  * @returns {Array<Object>} - The sorted list of contest entries.
  */
-const sortEntriesRandomly = (entries, username) => {
-  /**
-   * Reproducible yet random hash function
-   * Concatenates username and entryId for distinct hash
-   * @param {string} entryId
-   * @returns {int}
-   */
-  const getHash = (entryId) => {
-    const seed = username + entryId;
-    let hash = 0;
-    for (let i = 0; i < seed.length; i += 1) {
-      // eslint-disable-next-line no-bitwise
-      hash = (hash << 5) - hash + seed.charCodeAt(i);
-      // eslint-disable-next-line no-bitwise
-      hash |= 0; // Convert to 32bit integer
+const sortEntriesRandomly = (entries, username) => entries
+  .map(({ rank, user, ...entry }) => entry)
+  .sort((a, b) => {
+    if (a.rating > -1 && b.rating === undefined) {
+      return 1;
     }
-    return hash;
-  };
-
-  return entries
-    .map(({ rank, user, ...entry }) => entry)
-    .sort((a, b) => {
-      if (a.rating > -1 && b.rating === undefined) {
-        return 1;
-      }
-      if (b.rating > -1 && a.rating === undefined) {
-        return -1;
-      }
-      if (b.rating !== a.rating) {
-        return b.rating - a.rating;
-      }
-      return getHash(b.id) - getHash(a.id);
-    });
-};
+    if (b.rating > -1 && a.rating === undefined) {
+      return -1;
+    }
+    if (b.rating !== a.rating) {
+      return b.rating - a.rating;
+    }
+    return getHash(username, b.id) - getHash(username, a.id);
+  });
 
 /**
  * Retrieves contest data based on the contest ID. If username is provided, user votes are added.
