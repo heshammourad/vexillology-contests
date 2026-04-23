@@ -28,7 +28,7 @@
     "plotly.js": "^2.33.0",
     "react-plotly.js": "^2.6.0",
     "snoowrap": "^1.23.0",
-    "uuid": "^9.0.0",
+    "uuid": "^14.0.0",
     "winston": "^3.8.2"
   },
   "repository": {
