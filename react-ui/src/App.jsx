@@ -11,6 +11,7 @@ import { SWRConfig } from 'swr';
 
 import {
   AppHelmet,
+  BanProtectedRoute,
   ContestRemindersDialog,
   CustomSnackbar,
   CustomThemeProvider,
@@ -19,20 +20,23 @@ import { getData } from './data/api';
 import {
   AnalyzeVotes,
   AuthorizeCallback,
+  BanNotice,
+  BanUsers,
   Contest,
+  ContestRules,
   Contests,
+  ContestSummary,
+  EntrantVotersTable,
+  EntrantsTable,
   EntryModal,
   HallOfFame,
   Home,
+  Mod,
   ReviewSubmissions,
   Settings,
   Submission,
+  ViewBans,
 } from './pages';
-/* eslint-disable no-restricted-imports */
-import Mod from './pages/mod/Mod';
-import ContestSummary from './pages/mod/contestSummary/ContestSummary';
-import ContestRules from './pages/submission/ContestRules';
-/* eslint-enable no-restricted-imports */
 
 function App() {
   return (
@@ -51,7 +55,9 @@ function App() {
             <BrowserRouter>
               <AppHelmet />
               <ContestRemindersDialog />
-              <AppContent />
+              <BanProtectedRoute>
+                <AppContent />
+              </BanProtectedRoute>
             </BrowserRouter>
             <CustomSnackbar />
           </div>
@@ -68,6 +74,7 @@ function AppContent() {
         <Route path="/" element={<Navigate replace to="home" />} />
         <Route path="/authorizeCallback" element={<AuthorizeCallback />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/banned" element={<BanNotice />} />
         <Route path="/contests" element={<Contests />} />
         <Route path="/contests/:contestId" element={<Contest />}>
           <Route
@@ -78,8 +85,12 @@ function AppContent() {
         <Route path="/mod" element={<Mod />}>
           <Route index element={<ReviewSubmissions />} />
           <Route path="analyze" element={<AnalyzeVotes />}>
-            <Route path=":contestId" element={<AnalyzeVotes />} />
+            <Route path=":contestId" element={<EntrantsTable />}>
+              <Route path=":entrantId" element={<EntrantVotersTable />} />
+            </Route>
           </Route>
+          <Route path="viewBans" element={<ViewBans />} />
+          <Route path="banUsers" element={<BanUsers />} />
           <Route path="contestSummary" element={<ContestSummary />} />
           <Route path="review" element={<ReviewSubmissions />} />
         </Route>
