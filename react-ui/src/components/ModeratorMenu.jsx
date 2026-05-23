@@ -1,5 +1,7 @@
+// import Block from '@mui/icons-material/Block';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import GradingIcon from '@mui/icons-material/Grading';
+// import GroupRemove from '@mui/icons-material/GroupRemove';
 import InsightsIcon from '@mui/icons-material/Insights';
 import List from '@mui/material/List';
 import PropTypes from 'prop-types';
@@ -17,6 +19,14 @@ const MODERATOR_MENU_ITEMS = {
     Icon: InsightsIcon,
     text: 'Analyze Votes',
   },
+  // 'banUsers?u=ASmallEye': {
+  //   Icon: Block,
+  //   text: 'NOT DIRECTLY ACCESSIBLE', // delete this once analyze and viewBans are complete
+  // },
+  // viewBans: {
+  //   Icon: GroupRemove,
+  //   text: 'View Bans',
+  // },
   contestSummary: {
     Icon: GradingIcon,
     text: 'Contest Summary',
