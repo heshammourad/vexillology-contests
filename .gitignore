@@ -13,3 +13,6 @@ Dockerfile
 docker-compose.yml
 
 .eslintcache
+
+# Antigravity CLI
+.antigravitycli/
