@@ -1,19 +1,129 @@
 const fs = require('fs');
 
-async function callGeminiWithRetry(prompt, apiKey, modelName) {
-  // Deduplicate and prioritize requested model, fallback to others if needed
-  const models = Array.from(new Set([
-    modelName, 
-    'gemini-2.5-flash', 
-    'gemini-1.5-flash', 
-    'gemini-2.0-flash'
-  ]));
+/**
+ * Supported Gemini models list used for fallbacks
+ */
+const GEMINI_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+  'gemini-2.5-pro',
+  'gemini-1.5-pro'
+];
 
+/**
+ * Maximum character limit for the git diff to fit within safe API payload sizes
+ */
+const MAX_DIFF_LENGTH = 250000; // ~50k-70k tokens
+
+/**
+ * Writes a message to the GitHub Actions Job Summary page.
+ * @param {string} text - Markdown text to append
+ */
+function writeJobSummary(text) {
+  const summaryFile = process.env.GITHUB_STEP_SUMMARY;
+  if (summaryFile) {
+    try {
+      fs.appendFileSync(summaryFile, text + '\n');
+    } catch (err) {
+      console.warn('Failed to write to GITHUB_STEP_SUMMARY:', err.message);
+    }
+  }
+}
+
+/**
+ * Fetches the raw diff of the pull request from GitHub API.
+ * @param {string} repo - The repository owner/name
+ * @param {string} prNumber - The pull request number
+ * @param {string} token - The GitHub token
+ * @returns {Promise<string>} The raw diff text
+ */
+async function fetchPrDiff(repo, prNumber, token) {
+  console.log(`Fetching diff for PR #${prNumber} in ${repo}...`);
+  const response = await fetch(
+    `https://api.github.com/repos/${repo}/pulls/${prNumber}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github.v3.diff',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch PR diff: ${response.status} ${response.statusText}`);
+  }
+
+  return response.text();
+}
+
+/**
+ * Filters out large lockfiles, binary files, and media from the git diff.
+ * Parses the diff block-by-block using the diff metadata.
+ * @param {string} diffText - Raw git diff text
+ * @returns {string} The filtered git diff
+ */
+function filterDiff(diffText) {
+  const blocks = diffText.split(/^diff --git /m);
+  const filteredBlocks = [];
+
+  // Iterate over each diff block (index 0 is usually the diff preamble/empty, so we skip it)
+  for (let i = 1; i < blocks.length; i++) {
+    const block = blocks[i];
+    const lines = block.split('\n');
+    const firstLine = lines[0];
+
+    // Determine the target file path by looking at "+++ b/" or "--- a/" lines inside the block
+    let filePath = '';
+    for (const line of lines) {
+      if (line.startsWith('+++ b/')) {
+        filePath = line.substring(6).trim();
+        break;
+      }
+      if (line.startsWith('--- a/')) {
+        filePath = line.substring(6).trim();
+      }
+    }
+
+    // Fallback to first line if metadata lines were not found (e.g., binary files)
+    if (!filePath) {
+      const match = ('diff --git ' + firstLine).match(/^diff --git a\/(.+?) b\/(.+)$/);
+      filePath = match ? match[2] : firstLine;
+    }
+
+    // Exclude lockfiles, media, binaries, and web fonts
+    const isExcluded = [
+      'package-lock.json',
+      'yarn.lock',
+      'pnpm-lock.yaml',
+      '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.webp',
+      '.pdf', '.zip', '.gz', '.tar', '.mp4', '.mp3',
+      '.woff', '.woff2', '.eot', '.ttf'
+    ].some(ext => filePath.endsWith(ext) || filePath.split('/').pop() === ext);
+
+    if (!isExcluded) {
+      filteredBlocks.push('diff --git ' + block);
+    }
+  }
+
+  return filteredBlocks.join('');
+}
+
+/**
+ * Calls the Gemini API to generate review content, with retries and fallback models.
+ * @param {string} prompt - The prompt text containing instructions and diff
+ * @param {string} apiKey - Gemini API key
+ * @param {string} modelName - The primary model name requested
+ * @returns {Promise<{reviewText: string, usedModel: string}>}
+ */
+async function callGeminiWithRetry(prompt, apiKey, modelName) {
+  const models = Array.from(new Set([modelName, ...GEMINI_MODELS]));
   let lastError;
 
   for (const model of models) {
     const maxRetries = 3;
-    let delay = 2000; // Starting delay of 2 seconds
+    let delay = 2000;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       console.log(`Sending diff to Gemini (${model}) - Attempt ${attempt}/${maxRetries}...`);
@@ -54,8 +164,6 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
 
         const errorText = await response.text();
         const status = response.status;
-        
-        // Log the full detailed error response for debugging
         console.error(`Gemini API call failed with status ${status} for model ${model}:`, errorText);
 
         // Attempt to parse user-friendly error message
@@ -66,6 +174,7 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
             errorMessage = parsedError.error.message;
           }
         } catch (_) {
+          console.debug('Could not parse Gemini API error response as JSON. Falling back to raw text.');
           if (errorText) errorMessage = errorText;
         }
 
@@ -76,11 +185,11 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
           if (attempt < maxRetries) {
             console.warn(`Attempt ${attempt} failed with status ${status}. Retrying in ${delay}ms...`);
             await new Promise(resolve => setTimeout(resolve, delay));
-            delay *= 2; // Exponential backoff
+            delay *= 2;
             continue;
           }
         } else {
-          // Don't retry on other client errors (e.g. 400 Bad Request, 403 Forbidden)
+          // Client error (400, 401, 403, 404, etc.) - do not retry
           throw lastError;
         }
       } catch (err) {
@@ -100,94 +209,14 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
   throw lastError;
 }
 
-async function main() {
-  const token = process.env.GITHUB_TOKEN;
-  const apiKey = process.env.GEMINI_API_KEY;
-  const repo = process.env.GITHUB_REPOSITORY;
-  const prNumber = process.env.PR_NUMBER;
-  const modelName = process.env.MODEL_NAME || 'gemini-2.5-flash';
-
-  if (!token) {
-    console.error('Error: GITHUB_TOKEN is not set.');
-    process.exit(1);
-  }
-  if (!apiKey) {
-    console.warn('Warning: GEMINI_API_KEY is not set. This is expected for pull requests from forks due to security restrictions. Skipping review.');
-    process.exit(0);
-  }
-  if (!repo || !prNumber) {
-    console.error('Error: GITHUB_REPOSITORY or PR_NUMBER is not set.');
-    process.exit(1);
-  }
-
-  // 1. Fetch PR Diff from GitHub API
-  console.log(`Fetching diff for PR #${prNumber} in ${repo}...`);
-  const diffResponse = await fetch(
-    `https://api.github.com/repos/${repo}/pulls/${prNumber}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github.v3.diff',
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
-    }
-  );
-
-  if (!diffResponse.ok) {
-    throw new Error(`Failed to fetch PR diff: ${diffResponse.status} ${diffResponse.statusText}`);
-  }
-
-  const rawDiff = await diffResponse.text();
-  if (!rawDiff || rawDiff.trim().length === 0) {
-    console.log('No changes found in the PR.');
-    return;
-  }
-
-  // 2. Filter the diff to remove large lockfiles/binary files
-  const filteredDiff = filterDiff(rawDiff);
-  if (!filteredDiff || filteredDiff.trim().length === 0) {
-    console.log('No code changes to review after filtering.');
-    return;
-  }
-
-  // 3. Handle size limits (truncate if too large)
-  let diffToSend = filteredDiff;
-  let isTruncated = false;
-  const maxDiffLength = 250000; // ~50k-70k tokens, very safe limit
-  if (filteredDiff.length > maxDiffLength) {
-    diffToSend = filteredDiff.substring(0, maxDiffLength) + '\n\n... [Diff truncated due to size limits] ...';
-    isTruncated = true;
-    console.log(`Diff size (${filteredDiff.length} chars) exceeds limit. Truncating to ${maxDiffLength} chars.`);
-  } else {
-    console.log(`Filtered diff size: ${filteredDiff.length} characters.`);
-  }
-
-  // 4. Prepare Prompt for Gemini
-  const prompt = `You are an expert AI code reviewer. Please review the following git diff for a pull request in the repository "${repo}".
-${isTruncated ? '\nNOTE: The diff was truncated due to length limits. Please review the available portion.\n' : ''}
-Provide a comprehensive, high-quality code review with the following sections in Markdown:
-1. **🔍 Summary of Changes**: A brief overview of what this PR does.
-2. **✅ Key Achievements & Strengths**: Notable improvements, good practices, or clean code observed.
-3. **⚠️ Potential Issues & Bugs**: Logic errors, edge cases, missing error handling, or security vulnerabilities (if any). Be specific and reference filenames.
-4. **⚡ Performance & Optimization**: Recommendations to make the code faster, use less memory, or be more efficient.
-5. **📝 Clean Code & Style**: Suggestions for readability, naming, documentation, or structuring.
-
-If there are no issues or suggestions for a section, state that everything looks good! Be constructive, polite, and technical.
-
-Here is the git diff:
-\`\`\`diff
-${diffToSend}
-\`\`\`
-`;
-
-  // 5. Call Gemini API with Retries and Fallbacks
-  const { reviewText, usedModel } = await callGeminiWithRetry(prompt, apiKey, modelName);
-
-  // 6. Post or Update PR Comment
-  const commentIdentifier = '\n\n<!-- gemini-pr-reviewer-comment -->';
-  const footer = `\n\n---\n*Generated by **Gemini PR Reviewer** using ${usedModel}*`;
-  const commentBody = `### 🤖 Gemini Code Review\n\n${reviewText}${footer}${commentIdentifier}`;
-
+/**
+ * Creates or updates the review comment on the Pull Request.
+ * @param {string} repo - Repository owner/name
+ * @param {string} prNumber - Pull request number
+ * @param {string} token - GitHub token
+ * @param {string} commentBody - Comment text body
+ */
+async function postOrUpdateComment(repo, prNumber, token, commentBody) {
   console.log('Checking for existing Gemini review comment...');
   const commentsResponse = await fetch(
     `https://api.github.com/repos/${repo}/issues/${prNumber}/comments`,
@@ -247,41 +276,83 @@ ${diffToSend}
   }
 }
 
-function filterDiff(diffText) {
-  const blocks = diffText.split(/^diff --git /m);
-  const filteredBlocks = [];
+async function main() {
+  const token = process.env.GITHUB_TOKEN;
+  const apiKey = process.env.GEMINI_API_KEY;
+  const repo = process.env.GITHUB_REPOSITORY;
+  const prNumber = process.env.PR_NUMBER;
+  const modelName = process.env.MODEL_NAME || 'gemini-2.5-flash';
 
-  if (blocks[0] && !blocks[0].startsWith('a/')) {
-    filteredBlocks.push(blocks[0]);
+  if (!token) {
+    console.error('Error: GITHUB_TOKEN is not set.');
+    process.exit(1);
+  }
+  if (!apiKey) {
+    const warningMsg = '### ⚠️ Gemini PR Review Skipped\n\n`GEMINI_API_KEY` is not set. This is expected for pull requests from forks due to security restrictions.';
+    console.warn(warningMsg);
+    writeJobSummary(warningMsg);
+    process.exit(0);
+  }
+  if (!repo || !prNumber) {
+    console.error('Error: GITHUB_REPOSITORY or PR_NUMBER is not set.');
+    process.exit(1);
   }
 
-  for (let i = 1; i < blocks.length; i++) {
-    const block = blocks[i];
-    const lines = block.split('\n');
-    const firstLine = lines[0];
-
-    // Re-construct the full diff --git line for matching
-    const diffGitLine = 'diff --git ' + firstLine;
-
-    // Regex to cleanly capture the destination file path (b/path/to/file)
-    const match = diffGitLine.match(/^diff --git a\/(.+?) b\/(.+)$/);
-    const filePath = match ? match[2] : firstLine;
-
-    const isExcluded = [
-      'package-lock.json',
-      'yarn.lock',
-      'pnpm-lock.yaml',
-      '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.webp',
-      '.pdf', '.zip', '.gz', '.tar', '.mp4', '.mp3',
-      '.woff', '.woff2', '.eot', '.ttf'
-    ].some(ext => filePath.endsWith(ext) || filePath.split('/').pop() === ext);
-
-    if (!isExcluded) {
-      filteredBlocks.push('diff --git ' + block);
-    }
+  // 1. Fetch PR Diff
+  const rawDiff = await fetchPrDiff(repo, prNumber, token);
+  if (!rawDiff || rawDiff.trim().length === 0) {
+    console.log('No changes found in the PR.');
+    return;
   }
 
-  return filteredBlocks.join('');
+  // 2. Filter the diff
+  const filteredDiff = filterDiff(rawDiff);
+  if (!filteredDiff || filteredDiff.trim().length === 0) {
+    console.log('No code changes to review after filtering.');
+    return;
+  }
+
+  // 3. Handle size limits
+  let diffToSend = filteredDiff;
+  let isTruncated = false;
+  if (filteredDiff.length > MAX_DIFF_LENGTH) {
+    diffToSend = filteredDiff.substring(0, MAX_DIFF_LENGTH) + '\n\n... [Diff truncated due to size limits] ...';
+    isTruncated = true;
+    console.log(`Diff size (${filteredDiff.length} chars) exceeds limit. Truncating to ${MAX_DIFF_LENGTH} chars.`);
+  } else {
+    console.log(`Filtered diff size: ${filteredDiff.length} characters.`);
+  }
+
+  // 4. Prepare Prompt
+  const prompt = `You are an expert AI code reviewer. Please review the following git diff for a pull request in the repository "${repo}".
+${isTruncated ? '\nNOTE: The diff was truncated due to length limits. Please review the available portion.\n' : ''}
+Provide a comprehensive, high-quality code review with the following sections in Markdown:
+1. **🔍 Summary of Changes**: A brief overview of what this PR does.
+2. **✅ Key Achievements & Strengths**: Notable improvements, good practices, or clean code observed.
+3. **⚠️ Potential Issues & Bugs**: Logic errors, edge cases, missing error handling, or security vulnerabilities (if any). Be specific and reference filenames.
+4. **⚡ Performance & Optimization**: Recommendations to make the code faster, use less memory, or be more efficient.
+5. **📝 Clean Code & Style**: Suggestions for readability, naming, documentation, or structuring.
+
+If there are no issues or suggestions for a section, state that everything looks good! Be constructive, polite, and technical.
+
+Here is the git diff:
+\`\`\`diff
+${diffToSend}
+\`\`\`
+`;
+
+  // 5. Call Gemini API
+  const { reviewText, usedModel } = await callGeminiWithRetry(prompt, apiKey, modelName);
+
+  // 6. Post or Update PR Comment
+  const commentIdentifier = '\n\n<!-- gemini-pr-reviewer-comment -->';
+  const footer = `\n\n---\n*Generated by **Gemini PR Reviewer** using ${usedModel}*`;
+  const commentBody = `### 🤖 Gemini Code Review\n\n${reviewText}${footer}${commentIdentifier}`;
+
+  await postOrUpdateComment(repo, prNumber, token, commentBody);
+
+  // 7. Write to GitHub Step Summary page
+  writeJobSummary(`### ✅ Gemini PR Review Completed\n\nSuccessfully reviewed PR #${prNumber} using model **${usedModel}**.`);
 }
 
 main().catch(err => {
