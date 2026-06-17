@@ -14,12 +14,18 @@ const GEMINI_MODELS = [
 ];
 
 /**
- * File extensions and exact filenames that should be excluded from review.
+ * Exact filenames that should be excluded from review.
  */
-const EXCLUDED_FILE_EXTENSIONS = [
+const EXCLUDED_FILENAMES = new Set([
   'package-lock.json',
   'yarn.lock',
   'pnpm-lock.yaml',
+]);
+
+/**
+ * File extensions that should be excluded from review.
+ */
+const EXCLUDED_FILE_EXTENSIONS = [
   '.png',
   '.jpg',
   '.jpeg',
@@ -214,9 +220,9 @@ function filterDiff(diffText) {
     filePath = filePath.replace(/^"|"$/g, '');
 
     // Exclude lockfiles, media, binaries, and web fonts
-    const isExcluded = EXCLUDED_FILE_EXTENSIONS.some(
-      (ext) => filePath.endsWith(ext) || filePath.split('/').pop() === ext,
-    );
+    const filename = filePath.split('/').pop();
+    const isExcluded = EXCLUDED_FILENAMES.has(filename)
+      || EXCLUDED_FILE_EXTENSIONS.some((ext) => filePath.endsWith(ext));
 
     if (!isExcluded) {
       if (block.length > MAX_SINGLE_FILE_DIFF_LENGTH) {
