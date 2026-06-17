@@ -10,7 +10,7 @@ const GEMINI_MODELS = [
   'gemini-2.0-flash',
   'gemini-1.5-flash',
   'gemini-2.5-pro',
-  'gemini-1.5-pro'
+  'gemini-1.5-pro',
 ];
 
 /**
@@ -39,9 +39,12 @@ function writeJobSummary(text) {
   const summaryFile = process.env.GITHUB_STEP_SUMMARY;
   if (summaryFile) {
     try {
-      fs.appendFileSync(summaryFile, text + '\n');
+      fs.appendFileSync(summaryFile, `${text}\n`);
     } catch (err) {
-      console.error('Non-blocking failure writing to GITHUB_STEP_SUMMARY:', err);
+      console.error(
+        'Non-blocking failure writing to GITHUB_STEP_SUMMARY:',
+        err,
+      );
     }
   }
 }
@@ -61,14 +64,16 @@ async function githubFetch(url, options = {}, maxRetries = 2) {
       if (response.ok) {
         return response;
       }
-      
-      const status = response.status;
+
+      const { status } = response;
       // Retry only on rate limits (429) or transient server errors (5xx).
       // Fail fast on client permissions/auth errors (like 403 Forbidden).
       if (status === 429 || (status >= 500 && status <= 599)) {
         if (attempt < maxRetries) {
-          console.warn(`GitHub API call failed (status: ${status}). Retrying in ${delay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          console.warn(
+            `GitHub API call failed (status: ${status}). Retrying in ${delay}ms...`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
           delay *= 2;
           continue;
         }
@@ -78,8 +83,10 @@ async function githubFetch(url, options = {}, maxRetries = 2) {
       if (attempt === maxRetries) {
         throw err;
       }
-      console.warn(`GitHub API network error: ${err.message}. Retrying in ${delay}ms...`);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      console.warn(
+        `GitHub API network error: ${err.message}. Retrying in ${delay}ms...`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
       delay *= 2;
     }
   }
@@ -102,11 +109,13 @@ async function fetchPrDiff(repo, prNumber, token) {
         Accept: 'application/vnd.github.v3.diff',
         'X-GitHub-Api-Version': '2022-11-28',
       },
-    }
+    },
   );
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch PR diff: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `Failed to fetch PR diff: ${response.status} ${response.statusText}`,
+    );
   }
 
   return response.text();
@@ -161,7 +170,12 @@ function filterDiff(diffText) {
       if (match && match[2]) {
         filePath = match[2];
       } else {
-        console.warn(`Could not reliably determine file path for diff block starting with: ${firstLineOfBlock.substring(0, 100)}... Defaulting to empty path.`);
+        console.warn(
+          `Could not reliably determine file path for diff block starting with: ${firstLineOfBlock.substring(
+            0,
+            100,
+          )}... Defaulting to empty path.`,
+        );
         filePath = ''; // Safe fallback to avoid matching any exclusion extensions
       }
     }
@@ -171,19 +185,41 @@ function filterDiff(diffText) {
 
     // Exclude lockfiles, media, binaries, and web fonts
     const isExcluded = [
-      'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml',
-      '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.webp',
-      '.pdf', '.zip', '.gz', '.tar', '.mp4', '.mp3',
-      '.woff', '.woff2', '.eot', '.ttf'
-    ].some(ext => filePath.endsWith(ext) || filePath.split('/').pop() === ext);
+      'package-lock.json',
+      'yarn.lock',
+      'pnpm-lock.yaml',
+      '.png',
+      '.jpg',
+      '.jpeg',
+      '.gif',
+      '.svg',
+      '.ico',
+      '.webp',
+      '.pdf',
+      '.zip',
+      '.gz',
+      '.tar',
+      '.mp4',
+      '.mp3',
+      '.woff',
+      '.woff2',
+      '.eot',
+      '.ttf',
+    ].some(
+      (ext) => filePath.endsWith(ext) || filePath.split('/').pop() === ext,
+    );
 
     if (!isExcluded) {
       if (block.length > MAX_SINGLE_FILE_DIFF_LENGTH) {
-        console.warn(`Diff block for ${filePath} is too large (${block.length} chars). Omitting changes from prompt to preserve token budget.`);
+        console.warn(
+          `Diff block for ${filePath} is too large (${block.length} chars). Omitting changes from prompt to preserve token budget.`,
+        );
         // Keep the diff git header but replace the body with a friendly warning placeholder
-        filteredBlocks.push(`diff --git ${firstLineOfBlock}\n\n... [Diff for this file was omitted from review because it exceeds 100,000 characters to preserve token budget] ...\n`);
+        filteredBlocks.push(
+          `diff --git ${firstLineOfBlock}\n\n... [Diff for this file was omitted from review because it exceeds 100,000 characters to preserve token budget] ...\n`,
+        );
       } else {
-        filteredBlocks.push('diff --git ' + block);
+        filteredBlocks.push(`diff --git ${block}`);
       }
     }
   }
@@ -207,7 +243,9 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
     let delay = 2000;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      console.log(`Sending diff to Gemini (${model}) - Attempt ${attempt}/${maxRetries}...`);
+      console.log(
+        `Sending diff to Gemini (${model}) - Attempt ${attempt}/${maxRetries}...`,
+      );
       try {
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
@@ -221,17 +259,17 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
                 {
                   parts: [
                     {
-                      text: prompt
-                    }
-                  ]
-                }
+                      text: prompt,
+                    },
+                  ],
+                },
               ],
               generationConfig: {
                 temperature: 0.2,
                 maxOutputTokens: 4096,
-              }
-            })
-          }
+              },
+            }),
+          },
         );
 
         if (response.ok) {
@@ -242,18 +280,21 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
           const wasTruncated = finishReason === 'MAX_TOKENS';
 
           if (reviewText) {
-            return { 
-              reviewText, 
-              usedModel: model, 
-              wasTruncated 
+            return {
+              reviewText,
+              usedModel: model,
+              wasTruncated,
             };
           }
           throw new Error('Gemini API returned an empty response.');
         }
 
         const errorText = await response.text();
-        const status = response.status;
-        console.error(`Gemini API call failed with status ${status} for model ${model}:`, errorText);
+        const { status } = response;
+        console.error(
+          `Gemini API call failed with status ${status} for model ${model}:`,
+          errorText,
+        );
 
         // Attempt to parse user-friendly error message
         let errorMessage = response.statusText;
@@ -263,7 +304,9 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
             errorMessage = parsedError.error.message;
           }
         } catch (_) {
-          console.debug('Could not parse Gemini API error response as JSON. Falling back to raw text.');
+          console.debug(
+            'Could not parse Gemini API error response as JSON. Falling back to raw text.',
+          );
           if (errorText) errorMessage = errorText;
         }
 
@@ -272,8 +315,10 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
         // Retry on rate limit (429) or server errors (5xx)
         if (status === 429 || (status >= 500 && status <= 599)) {
           if (attempt < maxRetries) {
-            console.warn(`Attempt ${attempt} failed with status ${status}. Retrying in ${delay}ms...`);
-            await new Promise(resolve => setTimeout(resolve, delay));
+            console.warn(
+              `Attempt ${attempt} failed with status ${status}. Retrying in ${delay}ms...`,
+            );
+            await new Promise((resolve) => setTimeout(resolve, delay));
             delay *= 2;
             continue;
           }
@@ -286,8 +331,10 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
         if (attempt === maxRetries) {
           console.warn(`All attempts failed for model ${model}.`);
         } else {
-          console.warn(`Attempt ${attempt} encountered an error: ${err.message}. Retrying in ${delay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          console.warn(
+            `Attempt ${attempt} encountered an error: ${err.message}. Retrying in ${delay}ms...`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
           delay *= 2;
         }
       }
@@ -314,15 +361,19 @@ async function postOrUpdateComment(repo, prNumber, token, commentBody) {
         Authorization: `Bearer ${token}`,
         'X-GitHub-Api-Version': '2022-11-28',
       },
-    }
+    },
   );
 
   if (!commentsResponse.ok) {
-    throw new Error(`Failed to fetch PR comments: ${commentsResponse.status} ${commentsResponse.statusText}`);
+    throw new Error(
+      `Failed to fetch PR comments: ${commentsResponse.status} ${commentsResponse.statusText}`,
+    );
   }
 
   const comments = await commentsResponse.json();
-  const existingComment = comments.find(c => c.body && c.body.includes('<!-- gemini-pr-reviewer-comment -->'));
+  const existingComment = comments.find(
+    (c) => c.body && c.body.includes('<!-- gemini-pr-reviewer-comment -->'),
+  );
 
   if (existingComment) {
     console.log(`Updating existing comment (ID: ${existingComment.id})...`);
@@ -336,11 +387,13 @@ async function postOrUpdateComment(repo, prNumber, token, commentBody) {
           'X-GitHub-Api-Version': '2022-11-28',
         },
         body: JSON.stringify({ body: commentBody }),
-      }
+      },
     );
 
     if (!updateResponse.ok) {
-      throw new Error(`Failed to update comment: ${updateResponse.status} ${updateResponse.statusText}`);
+      throw new Error(
+        `Failed to update comment: ${updateResponse.status} ${updateResponse.statusText}`,
+      );
     }
     console.log('Comment updated successfully.');
   } else {
@@ -355,11 +408,13 @@ async function postOrUpdateComment(repo, prNumber, token, commentBody) {
           'X-GitHub-Api-Version': '2022-11-28',
         },
         body: JSON.stringify({ body: commentBody }),
-      }
+      },
     );
 
     if (!createResponse.ok) {
-      throw new Error(`Failed to create comment: ${createResponse.status} ${createResponse.statusText}`);
+      throw new Error(
+        `Failed to create comment: ${createResponse.status} ${createResponse.statusText}`,
+      );
     }
     console.log('Comment created successfully.');
   }
@@ -369,7 +424,7 @@ async function main() {
   const token = process.env.GITHUB_TOKEN;
   const apiKey = process.env.GEMINI_API_KEY;
   const repo = process.env.GITHUB_REPOSITORY;
-  const prNumber = process.env.PR_NUMBER;
+  const rawPrNumber = process.env.PR_NUMBER;
   const modelName = process.env.MODEL_NAME || 'gemini-2.5-flash';
 
   if (!token) {
@@ -380,7 +435,9 @@ async function main() {
     let isFork = false;
     if (process.env.GITHUB_EVENT_PATH) {
       try {
-        const eventData = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
+        const eventData = JSON.parse(
+          fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'),
+        );
         isFork = !!eventData.pull_request?.head?.repo?.fork;
       } catch (err) {
         console.warn('Failed to parse GITHUB_EVENT_PATH:', err.message);
@@ -399,8 +456,16 @@ async function main() {
       process.exit(1); // Fail the job for internal PRs so maintainers know config is broken
     }
   }
-  if (!repo || !prNumber) {
+  if (!repo || !rawPrNumber) {
     console.error('Error: GITHUB_REPOSITORY or PR_NUMBER is not set.');
+    process.exit(1);
+  }
+
+  const prNumber = rawPrNumber.toString().trim();
+  if (!/^\d+$/.test(prNumber)) {
+    console.error(
+      `Error: PR_NUMBER must be a valid integer, got "${rawPrNumber}".`,
+    );
     process.exit(1);
   }
 
@@ -421,12 +486,12 @@ async function main() {
   // 3. Handle size limits (truncate at file boundaries if too large)
   let diffToSend = filteredDiff;
   let isTruncated = false;
-  
+
   if (filteredDiff.length > MAX_DIFF_LENGTH) {
     const fileBlocks = filteredDiff.split(/(?=^diff --git )/m);
     let currentLength = 0;
     const selectedBlocks = [];
-    
+
     for (const block of fileBlocks) {
       if (currentLength + block.length > MAX_DIFF_LENGTH) {
         isTruncated = true;
@@ -435,18 +500,25 @@ async function main() {
       selectedBlocks.push(block);
       currentLength += block.length;
     }
-    
+
     // Since MAX_SINGLE_FILE_DIFF_LENGTH (100k) is less than MAX_DIFF_LENGTH (250k),
     // selectedBlocks will always contain at least the first block, ensuring we truncate strictly at file boundaries.
-    diffToSend = selectedBlocks.join('') + '\n\n... [Remaining file diffs truncated due to size limits] ...';
-    console.log(`Diff size (${filteredDiff.length} chars) exceeds limit. Truncated to ${diffToSend.length} chars.`);
+    diffToSend = `${selectedBlocks.join('')
+    }\n\n... [Remaining file diffs truncated due to size limits] ...`;
+    console.log(
+      `Diff size (${filteredDiff.length} chars) exceeds limit. Truncated to ${diffToSend.length} chars.`,
+    );
   } else {
     console.log(`Filtered diff size: ${filteredDiff.length} characters.`);
   }
 
   // 4. Prepare Prompt (Instructing model to be concise and avoid quoting large blocks of code)
   const prompt = `You are an expert AI code reviewer. Please review the following git diff for a pull request in the repository "${repo}".
-${isTruncated ? '\nNOTE: The diff was truncated due to length limits. Please review the available portion.\n' : ''}
+${
+  isTruncated
+    ? '\nNOTE: The diff was truncated due to length limits. Please review the available portion.\n'
+    : ''
+}
 Provide a comprehensive, high-quality code review with the following sections in Markdown:
 1. **🔍 Summary of Changes**: A brief overview of what this PR does.
 2. **✅ Key Achievements & Strengths**: Notable improvements, good practices, or clean code observed.
@@ -467,13 +539,18 @@ ${diffToSend}
 `;
 
   // 5. Call Gemini API
-  const { reviewText, usedModel, wasTruncated } = await callGeminiWithRetry(prompt, apiKey, modelName);
+  const { reviewText, usedModel, wasTruncated } = await callGeminiWithRetry(
+    prompt,
+    apiKey,
+    modelName,
+  );
 
   // 6. Post or Update PR Comment
   const commentIdentifier = '\n\n<!-- gemini-pr-reviewer-comment -->';
   let footer = `\n\n---\n*Generated by **Gemini PR Reviewer** using ${usedModel}*`;
   if (wasTruncated) {
-    footer = `\n\n⚠️ **Note**: The review was truncated because it reached the maximum response token limit. Consider reviewing smaller commits.\n\n` + footer;
+    footer = `\n\n⚠️ **Note**: The review was truncated because it reached the maximum response token limit. Consider reviewing smaller commits.\n\n${
+      footer}`;
   }
   const commentBody = `### 🤖 Gemini Code Review\n\n${reviewText}${footer}${commentIdentifier}`;
 
@@ -482,12 +559,12 @@ ${diffToSend}
   // 7. Write to GitHub Step Summary page
   let summaryText = `### ✅ Gemini PR Review Completed\n\nSuccessfully reviewed PR #${prNumber} using model **${usedModel}**.`;
   if (wasTruncated) {
-    summaryText += `\n\n⚠️ **Warning**: The generated review was truncated because it reached the maximum output token limit.`;
+    summaryText += '\n\n⚠️ **Warning**: The generated review was truncated because it reached the maximum output token limit.';
   }
   writeJobSummary(summaryText);
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Review script failed:', err);
   process.exit(1);
 });
