@@ -91,7 +91,7 @@ async function githubFetch(url, options = {}, maxRetries = 2) {
         return response;
       }
 
-      const {status} = response;
+      const { status } = response;
       // Retry only on rate limits (429) or transient server errors (5xx).
       // Fail fast on client permissions/auth errors (like 403 Forbidden).
       if (status === 429 || (status >= 500 && status <= 599)) {
@@ -295,7 +295,7 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
         }
 
         const errorText = await response.text();
-        const {status} = response;
+        const { status } = response;
         console.error(
           `Gemini API call failed with status ${status} for model ${model}:`,
           errorText,
@@ -391,7 +391,7 @@ async function postOrUpdateComment(repo, prNumber, token, commentBody) {
           'Content-Type': 'application/json',
           'X-GitHub-Api-Version': '2022-11-28',
         },
-        body: JSON.stringify({body: commentBody}),
+        body: JSON.stringify({ body: commentBody }),
       },
     );
 
@@ -412,7 +412,7 @@ async function postOrUpdateComment(repo, prNumber, token, commentBody) {
           'Content-Type': 'application/json',
           'X-GitHub-Api-Version': '2022-11-28',
         },
-        body: JSON.stringify({body: commentBody}),
+        body: JSON.stringify({ body: commentBody }),
       },
     );
 
@@ -425,13 +425,17 @@ async function postOrUpdateComment(repo, prNumber, token, commentBody) {
   }
 }
 
-async function main() {
-  const token = process.env.GITHUB_TOKEN;
-  const apiKey = process.env.GEMINI_API_KEY;
-  const repo = process.env.GITHUB_REPOSITORY;
-  const rawPrNumber = process.env.PR_NUMBER;
-  const modelName = process.env.MODEL_NAME || 'gemini-2.5-flash';
-
+/**
+ * Validates the inputs required for running the PR review.
+ * Exits the process if validation fails.
+ * @param {string} token - GitHub token
+ * @param {string} apiKey - Gemini API Key
+ * @param {string} repo - GitHub repository identifier
+ * @param {string} rawPrNumber - Raw PR number from environment
+ * @param {string} modelName - Selected Gemini model name
+ * @returns {string} Sanitized PR number
+ */
+function validateInputs(token, apiKey, repo, rawPrNumber, modelName) {
   if (modelName && !GEMINI_MODELS.includes(modelName)) {
     console.warn(
       `Warning: Selected model "${modelName}" is not in the recognized GEMINI_MODELS fallback list:`,
@@ -457,14 +461,12 @@ async function main() {
     }
 
     if (isFork) {
-      const warningMsg =
-        '### ⚠️ Gemini PR Review Skipped\n\n`GEMINI_API_KEY` is not set. This is expected for pull requests from forks due to security restrictions.';
+      const warningMsg = '### ⚠️ Gemini PR Review Skipped\n\n`GEMINI_API_KEY` is not set. This is expected for pull requests from forks due to security restrictions.';
       console.warn(warningMsg);
       writeJobSummary(warningMsg);
       process.exit(0);
     } else {
-      const errorMsg =
-        '### ❌ Gemini PR Review Failed\n\n`GEMINI_API_KEY` is not set. For internal pull requests, please verify that you have added `GEMINI_API_KEY` as an Actions secret in your repository settings.';
+      const errorMsg = '### ❌ Gemini PR Review Failed\n\n`GEMINI_API_KEY` is not set. For internal pull requests, please verify that you have added `GEMINI_API_KEY` as an Actions secret in your repository settings.';
       console.error(errorMsg);
       writeJobSummary(errorMsg);
       process.exit(1); // Fail the job for internal PRs so maintainers know config is broken
@@ -483,21 +485,15 @@ async function main() {
     process.exit(1);
   }
 
-  // 1. Fetch PR Diff
-  const rawDiff = await fetchPrDiff(repo, prNumber, token);
-  if (!rawDiff || rawDiff.trim().length === 0) {
-    console.log('No changes found in the PR.');
-    return;
-  }
+  return prNumber;
+}
 
-  // 2. Filter the diff
-  const filteredDiff = filterDiff(rawDiff);
-  if (!filteredDiff || filteredDiff.trim().length === 0) {
-    console.log('No code changes to review after filtering.');
-    return;
-  }
-
-  // 3. Handle size limits (truncate at file boundaries if too large)
+/**
+ * Handles size limits of the filtered diff by truncating it at file boundaries if too large.
+ * @param {string} filteredDiff - The filtered diff content
+ * @returns {{diffToSend: string, isTruncated: boolean}} The processed diff and its truncation status
+ */
+function processDiffLimit(filteredDiff) {
   let diffToSend = filteredDiff;
   let isTruncated = false;
 
@@ -527,6 +523,36 @@ async function main() {
     console.log(`Filtered diff size: ${filteredDiff.length} characters.`);
   }
 
+  return { diffToSend, isTruncated };
+}
+
+async function main() {
+  const token = process.env.GITHUB_TOKEN;
+  const apiKey = process.env.GEMINI_API_KEY;
+  const repo = process.env.GITHUB_REPOSITORY;
+  const rawPrNumber = process.env.PR_NUMBER;
+  const modelName = process.env.MODEL_NAME || 'gemini-2.5-flash';
+
+  // Validate inputs and obtain sanitized PR number
+  const prNumber = validateInputs(token, apiKey, repo, rawPrNumber, modelName);
+
+  // 1. Fetch PR Diff
+  const rawDiff = await fetchPrDiff(repo, prNumber, token);
+  if (!rawDiff || rawDiff.trim().length === 0) {
+    console.log('No changes found in the PR.');
+    return;
+  }
+
+  // 2. Filter the diff
+  const filteredDiff = filterDiff(rawDiff);
+  if (!filteredDiff || filteredDiff.trim().length === 0) {
+    console.log('No code changes to review after filtering.');
+    return;
+  }
+
+  // 3. Handle size limits (truncate at file boundaries if too large)
+  const { diffToSend, isTruncated } = processDiffLimit(filteredDiff);
+
   // 4. Prepare Prompt (Instructing model to be concise and avoid quoting large blocks of code)
   const prompt = `You are an expert AI code reviewer. Please review the following git diff for a pull request in the repository "${repo}".
 ${
@@ -554,7 +580,7 @@ ${diffToSend}
 `;
 
   // 5. Call Gemini API
-  const {reviewText, usedModel, wasTruncated} = await callGeminiWithRetry(
+  const { reviewText, usedModel, wasTruncated } = await callGeminiWithRetry(
     prompt,
     apiKey,
     modelName,
@@ -573,8 +599,8 @@ ${diffToSend}
   // 7. Write to GitHub Step Summary page
   let summaryText = `### ✅ Gemini PR Review Completed\n\nSuccessfully reviewed PR #${prNumber} using model **${usedModel}**.`;
   if (wasTruncated) {
-    summaryText +=
-      '\n\n⚠️ **Warning**: The generated review was truncated because it reached the maximum output token limit.';
+    summaryText
+      += '\n\n⚠️ **Warning**: The generated review was truncated because it reached the maximum output token limit.';
   }
   writeJobSummary(summaryText);
 }
