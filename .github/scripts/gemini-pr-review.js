@@ -368,10 +368,27 @@ async function main() {
     process.exit(1);
   }
   if (!apiKey) {
-    const warningMsg = '### ⚠️ Gemini PR Review Skipped\n\n`GEMINI_API_KEY` is not set. This is expected for pull requests from forks due to security restrictions.';
-    console.warn(warningMsg);
-    writeJobSummary(warningMsg);
-    process.exit(0);
+    let isFork = false;
+    if (process.env.GITHUB_EVENT_PATH) {
+      try {
+        const eventData = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
+        isFork = !!eventData.pull_request?.head?.repo?.fork;
+      } catch (err) {
+        console.warn('Failed to parse GITHUB_EVENT_PATH:', err.message);
+      }
+    }
+
+    if (isFork) {
+      const warningMsg = '### ⚠️ Gemini PR Review Skipped\n\n`GEMINI_API_KEY` is not set. This is expected for pull requests from forks due to security restrictions.';
+      console.warn(warningMsg);
+      writeJobSummary(warningMsg);
+      process.exit(0);
+    } else {
+      const errorMsg = '### ❌ Gemini PR Review Failed\n\n`GEMINI_API_KEY` is not set. For internal pull requests, please verify that you have added `GEMINI_API_KEY` as an Actions secret in your repository settings.';
+      console.error(errorMsg);
+      writeJobSummary(errorMsg);
+      process.exit(1); // Fail the job for internal PRs so maintainers know config is broken
+    }
   }
   if (!repo || !prNumber) {
     console.error('Error: GITHUB_REPOSITORY or PR_NUMBER is not set.');
