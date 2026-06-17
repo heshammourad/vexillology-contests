@@ -19,6 +19,12 @@ const GEMINI_MODELS = [
 const MAX_DIFF_LENGTH = 250000; // ~50k-70k tokens
 
 /**
+ * Maximum character limit for a single file's diff before we omit its contents.
+ * Prevents a single massive or minified file from devouring the entire token budget.
+ */
+const MAX_SINGLE_FILE_DIFF_LENGTH = 100000; // ~100KB
+
+/**
  * Prefix length for git diff file metadata lines (e.g., "+++ b/" or "--- a/")
  */
 const DIFF_PREFIX_LENGTH = '+++ b/'.length;
@@ -39,6 +45,44 @@ function writeJobSummary(text) {
 }
 
 /**
+ * Perform a fetch request to the GitHub API with basic transient error/rate-limit retries.
+ * @param {string} url - Target URL
+ * @param {object} options - Request options
+ * @param {number} maxRetries - Maximum number of retry attempts
+ * @returns {Promise<Response>} The raw response
+ */
+async function githubFetch(url, options = {}, maxRetries = 2) {
+  let delay = 1000;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      if (response.ok) {
+        return response;
+      }
+      
+      const status = response.status;
+      // Retry on rate limits (403/429) or transient server errors (5xx)
+      if (status === 403 || status === 429 || (status >= 500 && status <= 599)) {
+        if (attempt < maxRetries) {
+          console.warn(`GitHub API call failed (status: ${status}). Retrying in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          delay *= 2;
+          continue;
+        }
+      }
+      return response;
+    } catch (err) {
+      if (attempt === maxRetries) {
+        throw err;
+      }
+      console.warn(`GitHub API network error: ${err.message}. Retrying in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      delay *= 2;
+    }
+  }
+}
+
+/**
  * Fetches the raw diff of the pull request from GitHub API.
  * @param {string} repo - The repository owner/name
  * @param {string} prNumber - The pull request number
@@ -47,7 +91,7 @@ function writeJobSummary(text) {
  */
 async function fetchPrDiff(repo, prNumber, token) {
   console.log(`Fetching diff for PR #${prNumber} in ${repo}...`);
-  const response = await fetch(
+  const response = await githubFetch(
     `https://api.github.com/repos/${repo}/pulls/${prNumber}`,
     {
       headers: {
@@ -125,7 +169,13 @@ function filterDiff(diffText) {
     ].some(ext => filePath.endsWith(ext) || filePath.split('/').pop() === ext);
 
     if (!isExcluded) {
-      filteredBlocks.push('diff --git ' + block);
+      if (block.length > MAX_SINGLE_FILE_DIFF_LENGTH) {
+        console.warn(`Diff block for ${filePath} is too large (${block.length} chars). Omitting changes from prompt to preserve token budget.`);
+        // Keep the diff git header but replace the body with a friendly warning placeholder
+        filteredBlocks.push(`diff --git ${firstLineOfBlock}\n\n... [Diff for this file was omitted from review because it exceeds 100KB to preserve token budget] ...\n`);
+      } else {
+        filteredBlocks.push('diff --git ' + block);
+      }
     }
   }
 
@@ -248,7 +298,7 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
  */
 async function postOrUpdateComment(repo, prNumber, token, commentBody) {
   console.log('Checking for existing Gemini review comment...');
-  const commentsResponse = await fetch(
+  const commentsResponse = await githubFetch(
     `https://api.github.com/repos/${repo}/issues/${prNumber}/comments`,
     {
       headers: {
@@ -267,7 +317,7 @@ async function postOrUpdateComment(repo, prNumber, token, commentBody) {
 
   if (existingComment) {
     console.log(`Updating existing comment (ID: ${existingComment.id})...`);
-    const updateResponse = await fetch(
+    const updateResponse = await githubFetch(
       `https://api.github.com/repos/${repo}/issues/comments/${existingComment.id}`,
       {
         method: 'PATCH',
@@ -286,7 +336,7 @@ async function postOrUpdateComment(repo, prNumber, token, commentBody) {
     console.log('Comment updated successfully.');
   } else {
     console.log('Creating new comment...');
-    const createResponse = await fetch(
+    const createResponse = await githubFetch(
       `https://api.github.com/repos/${repo}/issues/${prNumber}/comments`,
       {
         method: 'POST',
