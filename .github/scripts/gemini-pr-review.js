@@ -54,7 +54,22 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
 
         const errorText = await response.text();
         const status = response.status;
-        lastError = new Error(`Gemini API Error (${status}): ${response.statusText} - ${errorText}`);
+        
+        // Log the full detailed error response for debugging
+        console.error(`Gemini API call failed with status ${status} for model ${model}:`, errorText);
+
+        // Attempt to parse user-friendly error message
+        let errorMessage = response.statusText;
+        try {
+          const parsedError = JSON.parse(errorText);
+          if (parsedError.error && parsedError.error.message) {
+            errorMessage = parsedError.error.message;
+          }
+        } catch (_) {
+          if (errorText) errorMessage = errorText;
+        }
+
+        lastError = new Error(`Gemini API Error (${status}): ${errorMessage}`);
 
         // Retry on rate limit (429) or server errors (5xx)
         if (status === 429 || (status >= 500 && status <= 599)) {
@@ -242,7 +257,16 @@ function filterDiff(diffText) {
 
   for (let i = 1; i < blocks.length; i++) {
     const block = blocks[i];
-    const firstLine = block.split('\n')[0];
+    const lines = block.split('\n');
+    const firstLine = lines[0];
+
+    // Re-construct the full diff --git line for matching
+    const diffGitLine = 'diff --git ' + firstLine;
+
+    // Regex to cleanly capture the destination file path (b/path/to/file)
+    const match = diffGitLine.match(/^diff --git a\/(.+?) b\/(.+)$/);
+    const filePath = match ? match[2] : firstLine;
+
     const isExcluded = [
       'package-lock.json',
       'yarn.lock',
@@ -250,7 +274,7 @@ function filterDiff(diffText) {
       '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.webp',
       '.pdf', '.zip', '.gz', '.tar', '.mp4', '.mp3',
       '.woff', '.woff2', '.eot', '.ttf'
-    ].some(ext => firstLine.includes(ext));
+    ].some(ext => filePath.endsWith(ext) || filePath.split('/').pop() === ext);
 
     if (!isExcluded) {
       filteredBlocks.push('diff --git ' + block);
