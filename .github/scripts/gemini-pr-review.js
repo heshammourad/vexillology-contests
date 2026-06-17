@@ -1,7 +1,9 @@
 const fs = require('fs');
 
 /**
- * Supported Gemini models list used for fallbacks
+ * Supported Gemini models list used for fallbacks.
+ * Ordered by preference: flash models first for cost, speed, and efficiency,
+ * followed by pro models for higher capability if needed.
  */
 const GEMINI_MODELS = [
   'gemini-2.5-flash',
@@ -15,6 +17,11 @@ const GEMINI_MODELS = [
  * Maximum character limit for the git diff to fit within safe API payload sizes
  */
 const MAX_DIFF_LENGTH = 250000; // ~50k-70k tokens
+
+/**
+ * Prefix length for git diff file metadata lines (e.g., "+++ b/" or "--- a/")
+ */
+const DIFF_PREFIX_LENGTH = '+++ b/'.length;
 
 /**
  * Writes a message to the GitHub Actions Job Summary page.
@@ -79,7 +86,7 @@ function filterDiff(diffText) {
     // 1. Prioritize '+++ b/' for the new/modified file path
     for (const line of lines) {
       if (line.startsWith('+++ b/')) {
-        filePath = line.substring(6).trim();
+        filePath = line.substring(DIFF_PREFIX_LENGTH).trim();
         newPathFound = true;
         break;
       }
@@ -89,7 +96,7 @@ function filterDiff(diffText) {
     if (!newPathFound) {
       for (const line of lines) {
         if (line.startsWith('--- a/')) {
-          filePath = line.substring(6).trim();
+          filePath = line.substring(DIFF_PREFIX_LENGTH).trim();
           break;
         }
       }
@@ -101,8 +108,8 @@ function filterDiff(diffText) {
       if (match) {
         filePath = match[2];
       } else {
-        console.warn(`Could not reliably determine file path for diff block starting with: ${firstLineOfBlock.substring(0, 100)}...`);
-        filePath = firstLineOfBlock;
+        console.warn(`Could not reliably determine file path for diff block starting with: ${firstLineOfBlock.substring(0, 100)}... Defaulting to empty path.`);
+        filePath = ''; // Safe fallback to avoid matching any exclusion extensions
       }
     }
 
