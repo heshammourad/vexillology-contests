@@ -42,13 +42,17 @@ const EXCLUDED_FILE_EXTENSIONS = [
 /**
  * Maximum character limit for the git diff to fit within safe API payload sizes
  */
-const MAX_DIFF_LENGTH = 250000; // ~50k-70k tokens
+const MAX_DIFF_LENGTH = process.env.MAX_DIFF_LENGTH
+  ? parseInt(process.env.MAX_DIFF_LENGTH, 10)
+  : 250000; // ~50k-70k tokens
 
 /**
  * Maximum character limit for a single file's diff before we omit its contents.
  * Prevents a single massive or minified file from devouring the entire token budget.
  */
-const MAX_SINGLE_FILE_DIFF_LENGTH = 100000; // ~100KB
+const MAX_SINGLE_FILE_DIFF_LENGTH = process.env.MAX_SINGLE_FILE_DIFF_LENGTH
+  ? parseInt(process.env.MAX_SINGLE_FILE_DIFF_LENGTH, 10)
+  : 100000; // ~100KB
 
 /**
  * Prefix length for git diff file metadata lines (e.g., "+++ b/" or "--- a/")
