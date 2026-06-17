@@ -242,6 +242,7 @@ function filterDiff(diffText) {
 async function callGeminiWithRetry(prompt, apiKey, modelName) {
   const models = Array.from(new Set([modelName, ...GEMINI_MODELS]));
   let lastError;
+  let primaryError;
 
   for (const model of models) {
     const maxRetries = 3;
@@ -331,6 +332,9 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
         }
 
         lastError = new Error(`Gemini API Error (${status}): ${errorMessage}`);
+        if (!primaryError) {
+          primaryError = lastError;
+        }
 
         // Only retry on rate limit (429) or server errors (5xx)
         const isRetryable = status === 429 || (status >= 500 && status <= 599);
@@ -352,6 +356,9 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
         }
       } catch (err) {
         lastError = err;
+        if (!primaryError) {
+          primaryError = lastError;
+        }
         if (attempt === maxRetries) {
           console.warn(`All attempts failed for model ${model}.`);
         } else {
@@ -369,7 +376,7 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
     console.warn(`Model ${model} unavailable. Trying next fallback model...`);
   }
 
-  throw lastError;
+  throw primaryError || lastError;
 }
 
 /**
