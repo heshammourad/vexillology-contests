@@ -148,8 +148,8 @@ function filterDiff(diffText) {
 
     // 3. Fallback if metadata lines were not found (e.g. binary files or renames)
     if (!filePath) {
-      const match = firstLineOfBlock.match(/^a\/(.+?)\s+b\/(.+)$/);
-      if (match) {
+      const match = firstLineOfBlock.match(/^(?:a\/)?(.+?)\s+(?:b\/)?(.+)$/);
+      if (match && match[2]) {
         filePath = match[2];
       } else {
         console.warn(`Could not reliably determine file path for diff block starting with: ${firstLineOfBlock.substring(0, 100)}... Defaulting to empty path.`);
@@ -172,7 +172,7 @@ function filterDiff(diffText) {
       if (block.length > MAX_SINGLE_FILE_DIFF_LENGTH) {
         console.warn(`Diff block for ${filePath} is too large (${block.length} chars). Omitting changes from prompt to preserve token budget.`);
         // Keep the diff git header but replace the body with a friendly warning placeholder
-        filteredBlocks.push(`diff --git ${firstLineOfBlock}\n\n... [Diff for this file was omitted from review because it exceeds 100KB to preserve token budget] ...\n`);
+        filteredBlocks.push(`diff --git ${firstLineOfBlock}\n\n... [Diff for this file was omitted from review because it exceeds 100,000 characters to preserve token budget] ...\n`);
       } else {
         filteredBlocks.push('diff --git ' + block);
       }
