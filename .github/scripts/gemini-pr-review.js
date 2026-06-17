@@ -246,6 +246,7 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
   for (const model of models) {
     const maxRetries = 3;
     let delay = 2000;
+    let skippedModel = false;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       console.log(
@@ -301,12 +302,26 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
           errorText,
         );
 
-        // Attempt to parse user-friendly error message
+        // Attempt to parse user-friendly error message and look for retryDelay
         let errorMessage = response.statusText;
+        let retryDelaySeconds = 0;
         try {
           const parsedError = JSON.parse(errorText);
-          if (parsedError.error && parsedError.error.message) {
-            errorMessage = parsedError.error.message;
+          if (parsedError.error) {
+            if (parsedError.error.message) {
+              errorMessage = parsedError.error.message;
+            }
+            if (parsedError.error.details) {
+              const retryInfo = parsedError.error.details.find(
+                (d) => d['@type'] === 'type.googleapis.com/google.rpc.RetryInfo',
+              );
+              if (retryInfo && retryInfo.retryDelay) {
+                const match = retryInfo.retryDelay.match(/^([\d.]+)/);
+                if (match) {
+                  retryDelaySeconds = parseFloat(match[1]);
+                }
+              }
+            }
           }
         } catch (_) {
           console.debug(
@@ -317,19 +332,23 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
 
         lastError = new Error(`Gemini API Error (${status}): ${errorMessage}`);
 
-        // Retry on rate limit (429) or server errors (5xx)
-        if (status === 429 || (status >= 500 && status <= 599)) {
-          if (attempt < maxRetries) {
-            console.warn(
-              `Attempt ${attempt} failed with status ${status}. Retrying in ${delay}ms...`,
-            );
-            await new Promise((resolve) => setTimeout(resolve, delay));
-            delay *= 2;
-            continue;
-          }
-        } else {
-          // Client error (400, 401, 403, 404, etc.) - do not retry
-          throw lastError;
+        // Only retry on rate limit (429) or server errors (5xx)
+        const isRetryable = status === 429 || (status >= 500 && status <= 599);
+        if (!isRetryable) {
+          console.warn(
+            `Non-retryable client error ${status} for model ${model}. Skipping to next model...`,
+          );
+          skippedModel = true;
+          break;
+        }
+
+        if (attempt < maxRetries) {
+          const currentDelay = retryDelaySeconds > 0 ? retryDelaySeconds * 1000 + 1000 : delay;
+          console.warn(
+            `Attempt ${attempt} failed with status ${status}. Retrying in ${currentDelay}ms...`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, currentDelay));
+          delay *= 2;
         }
       } catch (err) {
         lastError = err;
@@ -343,6 +362,9 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
           delay *= 2;
         }
       }
+    }
+    if (skippedModel) {
+      continue;
     }
     console.warn(`Model ${model} unavailable. Trying next fallback model...`);
   }
