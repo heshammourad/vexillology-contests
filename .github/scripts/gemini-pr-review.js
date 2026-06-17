@@ -361,12 +361,16 @@ async function main() {
     }
     
     if (selectedBlocks.length === 0) {
-      // Fallback to character truncation if a single file is larger than the limit
-      diffToSend = filteredDiff.substring(0, MAX_DIFF_LENGTH) + '\n\n... [Diff truncated due to size limits] ...';
+      // Find the last newline before MAX_DIFF_LENGTH to avoid cutting a line mid-sentence
+      const safeTruncationPoint = filteredDiff.lastIndexOf('\n', MAX_DIFF_LENGTH);
+      diffToSend = filteredDiff.substring(0, safeTruncationPoint > -1 ? safeTruncationPoint : MAX_DIFF_LENGTH) + '\n\n... [Diff truncated due to size limits] ...';
+      if (safeTruncationPoint === -1) {
+        console.warn('Single file diff is extremely large and could not be truncated at a line boundary. Truncated by character count.');
+      }
     } else {
       diffToSend = selectedBlocks.join('') + '\n\n... [Remaining file diffs truncated due to size limits] ...';
     }
-    console.log(`Diff size (${filteredDiff.length} chars) exceeds limit. Truncated at file boundaries to ${diffToSend.length} chars.`);
+    console.log(`Diff size (${filteredDiff.length} chars) exceeds limit. Truncated to ${diffToSend.length} chars.`);
   } else {
     console.log(`Filtered diff size: ${filteredDiff.length} characters.`);
   }
