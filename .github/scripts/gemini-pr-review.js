@@ -68,35 +68,50 @@ function filterDiff(diffText) {
   const blocks = diffText.split(/^diff --git /m);
   const filteredBlocks = [];
 
-  // Iterate over each diff block (index 0 is usually the diff preamble/empty, so we skip it)
   for (let i = 1; i < blocks.length; i++) {
     const block = blocks[i];
     const lines = block.split('\n');
-    const firstLine = lines[0];
+    const firstLineOfBlock = lines[0];
 
-    // Determine the target file path by looking at "+++ b/" or "--- a/" lines inside the block
     let filePath = '';
+    let newPathFound = false;
+
+    // 1. Prioritize '+++ b/' for the new/modified file path
     for (const line of lines) {
       if (line.startsWith('+++ b/')) {
         filePath = line.substring(6).trim();
+        newPathFound = true;
         break;
-      }
-      if (line.startsWith('--- a/')) {
-        filePath = line.substring(6).trim();
       }
     }
 
-    // Fallback to first line if metadata lines were not found (e.g., binary files)
-    if (!filePath) {
-      const match = ('diff --git ' + firstLine).match(/^diff --git a\/(.+?) b\/(.+)$/);
-      filePath = match ? match[2] : firstLine;
+    // 2. If no '+++ b/' (e.g. file deletion), look for '--- a/'
+    if (!newPathFound) {
+      for (const line of lines) {
+        if (line.startsWith('--- a/')) {
+          filePath = line.substring(6).trim();
+          break;
+        }
+      }
     }
+
+    // 3. Fallback if metadata lines were not found (e.g. binary files or renames)
+    if (!filePath) {
+      const match = firstLineOfBlock.match(/^a\/(.+?)\s+b\/(.+)$/);
+      if (match) {
+        filePath = match[2];
+      } else {
+        console.warn(`Could not reliably determine file path for diff block starting with: ${firstLineOfBlock.substring(0, 100)}...`);
+        filePath = firstLineOfBlock;
+      }
+    }
+
+    // Strip surrounding double quotes (git formats paths with spaces/special chars in quotes)
+    filePath = filePath.replace(/^"|"$/g, '');
 
     // Exclude lockfiles, media, binaries, and web fonts
     const isExcluded = [
-      'package-lock.json',
-      'yarn.lock',
-      'pnpm-lock.yaml',
+      'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml',
       '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.webp',
       '.pdf', '.zip', '.gz', '.tar', '.mp4', '.mp3',
       '.woff', '.woff2', '.eot', '.ttf'
@@ -312,13 +327,31 @@ async function main() {
     return;
   }
 
-  // 3. Handle size limits
+  // 3. Handle size limits (truncate at file boundaries if too large)
   let diffToSend = filteredDiff;
   let isTruncated = false;
+  
   if (filteredDiff.length > MAX_DIFF_LENGTH) {
-    diffToSend = filteredDiff.substring(0, MAX_DIFF_LENGTH) + '\n\n... [Diff truncated due to size limits] ...';
-    isTruncated = true;
-    console.log(`Diff size (${filteredDiff.length} chars) exceeds limit. Truncating to ${MAX_DIFF_LENGTH} chars.`);
+    const fileBlocks = filteredDiff.split(/(?=^diff --git )/m);
+    let currentLength = 0;
+    const selectedBlocks = [];
+    
+    for (const block of fileBlocks) {
+      if (currentLength + block.length > MAX_DIFF_LENGTH) {
+        isTruncated = true;
+        break;
+      }
+      selectedBlocks.push(block);
+      currentLength += block.length;
+    }
+    
+    if (selectedBlocks.length === 0) {
+      // Fallback to character truncation if a single file is larger than the limit
+      diffToSend = filteredDiff.substring(0, MAX_DIFF_LENGTH) + '\n\n... [Diff truncated due to size limits] ...';
+    } else {
+      diffToSend = selectedBlocks.join('') + '\n\n... [Remaining file diffs truncated due to size limits] ...';
+    }
+    console.log(`Diff size (${filteredDiff.length} chars) exceeds limit. Truncated at file boundaries to ${diffToSend.length} chars.`);
   } else {
     console.log(`Filtered diff size: ${filteredDiff.length} characters.`);
   }
