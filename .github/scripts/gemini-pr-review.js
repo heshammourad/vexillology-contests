@@ -14,6 +14,32 @@ const GEMINI_MODELS = [
 ];
 
 /**
+ * File extensions and exact filenames that should be excluded from review.
+ */
+const EXCLUDED_FILE_EXTENSIONS = [
+  'package-lock.json',
+  'yarn.lock',
+  'pnpm-lock.yaml',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.svg',
+  '.ico',
+  '.webp',
+  '.pdf',
+  '.zip',
+  '.gz',
+  '.tar',
+  '.mp4',
+  '.mp3',
+  '.woff',
+  '.woff2',
+  '.eot',
+  '.ttf',
+];
+
+/**
  * Maximum character limit for the git diff to fit within safe API payload sizes
  */
 const MAX_DIFF_LENGTH = 250000; // ~50k-70k tokens
@@ -65,7 +91,7 @@ async function githubFetch(url, options = {}, maxRetries = 2) {
         return response;
       }
 
-      const { status } = response;
+      const {status} = response;
       // Retry only on rate limits (429) or transient server errors (5xx).
       // Fail fast on client permissions/auth errors (like 403 Forbidden).
       if (status === 429 || (status >= 500 && status <= 599)) {
@@ -184,28 +210,7 @@ function filterDiff(diffText) {
     filePath = filePath.replace(/^"|"$/g, '');
 
     // Exclude lockfiles, media, binaries, and web fonts
-    const isExcluded = [
-      'package-lock.json',
-      'yarn.lock',
-      'pnpm-lock.yaml',
-      '.png',
-      '.jpg',
-      '.jpeg',
-      '.gif',
-      '.svg',
-      '.ico',
-      '.webp',
-      '.pdf',
-      '.zip',
-      '.gz',
-      '.tar',
-      '.mp4',
-      '.mp3',
-      '.woff',
-      '.woff2',
-      '.eot',
-      '.ttf',
-    ].some(
+    const isExcluded = EXCLUDED_FILE_EXTENSIONS.some(
       (ext) => filePath.endsWith(ext) || filePath.split('/').pop() === ext,
     );
 
@@ -290,7 +295,7 @@ async function callGeminiWithRetry(prompt, apiKey, modelName) {
         }
 
         const errorText = await response.text();
-        const { status } = response;
+        const {status} = response;
         console.error(
           `Gemini API call failed with status ${status} for model ${model}:`,
           errorText,
@@ -386,7 +391,7 @@ async function postOrUpdateComment(repo, prNumber, token, commentBody) {
           'Content-Type': 'application/json',
           'X-GitHub-Api-Version': '2022-11-28',
         },
-        body: JSON.stringify({ body: commentBody }),
+        body: JSON.stringify({body: commentBody}),
       },
     );
 
@@ -407,7 +412,7 @@ async function postOrUpdateComment(repo, prNumber, token, commentBody) {
           'Content-Type': 'application/json',
           'X-GitHub-Api-Version': '2022-11-28',
         },
-        body: JSON.stringify({ body: commentBody }),
+        body: JSON.stringify({body: commentBody}),
       },
     );
 
@@ -427,6 +432,13 @@ async function main() {
   const rawPrNumber = process.env.PR_NUMBER;
   const modelName = process.env.MODEL_NAME || 'gemini-2.5-flash';
 
+  if (modelName && !GEMINI_MODELS.includes(modelName)) {
+    console.warn(
+      `Warning: Selected model "${modelName}" is not in the recognized GEMINI_MODELS fallback list:`,
+      GEMINI_MODELS,
+    );
+  }
+
   if (!token) {
     console.error('Error: GITHUB_TOKEN is not set.');
     process.exit(1);
@@ -445,12 +457,14 @@ async function main() {
     }
 
     if (isFork) {
-      const warningMsg = '### ⚠️ Gemini PR Review Skipped\n\n`GEMINI_API_KEY` is not set. This is expected for pull requests from forks due to security restrictions.';
+      const warningMsg =
+        '### ⚠️ Gemini PR Review Skipped\n\n`GEMINI_API_KEY` is not set. This is expected for pull requests from forks due to security restrictions.';
       console.warn(warningMsg);
       writeJobSummary(warningMsg);
       process.exit(0);
     } else {
-      const errorMsg = '### ❌ Gemini PR Review Failed\n\n`GEMINI_API_KEY` is not set. For internal pull requests, please verify that you have added `GEMINI_API_KEY` as an Actions secret in your repository settings.';
+      const errorMsg =
+        '### ❌ Gemini PR Review Failed\n\n`GEMINI_API_KEY` is not set. For internal pull requests, please verify that you have added `GEMINI_API_KEY` as an Actions secret in your repository settings.';
       console.error(errorMsg);
       writeJobSummary(errorMsg);
       process.exit(1); // Fail the job for internal PRs so maintainers know config is broken
@@ -461,7 +475,7 @@ async function main() {
     process.exit(1);
   }
 
-  const prNumber = rawPrNumber.toString().trim();
+  const prNumber = rawPrNumber.trim();
   if (!/^\d+$/.test(prNumber)) {
     console.error(
       `Error: PR_NUMBER must be a valid integer, got "${rawPrNumber}".`,
@@ -503,8 +517,9 @@ async function main() {
 
     // Since MAX_SINGLE_FILE_DIFF_LENGTH (100k) is less than MAX_DIFF_LENGTH (250k),
     // selectedBlocks will always contain at least the first block, ensuring we truncate strictly at file boundaries.
-    diffToSend = `${selectedBlocks.join('')
-    }\n\n... [Remaining file diffs truncated due to size limits] ...`;
+    diffToSend = `${selectedBlocks.join(
+      '',
+    )}\n\n... [Remaining file diffs truncated due to size limits] ...`;
     console.log(
       `Diff size (${filteredDiff.length} chars) exceeds limit. Truncated to ${diffToSend.length} chars.`,
     );
@@ -539,7 +554,7 @@ ${diffToSend}
 `;
 
   // 5. Call Gemini API
-  const { reviewText, usedModel, wasTruncated } = await callGeminiWithRetry(
+  const {reviewText, usedModel, wasTruncated} = await callGeminiWithRetry(
     prompt,
     apiKey,
     modelName,
@@ -549,8 +564,7 @@ ${diffToSend}
   const commentIdentifier = '\n\n<!-- gemini-pr-reviewer-comment -->';
   let footer = `\n\n---\n*Generated by **Gemini PR Reviewer** using ${usedModel}*`;
   if (wasTruncated) {
-    footer = `\n\n⚠️ **Note**: The review was truncated because it reached the maximum response token limit. Consider reviewing smaller commits.\n\n${
-      footer}`;
+    footer = `\n\n⚠️ **Note**: The review was truncated because it reached the maximum response token limit. Consider reviewing smaller commits.\n\n${footer}`;
   }
   const commentBody = `### 🤖 Gemini Code Review\n\n${reviewText}${footer}${commentIdentifier}`;
 
@@ -559,7 +573,8 @@ ${diffToSend}
   // 7. Write to GitHub Step Summary page
   let summaryText = `### ✅ Gemini PR Review Completed\n\nSuccessfully reviewed PR #${prNumber} using model **${usedModel}**.`;
   if (wasTruncated) {
-    summaryText += '\n\n⚠️ **Warning**: The generated review was truncated because it reached the maximum output token limit.';
+    summaryText +=
+      '\n\n⚠️ **Warning**: The generated review was truncated because it reached the maximum output token limit.';
   }
   writeJobSummary(summaryText);
 }
