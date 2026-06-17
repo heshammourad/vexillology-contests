@@ -63,8 +63,9 @@ async function githubFetch(url, options = {}, maxRetries = 2) {
       }
       
       const status = response.status;
-      // Retry on rate limits (403/429) or transient server errors (5xx)
-      if (status === 403 || status === 429 || (status >= 500 && status <= 599)) {
+      // Retry only on rate limits (429) or transient server errors (5xx).
+      // Fail fast on client permissions/auth errors (like 403 Forbidden).
+      if (status === 429 || (status >= 500 && status <= 599)) {
         if (attempt < maxRetries) {
           console.warn(`GitHub API call failed (status: ${status}). Retrying in ${delay}ms...`);
           await new Promise(resolve => setTimeout(resolve, delay));
