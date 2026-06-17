@@ -31,6 +31,8 @@ const DIFF_PREFIX_LENGTH = '+++ b/'.length;
 
 /**
  * Writes a message to the GitHub Actions Job Summary page.
+ * Catches errors and prints to console.error instead of throwing, ensuring
+ * that any transient GitHub Actions runner glitch does not fail the developer CI.
  * @param {string} text - Markdown text to append
  */
 function writeJobSummary(text) {
@@ -39,7 +41,7 @@ function writeJobSummary(text) {
     try {
       fs.appendFileSync(summaryFile, text + '\n');
     } catch (err) {
-      console.warn('Failed to write to GITHUB_STEP_SUMMARY:', err.message);
+      console.error('Non-blocking failure writing to GITHUB_STEP_SUMMARY:', err);
     }
   }
 }
@@ -148,7 +150,13 @@ function filterDiff(diffText) {
 
     // 3. Fallback if metadata lines were not found (e.g. binary files or renames)
     if (!filePath) {
-      const match = firstLineOfBlock.match(/^(?:a\/)?(.+?)\s+(?:b\/)?(.+)$/);
+      // Check for double-quoted paths (used by git when paths contain spaces/special characters)
+      let match = firstLineOfBlock.match(/^"a\/(.+?)"\s+"b\/(.+)"$/);
+      if (!match) {
+        // Fallback to unquoted prefix-agnostic regex
+        match = firstLineOfBlock.match(/^(?:a\/)?(.+?)\s+(?:b\/)?(.+)$/);
+      }
+
       if (match && match[2]) {
         filePath = match[2];
       } else {
@@ -157,7 +165,7 @@ function filterDiff(diffText) {
       }
     }
 
-    // Strip surrounding double quotes (git formats paths with spaces/special chars in quotes)
+    // Strip surrounding double quotes if any remain
     filePath = filePath.replace(/^"|"$/g, '');
 
     // Exclude lockfiles, media, binaries, and web fonts
@@ -430,7 +438,7 @@ async function main() {
     // Since MAX_SINGLE_FILE_DIFF_LENGTH (100k) is less than MAX_DIFF_LENGTH (250k),
     // selectedBlocks will always contain at least the first block, ensuring we truncate strictly at file boundaries.
     diffToSend = selectedBlocks.join('') + '\n\n... [Remaining file diffs truncated due to size limits] ...';
-    console.log(`Diff size (${filteredDiff.length} chars) exceeds limit. Truncated at file boundaries to ${diffToSend.length} chars.`);
+    console.log(`Diff size (${filteredDiff.length} chars) exceeds limit. Truncated to ${diffToSend.length} chars.`);
   } else {
     console.log(`Filtered diff size: ${filteredDiff.length} characters.`);
   }
