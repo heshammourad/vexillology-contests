@@ -25,14 +25,14 @@ exports.put = async ({ body: { id, resultsCertified } }, res) => {
       // Refresh the materialized view in the background so we don't block the API response.
       // The void operator indicates that this promise is intentionally not awaited.
       void db
-        .any('REFRESH MATERIALIZED VIEW CONCURRENTLY contests_summary')
+        .none('REFRESH MATERIALIZED VIEW CONCURRENTLY contests_summary')
         .catch((err) => {
           logger.warn(
             `CONCURRENTLY refresh failed, falling back to standard refresh. Error: ${
               err.message || err
             }`,
           );
-          return db.any('REFRESH MATERIALIZED VIEW contests_summary');
+          return db.none('REFRESH MATERIALIZED VIEW contests_summary');
         })
         .catch((err) => {
           logger.error(

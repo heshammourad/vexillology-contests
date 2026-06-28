@@ -183,7 +183,7 @@ exports.getUserVotes = async (contestId, username) => db.select(
  *
  * @returns {Promise<void>}
  */
-exports.refreshContestsSummaryView = async () => db.any('REFRESH MATERIALIZED VIEW contests_summary');
+exports.refreshContestsSummaryView = async () => db.none('REFRESH MATERIALIZED VIEW contests_summary');
 
 /**
  * Updates contest entries in the database.
