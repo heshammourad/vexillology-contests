@@ -25,6 +25,7 @@
           "caseInsensitive": false
         }
       }
-    ]
+    ],
+    "no-void": ["error", {"allowAsStatement": true}]
   }
 }

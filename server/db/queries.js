@@ -3,11 +3,15 @@
  * @exports getCurrentContest
  * @exports getCurrentContestSubmissions
  * @exports getVoteDates
+ * @exports refreshContestsSummaryView
  */
 
 const { ALLOW_DEV_CONTEST } = require('../env');
+const { createLogger } = require('../logger');
 
 const db = require('.');
+
+const logger = createLogger('DB/QUERIES');
 
 exports.getCategories = async (contestId) => {
   const categories = await db.select(
@@ -71,4 +75,24 @@ exports.getVoteDates = async (contestId) => {
     [contestId],
   );
   return voteDates;
+};
+
+/**
+ * Refreshes the contests summary materialized view.
+ * Attempts to perform a concurrent refresh first to avoid locking reads on the view,
+ * falling back to a standard refresh if the concurrent attempt fails.
+ *
+ * @returns {Promise<void>}
+ */
+exports.refreshContestsSummaryView = async () => {
+  try {
+    await db.none('REFRESH MATERIALIZED VIEW CONCURRENTLY contests_summary');
+  } catch (err) {
+    logger.warn(
+      `CONCURRENTLY refresh failed, falling back to standard refresh. Error: ${
+        err.message || err
+      }`,
+    );
+    await db.none('REFRESH MATERIALIZED VIEW contests_summary');
+  }
 };
