@@ -22,7 +22,20 @@ exports.put = async ({ body: { id, resultsCertified } }, res) => {
       return;
     }
     if (resultsCertified) {
-      await db.any('REFRESH MATERIALIZED VIEW contests_summary');
+      db.any('REFRESH MATERIALIZED VIEW CONCURRENTLY contests_summary')
+        .catch((err) => {
+          logger.warn(
+            `CONCURRENTLY refresh failed, falling back to standard refresh. Error: ${
+              err.message || err
+            }`,
+          );
+          return db.any('REFRESH MATERIALIZED VIEW contests_summary');
+        })
+        .catch((err) => {
+          logger.error(
+            `Error refreshing contests_summary view: ${err.message || err}`,
+          );
+        });
     }
     res.send(response);
   } catch (err) {
