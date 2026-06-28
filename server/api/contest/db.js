@@ -178,6 +178,13 @@ exports.getUserVotes = async (contestId, username) => db.select(
   [contestId, username],
 );
 
+/**
+ * Refreshes the contests summary materialized view.
+ * Attempts to perform a concurrent refresh first to avoid locking reads on the view,
+ * falling back to a standard refresh if the concurrent attempt fails.
+ *
+ * @returns {Promise<void>}
+ */
 exports.refreshContestsSummaryView = async () => {
   try {
     await db.none('REFRESH MATERIALIZED VIEW CONCURRENTLY contests_summary');
