@@ -1,7 +1,6 @@
 const db = require('../db');
+const { refreshContestsSummaryView } = require('../db/queries');
 const { createLogger } = require('../logger');
-
-const contestDb = require('./contest/db');
 
 const logger = createLogger('API/CONTEST_SUMMARY');
 
@@ -26,7 +25,7 @@ exports.put = async ({ body: { id, resultsCertified } }, res) => {
     if (resultsCertified) {
       // Refresh the materialized view in the background so we don't block the API response.
       // The void operator indicates that this promise is intentionally not awaited.
-      void contestDb.refreshContestsSummaryView().catch((err) => {
+      void refreshContestsSummaryView().catch((err) => {
         logger.error(
           `Error background refreshing contests_summary view: ${
             err.message || err
