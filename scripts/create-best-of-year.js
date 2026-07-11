@@ -43,6 +43,14 @@ const loadEnvFile = () => {
 
     const key = trimmed.slice(0, eq);
     let value = trimmed.slice(eq + 1);
+    // Strip unquoted inline comments (e.g. VALUE=foo # note)
+    if (!value.startsWith('"') && !value.startsWith("'")) {
+      const commentIdx = value.indexOf(' #');
+      if (commentIdx !== -1) {
+        value = value.slice(0, commentIdx);
+      }
+    }
+    value = value.trim();
     if (
       (value.startsWith('"') && value.endsWith('"'))
       || (value.startsWith("'") && value.endsWith("'"))
@@ -138,7 +146,8 @@ const main = async () => {
   });
 
   try {
-    await db.none('SET search_path TO $1', [schema]);
+    // SET does not accept bind parameters; quote the schema as an identifier.
+    await db.none(`SET search_path TO ${pgp.as.name(schema)}`);
 
     const currentYear = Number(
       (await db.one('SELECT EXTRACT(YEAR FROM CURRENT_DATE)::int AS year'))
