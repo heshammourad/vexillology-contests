@@ -164,3 +164,7 @@ cd react-ui/
 
 npm install package-name --save
 ```
+
+---
+
+_This repository uses Gemini for automated Pull Request reviews._
