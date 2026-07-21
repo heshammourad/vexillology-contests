@@ -1,0 +1,4 @@
+{
+  "name": "Vexillology Contests",
+  "postCreateCommand": "curl -fsSL https://cli-assets.heroku.com/install.sh | sudo sh"
+}
