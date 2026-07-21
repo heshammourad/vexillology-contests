@@ -568,7 +568,7 @@ function SubmissionForm({
                 [classes.descriptionEntry]: !previewDescription,
               })}
               content={formState.description.value}
-              markdown
+              isMarkdown
             />
           </div>
           <Button

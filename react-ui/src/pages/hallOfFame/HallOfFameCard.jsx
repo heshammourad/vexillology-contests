@@ -99,7 +99,7 @@ function HallOfFameCard({
     entryName,
     height,
     imagePath,
-    markdown,
+    isMarkdown,
     redditThreadId,
     user,
     width,
@@ -183,7 +183,7 @@ function HallOfFameCard({
           component="div"
           variant="caption"
         >
-          <FormattedContent content={description} markdown={markdown} />
+          <FormattedContent content={description} isMarkdown={isMarkdown} />
         </Typography>
       </Collapse>
     </Card>
@@ -198,7 +198,7 @@ HallOfFameCard.propTypes = {
     entryName: PropTypes.string,
     height: PropTypes.number,
     imagePath: PropTypes.string,
-    markdown: PropTypes.bool,
+    isMarkdown: PropTypes.bool,
     redditThreadId: PropTypes.string,
     user: PropTypes.string,
     width: PropTypes.number,

@@ -117,4 +117,5 @@ module.exports = {
   select,
   update,
   any: db.any,
+  none: db.none,
 };

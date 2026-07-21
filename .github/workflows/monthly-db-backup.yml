@@ -1,0 +1,25 @@
+name: Monthly Heroku Backup
+
+on:
+  schedule:
+    # Runs at 00:00 UTC on the 1st day of every month
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Heroku CLI
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
+
+      - name: Capture Backup
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          heroku pg:backups:capture --app vexillology-contests
+          echo "Backup captured successfully."

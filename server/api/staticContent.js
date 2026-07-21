@@ -14,16 +14,16 @@ const logger = createLogger('API/STATIC_CONTENT');
 exports.get = async ({ params: { id } }, res) => {
   try {
     const [result = {}] = await db.select(
-      'SELECT content, markdown FROM static_content WHERE id = $1',
+      'SELECT content, is_markdown FROM static_content WHERE id = $1',
       [id],
     );
-    const { content, markdown } = result;
+    const { content, isMarkdown } = result;
     if (!content) {
       logger.info(`Static content with id='${id}' not found`);
       res.status(404).send();
     }
 
-    res.send({ content, markdown });
+    res.send({ content, isMarkdown });
   } catch (err) {
     logger.warn(`Error getting /${id}: ${err}`);
     res.status(500).send();

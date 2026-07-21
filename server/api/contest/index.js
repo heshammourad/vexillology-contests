@@ -9,7 +9,11 @@ const { keyBy } = require('lodash');
 const numeral = require('numeral');
 const { v4: uuidv4 } = require('uuid');
 
-const { getVoteDates, getCategories } = require('../../db/queries');
+const {
+  getVoteDates,
+  getCategories,
+  refreshContestsSummaryView,
+} = require('../../db/queries');
 const { IGNORE_PENDING_DEV } = require('../../env');
 const { createLogger } = require('../../logger');
 
@@ -53,7 +57,7 @@ const addCategoriesToEntries = async (contestId, entries) => {
 const addRanksToEntries = async (contestId, entries) => {
   let voteData = await db.getContestVotes(contestId);
   if (!voteData.length) {
-    await db.refreshContestsSummaryView();
+    await refreshContestsSummaryView();
     voteData = await db.getContestVotes(contestId);
   }
 
@@ -257,7 +261,7 @@ exports.get = async ({ params: { contestId }, username }, res) => {
       'e.height',
       'e.id',
       "'/i/' || e.id || '.png' AS image_path",
-      'e.markdown',
+      'e.is_markdown',
       'e.name',
       'e.width',
     ];

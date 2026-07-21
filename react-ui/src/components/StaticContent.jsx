@@ -16,9 +16,9 @@ function StaticContent({ className, id }) {
     return null;
   }
 
-  const { content, markdown } = data;
+  const { content, isMarkdown } = data;
 
-  return <FormattedContent {...{ className, content, markdown }} />;
+  return <FormattedContent {...{ className, content, isMarkdown }} />;
 }
 
 StaticContent.propTypes = {
