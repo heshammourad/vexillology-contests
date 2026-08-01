@@ -1,4 +1,5 @@
 /**
+ * @exports addContest
  * @exports getCategories
  * @exports getCurrentContest
  * @exports getCurrentContestSubmissions
@@ -95,4 +96,41 @@ exports.refreshContestsSummaryView = async () => {
     );
     await db.none('REFRESH MATERIALIZED VIEW contests_summary');
   }
+};
+
+/**
+ * Invokes the PostgreSQL add_contest function to create a new contest.
+ *
+ * @param {Object} contestData
+ * @returns {Promise<void>}
+ */
+exports.addContest = async ({
+  name,
+  date,
+  prompt,
+  id = null,
+  yearEnd = null,
+  submissionStart = null,
+  submissionEnd = null,
+  voteStart = null,
+  voteEnd = null,
+  categories = null,
+}) => {
+  await db.any(
+    `SELECT add_contest(
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+    )`,
+    [
+      name,
+      date,
+      prompt,
+      id || null,
+      yearEnd !== null && yearEnd !== undefined ? yearEnd : null,
+      submissionStart || null,
+      submissionEnd || null,
+      voteStart || null,
+      voteEnd || null,
+      categories && categories.length ? categories : null,
+    ],
+  );
 };

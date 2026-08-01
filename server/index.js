@@ -8,6 +8,7 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 
 const accessToken = require('./api/accessToken');
+const addContest = require('./api/addContest');
 const analyzeVotes = require('./api/analyzeVotes');
 const {
   processUser,
@@ -117,6 +118,9 @@ if (!IS_DEV && cluster.isMaster) {
   modRouter.use(express.json());
 
   modRouter.all('*', requireModerator);
+  modRouter
+    .route('/addContest')
+    .post(checkRequiredFields('name', 'date', 'prompt'), addContest.post);
   modRouter.route('/analyzeVotes/:id').get(analyzeVotes.get);
   modRouter.route('/contestSummary').get(contestSummary.get);
   modRouter
