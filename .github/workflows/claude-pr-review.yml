@@ -1,0 +1,64 @@
+name: Claude PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Pull Request number to review'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        if: github.event_name == 'pull_request'
+        with:
+          fetch-depth: 1
+
+      - name: Checkout PR (manual dispatch)
+        uses: actions/checkout@v4
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          ref: refs/pull/${{ inputs.pr_number }}/head
+          fetch-depth: 1
+
+      - name: Run Claude PR Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ inputs.pr_number || github.event.pull_request.number }}
+
+            The PR branch is already checked out in the current working directory.
+            Review only the diff introduced by this PR (`gh pr diff`), not the
+            pre-existing codebase.
+
+            Focus on:
+            - Correctness bugs: logic errors, edge cases, and failure scenarios
+              a reviewer would actually flag, not stylistic nitpicks.
+            - Reuse, simplification, and efficiency: unnecessary complexity,
+              duplicated logic, or code that could be simpler without changing
+              behavior.
+
+            Skip generic praise and skip suggestions that would require
+            guessing about behavior or process not evidenced in this repo.
+            If there is nothing worth flagging, post a short comment saying so
+            rather than inventing issues.
+
+            Post your findings as a single top-level comment with
+            `gh pr comment <PR NUMBER> --body "..."`. Do not submit a formal
+            GitHub review, and do not leave inline comments.
+
+          claude_args: |
+            --allowedTools "Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
