@@ -209,8 +209,8 @@ function AddContest() {
               Timestamps (Optional)
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Leave blank to use database defaults (America/Los_Angeles 9:00 PM
-              PST/PDT schedule).
+              Leave blank to use database defaults (America/New_York 12:00 AM
+              EST/EDT schedule).
             </Typography>
 
             <Box
