@@ -18,6 +18,10 @@ permissions:
 jobs:
   review:
     runs-on: ubuntu-latest
+    # Fork PRs don't get repo secrets on the `pull_request` event, so skip the
+    # automatic run there rather than failing; review those via
+    # workflow_dispatch (pr_number) instead, which does have secret access.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Checkout PR
         uses: actions/checkout@v4
