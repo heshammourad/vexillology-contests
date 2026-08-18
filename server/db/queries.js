@@ -7,6 +7,7 @@
  * @exports refreshContestsSummaryView
  */
 
+const { getContestId, getDefaultContestDates } = require('../contestSchedule');
 const { ALLOW_DEV_CONTEST } = require('../env');
 const { createLogger } = require('../logger');
 
@@ -116,6 +117,8 @@ exports.addContest = async ({
   voteEnd = null,
   categories = null,
 }) => {
+  const defaultDates = getDefaultContestDates(date);
+
   await db.any(
     `SELECT add_contest(
       $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
@@ -124,12 +127,12 @@ exports.addContest = async ({
       name,
       date,
       prompt,
-      id || null,
-      yearEnd !== null && yearEnd !== undefined ? yearEnd : null,
-      submissionStart || null,
-      submissionEnd || null,
-      voteStart || null,
-      voteEnd || null,
+      id || getContestId(date),
+      yearEnd !== null && yearEnd !== undefined ? yearEnd : false,
+      submissionStart || defaultDates.submissionStart,
+      submissionEnd || defaultDates.submissionEnd,
+      voteStart || defaultDates.voteStart,
+      voteEnd || defaultDates.voteEnd,
       categories && categories.length ? categories : null,
     ],
   );
