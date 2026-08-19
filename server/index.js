@@ -10,7 +10,6 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 
 const accessToken = require('./api/accessToken');
-const addContest = require('./api/addContest');
 const analyzeVotes = require('./api/analyzeVotes');
 const {
   processUser,
@@ -26,6 +25,7 @@ const hallOfFame = require('./api/hallOfFame');
 const images = require('./api/images');
 const init = require('./api/init');
 const manageContest = require('./api/manageContest');
+const modContests = require('./api/modContests');
 const reviewSubmissions = require('./api/reviewSubmissions');
 const revokeToken = require('./api/revokeToken');
 const staticContent = require('./api/staticContent');
@@ -128,10 +128,17 @@ if (!IS_DEV && cluster.isMaster) {
   modRouter.use(express.json());
 
   modRouter.all('*', requireModerator);
-  modRouter
-    .route('/addContest')
-    .post(checkRequiredFields('name', 'date', 'prompt'), addContest.post);
   modRouter.route('/analyzeVotes/:id').get(analyzeVotes.get);
+  modRouter
+    .route('/contests')
+    .get(modContests.getAll)
+    .post(checkRequiredFields('name', 'date', 'prompt'), modContests.post);
+  modRouter
+    .route('/contests/:id')
+    .get(modContests.getOne)
+    .put(checkRequiredFields('name', 'date', 'prompt'), modContests.put)
+    .delete(modContests.delete);
+  modRouter.route('/contestSchedule').get(modContests.getDefaultSchedule);
   modRouter.route('/contestSummary').get(contestSummary.get);
   modRouter
     .route('/manageContest')

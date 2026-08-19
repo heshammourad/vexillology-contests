@@ -47,3 +47,17 @@ export const putData = async (path, newData, authToken) => {
     return null;
   }
 };
+
+// Like putData, but returns the raw axios response and lets errors propagate to the caller,
+// so callers that need the server's error message/status (e.g. form submissions) can read it.
+export const putDataWithResponse = async (path, newData, authToken) => {
+  const response = await instance.put(path, newData, generateConfig(authToken));
+  return response;
+};
+
+// Like deleteData, but returns the raw axios response and lets errors propagate to the
+// caller, so callers that need the server's error message/status can read it.
+export const deleteDataWithResponse = async (path, authToken) => {
+  const response = await instance.delete(path, generateConfig(authToken));
+  return response;
+};
