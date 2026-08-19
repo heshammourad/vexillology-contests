@@ -6,6 +6,10 @@
  *
  * @exports getContestId
  * @exports getDefaultContestDates
+ * @exports getMonthBounds
+ * @exports getMonthRangeError
+ * @exports getPastMonthError
+ * @exports getScheduleOrderError
  */
 
 const { zonedTimeToUtc } = require('date-fns-tz');
@@ -91,4 +95,98 @@ exports.getDefaultContestDates = (date) => {
     voteStart,
     voteEnd,
   };
+};
+
+/**
+ * Checks that a contest's submission/vote windows are in a sensible chronological order.
+ * Fields that aren't provided are skipped rather than treated as an error, since callers
+ * (e.g. partial updates) may only be setting some of the four.
+ *
+ * @param {Object} dates
+ * @returns {string|null} An error message, or null if the order is fine.
+ */
+exports.getScheduleOrderError = ({
+  submissionStart,
+  submissionEnd,
+  voteStart,
+  voteEnd,
+}) => {
+  const start = submissionStart && new Date(submissionStart);
+  const end = submissionEnd && new Date(submissionEnd);
+  const voteStartDate = voteStart && new Date(voteStart);
+  const voteEndDate = voteEnd && new Date(voteEnd);
+
+  if (start && end && start >= end) {
+    return 'Submission end must be after submission start.';
+  }
+  if (end && voteStartDate && voteStartDate < end) {
+    return 'Vote start cannot be before submission end.';
+  }
+  if (voteStartDate && voteEndDate && voteStartDate >= voteEndDate) {
+    return 'Vote end must be after vote start.';
+  }
+  return null;
+};
+
+/**
+ * Returns the ET-midnight instants bounding a contest's month: monthStart is midnight on
+ * the 1st of the given month, monthEnd is midnight on the 1st of the following month
+ * (an exclusive upper bound).
+ *
+ * @param {string} date
+ * @returns {{ monthStart: Date, monthEnd: Date }}
+ */
+exports.getMonthBounds = (date) => {
+  const dateParts = parseDateParts(date);
+  const monthStart = toMidnightEastern(dateParts);
+  const nextMonthParts = dateParts.month === 12
+    ? { year: dateParts.year + 1, month: 1, day: 1 }
+    : { year: dateParts.year, month: dateParts.month + 1, day: 1 };
+  const monthEnd = toMidnightEastern(nextMonthParts);
+  return { monthStart, monthEnd };
+};
+
+/**
+ * Checks that a contest's submission end and vote window fall within its own month (ET).
+ * Submission start is intentionally not checked - it's normal for submissions to open
+ * before the month starts. Fields that aren't provided are skipped.
+ *
+ * @param {Object} params
+ * @returns {string|null} An error message, or null if everything provided is in range.
+ */
+exports.getMonthRangeError = ({
+  date, submissionEnd, voteStart, voteEnd,
+}) => {
+  const { monthStart, monthEnd } = exports.getMonthBounds(date);
+  const isInRange = (value) => value >= monthStart && value < monthEnd;
+
+  if (submissionEnd && !isInRange(new Date(submissionEnd))) {
+    return 'Submission end must fall within the selected month.';
+  }
+  if (voteStart && !isInRange(new Date(voteStart))) {
+    return 'Vote start must fall within the selected month.';
+  }
+  if (voteEnd && !isInRange(new Date(voteEnd))) {
+    return 'Vote end must fall within the selected month.';
+  }
+  return null;
+};
+
+/**
+ * Checks that a contest's month isn't already in the past. A coarse year/month comparison
+ * against the current date - not worth being ET-precise for a "not 20 years ago" sanity check.
+ *
+ * @param {string} date
+ * @returns {string|null} An error message, or null if the month is current or upcoming.
+ */
+exports.getPastMonthError = (date) => {
+  const { year, month } = parseDateParts(date);
+  const now = new Date();
+  const currentYear = now.getUTCFullYear();
+  const currentMonth = now.getUTCMonth() + 1;
+
+  if (year < currentYear || (year === currentYear && month < currentMonth)) {
+    return 'Contest month cannot be in the past.';
+  }
+  return null;
 };

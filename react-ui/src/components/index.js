@@ -32,6 +32,7 @@ export { default as ListItemButton } from './ListItemButton';
 export { default as ListItemLink } from './ListItemLink';
 export { default as PageContainer } from './PageContainer';
 export { default as PageWithDrawer } from './PageWithDrawer';
+export { default as PrimaryButton } from './PrimaryButton';
 export { default as ProtectedRoute } from './ProtectedRoute';
 export { default as RedditLogInDialog } from './RedditLogInDialog';
 export { default as RedditUserAttribution } from './RedditUserAttribution';

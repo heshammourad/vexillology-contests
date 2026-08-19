@@ -30,8 +30,9 @@ import {
 } from './pages';
 /* eslint-disable no-restricted-imports */
 import Mod from './pages/mod/Mod';
-import AddContest from './pages/mod/addContest/AddContest';
 import ContestSummary from './pages/mod/contestSummary/ContestSummary';
+import ContestForm from './pages/mod/contests/ContestForm';
+import ModContests from './pages/mod/contests/ModContests';
 import ContestRules from './pages/submission/ContestRules';
 /* eslint-enable no-restricted-imports */
 
@@ -78,7 +79,9 @@ function AppContent() {
         </Route>
         <Route path="/mod" element={<Mod />}>
           <Route index element={<ReviewSubmissions />} />
-          <Route path="addContest" element={<AddContest />} />
+          <Route path="contests" element={<ModContests />} />
+          <Route path="contests/new" element={<ContestForm />} />
+          <Route path="contests/:id/edit" element={<ContestForm />} />
           <Route path="analyze" element={<AnalyzeVotes />}>
             <Route path=":contestId" element={<AnalyzeVotes />} />
           </Route>
