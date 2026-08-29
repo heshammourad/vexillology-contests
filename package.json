@@ -6,6 +6,7 @@
     "start": "node server",
     "build": "cd react-ui/ && npm install && npm run build",
     "heroku": "nodemon -L --exec \"heroku local\" --signal SIGTERM -- --port 5000",
+    "best-of": "node scripts/create-best-of-year.js",
     "prepare": "husky"
   },
   "cacheDirectories": [
