@@ -23,9 +23,24 @@ jobs:
     # workflow_dispatch (pr_number) instead, which does have secret access.
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
+      # Dependabot and other bots open PRs with `github.event.pull_request.user.type == 'Bot'`.
+      # Warn and skip the review for those instead of running (and failing) it.
+      - name: Check PR author
+        id: author
+        env:
+          IS_BOT: ${{ github.event_name == 'pull_request' && github.event.pull_request.user.type == 'Bot' }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          if [ "$IS_BOT" = "true" ]; then
+            echo "::warning::Skipping Claude PR review: PR opened by bot account '$AUTHOR'."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout PR
         uses: actions/checkout@v4
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && steps.author.outputs.skip != 'true'
         with:
           fetch-depth: 1
 
@@ -37,6 +52,7 @@ jobs:
           fetch-depth: 1
 
       - name: Run Claude PR Review
+        if: steps.author.outputs.skip != 'true'
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
