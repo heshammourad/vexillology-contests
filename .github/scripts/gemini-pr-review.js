@@ -129,6 +129,62 @@ async function githubFetch(url, options = {}, maxRetries = 2) {
 }
 
 /**
+ * Determines whether the pull request was opened by a bot (e.g. Dependabot,
+ * Renovate). Bot-authored PRs should be skipped without generating a review and
+ * without failing the job.
+ *
+ * Checks the local GitHub event payload first (available for pull_request_target
+ * events) and falls back to the GitHub API (for workflow_dispatch runs).
+ * @param {string} repo - The repository owner/name
+ * @param {string} prNumber - The pull request number
+ * @param {string} token - The GitHub token
+ * @returns {Promise<{isBot: boolean, login: string}>}
+ */
+async function getPrAuthor(repo, prNumber, token) {
+  let user;
+
+  if (process.env.GITHUB_EVENT_PATH) {
+    try {
+      const eventData = JSON.parse(
+        fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'),
+      );
+      user = eventData.pull_request?.user;
+    } catch (err) {
+      console.warn('Failed to parse GITHUB_EVENT_PATH:', err.message);
+    }
+  }
+
+  if (!user) {
+    try {
+      const response = await githubFetch(
+        `https://api.github.com/repos/${repo}/pulls/${prNumber}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+          },
+        },
+      );
+      if (response.ok) {
+        ({ user } = await response.json());
+      } else {
+        console.warn(
+          `Could not fetch PR author: ${response.status} ${response.statusText}`,
+        );
+      }
+    } catch (err) {
+      console.warn(`Could not fetch PR author: ${err.message}`);
+    }
+  }
+
+  const login = user?.login || '';
+  const isBot = user?.type === 'Bot' || /\[bot\]$/i.test(login);
+
+  return { isBot, login };
+}
+
+/**
  * Fetches the raw diff of the pull request from GitHub API.
  * @param {string} repo - The repository owner/name
  * @param {string} prNumber - The pull request number
@@ -574,6 +630,17 @@ async function main() {
 
   // Validate inputs and obtain sanitized PR number
   const prNumber = validateInputs(token, apiKey, repo, rawPrNumber, modelName);
+
+  // 0. Skip bot-authored PRs (e.g. Dependabot) without failing the job.
+  const { isBot, login } = await getPrAuthor(repo, prNumber, token);
+  if (isBot) {
+    const skipMsg = `### ⚠️ Gemini PR Review Skipped\n\nPR #${prNumber} was opened by a bot account${
+      login ? ` (\`${login}\`)` : ''
+    }. Skipping automated review.`;
+    console.warn(skipMsg);
+    writeJobSummary(skipMsg);
+    return;
+  }
 
   // 1. Fetch PR Diff
   const rawDiff = await fetchPrDiff(repo, prNumber, token);
