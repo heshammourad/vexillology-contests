@@ -1,0 +1,39 @@
+name: Biweekly Heroku Backup
+
+on:
+  schedule:
+    # Runs at 00:00 UTC on the 1st and 15th of every month
+    - cron: '0 0 1,15 * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Heroku CLI
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
+
+      - name: Capture Backup
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          heroku pg:backups:capture --app vexillology-contests
+          echo "Backup captured successfully."
+
+      - name: Download Backup
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          heroku pg:backups:download --app vexillology-contests --output latest.dump
+
+      - name: Upload Backup Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_id }}
+          path: latest.dump
+          # ~95 days keeps roughly the last 6 backups at a twice-monthly cadence
+          retention-days: 95
