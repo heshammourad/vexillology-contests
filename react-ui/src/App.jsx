@@ -20,19 +20,19 @@ import {
   AnalyzeVotes,
   AuthorizeCallback,
   Contest,
+  ContestRules,
   Contests,
+  ContestSummary,
+  EntrantVotersTable,
+  EntrantsTable,
   EntryModal,
   HallOfFame,
   Home,
+  Mod,
   ReviewSubmissions,
   Settings,
   Submission,
 } from './pages';
-/* eslint-disable no-restricted-imports */
-import Mod from './pages/mod/Mod';
-import ContestSummary from './pages/mod/contestSummary/ContestSummary';
-import ContestRules from './pages/submission/ContestRules';
-/* eslint-enable no-restricted-imports */
 
 function App() {
   return (
@@ -78,7 +78,9 @@ function AppContent() {
         <Route path="/mod" element={<Mod />}>
           <Route index element={<ReviewSubmissions />} />
           <Route path="analyze" element={<AnalyzeVotes />}>
-            <Route path=":contestId" element={<AnalyzeVotes />} />
+            <Route path=":contestId" element={<EntrantsTable />}>
+              <Route path=":entrantId" element={<EntrantVotersTable />} />
+            </Route>
           </Route>
           <Route path="contestSummary" element={<ContestSummary />} />
           <Route path="review" element={<ReviewSubmissions />} />
