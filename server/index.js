@@ -180,11 +180,20 @@ if (!IS_DEV && cluster.isMaster) {
     );
   });
 
-  app.listen(BACKEND_PORT, () => {
+  const server = app.listen(BACKEND_PORT, () => {
     logger.info(
       `Node ${
         IS_DEV ? 'dev server' : `cluster worker ${process.pid}`
       }: listening on port ${BACKEND_PORT}`,
     );
   });
+
+  const shutdown = () => {
+    server.close(() => {
+      process.exit(0);
+    });
+  };
+  process.once('SIGTERM', shutdown);
+  process.once('SIGINT', shutdown);
+  process.once('SIGUSR2', shutdown);
 }

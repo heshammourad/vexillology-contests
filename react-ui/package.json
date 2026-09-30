@@ -52,7 +52,6 @@
     "not dead",
     "not op_mini all"
   ],
-  "proxy": "http://localhost:5000",
   "resolutions": {
     "react-error-overlay": "6.0.11"
   },

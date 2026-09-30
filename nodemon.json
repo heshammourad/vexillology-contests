@@ -1,0 +1,6 @@
+{
+  "watch": ["server"],
+  "ext": "js,json",
+  "ignore": ["react-ui/*", "docs/*", "static_content/*", ".git/*"],
+  "delay": 1500
+}
