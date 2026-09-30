@@ -23,7 +23,7 @@ const app = initializeApp({
 });
 
 initializeAppCheck(app, {
-  provider: new ReCaptchaV3Provider('6LdVdzMlAAAAACClyDjipqu8966AvQBm_Eb5gNuE'),
+  provider: new ReCaptchaV3Provider('6LeRZR4sAAAAALEsF3zroxaSxq1p9r75oYIWLzSp'),
   isTokenAutoRefreshEnabled: true,
 });
 
