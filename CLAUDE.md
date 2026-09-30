@@ -11,7 +11,7 @@ The repo is two independent npm projects that must each be installed/run separat
 1. **Node/Express API server** at the repo root (`server/`, entry `server/index.js`)
 2. **React UI** in `react-ui/` (Create React App, entry `react-ui/src/index.js`)
 
-In dev, the React dev server (port 3000) proxies API calls to the Express server (port 5000) via the `proxy` field in `react-ui/package.json`. In production, Express serves the built React bundle as static files and falls back to `index.html` for client-side routing.
+In dev, the React dev server (port 3000) proxies API calls to the Express server (port 5000) via `react-ui/src/setupProxy.js` (for `/api` and `/i`), which returns a 503 instead of a proxy error while the backend is restarting. In production, Express serves the built React bundle as static files and falls back to `index.html` for client-side routing.
 
 ## Commands
 

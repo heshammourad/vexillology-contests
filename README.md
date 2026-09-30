@@ -141,7 +141,7 @@ npm install package-name --save
 
 ### Run the React UI
 
-The React app is configured to proxy backend requests to the local Node server. (See [`"proxy"` config](react-ui/package.json))
+The React app is configured to proxy backend requests to the local Node server. (See [`setupProxy.js`](react-ui/src/setupProxy.js))
 
 In a separate terminal from the API server, start the UI:
 

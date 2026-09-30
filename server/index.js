@@ -174,11 +174,24 @@ if (!IS_DEV && cluster.isMaster) {
     );
   });
 
-  app.listen(BACKEND_PORT, () => {
+  const server = app.listen(BACKEND_PORT, () => {
     logger.info(
       `Node ${
         IS_DEV ? 'dev server' : `cluster worker ${process.pid}`
       }: listening on port ${BACKEND_PORT}`,
     );
   });
+
+  // Let in-flight requests finish, but don't wait on idle keep-alive
+  // connections (e.g. from the dev proxy) or hang past a few seconds
+  const shutdown = () => {
+    server.close(() => {
+      process.exit(0);
+    });
+    server.closeIdleConnections();
+    setTimeout(() => process.exit(0), 5000).unref();
+  };
+  process.once('SIGTERM', shutdown);
+  process.once('SIGINT', shutdown);
+  process.once('SIGUSR2', shutdown);
 }
