@@ -25,7 +25,6 @@ const init = require('./api/init');
 const manageContest = require('./api/manageContest');
 const reviewSubmissions = require('./api/reviewSubmissions');
 const revokeToken = require('./api/revokeToken');
-const settings = require('./api/settings');
 const staticContent = require('./api/staticContent');
 const submission = require('./api/submission');
 const { checkRequiredFields } = require('./api/validation');
@@ -136,11 +135,6 @@ if (!IS_DEV && cluster.isMaster) {
   apiRouter.get('/hallOfFame', hallOfFame.get);
   apiRouter.get('/init', processUser(true), init.get);
   apiRouter.get('/revokeToken/:refreshToken', revokeToken.get);
-  apiRouter
-    .route('/settings')
-    .all(requireAuthentication)
-    .get(settings.get)
-    .put(settings.put);
   apiRouter.get('/staticContent/:id', staticContent.get);
   apiRouter
     .route('/submission')
