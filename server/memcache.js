@@ -37,7 +37,7 @@ const get = async (key, callback, expires = 0) => {
     if (newValue) {
       const valueObj = JSON.stringify(newValue);
       logger.debug(`Setting '${key}' to '${valueObj}' in cache`);
-      mc.set(key, valueObj, { expires });
+      await mc.set(key, valueObj, { expires });
     }
   } catch (err) {
     logger.error(`Error setting '${key}' in cache: ${err}`);
