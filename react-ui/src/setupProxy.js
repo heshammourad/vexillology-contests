@@ -1,4 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies, func-names */
+/* eslint-disable func-names */
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function (app) {

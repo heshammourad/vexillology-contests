@@ -188,10 +188,14 @@ if (!IS_DEV && cluster.isMaster) {
     );
   });
 
+  // Let in-flight requests finish, but don't wait on idle keep-alive
+  // connections (e.g. from the dev proxy) or hang past a few seconds
   const shutdown = () => {
     server.close(() => {
       process.exit(0);
     });
+    server.closeIdleConnections();
+    setTimeout(() => process.exit(0), 5000).unref();
   };
   process.once('SIGTERM', shutdown);
   process.once('SIGINT', shutdown);
