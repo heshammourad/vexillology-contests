@@ -42,4 +42,11 @@ const DEV_VARIABLES = Object.keys(DEFAULT_DEV_VARIABLES).reduce(
 
 export const { VIEW_DEV_BAR, START_WITHOUT_CACHE } = DEV_VARIABLES;
 
-export { IS_DEV };
+// Firebase App Check debug token for local dev (see common/firebase.js), set with
+// REACT_APP_APPCHECK_DEBUG_TOKEN in react-ui/.env.development.local. That file is only read by
+// `npm start`, so the token never reaches a production build.
+const APPCHECK_DEBUG_TOKEN = IS_DEV
+  ? process.env.REACT_APP_APPCHECK_DEBUG_TOKEN
+  : undefined;
+
+export { APPCHECK_DEBUG_TOKEN, IS_DEV };

@@ -12,6 +12,8 @@ import {
 } from 'firebase/storage';
 import { customAlphabet, urlAlphabet } from 'nanoid';
 
+import { APPCHECK_DEBUG_TOKEN, IS_DEV } from '../env';
+
 const app = initializeApp({
   apiKey: 'AIzaSyAV96xMFqykyH9HULiAG4qkx9bB53Gdogw',
   authDomain: 'vexillology-contests.firebaseapp.com',
@@ -21,6 +23,14 @@ const app = initializeApp({
   appId: '1:917790372061:web:27bdbeffebe44caf4d2b34',
   measurementId: 'G-DD6MTL11SP',
 });
+
+if (IS_DEV) {
+  // reCAPTCHA v3 fails on localhost, so use App Check's debug provider in dev. The token
+  // must be registered in the Firebase console; without APPCHECK_DEBUG_TOKEN, the SDK
+  // generates one per browser and logs it. Until a registered token is used, every
+  // App Check refresh fails, and the SDK leaves an unhandled "cancelled" rejection.
+  window.FIREBASE_APPCHECK_DEBUG_TOKEN = APPCHECK_DEBUG_TOKEN || true;
+}
 
 initializeAppCheck(app, {
   provider: new ReCaptchaV3Provider('6LeRZR4sAAAAALEsF3zroxaSxq1p9r75oYIWLzSp'),
