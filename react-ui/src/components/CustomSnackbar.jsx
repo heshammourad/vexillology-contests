@@ -18,9 +18,6 @@ const TYPES = {
   [snackbarTypes.REVIEW_SUBMISSION_ERROR]:
     'Error updating submission. Please try again later.',
   [snackbarTypes.REVIEW_SUBMISSION_SUCCESS]: 'Submission updated',
-  [snackbarTypes.SETTINGS_ERROR]:
-    'Error submitting setting. Please try again later.',
-  [snackbarTypes.SETTINGS_SUCCESS]: 'Setting saved',
   [snackbarTypes.SUBMISSION_ERROR]:
     'Error submitting entry. Please try again later.',
   [snackbarTypes.SUBMISSION_SUCCESS]: 'Entry submitted successfully!',
