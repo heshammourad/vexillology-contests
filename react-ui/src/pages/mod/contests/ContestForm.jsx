@@ -374,7 +374,7 @@ function PromptField({ prompt, setPrompt }) {
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
         multiline
-        rows={4}
+        rows={12}
         placeholder="Enter contest prompt or theme..."
         helperText="Supports Reddit markdown."
         fullWidth
