@@ -4,6 +4,7 @@
 
 const db = require('../db');
 const {
+  getCategories,
   getCurrentContest,
   getCurrentContestSubmissions,
 } = require('../db/queries');
@@ -19,7 +20,10 @@ exports.get = async (req, res) => {
       return;
     }
 
-    const submissions = await getCurrentContestSubmissions();
+    const [categories, submissions] = await Promise.all([
+      getCategories(contest.id),
+      getCurrentContestSubmissions(),
+    ]);
     const breakdownMap = new Map();
     submissions.forEach(({ submissionStatus, user }) => {
       const userBreakdown = breakdownMap.get(user) ?? { submitted: 0 };
@@ -31,6 +35,7 @@ exports.get = async (req, res) => {
 
     const { name, submissionEnd } = contest;
     res.send({
+      categories,
       name,
       submissionEnd,
       submissions,

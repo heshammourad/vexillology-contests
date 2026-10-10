@@ -14,6 +14,7 @@ import {
 } from '../../../components';
 import useSwrModReview from '../../../data/useSwrModReview';
 
+import CategoryBreakdown from './CategoryBreakdown';
 import StatusFilters from './StatusFilters';
 
 const useStyles = makeStyles((theme) => ({
@@ -34,7 +35,12 @@ const useStyles = makeStyles((theme) => ({
  */
 function ReviewSubmissions() {
   const {
-    data: { name: contestName, submissions = [], userBreakdown = {} },
+    data: {
+      categories = [],
+      name: contestName,
+      submissions = [],
+      userBreakdown = {},
+    },
     error,
   } = useSwrModReview();
   const [selectedChips, setSelectedChips] = useState({});
@@ -43,6 +49,10 @@ function ReviewSubmissions() {
   const [filteredSubmissions, setFilteredSubmissions] = useState([]);
 
   const submissionStatusCounts = countBy(submissions, 'submissionStatus');
+  const approvedCategoryCounts = countBy(
+    submissions.filter(({ submissionStatus }) => submissionStatus === 'approved'),
+    'category',
+  );
   const usersExceedingLimit = Object.entries(userBreakdown).filter(
     (breakdown) => breakdown[1].approved > 2,
   );
@@ -130,6 +140,12 @@ You have more than 2 entries in this month's contest. Can you please let us know
             selectedChips={selectedChips}
             submissionStatusCounts={submissionStatusCounts}
           />
+          {categories.length > 0 && (
+            <CategoryBreakdown
+              approvedCategoryCounts={approvedCategoryCounts}
+              categories={categories}
+            />
+          )}
           {usersExceedingLimit.length > 0 && (
             <Alert className={classes.submissionsError} severity="error">
               The following users have more than 2 approved entries:
