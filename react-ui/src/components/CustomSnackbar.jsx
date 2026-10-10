@@ -15,6 +15,9 @@ const TYPES = {
   [snackbarTypes.CERTIFY_RESULTS_ERROR]:
     'Error updating results certification. Please try again later.',
   [snackbarTypes.CERTIFY_RESULTS_SUCCESS]: 'Results certification updated',
+  [snackbarTypes.COPY_CATEGORY_BREAKDOWN_ERROR]:
+    'Unable to copy to clipboard. Please copy the list manually.',
+  [snackbarTypes.COPY_CATEGORY_BREAKDOWN_SUCCESS]: 'Category breakdown copied',
   [snackbarTypes.REVIEW_SUBMISSION_ERROR]:
     'Error updating submission. Please try again later.',
   [snackbarTypes.REVIEW_SUBMISSION_SUCCESS]: 'Submission updated',
