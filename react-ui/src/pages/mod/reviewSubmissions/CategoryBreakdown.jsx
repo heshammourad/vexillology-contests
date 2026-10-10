@@ -18,23 +18,29 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-/** Count of approved submissions in each contest category.
+/** Count of approved submissions in each contest category, highest count first.
  *
  * @param props
- * @param {string[]} categories - Contest categories, in display order.
+ * @param {string[]} categories - Contest categories.
  * @param {Object} approvedCategoryCounts - Number of approved submissions keyed by category.
  */
 function CategoryBreakdown({ approvedCategoryCounts, categories }) {
   const classes = useStyles();
+  const breakdown = categories
+    .map((category) => ({
+      category,
+      count: approvedCategoryCounts[category] ?? 0,
+    }))
+    .sort((a, b) => b.count - a.count || a.category.localeCompare(b.category));
   return (
     <div className={classes.root}>
       <Typography component="h2" variant="subtitle2">
         Approved by category
       </Typography>
       <ul className={classes.list}>
-        {categories.map((category) => (
+        {breakdown.map(({ category, count }) => (
           <Typography key={category} component="li" variant="body2">
-            {`${category}: ${approvedCategoryCounts[category] ?? 0}`}
+            {`${category}: ${count}`}
           </Typography>
         ))}
       </ul>
