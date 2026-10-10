@@ -4,14 +4,8 @@ import PropTypes from 'prop-types';
 
 const useStyles = makeStyles((theme) => ({
   list: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    listStyle: 'none',
     margin: 0,
-    padding: 0,
-    '& > *': {
-      marginRight: theme.spacing(3),
-    },
+    paddingLeft: theme.spacing(3),
   },
   root: {
     marginBottom: theme.spacing(2),
