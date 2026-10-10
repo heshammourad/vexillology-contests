@@ -40,7 +40,7 @@ function CategoryBreakdown({ approvedCategoryCounts, categories }) {
   // Copies the breakdown as a Markdown list, for posting participant updates to Reddit
   const copyToClipboard = async () => {
     const markdown = breakdown
-      .map(({ category, count }) => `- ${category}: ${count}`)
+      .map(({ category, count }) => `- **${category}**: ${count}`)
       .join('\n');
     try {
       await navigator.clipboard.writeText(markdown);
@@ -69,7 +69,8 @@ function CategoryBreakdown({ approvedCategoryCounts, categories }) {
       <ul className={classes.list}>
         {breakdown.map(({ category, count }) => (
           <Typography key={category} component="li" variant="body2">
-            {`${category}: ${count}`}
+            <strong>{category}</strong>
+            {`: ${count}`}
           </Typography>
         ))}
       </ul>
