@@ -55,6 +55,11 @@ if (!IS_DEV && cluster.isMaster) {
     logger.info(
       `Node cluster worker ${worker.process.pid} exited: code ${code}, signal ${signal}`,
     );
+    // Replace crashed workers; with a single worker, the master would otherwise
+    // stay up serving nothing, and Heroku won't restart the dyno.
+    if (!worker.exitedAfterDisconnect) {
+      cluster.fork();
+    }
   });
 } else {
   const app = express();
