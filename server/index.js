@@ -1,5 +1,7 @@
 const cluster = require('cluster');
-const numCPUs = require('os').cpus().length;
+// Heroku sets WEB_CONCURRENCY from the dyno's memory; os.cpus() reports the
+// host's cores (8 on a 512 MB Basic dyno), which overcommits memory.
+const numWorkers = Number(process.env.WEB_CONCURRENCY) || 1;
 const path = require('path');
 
 const cors = require('cors');
@@ -38,12 +40,14 @@ const logger = createLogger('INDEX', {
   handleRejections: true,
 });
 
-// Multi-process to utilize all CPU cores.
+// Multi-process, sized to the dyno.
 if (!IS_DEV && cluster.isMaster) {
-  logger.info(`Node cluster master ${process.pid} is running`);
+  logger.info(
+    `Node cluster master ${process.pid} is running with ${numWorkers} worker(s)`,
+  );
 
   // Fork workers.
-  for (let i = 0; i < numCPUs; i += 1) {
+  for (let i = 0; i < numWorkers; i += 1) {
     cluster.fork();
   }
 
