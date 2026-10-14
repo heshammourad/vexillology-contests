@@ -1,7 +1,7 @@
 const cluster = require('cluster');
 // Heroku sets WEB_CONCURRENCY from the dyno's memory; os.cpus() reports the
 // host's cores (8 on a 512 MB Basic dyno), which overcommits memory.
-const numWorkers = Number(process.env.WEB_CONCURRENCY) || 1;
+const numWorkers = Math.max(1, parseInt(process.env.WEB_CONCURRENCY, 10) || 1);
 const path = require('path');
 
 const cors = require('cors');
@@ -55,10 +55,12 @@ if (!IS_DEV && cluster.isMaster) {
     logger.info(
       `Node cluster worker ${worker.process.pid} exited: code ${code}, signal ${signal}`,
     );
-    // Exit on a crash so Heroku restarts the dyno with its crash backoff;
-    // otherwise the master would stay up with no worker serving requests.
+    // Follow the worker out rather than respawn it: a clean exit (code 0, from
+    // the worker's SIGTERM/SIGINT shutdown) exits cleanly, and a crash exits 1
+    // so Heroku restarts the whole dyno, healthy workers included, with its
+    // crash backoff. Otherwise the master could stay up with no workers.
     if (!worker.exitedAfterDisconnect) {
-      process.exit(1);
+      process.exit(code === 0 ? 0 : 1);
     }
   });
 } else {
