@@ -4,9 +4,9 @@
 
 const partition = require('lodash/partition');
 
+const cache = require('../../cache');
 const imgur = require('../../imgur');
 const { createLogger } = require('../../logger');
-const memcache = require('../../memcache');
 const reddit = require('../../reddit');
 const { generateImagePath } = require('../../util');
 
@@ -40,7 +40,7 @@ const findMissingEntries = (contest, imagesData) => contest.entries.filter(
  * @returns {Promise<Object>} The contest data, including entries and winners.
  */
 exports.getContest = async (contestId, winnersThreadId) => {
-  const contest = await memcache.get(
+  const contest = await cache.get(
     `reddit.${contestId}`,
     async () => reddit.getContest(contestId),
     CONTESTS_CACHE_TIMEOUT,
@@ -57,7 +57,7 @@ exports.getContest = async (contestId, winnersThreadId) => {
     const winner = contestWinners.find(({ rank }) => rank === 1);
     if (contestWinners.length < LAST_WINNER_RANK || !winner?.description) {
       // We haven't loaded the winners from the winners thread yet, so we need to fetch the results.
-      const winners = await memcache.get(
+      const winners = await cache.get(
         `reddit.${winnersThreadId}`,
         async () => reddit.getWinners(winnersThreadId),
         WINNERS_CACHE_TIMEOUT,
