@@ -1,0 +1,37 @@
+name: Setup
+description: >
+  The toolchain to lint and build both packages, shared by CI and the unattended Claude runs,
+  plus proof that the run holds no database credential.
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24
+        cache: npm
+        cache-dependency-path: |
+          package-lock.json
+          react-ui/package-lock.json
+
+    - name: Install server dependencies
+      shell: bash
+      run: npm ci
+
+    - name: Install react-ui dependencies
+      shell: bash
+      working-directory: react-ui
+      run: npm ci
+
+    # The database is Heroku Postgres essential-0, which can't issue a second, read-only credential,
+    # so the only one there is can write to production. Neither CI nor an unattended Claude run gets
+    # it. This fails the job if any variable in the environment holds a Postgres URL anyway, so a
+    # secret wired in by mistake stops the run instead of reaching Claude.
+    - name: Refuse a database credential
+      shell: bash
+      run: |
+        if env | grep -qE '^[A-Za-z_][A-Za-z0-9_]*=postgres(ql)?://'; then
+          echo "::error::A Postgres URL is set in this job's environment. These runs must not hold a database credential (.claude/AUTOPILOT.md)."
+          exit 1
+        fi
