@@ -93,11 +93,16 @@ jobs:
           set -euo pipefail
           note() { echo "$1" | tee -a "$GITHUB_STEP_SUMMARY"; }
 
-          # Wrap-up only for a merged PR that autopilot opened.
+          # Wrap-up only for a merged PR that autopilot opened. A failed lookup mustn't take the
+          # plan down with it, so it fails soft and says so (re-run with -f merged_pr=N).
           wrapup=""
-          if [ -n "$MERGED_PR" ] && gh pr view "$MERGED_PR" --json labels --jq '.labels[].name' | grep -qx autopilot; then
-            wrapup="$MERGED_PR"
-            note "Wrap up: PR #$wrapup."
+          if [ -n "$MERGED_PR" ]; then
+            if ! pr_labels=$(gh pr view "$MERGED_PR" --json labels --jq '.labels[].name'); then
+              note "Couldn't read PR #$MERGED_PR's labels, so no wrap-up this run. Re-run with -f merged_pr=$MERGED_PR."
+            elif grep -qx autopilot <<< "$pr_labels"; then
+              wrapup="$MERGED_PR"
+              note "Wrap up: PR #$wrapup."
+            fi
           fi
 
           # Open trackers in number order. Milestones are sequential goals (CLAUDE.md), so the
@@ -107,6 +112,10 @@ jobs:
 
           issue="" tracker=""
           busy=$(gh issue list --label autopilot --state open --limit 100 --json number --jq '.[0].number // empty')
+          # Every open PR's body, read once, to tell which issues already have a PR. Captured rather
+          # than piped, because under pipefail grep -q exiting early can SIGPIPE the writer and make
+          # a claimed issue look unclaimed.
+          open_pr_bodies=$(gh pr list --state open --limit 200 --json body --jq '.[].body')
           if [ -n "$INPUT_ISSUE" ]; then
             issue="$INPUT_ISSUE"
             note "Plan: #$issue (requested by hand${busy:+; note #$busy is also in flight})."
@@ -121,11 +130,8 @@ jobs:
                 state=${meta%% *}; labels=",${meta#* },"
                 [ "$state" = "OPEN" ] || continue
                 case "$labels" in *,blocked,*|*,needs-input,*|*,autopilot,*|*,by-hand,*) continue;; esac
-                # Someone is already on it: an open PR that says it closes this issue. Captured
-                # first rather than piped, because under pipefail grep -q exiting early can SIGPIPE
-                # gh and make a claimed issue look unclaimed.
-                bodies=$(gh pr list --state open --search "$n in:body" --limit 100 --json body --jq '.[].body')
-                if grep -qiE "(close[sd]?|fix(e[sd])?|resolve[sd]?) #$n([^0-9]|$)" <<< "$bodies"; then
+                # Someone is already on it: an open PR that says it closes this issue.
+                if grep -qiE "(close[sd]?|fix(e[sd])?|resolve[sd]?) #$n([^0-9]|$)" <<< "$open_pr_bodies"; then
                   continue
                 fi
                 issue="$n" tracker="$t"

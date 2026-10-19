@@ -28,12 +28,13 @@ runs:
     # so the only one there is can write to production. Neither CI nor an unattended Claude run gets
     # it. This fails the job if any variable in the environment holds a Postgres URL at this point, so
     # a secret wired in by mistake stops the run instead of reaching Claude. It is a tripwire, not a
-    # sandbox: it can't see a variable a later step adds. The guarantee is that no workflow passes a
+    # sandbox: it can't see a variable a later step adds, or a credential given as separate host and
+    # password variables. The guarantee is that no workflow passes a
     # database secret in the first place.
     - name: Refuse a database credential
       shell: bash
       run: |
-        if env | grep -qE '^[A-Za-z_][A-Za-z0-9_]*=postgres(ql)?://'; then
+        if env | grep -qiE '^[A-Za-z_][A-Za-z0-9_]*=postgres(ql)?(\+[a-z0-9]+)?://'; then
           echo "::error::A Postgres URL is set in this job's environment. These runs must not hold a database credential (.claude/AUTOPILOT.md)."
           exit 1
         fi
