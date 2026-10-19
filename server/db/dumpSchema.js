@@ -115,7 +115,7 @@ const qualified = (schema, name) => `${ident(schema)}.${ident(name)}`;
 const dumpTypes = async () => {
   const enums = await db.any(
     `SELECT n.nspname AS schema, t.typname AS name,
-       array_agg(e.enumlabel ORDER BY e.enumsortorder) AS labels
+       array_agg(e.enumlabel::text ORDER BY e.enumsortorder) AS labels
      FROM pg_type t
      JOIN pg_namespace n ON n.oid = t.typnamespace
      JOIN pg_enum e ON e.enumtypid = t.oid
