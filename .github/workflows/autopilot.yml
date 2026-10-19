@@ -30,11 +30,17 @@ on:
         description: Wrap up this merged PR first (set by the relay)
         required: false
 
-# Serialized and queued: the picker reads the `autopilot` label that the previous run's Claude adds,
-# so two runs must never overlap. A pending run superseded by a newer one is fine to lose, since
-# both would pick from the same state.
+# The dispatched runs are serialized and queued: the picker reads the `autopilot` label that the
+# previous run's Claude adds, so two of them must never overlap. Relay runs get a group of their own
+# per run. Every deployment_status event (pending, in_progress, production) starts a run even when
+# all its jobs are skipped. A group holds one pending run, so sharing the group would let those
+# runs cancel the dispatch the relay just queued, and its wrap-up with it.
+#
+# A pending dispatch superseded by a newer one is otherwise fine to lose, since both pick from the
+# same state. The one exception is two Autopilot merges deploying within one run of each other:
+# the earlier merge's wrap-up would be dropped. Run it by hand with -f merged_pr=N.
 concurrency:
-  group: autopilot
+  group: ${{ github.event_name == 'workflow_dispatch' && 'autopilot' || format('autopilot-relay-{0}', github.run_id) }}
   cancel-in-progress: false
 
 jobs:
@@ -96,10 +102,10 @@ jobs:
           # Open trackers in number order. Milestones are sequential goals (CLAUDE.md), so the
           # lowest-numbered open tracker is the current one; later ones are reached only once it
           # has nothing pickable left.
-          trackers=$(gh issue list --label tracking --state open --json number --jq 'sort_by(.number) | .[].number')
+          trackers=$(gh issue list --label tracking --state open --limit 100 --json number --jq 'sort_by(.number) | .[].number')
 
           issue="" tracker=""
-          busy=$(gh issue list --label autopilot --state open --json number --jq '.[0].number // empty')
+          busy=$(gh issue list --label autopilot --state open --limit 100 --json number --jq '.[0].number // empty')
           if [ -n "$INPUT_ISSUE" ]; then
             issue="$INPUT_ISSUE"
             note "Plan: #$issue (requested by hand${busy:+; note #$busy is also in flight})."
@@ -115,7 +121,7 @@ jobs:
                 [ "$state" = "OPEN" ] || continue
                 case "$labels" in *,blocked,*|*,needs-input,*|*,autopilot,*|*,by-hand,*) continue;; esac
                 # Someone is already on it: an open PR that says it closes this issue.
-                if gh pr list --state open --search "$n in:body" --json body --jq '.[].body' \
+                if gh pr list --state open --search "$n in:body" --limit 100 --json body --jq '.[].body' \
                     | grep -qiE "(close[sd]?|fix(e[sd])?|resolve[sd]?) #$n([^0-9]|$)"; then
                   continue
                 fi
@@ -175,6 +181,8 @@ jobs:
           # dispatching it by hand. claude.yml doesn't get this; there, only the repository owner's
           # comments trigger it.
           allowed_bots: github-actions
+          # Every `git push` is blocked: these runs only plan and wrap up, and both end in a comment.
+          # claude.yml's Build phase has to push, so it blocks only the force forms.
           claude_args: |
             --model claude-opus-5-5
             --max-turns 150

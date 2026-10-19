@@ -60,6 +60,8 @@ jobs:
           additional_permissions: |
             actions: read
           branch_name_template: '{{prefix}}{{entityNumber}}-{{description}}'
+          # Plain `git push` is allowed, since Build and Review push to the PR branch. Only force
+          # pushes are blocked. autopilot.yml, which never needs to push, blocks every push.
           claude_args: |
             --model claude-opus-5-5
             --max-turns 250
