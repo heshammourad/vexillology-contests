@@ -13,3 +13,6 @@ Dockerfile
 docker-compose.yml
 
 .eslintcache
+
+# Local-only notes for Claude sessions (moderation internals; see CLAUDE.md)
+CLAUDE.local.md

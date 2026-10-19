@@ -9,6 +9,12 @@
  * calls a custom function would fail, and only enum types are dumped, not domains or
  * composite types.
  *
+ * This repository is public, so function and view bodies are withheld by default: only the
+ * objects in PUBLISHED_DEFINITIONS are written out in full. Every other function is reduced to
+ * its signature, and every other view to its columns. A new function or view stays withheld
+ * until someone decides it is safe to publish and adds it below. Moderation and ballot-validity
+ * logic never goes on that list.
+ *
  * Usage (PowerShell):
  *   $env:DATABASE_URL = heroku config:get DATABASE_URL -a vexillology-contests
  *   npm run dump-schema
@@ -21,6 +27,19 @@ const pgp = require('pg-promise')();
 
 const SCHEMAS = ['vexillology_contests_common', 'vexillology_contests'];
 const OUTPUT = path.join(__dirname, 'schema.sql');
+
+// Functions and views whose full definitions are safe to publish (see the header).
+const PUBLISHED_DEFINITIONS = new Set([
+  'add_contest',
+  'annual_standings',
+  'backup_data',
+  'best_of_year',
+  'copy_contest',
+  'create_best_of_year_contest',
+  'hall_of_fame',
+  'has_user_permission',
+  'update_vote_timestamp',
+]);
 
 const { DATABASE_URL } = process.env;
 if (!DATABASE_URL) {
@@ -193,7 +212,10 @@ const dumpIndexes = async () => {
 
 const dumpFunctions = async () => {
   const functions = await db.any(
-    `SELECT pg_get_functiondef(p.oid) AS definition
+    `SELECT n.nspname AS schema, p.proname AS name,
+       pg_get_function_identity_arguments(p.oid) AS args,
+       pg_get_function_result(p.oid) AS result,
+       pg_get_functiondef(p.oid) AS definition
      FROM pg_proc p
      JOIN pg_namespace n ON n.oid = p.pronamespace
      WHERE n.nspname IN ($1:csv)
@@ -204,7 +226,13 @@ const dumpFunctions = async () => {
      ORDER BY n.nspname, p.proname, pg_get_function_identity_arguments(p.oid)`,
     [SCHEMAS],
   );
-  return functions.map(({ definition }) => `${definition.trim()};`);
+  return functions.map(({
+    schema, name, args, result, definition,
+  }) => (PUBLISHED_DEFINITIONS.has(name)
+    ? `${definition.trim()};`
+    : `-- ${qualified(schema, name)}(${args})${
+      result ? ` RETURNS ${result}` : ''
+    }: definition withheld`));
 };
 
 // Views can read other views (best_of_year reads annual_standings, which reads
@@ -242,9 +270,28 @@ const dumpViews = async () => {
   };
   views.forEach(visit);
 
+  const columns = await db.any(
+    `SELECT a.attrelid AS view, a.attname AS name,
+       format_type(a.atttypid, a.atttypmod) AS type
+     FROM pg_attribute a
+     WHERE a.attrelid IN ($1:csv) AND a.attnum > 0 AND NOT a.attisdropped
+     ORDER BY a.attrelid, a.attnum`,
+    [views.length ? views.map(({ oid }) => oid) : [0]],
+  );
+
   return ordered.map(({
-    schema, name, kind, definition,
+    oid, schema, name, kind, definition,
   }) => {
+    if (!PUBLISHED_DEFINITIONS.has(name)) {
+      const columnList = columns
+        .filter((col) => col.view === oid)
+        .map((col) => `--   ${ident(col.name)} ${col.type}`)
+        .join('\n');
+      return `-- ${kind === 'm' ? 'MATERIALIZED VIEW' : 'VIEW'} ${qualified(
+        schema,
+        name,
+      )}: definition withheld. Columns:\n${columnList}`;
+    }
     const body = definition.trim().replace(/;$/, '');
     return kind === 'm'
       ? `CREATE MATERIALIZED VIEW ${qualified(
