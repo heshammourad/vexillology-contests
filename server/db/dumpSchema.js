@@ -68,15 +68,16 @@ const withheldObjects = new Set(withheld.objects ?? []);
 const isWithheldTable = (schema, table) => withheldTables.has(`${schema}.${table}`);
 const isWithheldColumn = (schema, table, column) => withheldColumns.has(`${schema}.${table}.${column}`);
 
-// Every withheld table and column name, matched as a whole word wherever it appears. This is
-// deliberately broad: a constraint, index, trigger or published body that names one, for any
-// reason, is left out or reduced. The final check before writing applies the same test to the
-// whole file.
+// Every withheld table and column name, matched case-insensitively anywhere in the text, inside
+// longer identifiers too. A whole-word match would miss `x_id_seq`, `x_pkey` or `fk_x`, because
+// `_` counts as part of a word. This is deliberately broad: a constraint, index, trigger or
+// published body that names one, for any reason, is left out or reduced. The final check before
+// writing applies the same test to the whole file.
 const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const withheldNamePatterns = [
   ...[...withheldTables].map((key) => key.split('.')[1]),
   ...[...withheldColumns].map((key) => key.split('.')[2]),
-].map((name) => ({ name, pattern: new RegExp(`\\b${escapeRegExp(name)}\\b`) }));
+].map((name) => ({ name, pattern: new RegExp(escapeRegExp(name), 'i') }));
 const namesWithheld = (text) => withheldNamePatterns.some(({ pattern }) => pattern.test(text));
 
 // Allowlisted objects that came out reduced because their bodies name something withheld.
