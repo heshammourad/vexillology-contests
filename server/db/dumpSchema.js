@@ -280,12 +280,15 @@ const dumpIndexes = async () => {
      ORDER BY n.nspname, c.relname`,
     [SCHEMAS],
   );
-  // A withheld materialized view's indexes would point at a relation this file doesn't define.
+  // A withheld or reduced materialized view's indexes would point at a relation this file doesn't
+  // define. dumpViews runs first, so `reduced` is complete here.
   return indexes
     .filter(
       ({
         schema, table, kind, definition,
-      }) => (kind !== 'm' || isPublished(schema, table))
+      }) => (kind !== 'm'
+          || (isPublished(schema, table)
+            && !reduced.includes(`${schema}.${table}`)))
         && !isWithheldTable(schema, table)
         && !namesWithheld(definition),
     )
