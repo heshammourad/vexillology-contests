@@ -288,7 +288,8 @@ const dumpIndexes = async () => {
         schema, table, kind, definition,
       }) => (kind !== 'm'
           || (isPublished(schema, table)
-            && !reduced.includes(`${schema}.${table}`)))
+            && !reduced.includes(`${schema}.${table}`)
+            && !withheldObjects.has(`${schema}.${table}`)))
         && !isWithheldTable(schema, table)
         && !namesWithheld(definition),
     )
@@ -337,7 +338,7 @@ const dumpViews = async () => {
   const dependencies = await db.any(
     `SELECT DISTINCT r.ev_class AS view, d.refobjid AS "dependsOn"
      FROM pg_rewrite r
-     JOIN pg_depend d ON d.objid = r.oid
+     JOIN pg_depend d ON d.classid = 'pg_rewrite'::regclass AND d.objid = r.oid
      WHERE d.refobjid <> r.ev_class AND r.ev_class IN ($1:csv)`,
     [views.length ? views.map(({ oid }) => oid) : [0]],
   );
