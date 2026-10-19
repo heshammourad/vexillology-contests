@@ -71,7 +71,9 @@ jobs:
           # The PR whose merge produced this commit, if any (a redeploy or a direct push has none).
           # A failed lookup costs only the wrap-up, never the dispatch, so the next item still gets
           # planned.
-          if pr=$(gh api "repos/$GH_REPO/commits/$SHA/pulls" --jq '[.[] | select(.merged_at != null)][0].number // empty'); then
+          # A commit can belong to several merged PRs (one merged elsewhere first, say). Prefer the
+          # one merged into the default branch whose merge commit is this SHA.
+          if pr=$(gh api "repos/$GH_REPO/commits/$SHA/pulls" --jq "[.[] | select(.merged_at != null and .base.ref == \"$DEFAULT_BRANCH\")] | (map(select(.merge_commit_sha == \"$SHA\")) + .)[0].number // empty"); then
             echo "Staging is live at $SHA (merged PR: ${pr:-none})." >> "$GITHUB_STEP_SUMMARY"
           else
             pr=""
@@ -140,9 +142,16 @@ jobs:
             note "Not picking: #$busy is still in flight (open, labelled autopilot)."
           else
             for t in $trackers; do
+              # Read first: inside the for list below, a failed read would look like an empty
+              # tracker, and end in a false "nothing left" note.
+              if ! tracker_body=$(gh issue view "$t" --json body --jq .body); then
+                note "Couldn't read tracker #$t, so nothing is planned this run. Re-run with gh workflow run autopilot.yml."
+                lookup_failed=1
+                break
+              fi
               # Unchecked lines, in order: "- [ ] #N" and "- [ ] **#N". Plain "- #N" bullets are
               # listed for context only and never picked.
-              for n in $(gh issue view "$t" --json body --jq .body | grep -oE '^[[:space:]]*- \[ \] (\*\*)?#[0-9]+' | grep -oE '[0-9]+$'); do
+              for n in $(grep -oE '^[[:space:]]*- \[ \] (\*\*)?#[0-9]+' <<< "$tracker_body" | grep -oE '[0-9]+$'); do
                 # A failed lookup stops the picking rather than skipping ahead to a lower item. Any
                 # wrap-up still runs.
                 if ! meta=$(gh issue view "$n" --json state,labels --jq '"\(.state) \([.labels[].name] | join(","))"'); then
