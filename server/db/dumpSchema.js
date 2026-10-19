@@ -28,18 +28,22 @@ const pgp = require('pg-promise')();
 const SCHEMAS = ['vexillology_contests_common', 'vexillology_contests'];
 const OUTPUT = path.join(__dirname, 'schema.sql');
 
-// Functions and views whose full definitions are safe to publish (see the header).
-const PUBLISHED_DEFINITIONS = new Set([
-  'add_contest',
-  'annual_standings',
-  'backup_data',
-  'best_of_year',
-  'copy_contest',
-  'create_best_of_year_contest',
-  'hall_of_fame',
-  'has_user_permission',
-  'update_vote_timestamp',
-]);
+// Functions and views whose full definitions are safe to publish (see the header), as
+// schema.name. A name that doesn't match exactly stays withheld.
+const PUBLISHED_DEFINITIONS = new Set(
+  [
+    'add_contest',
+    'annual_standings',
+    'backup_data',
+    'best_of_year',
+    'copy_contest',
+    'create_best_of_year_contest',
+    'hall_of_fame',
+    'has_user_permission',
+    'update_vote_timestamp',
+  ].map((name) => `vexillology_contests.${name}`),
+);
+const isPublished = (schema, name) => PUBLISHED_DEFINITIONS.has(`${schema}.${name}`);
 
 const { DATABASE_URL } = process.env;
 if (!DATABASE_URL) {
@@ -193,10 +197,12 @@ const dumpTables = async () => {
 
 const dumpIndexes = async () => {
   const indexes = await db.any(
-    `SELECT pg_get_indexdef(i.indexrelid) AS definition
+    `SELECT pg_get_indexdef(i.indexrelid) AS definition, n.nspname AS schema,
+       t.relname AS "table", t.relkind AS kind
      FROM pg_index i
      JOIN pg_class c ON c.oid = i.indexrelid
      JOIN pg_namespace n ON n.oid = c.relnamespace
+     JOIN pg_class t ON t.oid = i.indrelid
      WHERE n.nspname IN ($1:csv)
        -- Skip indexes a PK/UNIQUE/EXCLUDE constraint creates. A foreign key's conindid points
        -- at the unique index it references, which must still be dumped.
@@ -207,7 +213,12 @@ const dumpIndexes = async () => {
      ORDER BY n.nspname, c.relname`,
     [SCHEMAS],
   );
-  return indexes.map(({ definition }) => `${definition};`);
+  // A withheld materialized view's indexes would point at a relation this file doesn't define.
+  return indexes
+    .filter(
+      ({ schema, table, kind }) => kind !== 'm' || isPublished(schema, table),
+    )
+    .map(({ definition }) => `${definition};`);
 };
 
 const dumpFunctions = async () => {
@@ -228,7 +239,7 @@ const dumpFunctions = async () => {
   );
   return functions.map(({
     schema, name, args, result, definition,
-  }) => (PUBLISHED_DEFINITIONS.has(name)
+  }) => (isPublished(schema, name)
     ? `${definition.trim()};`
     : `-- ${qualified(schema, name)}(${args})${
       result ? ` RETURNS ${result}` : ''
@@ -282,7 +293,7 @@ const dumpViews = async () => {
   return ordered.map(({
     oid, schema, name, kind, definition,
   }) => {
-    if (!PUBLISHED_DEFINITIONS.has(name)) {
+    if (!isPublished(schema, name)) {
       const columnList = columns
         .filter((col) => col.view === oid)
         .map((col) => `--   ${ident(col.name)} ${col.type}`)

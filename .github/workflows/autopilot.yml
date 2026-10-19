@@ -144,7 +144,11 @@ jobs:
               note "Nothing pickable on any open tracker (everything is checked, closed, by-hand, blocked or waiting)."
               # Say so once on the current tracker, so a stopped loop is visible where Hesham looks.
               first=$(echo "$trackers" | head -1)
-              if [ -n "$first" ] && ! gh issue view "$first" --json comments --jq '.comments[-1].body // ""' | grep -q 'autopilot:empty'; then
+              # Captured rather than piped, so grep -q exiting early can't SIGPIPE gh into a repeat
+              # comment.
+              last_comment=""
+              [ -n "$first" ] && last_comment=$(gh issue view "$first" --json comments --jq '.comments[-1].body // ""')
+              if [ -n "$first" ] && ! grep -q 'autopilot:empty' <<< "$last_comment"; then
                 gh issue comment "$first" --body "<!-- autopilot:empty -->
           Autopilot has nothing left to pick: every unchecked line on the open trackers is closed, \`by-hand\`, \`blocked\`, waiting on you, or already has a PR. It will pick again after the next staging deploy, or on \`gh workflow run autopilot.yml\`."
               fi
