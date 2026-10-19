@@ -15,6 +15,13 @@
  * until someone decides it is safe to publish and adds it below. Moderation and ballot-validity
  * logic never goes on that list.
  *
+ * Some tables, columns and objects shouldn't even be named here. Those are listed in the
+ * gitignored server/db/dumpSchema.withheld.json (shape below), which the script needs in order
+ * to run, so a fresh checkout can't write an unfiltered file by accident. Everything in that
+ * file is left out of the output entirely:
+ *   { "tables": ["schema.table"], "columns": ["schema.table.column"], "objects": ["schema.name"] }
+ * "objects" are functions or views to drop entirely, rather than reduce to a signature.
+ *
  * Usage (PowerShell):
  *   $env:DATABASE_URL = heroku config:get DATABASE_URL -a vexillology-contests
  *   npm run dump-schema
@@ -45,6 +52,35 @@ const PUBLISHED_DEFINITIONS = new Set(
 );
 const isPublished = (schema, name) => PUBLISHED_DEFINITIONS.has(`${schema}.${name}`);
 
+const WITHHELD_FILE = path.join(__dirname, 'dumpSchema.withheld.json');
+if (!fs.existsSync(WITHHELD_FILE)) {
+  process.stderr.write(
+    `${path.basename(
+      WITHHELD_FILE,
+    )} is missing; see the header of this file.\n`,
+  );
+  process.exit(1);
+}
+const withheld = JSON.parse(fs.readFileSync(WITHHELD_FILE, 'utf8'));
+const withheldTables = new Set(withheld.tables ?? []);
+const withheldColumns = new Set(withheld.columns ?? []);
+const withheldObjects = new Set(withheld.objects ?? []);
+const isWithheldTable = (schema, table) => withheldTables.has(`${schema}.${table}`);
+const isWithheldColumn = (schema, table, column) => withheldColumns.has(`${schema}.${table}.${column}`);
+// Constraint, index and trigger definitions name the columns they cover.
+const mentionsWithheld = (schema, table, definition) => [...withheldColumns].some((key) => {
+  const [colSchema, colTable, column] = key.split('.');
+  return (
+    colSchema === schema
+      && colTable === table
+      && new RegExp(`\\b${column}\\b`).test(definition)
+  );
+});
+const mentionsWithheldTable = (definition) => [...withheldTables].some((key) => {
+  const table = key.split('.')[1];
+  return new RegExp(`\\b${table}\\b`).test(definition);
+});
+
 const { DATABASE_URL } = process.env;
 if (!DATABASE_URL) {
   process.stderr.write(
@@ -53,9 +89,12 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
+// Same switch as the server (server/env.js): SSL unless DATABASE_SSL is 'false', so the script can
+// also run against a local copy.
 const db = pgp({
   connectionString: DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ssl:
+    process.env.DATABASE_SSL === 'false' ? false : { rejectUnauthorized: false },
 });
 
 const ident = (name) => pgp.as.name(name);
@@ -104,7 +143,14 @@ const dumpSequences = async () => {
      ORDER BY 1, 2`,
     [SCHEMAS],
   );
-  const creates = sequences.map(
+  const kept = sequences.filter(
+    ({ ownerSchema, ownerTable, ownerColumn }) => !ownerTable
+      || !(
+        isWithheldTable(ownerSchema, ownerTable)
+        || isWithheldColumn(ownerSchema, ownerTable, ownerColumn)
+      ),
+  );
+  const creates = kept.map(
     ({
       schema, name, type, start, increment, min, max, cache, cycle,
     }) => `CREATE SEQUENCE ${qualified(
@@ -114,7 +160,7 @@ const dumpSequences = async () => {
       cycle ? ' CYCLE' : ''
     };`,
   );
-  const ownedBy = sequences
+  const ownedBy = kept
     .filter(({ ownerTable }) => ownerTable)
     .map(
       ({
@@ -154,6 +200,12 @@ const dumpTables = async () => {
 
   const tables = new Map();
   columns.forEach((col) => {
+    if (
+      isWithheldTable(col.schema, col.table)
+      || isWithheldColumn(col.schema, col.table, col.column)
+    ) {
+      return;
+    }
     const key = qualified(col.schema, col.table);
     if (!tables.has(key)) {
       tables.set(key, []);
@@ -180,6 +232,13 @@ const dumpTables = async () => {
     schema, table, name, kind, definition,
   }) => {
     const key = qualified(schema, table);
+    if (
+      isWithheldTable(schema, table)
+      || mentionsWithheld(schema, table, definition)
+      || mentionsWithheldTable(definition)
+    ) {
+      return;
+    }
     if (kind === 'f') {
       foreignKeys.push(
         `ALTER TABLE ${key} ADD CONSTRAINT ${ident(name)} ${definition};`,
@@ -216,7 +275,11 @@ const dumpIndexes = async () => {
   // A withheld materialized view's indexes would point at a relation this file doesn't define.
   return indexes
     .filter(
-      ({ schema, table, kind }) => kind !== 'm' || isPublished(schema, table),
+      ({
+        schema, table, kind, definition,
+      }) => (kind !== 'm' || isPublished(schema, table))
+        && !isWithheldTable(schema, table)
+        && !mentionsWithheld(schema, table, definition),
     )
     .map(({ definition }) => `${definition};`);
 };
@@ -237,13 +300,15 @@ const dumpFunctions = async () => {
      ORDER BY n.nspname, p.proname, pg_get_function_identity_arguments(p.oid)`,
     [SCHEMAS],
   );
-  return functions.map(({
-    schema, name, args, result, definition,
-  }) => (isPublished(schema, name)
-    ? `${definition.trim()};`
-    : `-- ${qualified(schema, name)}(${args})${
-      result ? ` RETURNS ${result}` : ''
-    }: definition withheld`));
+  return functions
+    .filter(({ schema, name }) => !withheldObjects.has(`${schema}.${name}`))
+    .map(({
+      schema, name, args, result, definition,
+    }) => (isPublished(schema, name)
+      ? `${definition.trim()};`
+      : `-- ${qualified(schema, name)}(${args})${
+        result ? ` RETURNS ${result}` : ''
+      }: definition withheld`));
 };
 
 // Views can read other views (best_of_year reads annual_standings, which reads
@@ -290,32 +355,35 @@ const dumpViews = async () => {
     [views.length ? views.map(({ oid }) => oid) : [0]],
   );
 
-  return ordered.map(({
-    oid, schema, name, kind, definition,
-  }) => {
-    if (!isPublished(schema, name)) {
-      const columnList = columns
-        .filter((col) => col.view === oid)
-        .map((col) => `--   ${ident(col.name)} ${col.type}`)
-        .join('\n');
-      return `-- ${kind === 'm' ? 'MATERIALIZED VIEW' : 'VIEW'} ${qualified(
-        schema,
-        name,
-      )}: definition withheld. Columns:\n${columnList}`;
-    }
-    const body = definition.trim().replace(/;$/, '');
-    return kind === 'm'
-      ? `CREATE MATERIALIZED VIEW ${qualified(
-        schema,
-        name,
-      )} AS\n${body}\nWITH NO DATA;`
-      : `CREATE VIEW ${qualified(schema, name)} AS\n${body};`;
-  });
+  return ordered
+    .filter(({ schema, name }) => !withheldObjects.has(`${schema}.${name}`))
+    .map(({
+      oid, schema, name, kind, definition,
+    }) => {
+      if (!isPublished(schema, name)) {
+        const columnList = columns
+          .filter((col) => col.view === oid)
+          .map((col) => `--   ${ident(col.name)} ${col.type}`)
+          .join('\n');
+        return `-- ${kind === 'm' ? 'MATERIALIZED VIEW' : 'VIEW'} ${qualified(
+          schema,
+          name,
+        )}: definition withheld. Columns:\n${columnList}`;
+      }
+      const body = definition.trim().replace(/;$/, '');
+      return kind === 'm'
+        ? `CREATE MATERIALIZED VIEW ${qualified(
+          schema,
+          name,
+        )} AS\n${body}\nWITH NO DATA;`
+        : `CREATE VIEW ${qualified(schema, name)} AS\n${body};`;
+    });
 };
 
 const dumpTriggers = async () => {
   const triggers = await db.any(
-    `SELECT pg_get_triggerdef(t.oid) AS definition
+    `SELECT pg_get_triggerdef(t.oid) AS definition, n.nspname AS schema,
+       c.relname AS "table"
      FROM pg_trigger t
      JOIN pg_class c ON c.oid = t.tgrelid
      JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -323,7 +391,12 @@ const dumpTriggers = async () => {
      ORDER BY n.nspname, c.relname, t.tgname`,
     [SCHEMAS],
   );
-  return triggers.map(({ definition }) => `${definition};`);
+  return triggers
+    .filter(
+      ({ schema, table, definition }) => !isWithheldTable(schema, table)
+        && !mentionsWithheld(schema, table, definition),
+    )
+    .map(({ definition }) => `${definition};`);
 };
 
 const section = (title, statements) => (statements.length ? `-- ${title}\n\n${statements.join('\n\n')}\n` : '');

@@ -16,3 +16,5 @@ docker-compose.yml
 
 # Local-only notes for Claude sessions (moderation internals; see CLAUDE.md)
 CLAUDE.local.md
+# Names of schema objects dumpSchema.js leaves out (moderation internals)
+server/db/dumpSchema.withheld.json
