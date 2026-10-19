@@ -450,8 +450,10 @@ const section = (title, statements) => (statements.length ? `-- ${title}\n\n${st
         `Refusing to write ${path.basename(
           OUTPUT,
         )}: withheld names would appear in it.\n${leaks.join('\n')}\n`
-          + 'Take the object that names them off PUBLISHED_DEFINITIONS, or add it to "objects" in the '
-          + 'withheld file.',
+          + 'Look at what is on those lines. Withheld functions still show their signatures, so an '
+          + 'argument or return-column name can match, and so can an enum label. Add the object to '
+          + '"objects" in the withheld file to leave it out entirely, or take it off '
+          + 'PUBLISHED_DEFINITIONS.',
       );
     }
 
