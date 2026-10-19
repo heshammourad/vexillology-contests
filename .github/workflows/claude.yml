@@ -22,8 +22,21 @@ on:
 
 # One run per issue or PR at a time, queued rather than cancelled: a second comment while the first
 # is being handled is a second request, not a correction to throw the first away for.
+#
+# Every comment starts a run, including claude[bot]'s and strangers' on this public repo, even though
+# its job is then skipped. A group holds only one pending run, so only events that pass the job's
+# owner + @claude check may join the per-issue group. Anything else gets a group of its own, so it
+# can't replace a queued @claude. Keep this condition in step with the job's `if:`.
 concurrency:
-  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+  group: >-
+    ${{ ((github.event_name == 'pull_request_review'
+    && github.event.review.user.login == github.repository_owner
+    && contains(github.event.review.body, '@claude'))
+    || (github.event_name != 'pull_request_review'
+    && github.event.comment.user.login == github.repository_owner
+    && contains(github.event.comment.body, '@claude')))
+    && format('claude-{0}', github.event.issue.number || github.event.pull_request.number)
+    || format('claude-skip-{0}', github.run_id) }}
   cancel-in-progress: false
 
 jobs:

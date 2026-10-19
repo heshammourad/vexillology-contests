@@ -174,7 +174,12 @@ const dumpIndexes = async () => {
      JOIN pg_class c ON c.oid = i.indexrelid
      JOIN pg_namespace n ON n.oid = c.relnamespace
      WHERE n.nspname IN ($1:csv)
-       AND NOT EXISTS (SELECT 1 FROM pg_constraint k WHERE k.conindid = i.indexrelid)
+       -- Skip indexes a PK/UNIQUE/EXCLUDE constraint creates. A foreign key's conindid points
+       -- at the unique index it references, which must still be dumped.
+       AND NOT EXISTS (
+         SELECT 1 FROM pg_constraint k
+         WHERE k.conindid = i.indexrelid AND k.contype IN ('p', 'u', 'x')
+       )
      ORDER BY n.nspname, c.relname`,
     [SCHEMAS],
   );
