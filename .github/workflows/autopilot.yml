@@ -113,7 +113,7 @@ jobs:
           # has nothing pickable left.
           trackers=$(gh issue list --label tracking --state open --limit 100 --json number --jq 'sort_by(.number) | .[].number')
 
-          issue="" tracker=""
+          issue="" tracker="" lookup_failed=""
           busy=$(gh issue list --label autopilot --state open --limit 100 --json number --jq '.[0].number // empty')
           # Every open PR's body, read once, to tell which issues already have a PR. Captured rather
           # than piped, because under pipefail grep -q exiting early can SIGPIPE the writer and make
@@ -135,7 +135,13 @@ jobs:
               # Unchecked lines, in order: "- [ ] #N" and "- [ ] **#N". Plain "- #N" bullets are
               # listed for context only and never picked.
               for n in $(gh issue view "$t" --json body --jq .body | grep -oE '^[[:space:]]*- \[ \] (\*\*)?#[0-9]+' | grep -oE '[0-9]+$'); do
-                meta=$(gh issue view "$n" --json state,labels --jq '"\(.state) \([.labels[].name] | join(","))"')
+                # A failed lookup stops the picking rather than skipping ahead to a lower item. Any
+                # wrap-up still runs.
+                if ! meta=$(gh issue view "$n" --json state,labels --jq '"\(.state) \([.labels[].name] | join(","))"'); then
+                  note "Couldn't read #$n on tracker #$t, so nothing is planned this run. Re-run with gh workflow run autopilot.yml."
+                  lookup_failed=1
+                  break 2
+                fi
                 state=${meta%% *}; labels=",${meta#* },"
                 [ "$state" = "OPEN" ] || continue
                 case "$labels" in *,blocked,*|*,needs-input,*|*,autopilot,*|*,by-hand,*) continue;; esac
@@ -150,6 +156,8 @@ jobs:
             done
             if [ -n "$issue" ]; then
               note "Plan: #$issue, the next pickable item on tracker #$tracker."
+            elif [ -n "$lookup_failed" ]; then
+              : # already noted above, and not the same as an empty tracker
             else
               note "Nothing pickable on any open tracker (everything is checked, closed, by-hand, blocked or waiting)."
               # Say so once on the current tracker, so a stopped loop is visible where Hesham looks.
