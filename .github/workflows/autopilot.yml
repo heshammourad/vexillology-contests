@@ -69,8 +69,14 @@ jobs:
         run: |
           set -euo pipefail
           # The PR whose merge produced this commit, if any (a redeploy or a direct push has none).
-          pr=$(gh api "repos/$GH_REPO/commits/$SHA/pulls" --jq '[.[] | select(.merged_at != null)][0].number // empty')
-          echo "Staging is live at $SHA (merged PR: ${pr:-none})." >> "$GITHUB_STEP_SUMMARY"
+          # A failed lookup costs only the wrap-up, never the dispatch, so the next item still gets
+          # planned.
+          if pr=$(gh api "repos/$GH_REPO/commits/$SHA/pulls" --jq '[.[] | select(.merged_at != null)][0].number // empty'); then
+            echo "Staging is live at $SHA (merged PR: ${pr:-none})." >> "$GITHUB_STEP_SUMMARY"
+          else
+            pr=""
+            echo "Staging is live at $SHA, but its merged PR couldn't be looked up, so no wrap-up this run. Re-run with: gh workflow run autopilot.yml -f merged_pr=N" | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
           gh workflow run autopilot.yml --ref "$DEFAULT_BRANCH" -f merged_pr="${pr}"
 
   pick:
