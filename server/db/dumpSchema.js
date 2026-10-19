@@ -67,19 +67,17 @@ const withheldColumns = new Set(withheld.columns ?? []);
 const withheldObjects = new Set(withheld.objects ?? []);
 const isWithheldTable = (schema, table) => withheldTables.has(`${schema}.${table}`);
 const isWithheldColumn = (schema, table, column) => withheldColumns.has(`${schema}.${table}.${column}`);
-// Constraint, index and trigger definitions name the columns they cover.
-const mentionsWithheld = (schema, table, definition) => [...withheldColumns].some((key) => {
-  const [colSchema, colTable, column] = key.split('.');
-  return (
-    colSchema === schema
-      && colTable === table
-      && new RegExp(`\\b${column}\\b`).test(definition)
-  );
-});
-const mentionsWithheldTable = (definition) => [...withheldTables].some((key) => {
-  const table = key.split('.')[1];
-  return new RegExp(`\\b${table}\\b`).test(definition);
-});
+
+// Every withheld table and column name, matched as a whole word wherever it appears. This is
+// deliberately broad: a constraint, index, trigger or published body that names one, for any
+// reason, is left out or reduced. The final check before writing applies the same test to the
+// whole file.
+const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const withheldNamePatterns = [
+  ...[...withheldTables].map((key) => key.split('.')[1]),
+  ...[...withheldColumns].map((key) => key.split('.')[2]),
+].map((name) => ({ name, pattern: new RegExp(`\\b${escapeRegExp(name)}\\b`) }));
+const namesWithheld = (text) => withheldNamePatterns.some(({ pattern }) => pattern.test(text));
 
 const { DATABASE_URL } = process.env;
 if (!DATABASE_URL) {
@@ -232,11 +230,7 @@ const dumpTables = async () => {
     schema, table, name, kind, definition,
   }) => {
     const key = qualified(schema, table);
-    if (
-      isWithheldTable(schema, table)
-      || mentionsWithheld(schema, table, definition)
-      || mentionsWithheldTable(definition)
-    ) {
+    if (isWithheldTable(schema, table) || namesWithheld(definition)) {
       return;
     }
     if (kind === 'f') {
@@ -279,7 +273,7 @@ const dumpIndexes = async () => {
         schema, table, kind, definition,
       }) => (kind !== 'm' || isPublished(schema, table))
         && !isWithheldTable(schema, table)
-        && !mentionsWithheld(schema, table, definition),
+        && !namesWithheld(definition),
     )
     .map(({ definition }) => `${definition};`);
 };
@@ -304,7 +298,7 @@ const dumpFunctions = async () => {
     .filter(({ schema, name }) => !withheldObjects.has(`${schema}.${name}`))
     .map(({
       schema, name, args, result, definition,
-    }) => (isPublished(schema, name)
+    }) => (isPublished(schema, name) && !namesWithheld(definition)
       ? `${definition.trim()};`
       : `-- ${qualified(schema, name)}(${args})${
         result ? ` RETURNS ${result}` : ''
@@ -360,9 +354,9 @@ const dumpViews = async () => {
     .map(({
       oid, schema, name, kind, definition,
     }) => {
-      if (!isPublished(schema, name)) {
+      if (!isPublished(schema, name) || namesWithheld(definition)) {
         const columnList = columns
-          .filter((col) => col.view === oid)
+          .filter((col) => col.view === oid && !namesWithheld(col.name))
           .map((col) => `--   ${ident(col.name)} ${col.type}`)
           .join('\n');
         return `-- ${kind === 'm' ? 'MATERIALIZED VIEW' : 'VIEW'} ${qualified(
@@ -392,10 +386,10 @@ const dumpTriggers = async () => {
     [SCHEMAS],
   );
   return triggers
-    .filter(
-      ({ schema, table, definition }) => !isWithheldTable(schema, table)
-        && !mentionsWithheld(schema, table, definition),
-    )
+    .filter(({ schema, table, definition }) => {
+      const hidden = isWithheldTable(schema, table) || namesWithheld(definition);
+      return !hidden;
+    })
     .map(({ definition }) => `${definition};`);
 };
 
@@ -426,6 +420,23 @@ const section = (title, statements) => (statements.length ? `-- ${title}\n\n${st
       section('Indexes', await dumpIndexes()),
       section('Triggers', await dumpTriggers()),
     ].join('\n');
+
+    // Last line of defence: if any withheld name survived the filters above, write nothing. The
+    // report goes to this terminal only, as line numbers and names, never into the file.
+    const leaks = output
+      .split('\n')
+      .flatMap((line, index) => withheldNamePatterns
+        .filter(({ pattern }) => pattern.test(line))
+        .map(({ name }) => `  line ${index + 1}: ${name}`));
+    if (leaks.length) {
+      throw new Error(
+        `Refusing to write ${path.basename(
+          OUTPUT,
+        )}: withheld names would appear in it.\n${leaks.join('\n')}\n`
+          + 'Take the object that names them off PUBLISHED_DEFINITIONS, or add it to "objects" in the '
+          + 'withheld file.',
+      );
+    }
 
     fs.writeFileSync(OUTPUT, `${output.trimEnd()}\n`);
     process.stdout.write(`Wrote ${path.relative(process.cwd(), OUTPUT)}\n`);
