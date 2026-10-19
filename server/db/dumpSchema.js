@@ -79,6 +79,20 @@ const withheldNamePatterns = [
 ].map((name) => ({ name, pattern: new RegExp(`\\b${escapeRegExp(name)}\\b`) }));
 const namesWithheld = (text) => withheldNamePatterns.some(({ pattern }) => pattern.test(text));
 
+// Allowlisted objects that came out reduced because their bodies name something withheld.
+// Reported after the write, so a broad match can't silently hide a definition.
+const reduced = [];
+const publishedInFull = (schema, name, definition) => {
+  if (!isPublished(schema, name)) {
+    return false;
+  }
+  if (namesWithheld(definition)) {
+    reduced.push(`${schema}.${name}`);
+    return false;
+  }
+  return true;
+};
+
 const { DATABASE_URL } = process.env;
 if (!DATABASE_URL) {
   process.stderr.write(
@@ -298,7 +312,7 @@ const dumpFunctions = async () => {
     .filter(({ schema, name }) => !withheldObjects.has(`${schema}.${name}`))
     .map(({
       schema, name, args, result, definition,
-    }) => (isPublished(schema, name) && !namesWithheld(definition)
+    }) => (publishedInFull(schema, name, definition)
       ? `${definition.trim()};`
       : `-- ${qualified(schema, name)}(${args})${
         result ? ` RETURNS ${result}` : ''
@@ -354,7 +368,7 @@ const dumpViews = async () => {
     .map(({
       oid, schema, name, kind, definition,
     }) => {
-      if (!isPublished(schema, name) || namesWithheld(definition)) {
+      if (!publishedInFull(schema, name, definition)) {
         const columnList = columns
           .filter((col) => col.view === oid && !namesWithheld(col.name))
           .map((col) => `--   ${ident(col.name)} ${col.type}`)
@@ -440,6 +454,12 @@ const section = (title, statements) => (statements.length ? `-- ${title}\n\n${st
 
     fs.writeFileSync(OUTPUT, `${output.trimEnd()}\n`);
     process.stdout.write(`Wrote ${path.relative(process.cwd(), OUTPUT)}\n`);
+    if (reduced.length) {
+      const list = reduced.map((name) => `  ${name}`).join('\n');
+      process.stdout.write(
+        `Allowlisted, but written as a signature or column list because they name something withheld:\n${list}\n`,
+      );
+    }
   } finally {
     pgp.end();
   }

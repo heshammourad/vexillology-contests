@@ -119,6 +119,12 @@ jobs:
           # than piped, because under pipefail grep -q exiting early can SIGPIPE the writer and make
           # a claimed issue look unclaimed.
           open_pr_bodies=$(gh pr list --state open --limit 200 --json body --jq '.[].body')
+          # A hand-typed issue number: allow a leading #, refuse anything else that isn't a number.
+          INPUT_ISSUE=${INPUT_ISSUE#\#}
+          if [ -n "$INPUT_ISSUE" ] && ! [[ $INPUT_ISSUE =~ ^[0-9]+$ ]]; then
+            echo "::error::issue must be an issue number, like 334; got '$INPUT_ISSUE'."
+            exit 1
+          fi
           if [ -n "$INPUT_ISSUE" ]; then
             issue="$INPUT_ISSUE"
             note "Plan: #$issue (requested by hand${busy:+; note #$busy is also in flight})."
