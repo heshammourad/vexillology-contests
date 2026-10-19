@@ -140,7 +140,8 @@ jobs:
                 [ "$state" = "OPEN" ] || continue
                 case "$labels" in *,blocked,*|*,needs-input,*|*,autopilot,*|*,by-hand,*) continue;; esac
                 # Someone is already on it: an open PR that says it closes this issue.
-                if grep -qiE "(close[sd]?|fix(e[sd])?|resolve[sd]?) #$n([^0-9]|$)" <<< "$open_pr_bodies"; then
+                # GitHub's closing forms: #N, owner/repo#N for this repo, or this repo's issue URL.
+                if grep -qiE "(close[sd]?|fix(e[sd])?|resolve[sd]?):?[[:space:]]+(($GH_REPO)?#|https://github\.com/$GH_REPO/issues/)$n([^0-9]|$)" <<< "$open_pr_bodies"; then
                   continue
                 fi
                 issue="$n" tracker="$t"
@@ -218,7 +219,7 @@ jobs:
             read .claude/AUTOPILOT.md and CLAUDE.md and follow them. Nobody is watching this run;
             everything you want Hesham to see goes in an issue comment.
 
-            Current tracking issue: #${{ needs.pick.outputs.tracker }}.
+            ${{ needs.pick.outputs.tracker != '' && format('Current tracking issue: #{0}.', needs.pick.outputs.tracker) || 'There is no open tracking issue.' }}
 
             ${{ needs.pick.outputs.wrapup_pr != '' && format('Step 1, wrap-up: PR #{0} has merged and is live on staging. Do the Wrap-up phase for it.', needs.pick.outputs.wrapup_pr) || 'Step 1: no wrap-up this run.' }}
 
