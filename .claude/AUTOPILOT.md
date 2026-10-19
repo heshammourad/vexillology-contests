@@ -40,6 +40,8 @@ the action start a second branch. If it happens anyway, reply pointing at the PR
 3. **Never merge, approve or close a PR, delete a branch, or change secrets, variables, workflows,
    milestones or repository settings.** Never touch Heroku: not the CLI, not a deploy, not a
    promotion. Merging is Hesham's gate, and promoting staging to production is his second one.
+   `master`'s branch protection enforces the first (an approving review, no force pushes). The
+   tool deny-lists are only a backstop, so a command that gets past them is still forbidden.
    Those two gates are what make everything else here safe.
 4. **You have no database access, and must not try to get it.** The database is Heroku Postgres
    `essential-0`, which can't issue a read-only credential, so the only one that exists can write

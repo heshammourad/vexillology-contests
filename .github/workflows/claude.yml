@@ -74,7 +74,11 @@ jobs:
             actions: read
           branch_name_template: '{{prefix}}{{entityNumber}}-{{description}}'
           # Plain `git push` is allowed, since Build and Review push to the PR branch. Only force
-          # pushes are blocked. autopilot.yml, which never needs to push, blocks every push.
+          # pushes are blocked. autopilot.yml, which never needs to push, blocks every push. The
+          # deny-list matches command prefixes, so it catches mistakes, not a determined run
+          # (`git push origin --force` or `gh api` would get past it). The control is master's
+          # branch protection: no force pushes, and a merge needs an approving review, which a
+          # PR's author can't give.
           claude_args: |
             --model claude-opus-5-5
             --max-turns 250

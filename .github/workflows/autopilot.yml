@@ -60,6 +60,7 @@ jobs:
       GH_REPO: ${{ github.repository }}
       GH_TOKEN: ${{ github.token }}
       SHA: ${{ github.event.deployment.sha }}
+      DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
     steps:
       - name: Dispatch the real run
         run: |
@@ -67,7 +68,7 @@ jobs:
           # The PR whose merge produced this commit, if any (a redeploy or a direct push has none).
           pr=$(gh api "repos/$GH_REPO/commits/$SHA/pulls" --jq '[.[] | select(.merged_at != null)][0].number // empty')
           echo "Staging is live at $SHA (merged PR: ${pr:-none})." >> "$GITHUB_STEP_SUMMARY"
-          gh workflow run autopilot.yml --ref master -f merged_pr="${pr}"
+          gh workflow run autopilot.yml --ref "$DEFAULT_BRANCH" -f merged_pr="${pr}"
 
   pick:
     if: github.event_name == 'workflow_dispatch' && vars.AUTOPILOT_ENABLED == 'true'
@@ -184,7 +185,10 @@ jobs:
           # comments trigger it.
           allowed_bots: github-actions
           # Every `git push` is blocked: these runs only plan and wrap up, and both end in a comment.
-          # claude.yml's Build phase has to push, so it blocks only the force forms.
+          # claude.yml's Build phase has to push, so it blocks only the force forms. The deny-list
+          # matches command prefixes, so it catches mistakes, not a determined run (`gh api` can
+          # still reach most of these). The control is master's branch protection: no force
+          # pushes, and a merge needs an approving review, which a PR's author can't give.
           claude_args: |
             --model claude-opus-5-5
             --max-turns 150

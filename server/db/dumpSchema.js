@@ -4,8 +4,10 @@
  * against the database; rerun this afterwards and commit the result.
  *
  * Built from the catalog rather than pg_dump so it needs no local Postgres client tools.
- * The output is a reference: it is ordered so it would restore, but it isn't tested as a
- * restore script.
+ * The output is a reference for reading, not a restore script. It isn't tested as one, and no
+ * single ordering would always work: tables come before functions, so a column default that
+ * calls a custom function would fail, and only enum types are dumped, not domains or
+ * composite types.
  *
  * Usage (PowerShell):
  *   $env:DATABASE_URL = heroku config:get DATABASE_URL -a vexillology-contests
@@ -60,7 +62,8 @@ const dumpTypes = async () => {
 const dumpSequences = async () => {
   const sequences = await db.any(
     `SELECT s.schemaname AS schema, s.sequencename AS name, s.data_type AS type,
-       s.start_value AS start, s.increment_by AS increment,
+       s.start_value AS start, s.increment_by AS increment, s.min_value AS min,
+       s.max_value AS max, s.cache_size AS cache, s.cycle,
        owner_ns.nspname AS "ownerSchema", owner.relname AS "ownerTable",
        a.attname AS "ownerColumn"
      FROM pg_sequences s
@@ -80,11 +83,13 @@ const dumpSequences = async () => {
   );
   const creates = sequences.map(
     ({
-      schema, name, type, start, increment,
+      schema, name, type, start, increment, min, max, cache, cycle,
     }) => `CREATE SEQUENCE ${qualified(
       schema,
       name,
-    )} AS ${type} START ${start} INCREMENT ${increment};`,
+    )} AS ${type} START ${start} INCREMENT ${increment} MINVALUE ${min} MAXVALUE ${max} CACHE ${cache}${
+      cycle ? ' CYCLE' : ''
+    };`,
   );
   const ownedBy = sequences
     .filter(({ ownerTable }) => ownerTable)
