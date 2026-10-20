@@ -1,4 +1,4 @@
-const { isFuture } = require('date-fns');
+const { format, isFuture } = require('date-fns');
 
 const {
   getContestId,
@@ -35,6 +35,10 @@ const isUpcoming = async (contest) => {
   }
   return !(await hasContestEntries(contest.id));
 };
+
+// node-postgres parses a DATE column as local midnight, so read it back with local getters;
+// toJSON() would shift it a day on a server east of UTC.
+const toDateString = (date) => format(date, 'yyyy-MM-dd');
 
 // Year-end (Best of) contests are created by create_best_of_year_contest on a fixed schedule
 // that doesn't start on the 1st, which this page's month picker can't represent.
@@ -119,7 +123,7 @@ exports.getAll = async (req, res) => {
     res.send({
       contests: contests.map(({ date, ...rest }) => ({
         ...rest,
-        date: date.toJSON().substr(0, 10),
+        date: toDateString(date),
       })),
     });
   } catch (err) {
@@ -148,7 +152,7 @@ exports.getOne = async ({ params: { id } }, res) => {
     const { date, ...rest } = contest;
     res.send({
       ...rest,
-      date: date.toJSON().substr(0, 10),
+      date: toDateString(date),
       categories: categories.map((category) => ({
         category,
         used: usedCategories.includes(category),
@@ -310,7 +314,7 @@ exports.put = async ({ params: { id }, body }, res) => {
     }
     // Only a move to another month has to land in the present or future, so a contest
     // still awaiting certification after its month ends can have its name or prompt fixed.
-    const monthChanged = date !== contest.date.toJSON().substr(0, 10);
+    const monthChanged = date !== toDateString(contest.date);
     const pastMonthError = monthChanged && getPastMonthError(date);
     if (pastMonthError) {
       res.status(400).send(pastMonthError);
