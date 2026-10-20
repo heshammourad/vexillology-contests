@@ -1,8 +1,10 @@
 /**
  * Default contest scheduling rules, derived from the actual dates used by
- * past contests. Regular months run an 18-day submission window followed by
- * an 8-day voting window (1st -> 19th -> 27th); December runs a shorter
- * cycle (1st -> 17th -> 22nd) to leave room for the Best of Year contest.
+ * past contests. Regular months open submissions on the 1st, start voting on
+ * the 19th and end it on the 27th; December ends earlier (17th, 22nd) to
+ * leave room for the Best of Year contest. Every boundary is midnight ET.
+ *
+ * Contest dates are 'YYYY-MM-01' strings, always the 1st of the contest's month.
  *
  * @exports getContestId
  * @exports getDateFormatError
@@ -13,64 +15,30 @@
  * @exports getScheduleOrderError
  */
 
+const {
+  addMonths,
+  format,
+  isBefore,
+  isValid,
+  parseISO,
+  setDate,
+  startOfMonth,
+} = require('date-fns');
 const { zonedTimeToUtc } = require('date-fns-tz');
 
 const TIME_ZONE = 'America/New_York';
 
-const MONTH_ABBREVIATIONS = [
-  'jan',
-  'feb',
-  'mar',
-  'apr',
-  'may',
-  'jun',
-  'jul',
-  'aug',
-  'sep',
-  'oct',
-  'nov',
-  'dec',
-];
+const VOTE_START_DAY = 19;
+const VOTE_END_DAY = 27;
+const DECEMBER_VOTE_START_DAY = 17;
+const DECEMBER_VOTE_END_DAY = 22;
 
-const STANDARD_SUBMISSION_DAYS = 18;
-const STANDARD_VOTE_DAYS = 26;
-const DECEMBER_SUBMISSION_DAYS = 16;
-const DECEMBER_VOTE_DAYS = 21;
+// Midnight ET at the start of the given calendar day. Only the day's local calendar fields
+// are read, so the result doesn't depend on the server's own timezone.
+const toEasternMidnight = (day) => zonedTimeToUtc(`${format(day, 'yyyy-MM-dd')}T00:00:00`, TIME_ZONE);
 
-/**
- * Parses a 'YYYY-MM-DD' string (or Date) into { year, month, day }, where
- * month is 1-indexed. Reading the pieces this way (rather than through
- * Date getters) keeps the result independent of the host's system timezone.
- */
-const parseDateParts = (date) => {
-  if (typeof date === 'string') {
-    const [year, month, day] = date.split('-').map(Number);
-    return { year, month, day };
-  }
-  return {
-    year: date.getUTCFullYear(),
-    month: date.getUTCMonth() + 1,
-    day: date.getUTCDate(),
-  };
-};
-
-const addDays = ({ year, month, day }, days) => {
-  const utcMs = Date.UTC(year, month - 1, day) + days * 24 * 60 * 60 * 1000;
-  const result = new Date(utcMs);
-  return {
-    year: result.getUTCFullYear(),
-    month: result.getUTCMonth() + 1,
-    day: result.getUTCDate(),
-  };
-};
-
-const toMidnightEastern = ({ year, month, day }) => {
-  const pad = (n) => String(n).padStart(2, '0');
-  return zonedTimeToUtc(
-    `${year}-${pad(month)}-${pad(day)} 00:00:00`,
-    TIME_ZONE,
-  );
-};
+// Request bodies carry ISO strings, and defaults are Dates; missing values stay null.
+const toDateOrNull = (value) => (value ? new Date(value) : null);
 
 /**
  * Checks that a contest date is the 1st of a real month, as 'YYYY-MM-01'. Contests always
@@ -83,68 +51,65 @@ exports.getDateFormatError = (date) => (typeof date === 'string' && /^\d{4}-(0[1
   ? null
   : 'Contest date must be the first of a month, as YYYY-MM-01.');
 
-exports.getContestId = (date) => {
-  const { year, month } = parseDateParts(date);
-  return `${MONTH_ABBREVIATIONS[month - 1]}${String(year).slice(-2)}`;
-};
+/**
+ * @param {string} date
+ * @returns {string} The contest id for the date's month, e.g. 'nov26'.
+ */
+exports.getContestId = (date) => format(parseISO(date), 'MMMyy').toLowerCase();
 
 exports.getDefaultContestDates = (date) => {
-  const dateParts = parseDateParts(date);
-  const isDecember = dateParts.month === 12;
-  const submissionDays = isDecember
-    ? DECEMBER_SUBMISSION_DAYS
-    : STANDARD_SUBMISSION_DAYS;
-  const voteDays = isDecember ? DECEMBER_VOTE_DAYS : STANDARD_VOTE_DAYS;
-
-  const submissionStart = toMidnightEastern(dateParts);
-  const submissionEnd = toMidnightEastern(addDays(dateParts, submissionDays));
-  const voteStart = submissionEnd;
-  const voteEnd = toMidnightEastern(addDays(dateParts, voteDays));
+  const firstOfMonth = parseISO(date);
+  const isDecember = firstOfMonth.getMonth() === 11;
+  const voteStart = toEasternMidnight(
+    setDate(
+      firstOfMonth,
+      isDecember ? DECEMBER_VOTE_START_DAY : VOTE_START_DAY,
+    ),
+  );
 
   return {
-    submissionStart,
-    submissionEnd,
+    submissionStart: toEasternMidnight(firstOfMonth),
+    submissionEnd: voteStart,
     voteStart,
-    voteEnd,
+    voteEnd: toEasternMidnight(
+      setDate(firstOfMonth, isDecember ? DECEMBER_VOTE_END_DAY : VOTE_END_DAY),
+    ),
   };
 };
 
 /**
- * Checks that a contest's submission/vote windows are in a sensible chronological order.
- * Fields that aren't provided are skipped rather than treated as an error, since callers
- * (e.g. partial updates) may only be setting some of the four.
+ * Checks that a contest's submission/vote windows are in a sensible chronological order,
+ * and that every one provided is a valid date. Fields that aren't provided are skipped.
  *
- * @param {Object} dates
+ * @param {Object} schedule
  * @returns {string|null} An error message, or null if the order is fine.
  */
-exports.getScheduleOrderError = ({
-  submissionStart,
-  submissionEnd,
-  voteStart,
-  voteEnd,
-}) => {
-  const start = submissionStart && new Date(submissionStart);
-  const end = submissionEnd && new Date(submissionEnd);
-  const voteStartDate = voteStart && new Date(voteStart);
-  const voteEndDate = voteEnd && new Date(voteEnd);
+exports.getScheduleOrderError = (schedule) => {
+  const submissionStart = toDateOrNull(schedule.submissionStart);
+  const submissionEnd = toDateOrNull(schedule.submissionEnd);
+  const voteStart = toDateOrNull(schedule.voteStart);
+  const voteEnd = toDateOrNull(schedule.voteEnd);
 
-  // An unparseable value makes every comparison below false, so catch it here rather than
+  // An invalid date makes every comparison below false, so catch it here rather than
   // letting it reach the database.
   if (
-    [start, end, voteStartDate, voteEndDate].some(
-      (d) => d && Number.isNaN(d.getTime()),
+    [submissionStart, submissionEnd, voteStart, voteEnd].some(
+      (d) => d && !isValid(d),
     )
   ) {
     return 'Submission and vote times must be valid dates.';
   }
-
-  if (start && end && start >= end) {
+  if (
+    submissionStart
+    && submissionEnd
+    && !isBefore(submissionStart, submissionEnd)
+  ) {
     return 'Submission end must be after submission start.';
   }
-  if (end && voteStartDate && voteStartDate < end) {
+  if (submissionEnd && voteStart && isBefore(voteStart, submissionEnd)) {
     return 'Vote start cannot be before submission end.';
   }
-  if (voteStartDate && voteEndDate && voteStartDate >= voteEndDate) {
+  if (voteStart && voteEnd && !isBefore(voteStart, voteEnd)) {
     return 'Vote end must be after vote start.';
   }
   return null;
@@ -159,13 +124,11 @@ exports.getScheduleOrderError = ({
  * @returns {{ monthStart: Date, monthEnd: Date }}
  */
 exports.getMonthBounds = (date) => {
-  const dateParts = parseDateParts(date);
-  const monthStart = toMidnightEastern(dateParts);
-  const nextMonthParts = dateParts.month === 12
-    ? { year: dateParts.year + 1, month: 1, day: 1 }
-    : { year: dateParts.year, month: dateParts.month + 1, day: 1 };
-  const monthEnd = toMidnightEastern(nextMonthParts);
-  return { monthStart, monthEnd };
+  const firstOfMonth = parseISO(date);
+  return {
+    monthStart: toEasternMidnight(firstOfMonth),
+    monthEnd: toEasternMidnight(addMonths(firstOfMonth, 1)),
+  };
 };
 
 /**
@@ -180,35 +143,27 @@ exports.getMonthRangeError = ({
   date, submissionEnd, voteStart, voteEnd,
 }) => {
   const { monthStart, monthEnd } = exports.getMonthBounds(date);
-  const isInRange = (value) => value >= monthStart && value < monthEnd;
+  const isInMonth = (value) => !isBefore(value, monthStart) && isBefore(value, monthEnd);
 
-  if (submissionEnd && !isInRange(new Date(submissionEnd))) {
+  if (submissionEnd && !isInMonth(new Date(submissionEnd))) {
     return 'Submission end must fall within the selected month.';
   }
-  if (voteStart && !isInRange(new Date(voteStart))) {
+  if (voteStart && !isInMonth(new Date(voteStart))) {
     return 'Vote start must fall within the selected month.';
   }
-  if (voteEnd && !isInRange(new Date(voteEnd))) {
+  if (voteEnd && !isInMonth(new Date(voteEnd))) {
     return 'Vote end must fall within the selected month.';
   }
   return null;
 };
 
 /**
- * Checks that a contest's month isn't already in the past. A coarse year/month comparison
- * against the current date - not worth being ET-precise for a "not 20 years ago" sanity check.
+ * Checks that a contest's month isn't already in the past. Compared in the server's
+ * timezone - not worth being ET-precise for a "not 20 years ago" sanity check.
  *
  * @param {string} date
  * @returns {string|null} An error message, or null if the month is current or upcoming.
  */
-exports.getPastMonthError = (date) => {
-  const { year, month } = parseDateParts(date);
-  const now = new Date();
-  const currentYear = now.getUTCFullYear();
-  const currentMonth = now.getUTCMonth() + 1;
-
-  if (year < currentYear || (year === currentYear && month < currentMonth)) {
-    return 'Contest month cannot be in the past.';
-  }
-  return null;
-};
+exports.getPastMonthError = (date) => (isBefore(parseISO(date), startOfMonth(new Date()))
+  ? 'Contest month cannot be in the past.'
+  : null);

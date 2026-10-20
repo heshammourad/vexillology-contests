@@ -1,4 +1,4 @@
-const { format, isFuture } = require('date-fns');
+const { format, isAfter, isBefore } = require('date-fns');
 
 const {
   getContestId,
@@ -12,12 +12,12 @@ const {
 const {
   addContest,
   deleteContest,
-  getAllContests,
   getCategories,
   getContestById,
   getContestForMonth,
   getNextContest,
   getPreviousContest,
+  getUncertifiedContests,
   getUsedCategories,
   hasContestEntries,
   updateContest,
@@ -26,71 +26,126 @@ const { createLogger } = require('../logger');
 
 const logger = createLogger('API/MOD_CONTESTS');
 
-// A contest is "upcoming" - and so still safe to rename or delete - only while its
-// submission window hasn't opened and no entries have been submitted to it yet.
-const isUpcoming = async (contest) => {
-  const submissionsHaveStarted = contest.submissionStart && !isFuture(contest.submissionStart);
-  if (submissionsHaveStarted) {
-    return false;
-  }
-  return !(await hasContestEntries(contest.id));
-};
-
 // node-postgres parses a DATE column as local midnight, so read it back with local getters;
 // toJSON() would shift it a day on a server east of UTC.
 const toDateString = (date) => format(date, 'yyyy-MM-dd');
 
-// Year-end (Best of) contests are created by create_best_of_year_contest on a fixed schedule
-// that doesn't start on the 1st, which this page's month picker can't represent.
-const YEAR_END_MESSAGE = "Year-end contests can't be managed here";
-
-// Categories are optional, but when sent they must be a list of strings.
-const isValidCategories = (categories) => categories == null
-  || (Array.isArray(categories) && categories.every((c) => typeof c === 'string'));
+// A contest's id follows its month (e.g. nov26), so it can only be renamed - or deleted -
+// while nothing references it yet: its submissions haven't opened and it has no entries.
+const canRenameOrDelete = async (contest) => isAfter(contest.submissionStart, new Date())
+  && !(await hasContestEntries(contest.id));
 
 // Trimmed, without blanks or duplicates, so create and edit store the same names.
 const normalizeCategories = (categories) => [
   ...new Set(categories.map((category) => category.trim()).filter(Boolean)),
 ];
 
-// checkRequiredFields only tests presence, so whitespace-only or non-string values get here.
-const getTextFieldError = ({ name, prompt }) => {
+/**
+ * Validates the parts of a create/edit body that don't need the database. Timestamps that
+ * aren't provided are skipped, so callers fill in any defaults first.
+ *
+ * @returns {string|null} An error message, or null if the body is valid.
+ */
+const getBodyError = ({
+  categories,
+  date,
+  name,
+  prompt,
+  submissionStart,
+  submissionEnd,
+  voteStart,
+  voteEnd,
+}) => {
+  const dateError = getDateFormatError(date);
+  if (dateError) {
+    return dateError;
+  }
+  // checkRequiredFields only tests presence, so whitespace-only or non-string values get here.
   if (typeof name !== 'string' || !name.trim()) {
     return 'Contest name is required.';
   }
   if (typeof prompt !== 'string' || !prompt.trim()) {
     return 'Prompt is required.';
   }
-  return null;
+  if (
+    categories != null
+    && !(
+      Array.isArray(categories)
+      && categories.every((c) => typeof c === 'string')
+    )
+  ) {
+    return 'Categories must be a list of names.';
+  }
+  return (
+    getScheduleOrderError({
+      submissionStart,
+      submissionEnd,
+      voteStart,
+      voteEnd,
+    })
+    || getMonthRangeError({
+      date,
+      submissionEnd,
+      voteStart,
+      voteEnd,
+    })
+  );
 };
 
-// Submission start is allowed to precede its own contest's month, but not so far that it
-// intrudes on the previous contest's own submission/voting window. Likewise, voting can't run
-// past the point the next contest opens its submissions.
-const getOverlapError = ({
+/**
+ * Checks a contest's schedule against the other regular contests: only one per month, its
+ * submissions can open early but not before the previous contest's voting ends, and its
+ * voting must end before the next contest's submissions open.
+ *
+ * @param {Object} params
+ * @param {string} [params.excludeId] - The contest being edited, left out of the search.
+ * @returns {Promise<string|null>} An error message, or null if nothing conflicts.
+ */
+const getOtherContestsError = async ({
+  date,
   submissionStart,
   voteEnd,
-  previousContest,
-  nextContest,
+  excludeId,
 }) => {
+  const [sameMonthContest, previousContest, nextContest] = await Promise.all([
+    getContestForMonth(date, excludeId),
+    getPreviousContest(date, excludeId),
+    getNextContest(date, excludeId),
+  ]);
+  if (sameMonthContest) {
+    return `A contest already exists for this month: "${sameMonthContest.name}".`;
+  }
   if (
-    submissionStart
-    && previousContest?.voteEnd
-    && new Date(submissionStart) < new Date(previousContest.voteEnd)
+    previousContest
+    && isBefore(new Date(submissionStart), previousContest.voteEnd)
   ) {
     return `Submission start can't be before "${previousContest.name}"'s voting window ends.`;
   }
-  if (
-    voteEnd
-    && nextContest?.submissionStart
-    && new Date(voteEnd) > new Date(nextContest.submissionStart)
-  ) {
+  if (nextContest && isAfter(new Date(voteEnd), nextContest.submissionStart)) {
     return `Vote end can't be after "${nextContest.name}"'s submissions open.`;
   }
   return null;
 };
 
-exports.getDefaultSchedule = async ({ query: { date, excludeId } }, res) => {
+/**
+ * Loads a contest this page may manage, or sends the 404/400 response and returns null.
+ * Year-end (Best of) contests are created by create_best_of_year_contest on a fixed schedule
+ * that doesn't start on the 1st, which the page's month picker can't represent.
+ */
+const getManageableContest = async (id, res) => {
+  const contest = await getContestById(id);
+  if (!contest) {
+    res.status(404).send('Contest with that id not found');
+    return null;
+  }
+  if (contest.yearEnd) {
+    res.status(400).send("Year-end contests can't be managed here");
+    return null;
+  }
+  return contest;
+};
+
+exports.getMonthSchedule = async ({ query: { date, excludeId } }, res) => {
   const dateError = getDateFormatError(date);
   if (dateError) {
     res.status(400).send(dateError);
@@ -98,18 +153,19 @@ exports.getDefaultSchedule = async ({ query: { date, excludeId } }, res) => {
   }
 
   try {
-    const defaults = getDefaultContestDates(date);
-    const bounds = getMonthBounds(date);
-    const [existingContest, previousContest] = await Promise.all([
+    const [sameMonthContest, previousContest, nextContest] = await Promise.all([
       getContestForMonth(date, excludeId),
       getPreviousContest(date, excludeId),
+      getNextContest(date, excludeId),
     ]);
     res.send({
-      ...defaults,
-      ...bounds,
-      existingContestName: existingContest?.name || null,
+      ...getDefaultContestDates(date),
+      ...getMonthBounds(date),
+      sameMonthContestName: sameMonthContest?.name || null,
       previousContestName: previousContest?.name || null,
       previousContestVoteEnd: previousContest?.voteEnd || null,
+      nextContestName: nextContest?.name || null,
+      nextContestSubmissionStart: nextContest?.submissionStart || null,
     });
   } catch (err) {
     logger.error(`Error getting /mod/contestSchedule: ${err.message || err}`);
@@ -117,9 +173,9 @@ exports.getDefaultSchedule = async ({ query: { date, excludeId } }, res) => {
   }
 };
 
-exports.getAll = async (req, res) => {
+exports.getUncertified = async (req, res) => {
   try {
-    const contests = await getAllContests();
+    const contests = await getUncertifiedContests();
     res.send({
       contests: contests.map(({ date, ...rest }) => ({
         ...rest,
@@ -134,13 +190,8 @@ exports.getAll = async (req, res) => {
 
 exports.getOne = async ({ params: { id } }, res) => {
   try {
-    const contest = await getContestById(id);
+    const contest = await getManageableContest(id, res);
     if (!contest) {
-      res.status(404).send('Contest with that id not found');
-      return;
-    }
-    if (contest.yearEnd) {
-      res.status(400).send(YEAR_END_MESSAGE);
       return;
     }
 
@@ -175,77 +226,40 @@ exports.post = async ({ body }, res) => {
     res.status(400).send(dateError);
     return;
   }
-  if (!isValidCategories(categories)) {
-    res.status(400).send('Categories must be a list of names.');
-    return;
-  }
-  const textFieldError = getTextFieldError({ name, prompt });
-  if (textFieldError) {
-    res.status(400).send(textFieldError);
-    return;
-  }
 
   // Missing timestamps fall back to the default schedule, so validate the merged result
   // rather than only the ones provided.
   const defaults = getDefaultContestDates(date);
-  const submissionStart = body.submissionStart || defaults.submissionStart;
-  const submissionEnd = body.submissionEnd || defaults.submissionEnd;
-  const voteStart = body.voteStart || defaults.voteStart;
-  const voteEnd = body.voteEnd || defaults.voteEnd;
+  const contest = {
+    categories,
+    date,
+    name,
+    prompt,
+    submissionStart: body.submissionStart || defaults.submissionStart,
+    submissionEnd: body.submissionEnd || defaults.submissionEnd,
+    voteStart: body.voteStart || defaults.voteStart,
+    voteEnd: body.voteEnd || defaults.voteEnd,
+  };
 
-  const scheduleError = getScheduleOrderError({
-    submissionStart,
-    submissionEnd,
-    voteStart,
-    voteEnd,
-  })
-    || getMonthRangeError({
-      date,
-      submissionEnd,
-      voteStart,
-      voteEnd,
-    })
-    || getPastMonthError(date);
-  if (scheduleError) {
-    res.status(400).send(scheduleError);
+  const bodyError = getBodyError(contest) || getPastMonthError(date);
+  if (bodyError) {
+    res.status(400).send(bodyError);
     return;
   }
 
   try {
-    const existingContest = await getContestForMonth(date);
-    if (existingContest) {
-      res
-        .status(400)
-        .send(
-          `A contest already exists for this month: "${existingContest.name}".`,
-        );
-      return;
-    }
-
-    const [previousContest, nextContest] = await Promise.all([
-      getPreviousContest(date),
-      getNextContest(date),
-    ]);
-    const overlapError = getOverlapError({
-      submissionStart,
-      voteEnd,
-      previousContest,
-      nextContest,
-    });
-    if (overlapError) {
-      res.status(400).send(overlapError);
+    const otherContestsError = await getOtherContestsError(contest);
+    if (otherContestsError) {
+      res.status(400).send(otherContestsError);
       return;
     }
 
     await addContest({
-      categories: categories && normalizeCategories(categories),
-      date,
+      ...contest,
+      id: getContestId(date),
       name: name.trim(),
       prompt: prompt.trim(),
-      submissionEnd,
-      submissionStart,
-      voteEnd,
-      voteStart,
+      categories: categories ? normalizeCategories(categories) : [],
     });
     logger.info(`Successfully added contest '${name}' (${date})`);
     res.status(201).send({ message: 'Contest created successfully' });
@@ -260,64 +274,18 @@ exports.put = async ({ params: { id }, body }, res) => {
     `Putting /mod/contests/${id} with body: ${JSON.stringify(body)}`,
   );
   const {
-    categories,
-    date,
-    name,
-    prompt,
-    submissionEnd,
-    submissionStart,
-    voteEnd,
-    voteStart,
+    categories, date, name, prompt, submissionStart, voteEnd,
   } = body;
 
-  const dateError = getDateFormatError(date);
-  if (dateError) {
-    res.status(400).send(dateError);
-    return;
-  }
-  if (!isValidCategories(categories)) {
-    res.status(400).send('Categories must be a list of names.');
-    return;
-  }
-  const textFieldError = getTextFieldError({ name, prompt });
-  if (textFieldError) {
-    res.status(400).send(textFieldError);
-    return;
-  }
-
-  const scheduleError = getScheduleOrderError({
-    submissionStart,
-    submissionEnd,
-    voteStart,
-    voteEnd,
-  })
-    || getMonthRangeError({
-      date,
-      submissionEnd,
-      voteStart,
-      voteEnd,
-    });
-  if (scheduleError) {
-    res.status(400).send(scheduleError);
+  const bodyError = getBodyError(body);
+  if (bodyError) {
+    res.status(400).send(bodyError);
     return;
   }
 
   try {
-    const contest = await getContestById(id);
+    const contest = await getManageableContest(id, res);
     if (!contest) {
-      res.status(404).send('Contest with that id not found');
-      return;
-    }
-    if (contest.yearEnd) {
-      res.status(400).send(YEAR_END_MESSAGE);
-      return;
-    }
-    // Only a move to another month has to land in the present or future, so a contest
-    // still awaiting certification after its month ends can have its name or prompt fixed.
-    const monthChanged = date !== toDateString(contest.date);
-    const pastMonthError = monthChanged && getPastMonthError(date);
-    if (pastMonthError) {
-      res.status(400).send(pastMonthError);
       return;
     }
     if (contest.resultsCertified) {
@@ -329,35 +297,29 @@ exports.put = async ({ params: { id }, body }, res) => {
       return;
     }
 
-    const existingContest = await getContestForMonth(date, id);
-    if (existingContest) {
-      res
-        .status(400)
-        .send(
-          `A contest already exists for this month: "${existingContest.name}".`,
-        );
+    // Only a move to another month has to land in the present or future, so a contest
+    // still awaiting certification after its month ends can have its name or prompt fixed.
+    const monthChanged = date !== toDateString(contest.date);
+    const pastMonthError = monthChanged && getPastMonthError(date);
+    if (pastMonthError) {
+      res.status(400).send(pastMonthError);
       return;
     }
 
-    const [previousContest, nextContest] = await Promise.all([
-      getPreviousContest(date, id),
-      getNextContest(date, id),
-    ]);
-    const overlapError = getOverlapError({
+    const otherContestsError = await getOtherContestsError({
+      date,
       submissionStart,
       voteEnd,
-      previousContest,
-      nextContest,
+      excludeId: id,
     });
-    if (overlapError) {
-      res.status(400).send(overlapError);
+    if (otherContestsError) {
+      res.status(400).send(otherContestsError);
       return;
     }
 
     // Validate the category changes before writing anything, so a rejected edit doesn't
-    // leave the contest half-updated.
+    // leave the contest half-updated. Leaving categories out of the body keeps the current ones.
     const existingCategories = await getCategories(id);
-    // Leaving categories out of the body keeps the current ones.
     const submittedCategories = categories
       ? normalizeCategories(categories)
       : existingCategories;
@@ -383,40 +345,31 @@ exports.put = async ({ params: { id }, body }, res) => {
       }
     }
 
-    // A contest's id follows its month (e.g. nov26), so it can only move while nothing
-    // references the id yet.
     let newId = id;
-    if (monthChanged && !(await isUpcoming(contest))) {
-      res
-        .status(400)
-        .send(
-          "Can't move a contest to another month once its submissions have opened.",
-        );
-      return;
-    }
-    const computedId = getContestId(date);
-    if (monthChanged && computedId !== id) {
-      if (await getContestById(computedId)) {
+    if (monthChanged) {
+      if (!(await canRenameOrDelete(contest))) {
         res
           .status(400)
           .send(
-            `Can't move this contest: the id "${computedId}" is already taken.`,
+            "Can't move a contest to another month once its submissions have opened.",
           );
         return;
       }
-      newId = computedId;
+      newId = getContestId(date);
+      if (newId !== id && (await getContestById(newId))) {
+        res
+          .status(400)
+          .send(`Can't move this contest: the id "${newId}" is already taken.`);
+        return;
+      }
     }
 
     const updatedContest = await updateContest({
+      ...body,
       id,
       newId,
       name: name.trim(),
-      date,
       prompt: prompt.trim(),
-      submissionStart,
-      submissionEnd,
-      voteStart,
-      voteEnd,
       categoriesToAdd,
       categoriesToRemove,
     });
@@ -432,16 +385,11 @@ exports.delete = async ({ params: { id } }, res) => {
   logger.debug(`Deleting /mod/contests/${id}`);
 
   try {
-    const contest = await getContestById(id);
+    const contest = await getManageableContest(id, res);
     if (!contest) {
-      res.status(404).send('Contest with that id not found');
       return;
     }
-    if (contest.yearEnd) {
-      res.status(400).send(YEAR_END_MESSAGE);
-      return;
-    }
-    if (!(await isUpcoming(contest))) {
+    if (!(await canRenameOrDelete(contest))) {
       res
         .status(400)
         .send('Only upcoming contests without submissions can be deleted');

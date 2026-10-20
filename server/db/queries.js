@@ -1,7 +1,6 @@
 /**
  * @exports addContest
  * @exports deleteContest
- * @exports getAllContests
  * @exports getCategories
  * @exports getContestById
  * @exports getContestForMonth
@@ -9,6 +8,7 @@
  * @exports getCurrentContestSubmissions
  * @exports getNextContest
  * @exports getPreviousContest
+ * @exports getUncertifiedContests
  * @exports getUsedCategories
  * @exports getVoteDates
  * @exports hasContestEntries
@@ -16,7 +16,6 @@
  * @exports updateContest
  */
 
-const { getContestId, getDefaultContestDates } = require('../contestSchedule');
 const { ALLOW_DEV_CONTEST } = require('../env');
 const { createLogger } = require('../logger');
 
@@ -138,52 +137,67 @@ exports.refreshContestsSummaryView = async () => {
   }
 };
 
+// Appends categories to a contest after its current highest sort order, in the order given.
+// Takes the transaction it runs in.
+const insertCategories = async (t, contestId, categories) => {
+  if (!categories.length) {
+    return;
+  }
+  await t.none(
+    `INSERT INTO contest_categories (contest_id, category, sort_order)
+     SELECT
+       $1,
+       c.category,
+       (SELECT COALESCE(MAX(sort_order), -1) FROM contest_categories WHERE contest_id = $1)
+         + c.ord
+     FROM unnest($2::text[]) WITH ORDINALITY AS c(category, ord)`,
+    [contestId, categories],
+  );
+};
+
 /**
- * Invokes the PostgreSQL add_contest function to create a new contest.
+ * Creates a contest and its categories in one transaction. Every field is required: the
+ * caller resolves the id and default schedule (see server/contestSchedule.js).
  *
  * @param {Object} contestData
  * @returns {Promise<void>}
  */
 exports.addContest = async ({
+  id,
   name,
   date,
   prompt,
-  id = null,
-  yearEnd = null,
-  submissionStart = null,
-  submissionEnd = null,
-  voteStart = null,
-  voteEnd = null,
-  categories = null,
-}) => {
-  const defaultDates = getDefaultContestDates(date);
-
-  await db.any(
-    `SELECT add_contest(
-      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
-    )`,
+  submissionStart,
+  submissionEnd,
+  voteStart,
+  voteEnd,
+  categories,
+}) => db.tx(async (t) => {
+  await t.none(
+    `INSERT INTO contests
+       (id, name, date, prompt, submission_start, submission_end, vote_start, vote_end)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
     [
+      id,
       name,
       date,
       prompt,
-      id || getContestId(date),
-      yearEnd !== null && yearEnd !== undefined ? yearEnd : false,
-      submissionStart || defaultDates.submissionStart,
-      submissionEnd || defaultDates.submissionEnd,
-      voteStart || defaultDates.voteStart,
-      voteEnd || defaultDates.voteEnd,
-      categories && categories.length ? categories : null,
+      submissionStart,
+      submissionEnd,
+      voteStart,
+      voteEnd,
     ],
   );
-};
+  await insertCategories(t, id, categories);
+});
 
 /**
- * Retrieves every regular (non-year-end) contest that hasn't been certified yet, i.e. current
- * or upcoming contests.
+ * Retrieves every regular (non-year-end) contest whose results haven't been certified yet,
+ * i.e. current and upcoming contests plus any awaiting certification.
  *
  * @returns {Promise<Array<Object>>}
  */
-exports.getAllContests = async () => db.select(
+exports.getUncertifiedContests = async () => db.select(
   `SELECT
      id,
      name,
@@ -341,19 +355,7 @@ exports.updateContest = async ({
     );
   }
 
-  if (categoriesToAdd.length) {
-    // Appended after the current highest sort order, in the order given.
-    await t.none(
-      `INSERT INTO contest_categories (contest_id, category, sort_order)
-       SELECT
-         $1,
-         c.category,
-         (SELECT COALESCE(MAX(sort_order), -1) FROM contest_categories WHERE contest_id = $1)
-           + c.ord
-       FROM unnest($2::text[]) WITH ORDINALITY AS c(category, ord)`,
-      [newId, categoriesToAdd],
-    );
-  }
+  await insertCategories(t, newId, categoriesToAdd);
 
   return result;
 });

@@ -131,7 +131,7 @@ if (!IS_DEV && cluster.isMaster) {
   modRouter.route('/analyzeVotes/:id').get(analyzeVotes.get);
   modRouter
     .route('/contests')
-    .get(modContests.getAll)
+    .get(modContests.getUncertified)
     .post(checkRequiredFields('name', 'date', 'prompt'), modContests.post);
   modRouter
     .route('/contests/:id')
@@ -149,7 +149,7 @@ if (!IS_DEV && cluster.isMaster) {
       modContests.put,
     )
     .delete(modContests.delete);
-  modRouter.route('/contestSchedule').get(modContests.getDefaultSchedule);
+  modRouter.route('/contestSchedule').get(modContests.getMonthSchedule);
   modRouter.route('/contestSummary').get(contestSummary.get);
   modRouter
     .route('/manageContest')

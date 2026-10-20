@@ -93,6 +93,13 @@ All schema objects live in the `vexillology_contests` Postgres schema (mirrored 
 
 **Moderation internals stay out of this repo.** It's public, so don't write down how ballots are judged, how abuse is detected, or what thresholds exist, here or in any issue, PR, commit message or comment. That covers `contests_summary` and `get_contest_results`, the analyze-votes and ban tooling, and the ballot-validity columns. Local sessions get the details from the gitignored `CLAUDE.local.md`. `server/db/schema.sql` withholds every function and view body that isn't on `dumpSchema.js`'s allowlist.
 
+**Database function or app code** (decided 2026-10-20). Write queries in the app by default (`server/db/queries.js`, `server/api/*/db.js`). There they're versioned, reviewed in PRs and visible to Autopilot, which can't reach the database, and they can't drift between the staging and production schemas the way a hand-applied function can. That goes double for plain selects without many joins or nested queries. Put the logic in a Postgres function or view only when:
+
+- it saves round trips that matter for performance, or
+- it's a multi-step write that must be atomic **and** has to run outside the app too (by hand from a SQL console, or from another database function). If only the app runs it, use a transaction in code (pg-promise's `tx`, exported by `server/db/index.js`).
+
+Moderation logic follows the rules in the paragraph above. A function that already exists stays until the work that touches it moves it.
+
 **Core tables:**
 
 - `contests` — one row per contest (id, name, dates for submission/voting windows, `prompt`, `env_level` (`dev`/`stage`/`prod`, gates visibility per `CONTEST_ENV_LEVEL`), `local_voting`, ballot-validity settings, `results_certified`, `winners_thread_id`/`valid_reddit_id` for linking back to the Reddit results thread).
@@ -115,7 +122,7 @@ All schema objects live in the `vexillology_contests` Postgres schema (mirrored 
 **Key functions (called from `server/db/`):**
 
 - `has_user_permission(username, permission)` — used by `requireRole` middleware to check a user's role against `user_roles`.
-- `add_contest(...)` — creates a new contest + categories. Called by the moderator Manage Contests page (`react-ui/src/pages/mod/contests/`, `server/api/modContests.js`), which resolves every default (id, schedule) in `server/contestSchedule.js` first, so the function requires all of them.
+- `add_contest(...)` — creates a new contest + categories. Only `create_best_of_year_contest` still calls it: the moderator Manage Contests page (`server/api/modContests.js`) inserts in code, in a transaction (`addContest` in `server/db/queries.js`).
 - `get_contest_results(...)` — full per-entry results (rank, votes, average, per-rating-value counts) for the moderator contest summary.
 - `copy_contest(id)` — copies one contest + its categories from the prod schema into `vexillology_contests_staging`, for testing a real contest's data in staging.
 - `backup_data(dest_schema, truncate)` — generic cross-schema sync: copies `user_roles`, `users`, `background_colors`, `contests`, `contest_categories`, `entries`, `contest_entries`, `votes` from the current schema into `dest_schema` (upserting on primary key), then refreshes every materialized view in `dest_schema`. This is the mechanism behind staging's periodic refresh from prod.
@@ -136,7 +143,7 @@ All schema objects live in the `vexillology_contests` Postgres schema (mirrored 
   - `requireModerator` — `requireAuthentication` + DB check against `users.moderator`.
   - `requireRole(role)` — `requireAuthentication` + `has_user_permission($1, $2)` Postgres function check; roles are the `UserPermissions` enum (`server/db/userPermissions.js`): `access_fairness_tools`, `disqualify_entries`, `review_submissions`, `participate_in_contest`, `view_scores`.
   - `validation.js` exports `checkRequiredFields(...)`, used as route middleware to 400 on missing body fields.
-- `db/index.js` — thin `pg-promise` wrapper exporting `select`/`insert`/`update`/`del`/`any`/`none`. Automatically camelizes returned column names (`receive` hook). `DATABASE_SCHEMA` from `.env` sets the Postgres search path. Prefer these helpers over raw `pgp` calls; `db/queries.js` holds larger/shared SQL.
+- `db/index.js` — thin `pg-promise` wrapper exporting `select`/`insert`/`update`/`del`/`any`/`none`/`tx`. Automatically camelizes returned column names (`receive` hook). `DATABASE_SCHEMA` from `.env` sets the Postgres search path. Prefer these helpers over raw `pgp` calls; `db/queries.js` holds larger/shared SQL.
 - `reddit.js` — snoowrap wrapper for Reddit API/OAuth (user lookup, token refresh).
 - `firebase.js` / `imgur.js` — third-party integrations (upload tokens; legacy Imgur reads for old contest data).
 - `logger.js` — Winston logger factory (`createLogger(label, opts)`), level from `LOG_LEVEL` env var.
