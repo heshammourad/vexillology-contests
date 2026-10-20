@@ -60,7 +60,10 @@ function ContestForm() {
   const [loadedId, setLoadedId] = useState(null);
   const loaded = !id || loadedId === id;
   const [applyDefaultSchedule, setApplyDefaultSchedule] = useState(!id);
+  // The month awaiting the schedule question. It stays set after the dialog closes, so the
+  // dialog's text doesn't go blank during its close animation.
   const [pendingMonth, setPendingMonth] = useState(null);
+  const [monthDialogOpen, setMonthDialogOpen] = useState(false);
   const [confirmingDuplicateLinks, setConfirmingDuplicateLinks] = useState(false);
   const [status, setStatus] = useState(null);
 
@@ -120,13 +123,14 @@ function ContestForm() {
   const handleMonthChange = (month) => {
     if (month && month !== values.month) {
       setPendingMonth(month);
+      setMonthDialogOpen(true);
     }
   };
 
   const changeMonth = (useDefaultSchedule) => {
     setValue('month', pendingMonth);
     setApplyDefaultSchedule(useDefaultSchedule);
-    setPendingMonth(null);
+    setMonthDialogOpen(false);
   };
 
   const saveContest = async () => {
@@ -302,11 +306,12 @@ function ContestForm() {
       </ConfirmDialog>
 
       <ConfirmDialog
-        open={!!pendingMonth}
+        open={monthDialogOpen}
         title={`Update the schedule for ${getMonthLabel(pendingMonth)}?`}
         cancelLabel="Keep Current Times"
         confirmLabel="Update Times"
         onCancel={() => changeMonth(false)}
+        onClose={() => setMonthDialogOpen(false)}
         onConfirm={() => changeMonth(true)}
       >
         <Typography variant="body2">

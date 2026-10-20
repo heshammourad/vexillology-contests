@@ -54,7 +54,9 @@ function ModContests() {
   const { data, isLoading } = useSwrModContests();
   const contests = data.contests || [];
 
+  // Stays set after the dialog closes, so its text doesn't go blank during the close animation.
   const [contestToDelete, setContestToDelete] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
   const { isMutating: isDeleting, trigger: triggerDelete } = useSwrMutation(
     LIST_PATH,
@@ -62,16 +64,17 @@ function ModContests() {
     contestToDelete && `${LIST_PATH}/${contestToDelete.id}`,
   );
 
-  const closeDeleteDialog = () => {
-    setContestToDelete(null);
+  const openDeleteDialog = (contest) => {
+    setContestToDelete(contest);
     setDeleteError(null);
+    setDeleteDialogOpen(true);
   };
 
   const deleteContest = async () => {
     setDeleteError(null);
     try {
       await triggerDelete();
-      closeDeleteDialog();
+      setDeleteDialogOpen(false);
     } catch (err) {
       setDeleteError(
         err?.response?.data || err?.message || 'Failed to delete contest.',
@@ -138,7 +141,7 @@ function ModContests() {
                       {/* The server also refuses once the contest has entries. */}
                       {isFutureTimestamp(contest.submissionStart) && (
                         <IconButton
-                          onClick={() => setContestToDelete(contest)}
+                          onClick={() => openDeleteDialog(contest)}
                           aria-label={`Delete ${contest.name}`}
                           color="error"
                           size="small"
@@ -156,12 +159,12 @@ function ModContests() {
       </Box>
 
       <ConfirmDialog
-        open={!!contestToDelete}
+        open={deleteDialogOpen}
         title="Delete this contest?"
         confirmLabel={isDeleting ? 'Deleting…' : 'Delete'}
         confirmColor="error"
         busy={isDeleting}
-        onCancel={closeDeleteDialog}
+        onCancel={() => setDeleteDialogOpen(false)}
         onConfirm={deleteContest}
       >
         {deleteError && (

@@ -15,12 +15,13 @@ function ConfirmDialog({
   confirmColor,
   confirmLabel,
   onCancel,
+  onClose,
   onConfirm,
   open,
   title,
 }) {
   return (
-    <Dialog open={open} onClose={busy ? undefined : onCancel}>
+    <Dialog open={open} onClose={busy ? undefined : onClose || onCancel}>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>{children}</DialogContent>
       <DialogActions>
@@ -47,6 +48,8 @@ ConfirmDialog.propTypes = {
   confirmColor: PropTypes.oneOf(['primary', 'error']),
   confirmLabel: PropTypes.string.isRequired,
   onCancel: PropTypes.func.isRequired,
+  // Backdrop click or Esc, when dismissing shouldn't do what the cancel button does.
+  onClose: PropTypes.func,
   onConfirm: PropTypes.func.isRequired,
   open: PropTypes.bool.isRequired,
   title: PropTypes.string.isRequired,
@@ -56,6 +59,7 @@ ConfirmDialog.defaultProps = {
   busy: false,
   cancelLabel: 'Cancel',
   confirmColor: 'primary',
+  onClose: undefined,
 };
 
 export default ConfirmDialog;
