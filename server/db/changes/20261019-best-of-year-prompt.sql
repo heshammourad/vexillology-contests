@@ -1,5 +1,6 @@
 -- add_contest now requires a prompt, so create_best_of_year_contest passes one instead of NULL.
--- Also drops the hardcoded vexillology_contests. prefixes, so it follows the search path.
+-- Also drops the hardcoded vexillology_contests. prefixes, so it follows the search path, and
+-- fails cleanly if add_contest writes the contest to a different schema.
 CREATE OR REPLACE FUNCTION create_best_of_year_contest(p_year integer DEFAULT NULL::integer)
  RETURNS void
  LANGUAGE plpgsql
@@ -25,6 +26,7 @@ BEGIN
     -- Example: Best of 2024
     v_contest_name := 'Best of ' || p_year::text;
     -- add_contest requires a prompt. Markdown, shown on the contest page.
+    -- Describes the best_of_year view's selection: update it if the view changes.
     v_contest_prompt := 'Vote for the best flag of ' || p_year::text || '. The entries are every '
         || 'contest''s top three finishers this year, plus the best entry from each of the year''s '
         || 'top 30 contestants.';
@@ -58,6 +60,12 @@ BEGIN
         p_vote_end := v_vote_end,
         p_categories := NULL
     );
+
+    -- add_contest's body may still name a fixed schema. If the contest didn't land in this
+    -- one, raise, which rolls back whatever add_contest wrote elsewhere.
+    IF NOT EXISTS (SELECT 1 FROM contests WHERE id = v_contest_id) THEN
+        RAISE EXCEPTION 'add_contest did not create contest % in schema %', v_contest_id, current_schema();
+    END IF;
 
     -- 5. Populate contest_entries from the best_of_year view
     INSERT INTO contest_entries (contest_id, entry_id)
