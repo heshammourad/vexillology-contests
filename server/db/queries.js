@@ -7,6 +7,7 @@
  * @exports getContestForMonth
  * @exports getCurrentContest
  * @exports getCurrentContestSubmissions
+ * @exports getNextContest
  * @exports getPreviousContest
  * @exports getUsedCategories
  * @exports getVoteDates
@@ -256,6 +257,24 @@ exports.getPreviousContest = async (date, excludeId = null) => db.select(
 );
 
 /**
+ * Finds the regular contest immediately following the given month, if any - used to make
+ * sure a contest's voting doesn't run past the point the next contest opens submissions.
+ * Year-end contests are left out: Best of Year's submission window overlaps December's
+ * contest by design, since its entries are seeded rather than submitted.
+ *
+ * @param {string} date
+ * @param {string} [excludeId] - A contest id to exclude from the search (e.g. when editing).
+ * @returns {Promise<Object|null>}
+ */
+exports.getNextContest = async (date, excludeId = null) => db.select(
+  `SELECT name, submission_start FROM contests WHERE date > $1 AND year_end = false${
+    excludeId ? ' AND id != $2' : ''
+  } ORDER BY date, submission_start LIMIT 1`,
+  excludeId ? [date, excludeId] : [date],
+  true,
+);
+
+/**
  * Saves a moderator's edit to a contest in one transaction: renames its id (when newId
  * differs; only safe for contests without submissions, see hasContestEntries), updates its
  * editable fields, and adds/removes categories. Callers are responsible for confirming none of
@@ -347,6 +366,9 @@ exports.updateContest = async ({
  * @returns {Promise<void>}
  */
 exports.deleteContest = async (id) => db.tx(async (t) => {
+  // Redundant once contest_categories_fk has ON DELETE CASCADE
+  // (server/db/changes/20261019-contest-categories-cascade.sql), but keeps delete working in a
+  // schema that hasn't had that change applied yet.
   await t.none('DELETE FROM contest_categories WHERE contest_id = $1', [id]);
   await t.none('DELETE FROM contests WHERE id = $1', [id]);
 });

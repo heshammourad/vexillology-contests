@@ -892,6 +892,8 @@ function EditContestForm({ id }) {
   });
   // Like the server, only a move to another month has to be current or upcoming, so a contest
   // awaiting certification after its month ends can still be fixed.
+  // The server only lets a contest change month (and so its id) while it's still upcoming.
+  const submissionsOpened = !!data.submissionStart && new Date(data.submissionStart) <= new Date();
   const monthErrorMessage = (month !== data.date?.slice(0, 7) && getPastMonthError(month))
     || (monthConflict
       ? `A contest already exists for this month: "${monthConflict}".`
@@ -1016,7 +1018,13 @@ function EditContestForm({ id }) {
         InputLabelProps={{ shrink: true }}
         inputProps={{ min: getCurrentMonth() }}
         error={!!monthErrorMessage}
-        helperText={monthErrorMessage}
+        helperText={
+          monthErrorMessage
+          || (submissionsOpened
+            ? "Can't move to another month once submissions have opened."
+            : null)
+        }
+        disabled={submissionsOpened}
         fullWidth
       />
 

@@ -16,6 +16,7 @@ const {
   getCategories,
   getContestById,
   getContestForMonth,
+  getNextContest,
   getPreviousContest,
   getUsedCategories,
   hasContestEntries,
@@ -60,13 +61,27 @@ const getTextFieldError = ({ name, prompt }) => {
 };
 
 // Submission start is allowed to precede its own contest's month, but not so far that it
-// intrudes on the previous contest's own submission/voting window.
-const getSubmissionOverlapError = (submissionStart, previousContest) => {
-  if (!submissionStart || !previousContest?.voteEnd) {
-    return null;
-  }
-  if (new Date(submissionStart) < new Date(previousContest.voteEnd)) {
+// intrudes on the previous contest's own submission/voting window. Likewise, voting can't run
+// past the point the next contest opens its submissions.
+const getOverlapError = ({
+  submissionStart,
+  voteEnd,
+  previousContest,
+  nextContest,
+}) => {
+  if (
+    submissionStart
+    && previousContest?.voteEnd
+    && new Date(submissionStart) < new Date(previousContest.voteEnd)
+  ) {
     return `Submission start can't be before "${previousContest.name}"'s voting window ends.`;
+  }
+  if (
+    voteEnd
+    && nextContest?.submissionStart
+    && new Date(voteEnd) > new Date(nextContest.submissionStart)
+  ) {
+    return `Vote end can't be after "${nextContest.name}"'s submissions open.`;
   }
   return null;
 };
@@ -203,11 +218,16 @@ exports.post = async ({ body }, res) => {
       return;
     }
 
-    const previousContest = await getPreviousContest(date);
-    const overlapError = getSubmissionOverlapError(
+    const [previousContest, nextContest] = await Promise.all([
+      getPreviousContest(date),
+      getNextContest(date),
+    ]);
+    const overlapError = getOverlapError({
       submissionStart,
+      voteEnd,
       previousContest,
-    );
+      nextContest,
+    });
     if (overlapError) {
       res.status(400).send(overlapError);
       return;
@@ -216,8 +236,8 @@ exports.post = async ({ body }, res) => {
     await addContest({
       categories: categories && normalizeCategories(categories),
       date,
-      name,
-      prompt,
+      name: name.trim(),
+      prompt: prompt.trim(),
       submissionEnd,
       submissionStart,
       voteEnd,
@@ -290,7 +310,8 @@ exports.put = async ({ params: { id }, body }, res) => {
     }
     // Only a move to another month has to land in the present or future, so a contest
     // still awaiting certification after its month ends can have its name or prompt fixed.
-    const pastMonthError = date !== contest.date.toJSON().substr(0, 10) && getPastMonthError(date);
+    const monthChanged = date !== contest.date.toJSON().substr(0, 10);
+    const pastMonthError = monthChanged && getPastMonthError(date);
     if (pastMonthError) {
       res.status(400).send(pastMonthError);
       return;
@@ -314,11 +335,16 @@ exports.put = async ({ params: { id }, body }, res) => {
       return;
     }
 
-    const previousContest = await getPreviousContest(date, id);
-    const overlapError = getSubmissionOverlapError(
+    const [previousContest, nextContest] = await Promise.all([
+      getPreviousContest(date, id),
+      getNextContest(date, id),
+    ]);
+    const overlapError = getOverlapError({
       submissionStart,
+      voteEnd,
       previousContest,
-    );
+      nextContest,
+    });
     if (overlapError) {
       res.status(400).send(overlapError);
       return;
@@ -353,9 +379,19 @@ exports.put = async ({ params: { id }, body }, res) => {
       }
     }
 
+    // A contest's id follows its month (e.g. nov26), so it can only move while nothing
+    // references the id yet.
     let newId = id;
+    if (monthChanged && !(await isUpcoming(contest))) {
+      res
+        .status(400)
+        .send(
+          "Can't move a contest to another month once its submissions have opened.",
+        );
+      return;
+    }
     const computedId = getContestId(date);
-    if (computedId !== id && (await isUpcoming(contest))) {
+    if (monthChanged && computedId !== id) {
       if (await getContestById(computedId)) {
         res
           .status(400)
@@ -370,9 +406,9 @@ exports.put = async ({ params: { id }, body }, res) => {
     const updatedContest = await updateContest({
       id,
       newId,
-      name,
+      name: name.trim(),
       date,
-      prompt,
+      prompt: prompt.trim(),
       submissionStart,
       submissionEnd,
       voteStart,
