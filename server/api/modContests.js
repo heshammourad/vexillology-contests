@@ -39,6 +39,10 @@ const isUpcoming = async (contest) => {
 // that doesn't start on the 1st, which this page's month picker can't represent.
 const YEAR_END_MESSAGE = "Year-end contests can't be managed here";
 
+// Categories are optional, but when sent they must be a list of strings.
+const isValidCategories = (categories) => categories == null
+  || (Array.isArray(categories) && categories.every((c) => typeof c === 'string'));
+
 // Submission start is allowed to precede its own contest's month, but not so far that it
 // intrudes on the previous contest's own submission/voting window.
 const getSubmissionOverlapError = (submissionStart, previousContest) => {
@@ -136,6 +140,10 @@ exports.post = async ({ body }, res) => {
     res.status(400).send(dateError);
     return;
   }
+  if (!isValidCategories(categories)) {
+    res.status(400).send('Categories must be a list of names.');
+    return;
+  }
 
   // Missing timestamps fall back to the default schedule, so validate the merged result
   // rather than only the ones provided.
@@ -207,7 +215,7 @@ exports.put = async ({ params: { id }, body }, res) => {
     `Putting /mod/contests/${id} with body: ${JSON.stringify(body)}`,
   );
   const {
-    categories = [],
+    categories,
     date,
     name,
     prompt,
@@ -220,6 +228,10 @@ exports.put = async ({ params: { id }, body }, res) => {
   const dateError = getDateFormatError(date);
   if (dateError) {
     res.status(400).send(dateError);
+    return;
+  }
+  if (!isValidCategories(categories)) {
+    res.status(400).send('Categories must be a list of names.');
     return;
   }
 
@@ -289,9 +301,10 @@ exports.put = async ({ params: { id }, body }, res) => {
     // Validate the category changes before writing anything, so a rejected edit doesn't
     // leave the contest half-updated.
     const existingCategories = await getCategories(id);
+    // Leaving categories out of the body keeps the current ones.
     const submittedCategories = categories
-      .map((category) => category.trim())
-      .filter(Boolean);
+      ? categories.map((category) => category.trim()).filter(Boolean)
+      : existingCategories;
     const categoriesToAdd = submittedCategories.filter(
       (c) => !existingCategories.includes(c),
     );

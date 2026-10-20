@@ -240,6 +240,8 @@ exports.getContestForMonth = async (date, excludeId = null) => db.select(
  * Finds the contest immediately preceding the given month, if any - used to make sure a
  * contest's submission start (which is otherwise allowed to precede its own month) doesn't
  * overlap with the previous contest's own submission/voting window.
+ * Unlike getContestForMonth, this includes year-end contests on purpose: January's
+ * submissions mustn't open before Best of Year's voting ends.
  *
  * @param {string} date
  * @param {string} [excludeId] - A contest id to exclude from the search (e.g. when editing).
