@@ -358,8 +358,8 @@ exports.updateContest = async ({
 
 /**
  * Renames a contest's id. Only safe to call for contests that have no submissions yet
- * (see hasContestEntries), since this relies on the contest_categories foreign key having
- * ON UPDATE CASCADE to follow along; if it doesn't, this throws and nothing changes.
+ * (see hasContestEntries). Categories follow along through the contest_categories foreign
+ * key's ON UPDATE CASCADE (server/db/changes/20261019-contest-categories-cascade.sql).
  *
  * @param {string} oldId
  * @param {string} newId

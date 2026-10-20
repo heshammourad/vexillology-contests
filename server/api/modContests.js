@@ -256,6 +256,34 @@ exports.put = async ({ params: { id }, body }, res) => {
       return;
     }
 
+    // Validate the category changes before writing anything, so a rejected edit doesn't
+    // leave the contest half-updated.
+    const existingCategories = await getCategories(id);
+    const submittedCategories = categories
+      .map((category) => category.trim())
+      .filter(Boolean);
+    const categoriesToAdd = submittedCategories.filter(
+      (c) => !existingCategories.includes(c),
+    );
+    const categoriesToRemove = existingCategories.filter(
+      (c) => !submittedCategories.includes(c),
+    );
+
+    if (categoriesToRemove.length) {
+      const usedCategories = await getUsedCategories(id);
+      const blockedCategories = categoriesToRemove.filter((c) => usedCategories.includes(c));
+      if (blockedCategories.length) {
+        res
+          .status(400)
+          .send(
+            `Can't remove categories that already have submissions: ${blockedCategories.join(
+              ', ',
+            )}`,
+          );
+        return;
+      }
+    }
+
     let effectiveId = id;
     const computedId = getContestId(date);
     if (computedId !== id && (await isUpcoming(contest))) {
@@ -274,30 +302,7 @@ exports.put = async ({ params: { id }, body }, res) => {
       voteEnd,
     });
 
-    const existingCategories = await getCategories(effectiveId);
-    const submittedCategories = categories
-      .map((category) => category.trim())
-      .filter(Boolean);
-    const categoriesToAdd = submittedCategories.filter(
-      (c) => !existingCategories.includes(c),
-    );
-    const categoriesToRemove = existingCategories.filter(
-      (c) => !submittedCategories.includes(c),
-    );
-
     if (categoriesToRemove.length) {
-      const usedCategories = await getUsedCategories(effectiveId);
-      const blockedCategories = categoriesToRemove.filter((c) => usedCategories.includes(c));
-      if (blockedCategories.length) {
-        res
-          .status(400)
-          .send(
-            `Can't remove categories that already have submissions: ${blockedCategories.join(
-              ', ',
-            )}`,
-          );
-        return;
-      }
       await removeCategories(effectiveId, categoriesToRemove);
     }
 
