@@ -128,6 +128,16 @@ exports.getScheduleOrderError = ({
   const voteStartDate = voteStart && new Date(voteStart);
   const voteEndDate = voteEnd && new Date(voteEnd);
 
+  // An unparseable value makes every comparison below false, so catch it here rather than
+  // letting it reach the database.
+  if (
+    [start, end, voteStartDate, voteEndDate].some(
+      (d) => d && Number.isNaN(d.getTime()),
+    )
+  ) {
+    return 'Submission and vote times must be valid dates.';
+  }
+
   if (start && end && start >= end) {
     return 'Submission end must be after submission start.';
   }
