@@ -80,8 +80,12 @@ function AppContent() {
         <Route path="/mod" element={<Mod />}>
           <Route index element={<ReviewSubmissions />} />
           <Route path="contests" element={<ModContests />} />
-          <Route path="contests/new" element={<ContestForm />} />
-          <Route path="contests/:id/edit" element={<ContestForm />} />
+          {/* Keyed so moving between add and edit remounts the form with fresh state. */}
+          <Route path="contests/new" element={<ContestForm key="new" />} />
+          <Route
+            path="contests/:id/edit"
+            element={<ContestForm key="edit" />}
+          />
           <Route path="analyze" element={<AnalyzeVotes />}>
             <Route path=":contestId" element={<AnalyzeVotes />} />
           </Route>

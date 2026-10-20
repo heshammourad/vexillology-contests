@@ -19,6 +19,7 @@ function SpinnerButton({
   disabledTooltip,
   onClick,
   submitting,
+  type,
   variant,
 }) {
   const classes = useStyles();
@@ -28,6 +29,7 @@ function SpinnerButton({
       color={color}
       disabled={disabled || submitting}
       onClick={onClick}
+      type={type}
       variant={variant}
     >
       {submitting && <CircularProgress className={classes.spinner} size={24} />}
@@ -51,8 +53,10 @@ SpinnerButton.propTypes = {
   color: types.color,
   disabled: PropTypes.bool,
   disabledTooltip: PropTypes.string,
-  onClick: PropTypes.func.isRequired,
+  onClick: PropTypes.func,
   submitting: PropTypes.bool,
+  // 'submit' to submit the surrounding form, in which case onClick isn't needed.
+  type: PropTypes.oneOf(['button', 'submit']),
   variant: PropTypes.oneOf(['contained', 'outlined', 'text']),
 };
 
@@ -60,7 +64,9 @@ SpinnerButton.defaultProps = {
   color: 'default',
   disabled: false,
   disabledTooltip: undefined,
+  onClick: undefined,
   submitting: false,
+  type: 'button',
   variant: 'text',
 };
 

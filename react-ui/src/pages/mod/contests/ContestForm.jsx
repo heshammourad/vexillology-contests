@@ -43,7 +43,11 @@ function ContestForm() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { data: contest, error: loadError } = useSwrModContest(id);
+  const {
+    data: contest,
+    error: loadError,
+    isValidating: isRefreshingContest,
+  } = useSwrModContest(id);
   const [fields, updateField] = useFormState(FIELDS);
   const values = Object.fromEntries(
     FIELDS.map((field) => [field, fields[field].value]),
@@ -53,7 +57,8 @@ function ContestForm() {
 
   // A new contest starts from the default month and its default schedule; an existing one
   // from its saved values, once they load.
-  const [loaded, setLoaded] = useState(!id);
+  const [loadedId, setLoadedId] = useState(null);
+  const loaded = !id || loadedId === id;
   const [applyDefaultSchedule, setApplyDefaultSchedule] = useState(!id);
   const [pendingMonth, setPendingMonth] = useState(null);
   const [confirmingDuplicateLinks, setConfirmingDuplicateLinks] = useState(false);
@@ -72,8 +77,10 @@ function ContestForm() {
     }
   }, [id]);
 
+  // SWR first returns any cached copy of the contest, then refetches it. Wait for the fresh
+  // one, so the form can't start from (and save back) values from before an earlier save.
   useEffect(() => {
-    if (loaded || !contest.id) {
+    if (loaded || contest.id !== id || isRefreshingContest) {
       return;
     }
     setValue('name', contest.name);
@@ -83,8 +90,8 @@ function ContestForm() {
       setValue(field, toDatetimeLocalValue(contest[field]));
     });
     setCategories(contest.categories);
-    setLoaded(true);
-  }, [contest, loaded]);
+    setLoadedId(id);
+  }, [contest, id, isRefreshingContest, loaded]);
 
   useEffect(() => {
     if (!applyDefaultSchedule || !monthSchedule.submissionStart) {
@@ -260,9 +267,9 @@ function ContestForm() {
             >
               <Button onClick={() => navigate(LIST_PATH)}>Cancel</Button>
               <SpinnerButton
+                type="submit"
                 variant="contained"
                 color="primary"
-                onClick={handleSubmit}
                 submitting={isMutating}
               >
                 {id ? 'Save Changes' : 'Create Contest'}
