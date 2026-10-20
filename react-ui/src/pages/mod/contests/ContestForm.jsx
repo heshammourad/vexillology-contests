@@ -115,6 +115,7 @@ function ContestForm() {
     ? `A contest already exists for this month: "${sameMonthContestName}".`
     : null;
   const monthError = (monthChanged && getPastMonthError(values.month)) || sameMonthError;
+  const duplicateLinkWarnings = getDuplicateLinkWarnings(values.prompt);
 
   const handleMonthChange = (month) => {
     if (month && month !== values.month) {
@@ -170,7 +171,7 @@ function ContestForm() {
       setStatus({ severity: 'error', text: submitError });
       return;
     }
-    if (getDuplicateLinkWarnings(values.prompt).length) {
+    if (duplicateLinkWarnings.length) {
       setConfirmingDuplicateLinks(true);
       return;
     }
@@ -237,6 +238,7 @@ function ContestForm() {
             />
 
             <PromptField
+              duplicateLinkWarnings={duplicateLinkWarnings}
               value={values.prompt}
               onChange={(value) => setValue('prompt', value)}
             />
@@ -291,9 +293,9 @@ function ContestForm() {
         }}
       >
         <Typography variant="body2">
-          {`This prompt appears to contain ${getDuplicateLinkWarnings(
-            values.prompt,
-          ).join(' and ')}. `}
+          {`This prompt appears to contain ${duplicateLinkWarnings.join(
+            ' and ',
+          )}. `}
           The submission page already shows these, so they&apos;ll appear twice
           if left in the prompt. Save anyway?
         </Typography>

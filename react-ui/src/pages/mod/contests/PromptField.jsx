@@ -7,14 +7,10 @@ import PropTypes from 'prop-types';
 
 import { ContestRulesLink, FormattedContent } from '../../../components';
 
-import { getDuplicateLinkWarnings } from './contestFormUtils';
-
 /**
  * The contest prompt, with a preview of how the submission page will show it.
  */
-function PromptField({ onChange, value }) {
-  const duplicateLinkWarnings = getDuplicateLinkWarnings(value);
-
+function PromptField({ duplicateLinkWarnings, onChange, value }) {
   return (
     <Box>
       <TextField
@@ -53,6 +49,8 @@ function PromptField({ onChange, value }) {
 }
 
 PromptField.propTypes = {
+  // From getDuplicateLinkWarnings(value), which the form also needs on submit.
+  duplicateLinkWarnings: PropTypes.arrayOf(PropTypes.string).isRequired,
   onChange: PropTypes.func.isRequired,
   value: PropTypes.string.isRequired,
 };
