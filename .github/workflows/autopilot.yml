@@ -137,7 +137,18 @@ jobs:
           fi
           if [ -n "$INPUT_ISSUE" ]; then
             issue="$INPUT_ISSUE"
-            note "Plan: #$issue (requested by hand${busy:+; note #$busy is also in flight})."
+            # The tracker whose checklist lists it, ticked or not, so the run edits the right line.
+            # None means there's no line to edit, rather than falling back to the first tracker.
+            for t in $trackers; do
+              if tracker_body=$(gh issue view "$t" --json body --jq .body) \
+                  && grep -qE "^[[:space:]]*- \[[ xX]\] (\*\*)?#$issue([^0-9]|$)" <<< "$tracker_body"; then
+                tracker="$t"
+                break
+              fi
+            done
+            where="on no open tracker"
+            [ -n "$tracker" ] && where="on tracker #$tracker"
+            note "Plan: #$issue (requested by hand, $where${busy:+; note #$busy is also in flight})."
           elif [ -n "$busy" ]; then
             note "Not picking: #$busy is still in flight (open, labelled autopilot)."
           else
@@ -192,7 +203,13 @@ jobs:
 
           {
             echo "issue=$issue"
-            echo "tracker=${tracker:-$(echo "$trackers" | head -1)}"
+            # A hand-picked issue keeps only the tracker that lists it. Otherwise fall back to the
+            # current one.
+            if [ -n "$INPUT_ISSUE" ]; then
+              echo "tracker=$tracker"
+            else
+              echo "tracker=${tracker:-$(echo "$trackers" | head -1)}"
+            fi
             echo "wrapup_pr=$wrapup"
           } >> "$GITHUB_OUTPUT"
 
@@ -244,7 +261,7 @@ jobs:
             read .claude/AUTOPILOT.md and CLAUDE.md and follow them. Nobody is watching this run;
             everything you want Hesham to see goes in an issue comment.
 
-            ${{ needs.pick.outputs.tracker != '' && format('Current tracking issue: #{0}.', needs.pick.outputs.tracker) || 'There is no open tracking issue.' }}
+            ${{ needs.pick.outputs.tracker != '' && format('Current tracking issue: #{0}.', needs.pick.outputs.tracker) || 'No open tracking issue lists this item, so there is no tracker line to update.' }}
 
             ${{ needs.pick.outputs.wrapup_pr != '' && format('Step 1, wrap-up: PR #{0} has merged and is live on staging. Do the Wrap-up phase for it.', needs.pick.outputs.wrapup_pr) || 'Step 1: no wrap-up this run.' }}
 
