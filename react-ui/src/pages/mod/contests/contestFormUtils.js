@@ -113,7 +113,8 @@ export const getScheduleErrors = (schedule, monthSchedule) => {
 };
 
 const MARKDOWN_LINK_PATTERN = /\[([^\]]*)\]\(([^)]+)\)/g;
-const SUBMISSION_URL_PATTERN = /vexillologycontests\.com\/submission\b|(?:^|["'(\s])\/submission\b/i;
+// The submission page itself, but not its rules page (that's RULES_URL_PATTERN's job).
+const SUBMISSION_URL_PATTERN = /(?:vexillologycontests\.com|^|["'(\s])\/submission\b(?!\/rules)/i;
 // The imgur post the rules are usually linked to (lm0yPy7), plus our own rules page - matched
 // by URL rather than link text, since a prompt could plausibly mention "rules" for other reasons.
 const RULES_URL_PATTERN = /imgur\.com\/(?:a\/)?lm0yPy7\b|\/submission\/rules\b/i;
