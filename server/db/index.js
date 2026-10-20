@@ -2,6 +2,7 @@
  * @exports del
  * @exports insert
  * @exports select
+ * @exports tx
  * @exports update
  */
 
@@ -118,4 +119,5 @@ module.exports = {
   update,
   any: db.any,
   none: db.none,
+  tx: (...args) => db.tx(...args),
 };
