@@ -1,0 +1,48 @@
+# Lint and build both packages on every PR and on master. This is the gate an Autopilot PR has to
+# pass (.claude/AUTOPILOT.md), and it runs on everyone else's PRs too.
+#
+# No tests run here. The only test, react-ui's App.test.js smoke test, fails on master before it
+# reaches a single assertion: Jest can't parse ESM-only `nanoid`, and with that fixed, Plotly can't
+# load in jsdom. Making it pass means mocking modules across the CRA test setup, which the Next.js
+# migration (#558) replaces, so tests are left to that.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Lint server
+        run: npx eslint server --max-warnings=0
+
+      - name: Lint react-ui
+        working-directory: react-ui
+        run: npm run lint -- --max-warnings=0
+
+      # CI=false matches Heroku's build. With CI=true, CRA turns every webpack warning into an error,
+      # including the expected one from env.js's optional require('./env.personal'), a gitignored
+      # file that only exists on a developer's machine.
+      - name: Build react-ui
+        working-directory: react-ui
+        env:
+          CI: false
+        run: npm run build

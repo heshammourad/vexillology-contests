@@ -1,0 +1,102 @@
+# Claude on @claude: the Build and Review phases of the autopilot loop (.claude/AUTOPILOT.md).
+#
+# - `@claude` on an issue Claude has planned: it acts on the reply, and on a go-ahead builds the
+#   change and opens the PR.
+# - `@claude` in a PR comment, inline comment or review: it addresses that on the same branch.
+#
+# Only the repository owner's comments trigger it. That is stricter than the action's own check
+# (any user with write access). It matters doubly here: the repository is public, so anyone can
+# comment, and the check also keeps claude[bot]'s own comments (which, being an app's, do trigger
+# workflows) from ever starting a run. This workflow ignores AUTOPILOT_ENABLED: an @claude is an
+# explicit request. The variable pauses only the automatic picking in autopilot.yml.
+
+name: Claude
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+
+# One run per issue or PR at a time, queued rather than cancelled: a second comment while the first
+# is being handled is a second request, not a correction to throw the first away for.
+#
+# Every comment starts a run, including claude[bot]'s and strangers' on this public repo, even though
+# its job is then skipped. A group holds only one pending run, so only events that pass the job's
+# owner + @claude check may join the per-issue group. Anything else gets a group of its own, so it
+# can't replace a queued @claude. Keep this condition in step with the job's `if:`.
+concurrency:
+  group: >-
+    ${{ ((github.event_name == 'pull_request_review'
+    && github.event.review.user.login == github.repository_owner
+    && contains(github.event.review.body, '@claude'))
+    || (github.event_name != 'pull_request_review'
+    && github.event.comment.user.login == github.repository_owner
+    && contains(github.event.comment.body, '@claude')))
+    && format('claude-{0}', github.event.issue.number || github.event.pull_request.number)
+    || format('claude-skip-{0}', github.run_id) }}
+  cancel-in-progress: false
+
+jobs:
+  claude:
+    if: >-
+      (github.event_name == 'pull_request_review'
+        && github.event.review.user.login == github.repository_owner
+        && contains(github.event.review.body, '@claude'))
+      || (github.event_name != 'pull_request_review'
+        && github.event.comment.user.login == github.repository_owner
+        && contains(github.event.comment.body, '@claude'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      actions: read
+      contents: write
+      id-token: write # exchanged for the Claude GitHub App's token, so its PRs trigger CI
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Run Claude
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          additional_permissions: |
+            actions: read
+          branch_name_template: '{{prefix}}{{entityNumber}}-{{description}}'
+          # Plain `git push` is allowed, since Build and Review push to the PR branch. Only force
+          # pushes are blocked. autopilot.yml, which never needs to push, blocks every push. The
+          # deny-list matches command prefixes, so it catches mistakes, not a determined run
+          # (`git push origin --force` or `gh api` would get past it). The control is master's
+          # branch protection: no force pushes, and a merge needs an approving review, which a
+          # PR's author can't give.
+          claude_args: |
+            --model claude-opus-5-5
+            --max-turns 250
+            --allowedTools "Bash,Edit,MultiEdit,Write,Read,Glob,Grep,WebFetch,WebSearch"
+            --disallowedTools "Bash(gh pr merge:*),Bash(gh pr review:*),Bash(gh pr close:*),Bash(gh secret:*),Bash(gh variable:*),Bash(gh workflow:*),Bash(gh repo:*),Bash(git push --force:*),Bash(git push -f:*),Bash(heroku:*)"
+            --append-system-prompt "This is an unattended run in the vexillology-contests repository. Before anything else, read .claude/AUTOPILOT.md and CLAUDE.md and follow them; AUTOPILOT.md says which phase this is and how it must end. You may open the pull request yourself with gh pr create when AUTOPILOT.md says to."
+
+      # The action hides Claude's output so that tool results never reach the log, which also hides
+      # why a run failed. This prints only the run's final result message, which on a failure is
+      # the error text, and nothing any tool returned.
+      - name: Report why Claude failed
+        if: failure()
+        env:
+          EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+        run: |
+          file="${EXECUTION_FILE:-$RUNNER_TEMP/claude-execution-output.json}"
+          msg=""
+          [ -f "$file" ] && msg=$(jq -r '(if type == "array" then .[] else . end) | select(.type? == "result") | .result // empty' "$file" 2>/dev/null | head -c 2000)
+          msg="${msg:-No result message was recorded; the failure was before or outside Claude.}"
+          echo "$msg"
+          { echo "### Why Claude failed"; echo; echo '```'; echo "$msg"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
