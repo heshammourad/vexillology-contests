@@ -93,6 +93,22 @@ const getBodyError = ({
 };
 
 /**
+ * Looks up the contests a contest's schedule is checked against: another regular contest in
+ * the same month, and the contests before and after it.
+ *
+ * @param {string} date
+ * @param {string} [excludeId] - The contest being edited, left out of the search.
+ */
+const getNeighbouringContests = async (date, excludeId) => {
+  const [sameMonthContest, previousContest, nextContest] = await Promise.all([
+    getContestForMonth(date, excludeId),
+    getPreviousContest(date, excludeId),
+    getNextContest(date, excludeId),
+  ]);
+  return { sameMonthContest, previousContest, nextContest };
+};
+
+/**
  * Checks a contest's schedule against the other regular contests: only one per month, its
  * submissions can open early but not before the previous contest's voting ends, and its
  * voting must end before the next contest's submissions open.
@@ -107,11 +123,8 @@ const getOtherContestsError = async ({
   voteEnd,
   excludeId,
 }) => {
-  const [sameMonthContest, previousContest, nextContest] = await Promise.all([
-    getContestForMonth(date, excludeId),
-    getPreviousContest(date, excludeId),
-    getNextContest(date, excludeId),
-  ]);
+  const neighbours = await getNeighbouringContests(date, excludeId);
+  const { sameMonthContest, previousContest, nextContest } = neighbours;
   if (sameMonthContest) {
     return `A contest already exists for this month: "${sameMonthContest.name}".`;
   }
@@ -153,11 +166,8 @@ exports.getMonthSchedule = async ({ query: { date, excludeId } }, res) => {
   }
 
   try {
-    const [sameMonthContest, previousContest, nextContest] = await Promise.all([
-      getContestForMonth(date, excludeId),
-      getPreviousContest(date, excludeId),
-      getNextContest(date, excludeId),
-    ]);
+    const neighbours = await getNeighbouringContests(date, excludeId);
+    const { sameMonthContest, previousContest, nextContest } = neighbours;
     res.send({
       ...getDefaultContestDates(date),
       ...getMonthBounds(date),
@@ -374,7 +384,7 @@ exports.put = async ({ params: { id }, body }, res) => {
       categoriesToRemove,
     });
 
-    res.send(updatedContest);
+    res.send({ ...updatedContest, date: toDateString(updatedContest.date) });
   } catch (err) {
     logger.error(`Error putting /mod/contests/${id}: ${err.message || err}`);
     res.status(500).send('Failed to update contest');
