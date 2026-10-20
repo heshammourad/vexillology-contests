@@ -120,13 +120,20 @@ exports.post = async (
       return;
     }
 
+    const trimmedName = typeof name === 'string' ? name.trim() : '';
+    const trimmedDescription = typeof description === 'string' ? description.trim() : '';
+    if (!trimmedName || !trimmedDescription) {
+      res.status(400).send('Expected name and description to be non-empty');
+      return;
+    }
+
     const id = url.match(/%2F(\w*)/)[1];
     const submissionData = {
       background_color: backgroundColor,
-      description,
+      description: trimmedDescription,
       height,
       id,
-      name,
+      name: trimmedName,
       url,
       user: username,
       width,

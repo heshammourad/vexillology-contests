@@ -186,16 +186,16 @@ function SubmissionForm({
           }
           break;
         case 'description':
-          if (!fieldValue) {
+          if (!fieldValue.trim()) {
             errorValue = 'This is a required question.';
-          } else if (fieldValue.length > CHAR_LIMIT_DESCRIPTION) {
+          } else if (fieldValue.trim().length > CHAR_LIMIT_DESCRIPTION) {
             errorValue = `Description exceeds max length of ${CHAR_LIMIT_DESCRIPTION}.`;
           }
           break;
         case 'name':
-          if (!fieldValue) {
+          if (!fieldValue.trim()) {
             errorValue = 'This is a required question.';
-          } else if (fieldValue.length > CHAR_LIMIT_NAME) {
+          } else if (fieldValue.trim().length > CHAR_LIMIT_NAME) {
             errorValue = `Name exceeds max length of ${CHAR_LIMIT_NAME}.`;
           }
           break;
@@ -342,9 +342,9 @@ function SubmissionForm({
 
       const payload = {
         contestId,
-        description: formState.description.value,
+        description: formState.description.value.trim(),
         height: fileDimensions.height,
-        name: formState.name.value,
+        name: formState.name.value.trim(),
         url: downloadUrl,
         width: fileDimensions.width,
         backgroundColor,
