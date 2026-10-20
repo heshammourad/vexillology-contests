@@ -31,6 +31,8 @@ import {
 /* eslint-disable no-restricted-imports */
 import Mod from './pages/mod/Mod';
 import ContestSummary from './pages/mod/contestSummary/ContestSummary';
+import ContestForm from './pages/mod/contests/ContestForm';
+import ModContests from './pages/mod/contests/ModContests';
 import ContestRules from './pages/submission/ContestRules';
 /* eslint-enable no-restricted-imports */
 
@@ -77,6 +79,13 @@ function AppContent() {
         </Route>
         <Route path="/mod" element={<Mod />}>
           <Route index element={<ReviewSubmissions />} />
+          <Route path="contests" element={<ModContests />} />
+          {/* Keyed so moving between add and edit remounts the form with fresh state. */}
+          <Route path="contests/new" element={<ContestForm key="new" />} />
+          <Route
+            path="contests/:id/edit"
+            element={<ContestForm key="edit" />}
+          />
           <Route path="analyze" element={<AnalyzeVotes />}>
             <Route path=":contestId" element={<AnalyzeVotes />} />
           </Route>
