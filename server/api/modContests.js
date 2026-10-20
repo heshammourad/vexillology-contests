@@ -43,6 +43,22 @@ const YEAR_END_MESSAGE = "Year-end contests can't be managed here";
 const isValidCategories = (categories) => categories == null
   || (Array.isArray(categories) && categories.every((c) => typeof c === 'string'));
 
+// Trimmed, without blanks or duplicates, so create and edit store the same names.
+const normalizeCategories = (categories) => [
+  ...new Set(categories.map((category) => category.trim()).filter(Boolean)),
+];
+
+// checkRequiredFields only tests presence, so whitespace-only or non-string values get here.
+const getTextFieldError = ({ name, prompt }) => {
+  if (typeof name !== 'string' || !name.trim()) {
+    return 'Contest name is required.';
+  }
+  if (typeof prompt !== 'string' || !prompt.trim()) {
+    return 'Prompt is required.';
+  }
+  return null;
+};
+
 // Submission start is allowed to precede its own contest's month, but not so far that it
 // intrudes on the previous contest's own submission/voting window.
 const getSubmissionOverlapError = (submissionStart, previousContest) => {
@@ -144,6 +160,11 @@ exports.post = async ({ body }, res) => {
     res.status(400).send('Categories must be a list of names.');
     return;
   }
+  const textFieldError = getTextFieldError({ name, prompt });
+  if (textFieldError) {
+    res.status(400).send(textFieldError);
+    return;
+  }
 
   // Missing timestamps fall back to the default schedule, so validate the merged result
   // rather than only the ones provided.
@@ -193,7 +214,7 @@ exports.post = async ({ body }, res) => {
     }
 
     await addContest({
-      categories,
+      categories: categories && normalizeCategories(categories),
       date,
       name,
       prompt,
@@ -232,6 +253,11 @@ exports.put = async ({ params: { id }, body }, res) => {
   }
   if (!isValidCategories(categories)) {
     res.status(400).send('Categories must be a list of names.');
+    return;
+  }
+  const textFieldError = getTextFieldError({ name, prompt });
+  if (textFieldError) {
+    res.status(400).send(textFieldError);
     return;
   }
 
@@ -303,7 +329,7 @@ exports.put = async ({ params: { id }, body }, res) => {
     const existingCategories = await getCategories(id);
     // Leaving categories out of the body keeps the current ones.
     const submittedCategories = categories
-      ? categories.map((category) => category.trim()).filter(Boolean)
+      ? normalizeCategories(categories)
       : existingCategories;
     const categoriesToAdd = submittedCategories.filter(
       (c) => !existingCategories.includes(c),
