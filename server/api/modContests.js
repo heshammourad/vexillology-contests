@@ -9,7 +9,6 @@ const {
   getScheduleOrderError,
 } = require('../contestSchedule');
 const {
-  addCategories,
   addContest,
   deleteContest,
   getAllContests,
@@ -19,8 +18,6 @@ const {
   getPreviousContest,
   getUsedCategories,
   hasContestEntries,
-  removeCategories,
-  renameContestId,
   updateContest,
 } = require('../db/queries');
 const { createLogger } = require('../logger');
@@ -184,7 +181,7 @@ exports.post = async ({ body }, res) => {
     res.status(201).send({ message: 'Contest created successfully' });
   } catch (err) {
     logger.error(`Error posting /mod/contests: ${err.message || err}`);
-    res.status(500).send(err.message || 'Failed to create contest');
+    res.status(500).send('Failed to create contest');
   }
 };
 
@@ -214,8 +211,7 @@ exports.put = async ({ params: { id }, body }, res) => {
       submissionEnd,
       voteStart,
       voteEnd,
-    })
-    || getPastMonthError(date);
+    });
   if (scheduleError) {
     res.status(400).send(scheduleError);
     return;
@@ -225,6 +221,13 @@ exports.put = async ({ params: { id }, body }, res) => {
     const contest = await getContestById(id);
     if (!contest) {
       res.status(404).send('Contest with that id not found');
+      return;
+    }
+    // Only a move to another month has to land in the present or future, so a contest
+    // still awaiting certification after its month ends can have its name or prompt fixed.
+    const pastMonthError = date !== contest.date.toJSON().substr(0, 10) && getPastMonthError(date);
+    if (pastMonthError) {
+      res.status(400).send(pastMonthError);
       return;
     }
     if (contest.resultsCertified) {
@@ -284,15 +287,23 @@ exports.put = async ({ params: { id }, body }, res) => {
       }
     }
 
-    let effectiveId = id;
+    let newId = id;
     const computedId = getContestId(date);
     if (computedId !== id && (await isUpcoming(contest))) {
-      await renameContestId(id, computedId);
-      effectiveId = computedId;
+      if (await getContestById(computedId)) {
+        res
+          .status(400)
+          .send(
+            `Can't move this contest: the id "${computedId}" is already taken.`,
+          );
+        return;
+      }
+      newId = computedId;
     }
 
     const updatedContest = await updateContest({
-      id: effectiveId,
+      id,
+      newId,
       name,
       date,
       prompt,
@@ -300,20 +311,14 @@ exports.put = async ({ params: { id }, body }, res) => {
       submissionEnd,
       voteStart,
       voteEnd,
+      categoriesToAdd,
+      categoriesToRemove,
     });
 
-    if (categoriesToRemove.length) {
-      await removeCategories(effectiveId, categoriesToRemove);
-    }
-
-    if (categoriesToAdd.length) {
-      await addCategories(effectiveId, categoriesToAdd);
-    }
-
-    res.send({ ...updatedContest, id: effectiveId });
+    res.send(updatedContest);
   } catch (err) {
     logger.error(`Error putting /mod/contests/${id}: ${err.message || err}`);
-    res.status(500).send(err.message || 'Failed to update contest');
+    res.status(500).send('Failed to update contest');
   }
 };
 
@@ -338,6 +343,6 @@ exports.delete = async ({ params: { id } }, res) => {
     res.send({ message: 'Contest deleted successfully' });
   } catch (err) {
     logger.error(`Error deleting /mod/contests/${id}: ${err.message || err}`);
-    res.status(500).send(err.message || 'Failed to delete contest');
+    res.status(500).send('Failed to delete contest');
   }
 };

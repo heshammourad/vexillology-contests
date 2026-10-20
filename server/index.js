@@ -136,7 +136,18 @@ if (!IS_DEV && cluster.isMaster) {
   modRouter
     .route('/contests/:id')
     .get(modContests.getOne)
-    .put(checkRequiredFields('name', 'date', 'prompt'), modContests.put)
+    .put(
+      checkRequiredFields(
+        'name',
+        'date',
+        'prompt',
+        'submissionStart',
+        'submissionEnd',
+        'voteStart',
+        'voteEnd',
+      ),
+      modContests.put,
+    )
     .delete(modContests.delete);
   modRouter.route('/contestSchedule').get(modContests.getDefaultSchedule);
   modRouter.route('/contestSummary').get(contestSummary.get);

@@ -1,5 +1,4 @@
 /**
- * @exports addCategories
  * @exports addContest
  * @exports deleteContest
  * @exports getAllContests
@@ -13,8 +12,6 @@
  * @exports getVoteDates
  * @exports hasContestEntries
  * @exports refreshContestsSummaryView
- * @exports removeCategories
- * @exports renameContestId
  * @exports updateContest
  */
 
@@ -62,53 +59,6 @@ exports.hasContestEntries = async (contestId) => {
     true,
   );
   return !!result;
-};
-
-/**
- * Adds new categories to a contest, appending them after the current highest sort order.
- *
- * @param {string} contestId
- * @param {string[]} categories
- * @returns {Promise<void>}
- */
-exports.addCategories = async (contestId, categories) => {
-  if (!categories.length) {
-    return;
-  }
-
-  const { maxSortOrder } = await db.select(
-    'SELECT COALESCE(MAX(sort_order), -1) AS max_sort_order FROM contest_categories WHERE contest_id = $1',
-    [contestId],
-    true,
-  );
-
-  await db.insert(
-    'contest_categories',
-    categories.map((category, index) => ({
-      contest_id: contestId,
-      category,
-      sort_order: maxSortOrder + index + 1,
-    })),
-  );
-};
-
-/**
- * Removes categories from a contest. Callers are responsible for confirming none of the
- * categories being removed are already in use (see getUsedCategories).
- *
- * @param {string} contestId
- * @param {string[]} categories
- * @returns {Promise<void>}
- */
-exports.removeCategories = async (contestId, categories) => {
-  if (!categories.length) {
-    return;
-  }
-
-  await db.none(
-    'DELETE FROM contest_categories WHERE contest_id = $1 AND category = ANY($2)',
-    [contestId, categories],
-  );
 };
 
 exports.getCurrentContest = async () => {
@@ -296,19 +246,25 @@ exports.getContestForMonth = async (date, excludeId = null) => db.select(
 exports.getPreviousContest = async (date, excludeId = null) => db.select(
   `SELECT name, vote_end FROM contests WHERE date < $1${
     excludeId ? ' AND id != $2' : ''
-  } ORDER BY date DESC LIMIT 1`,
+  } ORDER BY date DESC, vote_end DESC LIMIT 1`,
   excludeId ? [date, excludeId] : [date],
   true,
 );
 
 /**
- * Updates the editable fields of an existing contest.
+ * Saves a moderator's edit to a contest in one transaction: renames its id (when newId
+ * differs; only safe for contests without submissions, see hasContestEntries), updates its
+ * editable fields, and adds/removes categories. Callers are responsible for confirming none of
+ * the categories being removed are already in use (see getUsedCategories). Categories follow a
+ * rename through the contest_categories foreign key's ON UPDATE CASCADE
+ * (server/db/changes/20261019-contest-categories-cascade.sql).
  *
  * @param {Object} contestData
  * @returns {Promise<Object>} The updated contest row.
  */
 exports.updateContest = async ({
   id,
+  newId = id,
   name,
   date,
   prompt,
@@ -316,58 +272,68 @@ exports.updateContest = async ({
   submissionEnd,
   voteStart,
   voteEnd,
-}) => {
-  const [result] = await db.update(
-    'contests',
+  categoriesToAdd = [],
+  categoriesToRemove = [],
+}) => db.tx(async (t) => {
+  if (newId !== id) {
+    await t.none('UPDATE contests SET id = $2 WHERE id = $1', [id, newId]);
+  }
+
+  const result = await t.one(
+    `UPDATE contests SET
+       name = $2,
+       date = $3,
+       prompt = $4,
+       submission_start = $5,
+       submission_end = $6,
+       vote_start = $7,
+       vote_end = $8
+     WHERE id = $1
+     RETURNING
+       id,
+       name,
+       date,
+       prompt,
+       submission_start,
+       submission_end,
+       vote_start,
+       vote_end,
+       results_certified`,
     [
-      {
-        id,
-        name,
-        date,
-        prompt,
-        submission_start: submissionStart,
-        submission_end: submissionEnd,
-        vote_start: voteStart,
-        vote_end: voteEnd,
-      },
-    ],
-    [
-      '?id',
-      'name',
-      'date',
-      'prompt',
-      'submission_start',
-      'submission_end',
-      'vote_start',
-      'vote_end',
-    ],
-    [
-      'id',
-      'name',
-      'date',
-      'prompt',
-      'submission_start',
-      'submission_end',
-      'vote_start',
-      'vote_end',
-      'results_certified',
+      newId,
+      name,
+      date,
+      prompt,
+      submissionStart,
+      submissionEnd,
+      voteStart,
+      voteEnd,
     ],
   );
-  return result;
-};
 
-/**
- * Renames a contest's id. Only safe to call for contests that have no submissions yet
- * (see hasContestEntries). Categories follow along through the contest_categories foreign
- * key's ON UPDATE CASCADE (server/db/changes/20261019-contest-categories-cascade.sql).
- *
- * @param {string} oldId
- * @param {string} newId
- * @returns {Promise<void>}
- */
-exports.renameContestId = async (oldId, newId) => {
-  await db.none('UPDATE contests SET id = $2 WHERE id = $1', [oldId, newId]);
-};
+  if (categoriesToRemove.length) {
+    await t.none(
+      'DELETE FROM contest_categories WHERE contest_id = $1 AND category = ANY($2)',
+      [newId, categoriesToRemove],
+    );
+  }
+
+  if (categoriesToAdd.length) {
+    // Appended after the current highest sort order, in the order given.
+    await t.none(
+      `INSERT INTO contest_categories (contest_id, category, sort_order)
+       SELECT
+         $1,
+         c.category,
+         (SELECT COALESCE(MAX(sort_order), -1) FROM contest_categories WHERE contest_id = $1)
+           + c.ord
+       FROM unnest($2::text[]) WITH ORDINALITY AS c(category, ord)`,
+      [newId, categoriesToAdd],
+    );
+  }
+
+  return result;
+});
 
 /**
  * Deletes a contest and its categories. Only safe to call for contests that have no
@@ -376,7 +342,7 @@ exports.renameContestId = async (oldId, newId) => {
  * @param {string} id
  * @returns {Promise<void>}
  */
-exports.deleteContest = async (id) => {
-  await db.del('contest_categories', { contest_id: id });
-  await db.del('contests', { id });
-};
+exports.deleteContest = async (id) => db.tx(async (t) => {
+  await t.none('DELETE FROM contest_categories WHERE contest_id = $1', [id]);
+  await t.none('DELETE FROM contests WHERE id = $1', [id]);
+});

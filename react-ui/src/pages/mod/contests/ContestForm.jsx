@@ -890,7 +890,9 @@ function EditContestForm({ id }) {
     previousContestVoteEnd: previousContest.voteEnd,
     previousContestName: previousContest.name,
   });
-  const monthErrorMessage = getPastMonthError(month)
+  // Like the server, only a move to another month has to be current or upcoming, so a contest
+  // awaiting certification after its month ends can still be fixed.
+  const monthErrorMessage = (month !== data.date?.slice(0, 7) && getPastMonthError(month))
     || (monthConflict
       ? `A contest already exists for this month: "${monthConflict}".`
       : null);
