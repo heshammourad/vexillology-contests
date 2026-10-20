@@ -93,6 +93,13 @@ All schema objects live in the `vexillology_contests` Postgres schema (mirrored 
 
 **Moderation internals stay out of this repo.** It's public, so don't write down how ballots are judged, how abuse is detected, or what thresholds exist, here or in any issue, PR, commit message or comment. That covers `contests_summary` and `get_contest_results`, the analyze-votes and ban tooling, and the ballot-validity columns. Local sessions get the details from the gitignored `CLAUDE.local.md`. `server/db/schema.sql` withholds every function and view body that isn't on `dumpSchema.js`'s allowlist.
 
+**Database function or app code** (decided 2026-10-20). Write queries in the app by default (`server/db/queries.js`, `server/api/*/db.js`). There they're versioned, reviewed in PRs and visible to Autopilot, which can't reach the database, and they can't drift between the staging and production schemas the way a hand-applied function can. That goes double for plain selects without many joins or nested queries. Put the logic in a Postgres function or view only when:
+
+- it saves round trips that matter for performance, or
+- it's a multi-step write that must be atomic **and** has to run outside the app too (by hand from a SQL console, or from another database function). If only the app runs it, use a transaction in code (pg-promise's `tx`, which `server/db/index.js` exports once the #198 branch lands).
+
+Moderation logic follows the rules in the paragraph above. A function that already exists stays until the work that touches it moves it.
+
 **Core tables:**
 
 - `contests` — one row per contest (id, name, dates for submission/voting windows, `prompt`, `env_level` (`dev`/`stage`/`prod`, gates visibility per `CONTEST_ENV_LEVEL`), `local_voting`, ballot-validity settings, `results_certified`, `winners_thread_id`/`valid_reddit_id` for linking back to the Reddit results thread).
