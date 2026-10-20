@@ -5,6 +5,7 @@
  * cycle (1st -> 17th -> 22nd) to leave room for the Best of Year contest.
  *
  * @exports getContestId
+ * @exports getDateFormatError
  * @exports getDefaultContestDates
  * @exports getMonthBounds
  * @exports getMonthRangeError
@@ -70,6 +71,17 @@ const toMidnightEastern = ({ year, month, day }) => {
     TIME_ZONE,
   );
 };
+
+/**
+ * Checks that a contest date is the 1st of a real month, as 'YYYY-MM-01'. Contests always
+ * start on the 1st, and getContestForMonth matches on that exact date.
+ *
+ * @param {string} date
+ * @returns {string|null} An error message, or null if the date is well-formed.
+ */
+exports.getDateFormatError = (date) => (typeof date === 'string' && /^\d{4}-(0[1-9]|1[0-2])-01$/.test(date)
+  ? null
+  : 'Contest date must be the first of a month, as YYYY-MM-01.');
 
 exports.getContestId = (date) => {
   const { year, month } = parseDateParts(date);

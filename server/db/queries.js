@@ -177,7 +177,8 @@ exports.addContest = async ({
 };
 
 /**
- * Retrieves every contest that hasn't been certified yet (i.e. current or upcoming contests).
+ * Retrieves every regular (non-year-end) contest that hasn't been certified yet, i.e. current
+ * or upcoming contests.
  *
  * @returns {Promise<Array<Object>>}
  */
@@ -191,7 +192,7 @@ exports.getAllContests = async () => db.select(
      vote_start,
      vote_end
    FROM contests
-   WHERE results_certified = false
+   WHERE results_certified = false AND year_end = false
    ORDER BY date`,
 );
 
@@ -211,7 +212,8 @@ exports.getContestById = async (id) => db.select(
      submission_end,
      vote_start,
      vote_end,
-     results_certified
+     results_certified,
+     year_end
    FROM contests
    WHERE id = $1`,
   [id],

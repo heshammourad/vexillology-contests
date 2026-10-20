@@ -2,6 +2,7 @@ const { isFuture } = require('date-fns');
 
 const {
   getContestId,
+  getDateFormatError,
   getDefaultContestDates,
   getMonthBounds,
   getMonthRangeError,
@@ -34,6 +35,10 @@ const isUpcoming = async (contest) => {
   return !(await hasContestEntries(contest.id));
 };
 
+// Year-end (Best of) contests are created by create_best_of_year_contest on a fixed schedule
+// that doesn't start on the 1st, which this page's month picker can't represent.
+const YEAR_END_MESSAGE = "Year-end contests can't be managed here";
+
 // Submission start is allowed to precede its own contest's month, but not so far that it
 // intrudes on the previous contest's own submission/voting window.
 const getSubmissionOverlapError = (submissionStart, previousContest) => {
@@ -47,8 +52,9 @@ const getSubmissionOverlapError = (submissionStart, previousContest) => {
 };
 
 exports.getDefaultSchedule = async ({ query: { date, excludeId } }, res) => {
-  if (!date) {
-    res.status(400).send('Missing required query param: date');
+  const dateError = getDateFormatError(date);
+  if (dateError) {
+    res.status(400).send(dateError);
     return;
   }
 
@@ -94,6 +100,10 @@ exports.getOne = async ({ params: { id } }, res) => {
       res.status(404).send('Contest with that id not found');
       return;
     }
+    if (contest.yearEnd) {
+      res.status(400).send(YEAR_END_MESSAGE);
+      return;
+    }
 
     const [categories, usedCategories] = await Promise.all([
       getCategories(id),
@@ -118,15 +128,22 @@ exports.getOne = async ({ params: { id } }, res) => {
 exports.post = async ({ body }, res) => {
   logger.debug(`Posting /mod/contests with body: ${JSON.stringify(body)}`);
   const {
-    categories,
-    date,
-    name,
-    prompt,
-    submissionEnd,
-    submissionStart,
-    voteEnd,
-    voteStart,
+    categories, date, name, prompt,
   } = body;
+
+  const dateError = getDateFormatError(date);
+  if (dateError) {
+    res.status(400).send(dateError);
+    return;
+  }
+
+  // Missing timestamps fall back to the default schedule, so validate the merged result
+  // rather than only the ones provided.
+  const defaults = getDefaultContestDates(date);
+  const submissionStart = body.submissionStart || defaults.submissionStart;
+  const submissionEnd = body.submissionEnd || defaults.submissionEnd;
+  const voteStart = body.voteStart || defaults.voteStart;
+  const voteEnd = body.voteEnd || defaults.voteEnd;
 
   const scheduleError = getScheduleOrderError({
     submissionStart,
@@ -200,6 +217,12 @@ exports.put = async ({ params: { id }, body }, res) => {
     voteStart,
   } = body;
 
+  const dateError = getDateFormatError(date);
+  if (dateError) {
+    res.status(400).send(dateError);
+    return;
+  }
+
   const scheduleError = getScheduleOrderError({
     submissionStart,
     submissionEnd,
@@ -221,6 +244,10 @@ exports.put = async ({ params: { id }, body }, res) => {
     const contest = await getContestById(id);
     if (!contest) {
       res.status(404).send('Contest with that id not found');
+      return;
+    }
+    if (contest.yearEnd) {
+      res.status(400).send(YEAR_END_MESSAGE);
       return;
     }
     // Only a move to another month has to land in the present or future, so a contest
@@ -329,6 +356,10 @@ exports.delete = async ({ params: { id } }, res) => {
     const contest = await getContestById(id);
     if (!contest) {
       res.status(404).send('Contest with that id not found');
+      return;
+    }
+    if (contest.yearEnd) {
+      res.status(400).send(YEAR_END_MESSAGE);
       return;
     }
     if (!(await isUpcoming(contest))) {
