@@ -1,5 +1,5 @@
 /**
- * Get all current and upcoming contests (moderator only)
+ * Get every contest a moderator can still manage: current, upcoming, or awaiting certification
  */
 
 import useSwrAuth from './useSwrAuth';

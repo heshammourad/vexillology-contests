@@ -57,7 +57,10 @@ export const putDataWithResponse = async (path, newData, authToken) => {
 
 // Like deleteData, but returns the raw axios response and lets errors propagate to the
 // caller, so callers that need the server's error message/status can read it.
-export const deleteDataWithResponse = async (path, authToken) => {
-  const response = await instance.delete(path, generateConfig(authToken));
+export const deleteDataWithResponse = async (path, data, authToken) => {
+  const response = await instance.delete(path, {
+    ...generateConfig(authToken),
+    data,
+  });
   return response;
 };

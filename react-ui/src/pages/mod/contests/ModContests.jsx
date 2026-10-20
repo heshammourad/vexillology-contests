@@ -4,10 +4,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
@@ -20,126 +16,66 @@ import Typography from '@mui/material/Typography';
 import format from 'date-fns/format';
 import isFuture from 'date-fns/isFuture';
 import parseISO from 'date-fns/parseISO';
-import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 
-import useAuthState from '../../../common/useAuthState';
-import { PrimaryButton, ProtectedRoute } from '../../../components';
+import { ProtectedRoute } from '../../../components';
 import { deleteDataWithResponse } from '../../../data/api';
 import useSwrModContests from '../../../data/useSwrModContests';
+import useSwrMutation from '../../../data/useSwrMutation';
 
-// parseISO (unlike `new Date()`) parses a date-only "YYYY-MM-DD" string as local midnight
-// rather than UTC midnight, so this doesn't roll the 1st of the month back a day in
-// negative-offset timezones.
+import ConfirmDialog from './ConfirmDialog';
+
+const LIST_PATH = '/mod/contests';
+
+// parseISO (unlike `new Date()`) reads a date-only "YYYY-MM-DD" string as local midnight
+// rather than UTC midnight, so the 1st doesn't roll back a day west of UTC.
 const formatMonthYear = (date) => format(parseISO(date), 'MMM yyyy');
 
-// A contest is "upcoming" while its submission window hasn't opened yet - the same
-// condition the server uses to allow renaming/deleting it.
-const isUpcoming = ({ submissionStart }) => {
-  if (!submissionStart) {
-    return false;
-  }
-  return isFuture(new Date(submissionStart));
-};
+const isFutureTimestamp = (timestamp) => !!timestamp && isFuture(new Date(timestamp));
 
 const getStatus = ({ submissionStart, submissionEnd, voteEnd }) => {
-  if (submissionStart && isFuture(new Date(submissionStart))) {
+  if (isFutureTimestamp(submissionStart)) {
     return 'Upcoming';
   }
-  if (submissionEnd && isFuture(new Date(submissionEnd))) {
+  if (isFutureTimestamp(submissionEnd)) {
     return 'Submissions Open';
   }
-  if (voteEnd && isFuture(new Date(voteEnd))) {
+  if (isFutureTimestamp(voteEnd)) {
     return 'Voting';
   }
   return 'Awaiting Certification';
 };
 
-function DeleteContestDialog({
-  contest, deleting, error, onCancel, onConfirm,
-}) {
-  return (
-    <Dialog open={!!contest} onClose={onCancel}>
-      <DialogTitle>Delete this contest?</DialogTitle>
-      <DialogContent>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-        <Typography variant="body2">
-          This will permanently delete &quot;
-          {contest?.name}
-          &quot;. This cannot be undone.
-        </Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onCancel} disabled={deleting}>
-          Cancel
-        </Button>
-        <Button
-          onClick={onConfirm}
-          variant="contained"
-          color="error"
-          disabled={deleting}
-        >
-          {deleting ? 'Deleting…' : 'Delete'}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-}
-
-DeleteContestDialog.propTypes = {
-  contest: PropTypes.shape({
-    id: PropTypes.string,
-    name: PropTypes.string,
-  }),
-  deleting: PropTypes.bool.isRequired,
-  error: PropTypes.string,
-  onCancel: PropTypes.func.isRequired,
-  onConfirm: PropTypes.func.isRequired,
-};
-
-DeleteContestDialog.defaultProps = {
-  contest: null,
-  error: null,
-};
-
+/**
+ * Lists the contests a moderator can still manage, with links to add and edit them.
+ */
 function ModContests() {
-  const [{ authTokens }] = useAuthState();
-  const { data, isLoading, mutate } = useSwrModContests();
+  const { data, isLoading } = useSwrModContests();
   const contests = data.contests || [];
 
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [deleting, setDeleting] = useState(false);
+  const [contestToDelete, setContestToDelete] = useState(null);
   const [deleteError, setDeleteError] = useState(null);
+  const { isMutating: isDeleting, trigger: triggerDelete } = useSwrMutation(
+    LIST_PATH,
+    deleteDataWithResponse,
+    contestToDelete && `${LIST_PATH}/${contestToDelete.id}`,
+  );
 
-  const handleCancelDelete = () => {
-    if (deleting) {
-      return;
-    }
-    setDeleteTarget(null);
+  const closeDeleteDialog = () => {
+    setContestToDelete(null);
     setDeleteError(null);
   };
 
-  const handleConfirmDelete = async () => {
-    setDeleting(true);
+  const deleteContest = async () => {
     setDeleteError(null);
     try {
-      await deleteDataWithResponse(
-        `/mod/contests/${deleteTarget.id}`,
-        authTokens,
-      );
-      setDeleteTarget(null);
-      mutate();
+      await triggerDelete();
+      closeDeleteDialog();
     } catch (err) {
       setDeleteError(
         err?.response?.data || err?.message || 'Failed to delete contest.',
       );
-    } finally {
-      setDeleting(false);
     }
   };
 
@@ -157,13 +93,14 @@ function ModContests() {
           <Typography component="h1" variant="h5">
             Contests
           </Typography>
-          <PrimaryButton
+          <Button
             component={RouterLink}
-            to="/mod/contests/new"
+            to={`${LIST_PATH}/new`}
+            variant="contained"
             startIcon={<AddIcon />}
           >
             Add Contest
-          </PrimaryButton>
+          </Button>
         </Box>
 
         {!isLoading && !contests.length && (
@@ -192,15 +129,16 @@ function ModContests() {
                     <TableCell align="right">
                       <IconButton
                         component={RouterLink}
-                        to={`/mod/contests/${contest.id}/edit`}
+                        to={`${LIST_PATH}/${contest.id}/edit`}
                         aria-label={`Edit ${contest.name}`}
                         size="small"
                       >
                         <EditIcon fontSize="small" />
                       </IconButton>
-                      {isUpcoming(contest) && (
+                      {/* The server also refuses once the contest has entries. */}
+                      {isFutureTimestamp(contest.submissionStart) && (
                         <IconButton
-                          onClick={() => setDeleteTarget(contest)}
+                          onClick={() => setContestToDelete(contest)}
                           aria-label={`Delete ${contest.name}`}
                           color="error"
                           size="small"
@@ -217,13 +155,24 @@ function ModContests() {
         )}
       </Box>
 
-      <DeleteContestDialog
-        contest={deleteTarget}
-        deleting={deleting}
-        error={deleteError}
-        onCancel={handleCancelDelete}
-        onConfirm={handleConfirmDelete}
-      />
+      <ConfirmDialog
+        open={!!contestToDelete}
+        title="Delete this contest?"
+        confirmLabel={isDeleting ? 'Deleting…' : 'Delete'}
+        confirmColor="error"
+        busy={isDeleting}
+        onCancel={closeDeleteDialog}
+        onConfirm={deleteContest}
+      >
+        {deleteError && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {deleteError}
+          </Alert>
+        )}
+        <Typography variant="body2">
+          {`This will permanently delete "${contestToDelete?.name}". This cannot be undone.`}
+        </Typography>
+      </ConfirmDialog>
     </ProtectedRoute>
   );
 }
