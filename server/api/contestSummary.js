@@ -1,7 +1,7 @@
 const { isFuture } = require('date-fns');
 
 const db = require('../db');
-const { getCurrentContest, getCategories } = require('../db/queries');
+const { getCategories, getSummaryContest } = require('../db/queries');
 const { createLogger } = require('../logger');
 const { generateImagePath } = require('../util');
 
@@ -10,7 +10,7 @@ const logger = createLogger('API/CONTEST_SUMMARY');
 exports.get = async (req, res) => {
   logger.debug('Getting /contestSummary');
   try {
-    const contest = await getCurrentContest();
+    const contest = await getSummaryContest();
     if (!contest) {
       res.status(404).send();
       return;
@@ -20,7 +20,8 @@ exports.get = async (req, res) => {
     const categories = await getCategories(id);
 
     const contestResults = await db.select(
-      'SELECT * FROM get_contest_results()',
+      'SELECT * FROM get_contest_results($1)',
+      [id],
     );
     if (!contestResults) {
       res.status(404).send();

@@ -39,7 +39,6 @@ const OUTPUT = path.join(__dirname, 'schema.sql');
 // schema.name. A name that doesn't match exactly stays withheld.
 const PUBLISHED_DEFINITIONS = new Set(
   [
-    'add_contest',
     'annual_standings',
     'backup_data',
     'best_of_year',

@@ -2,6 +2,7 @@
  * @exports getCategories
  * @exports getCurrentContest
  * @exports getCurrentContestSubmissions
+ * @exports getSummaryContest
  * @exports getVoteDates
  * @exports refreshContestsSummaryView
  */
@@ -37,6 +38,23 @@ exports.getCurrentContest = async () => {
      WHERE submission_start < now()
      ${ALLOW_DEV_CONTEST ? "AND id = 'dev'" : ''}
      ORDER BY submission_start DESC
+     LIMIT 1`,
+  );
+  return result;
+};
+
+/**
+ * The contest the moderator summary shows: the latest by date, the same one
+ * get_contest_results() picks with no argument. Unlike getCurrentContest, it
+ * includes contests with no submission window (Best of Year).
+ */
+exports.getSummaryContest = async () => {
+  const [result] = await db.select(
+    `SELECT id, results_certified, vote_end
+     FROM contests
+     WHERE date < now()
+     ${ALLOW_DEV_CONTEST ? "AND id = 'dev'" : ''}
+     ORDER BY date DESC
      LIMIT 1`,
   );
   return result;

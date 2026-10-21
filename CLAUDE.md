@@ -122,11 +122,10 @@ Moderation logic follows the rules in the paragraph above. A function that alrea
 **Key functions (called from `server/db/`):**
 
 - `has_user_permission(username, permission)` — used by `requireRole` middleware to check a user's role against `user_roles`.
-- `add_contest(...)` — creates a new contest + categories. The moderator Manage Contests page that will use it (`react-ui/src/pages/mod/contests/`, `server/api/modContests.js`) is still on the `add_contest` branch, not master (#198).
-- `get_contest_results(...)` — full per-entry results (rank, votes, average, per-rating-value counts) for the moderator contest summary.
+- `get_contest_results(...)` — full per-entry results (rank, votes, average, per-rating-value counts) for the moderator contest summary, which passes it the contest from `getSummaryContest()` (latest `date`), not `getCurrentContest()` (latest `submission_start`, used by `/submission` and Review Submissions).
 - `copy_contest(id)` — copies one contest + its categories from the prod schema into `vexillology_contests_staging`, for testing a real contest's data in staging.
 - `backup_data(dest_schema, truncate)` — generic cross-schema sync: copies `user_roles`, `users`, `background_colors`, `contests`, `contest_categories`, `entries`, `contest_entries`, `votes` from the current schema into `dest_schema` (upserting on primary key), then refreshes every materialized view in `dest_schema`. This is the mechanism behind staging's periodic refresh from prod.
-- `create_best_of_year_contest(year)` — builds the annual "Best of \<year\>" contest by calling `add_contest` with a fixed December schedule and seeding its entries from the `best_of_year` view.
+- `create_best_of_year_contest(year)` — builds the annual "Best of \<year\>" contest with fixed December vote dates and no submission window, and seeds its entries from the `best_of_year` view.
 - `update_vote_timestamp()` — trigger function that stamps `votes.last_modified` on write.
 
 ## Backend architecture (`server/`)
