@@ -61,18 +61,37 @@ jobs:
             PR NUMBER: ${{ inputs.pr_number || github.event.pull_request.number }}
 
             The PR branch is already checked out in the current working directory.
-            Review only the diff introduced by this PR (`gh pr diff`), not the
-            pre-existing codebase.
+            Review the diff introduced by this PR (`gh pr diff`). Flag only what
+            the PR adds or changes, not pre-existing code, but read the rest of
+            the codebase (Read, Grep, Glob) wherever it helps judge the diff,
+            for instance to find an existing helper or component the PR
+            duplicates.
 
             Focus on:
             - Correctness bugs: logic errors, edge cases, and failure scenarios
-              a reviewer would actually flag, not stylistic nitpicks.
+              a reviewer would actually flag.
+            - Conformance to the "Code standards" section of CLAUDE.md: one
+              component per file, date-fns over hand-rolled date code, DRY
+              (including reuse of existing helpers), names that say what the
+              thing is, and no new `eslint-disable`. These are the repo owner's
+              standing review rules, so flag every violation in the diff, even
+              where it looks like a matter of style. Cite the rule's number.
             - Reuse, simplification, and efficiency: unnecessary complexity,
               duplicated logic, or code that could be simpler without changing
               behavior.
+            - PR size: count changed lines (additions + deletions) with
+              `gh pr view <PR NUMBER> --json files`, leaving out lockfiles
+              (`package-lock.json`) and `server/db/schema.sql`. Over about 400,
+              say so at the top of the comment, and suggest how to split the PR
+              into a stack of smaller PRs (typically backend first, frontend
+              second), naming which files go in which PR. If its base branch
+              isn't `master`, it's already part of a stack: judge only its
+              own diff.
 
-            Skip generic praise and skip suggestions that would require
-            guessing about behavior or process not evidenced in this repo.
+            Skip formatting that Prettier and ESLint already handle, and skip
+            generic praise. Skip suggestions that would require guessing about
+            behavior or process that neither the code nor CLAUDE.md describes.
+            CLAUDE.md's Code standards count as described.
             If there is nothing worth flagging, post a short comment saying so
             rather than inventing issues.
 
@@ -81,4 +100,4 @@ jobs:
             GitHub review, and do not leave inline comments.
 
           claude_args: |
-            --allowedTools "Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
+            --allowedTools "Read,Grep,Glob,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
