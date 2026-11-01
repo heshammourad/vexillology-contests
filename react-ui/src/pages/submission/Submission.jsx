@@ -105,7 +105,7 @@ function Submission() {
                 <SubmissionTabs {...{ handleTabChange, selectedTab }} />
 
                 <TabPanel currentTab={selectedTab} index={0}>
-                  <SubmissionPrompt {...{ contestId, prompt }} />
+                  <SubmissionPrompt prompt={prompt} />
                 </TabPanel>
                 <TabPanel currentTab={selectedTab} index={1}>
                   <SubmissionForm
