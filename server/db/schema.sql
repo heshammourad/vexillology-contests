@@ -141,7 +141,7 @@ CREATE TABLE "vexillology_contests"."votes" (
 
 -- Foreign keys
 
-ALTER TABLE "vexillology_contests"."contest_categories" ADD CONSTRAINT "contest_categories_fk" FOREIGN KEY (contest_id) REFERENCES vexillology_contests.contests(id);
+ALTER TABLE "vexillology_contests"."contest_categories" ADD CONSTRAINT "contest_categories_fk" FOREIGN KEY (contest_id) REFERENCES vexillology_contests.contests(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 ALTER TABLE "vexillology_contests"."contest_entries" ADD CONSTRAINT "contest_entries_fk" FOREIGN KEY (contest_id, category) REFERENCES vexillology_contests.contest_categories(contest_id, category) ON UPDATE CASCADE ON DELETE SET NULL;
 

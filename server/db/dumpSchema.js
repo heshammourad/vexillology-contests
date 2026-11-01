@@ -22,7 +22,11 @@
  *   { "tables": ["schema.table"], "columns": ["schema.table.column"], "objects": ["schema.name"] }
  * "objects" are functions or views to drop entirely, rather than reduce to a signature.
  *
- * Usage (PowerShell):
+ * Usage: `npm run dump-schema`, which reads DATABASE_URL (and DATABASE_SSL) from the root .env
+ * (through node's --env-file-if-exists, so it needs Node 22.9 or later).
+ * Any URL for the shared instance works, since the schemas are dumped by name and
+ * DATABASE_SCHEMA is ignored. A variable already set in the shell wins over .env, e.g. in
+ * PowerShell:
  *   $env:DATABASE_URL = heroku config:get DATABASE_URL -a vexillology-contests
  *   npm run dump-schema
  */
@@ -97,7 +101,7 @@ const publishedInFull = (schema, name, definition) => {
 const { DATABASE_URL } = process.env;
 if (!DATABASE_URL) {
   process.stderr.write(
-    'DATABASE_URL is not set; see the usage note at the top of this file.\n',
+    'DATABASE_URL is not set in .env or the shell; see the usage note at the top of this file.\n',
   );
   process.exit(1);
 }
