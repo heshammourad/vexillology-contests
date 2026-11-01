@@ -82,8 +82,9 @@ function ContestForm() {
 
   // SWR first returns any cached copy of the contest, then refetches it. Wait for the fresh
   // one, so the form can't start from (and save back) values from before an earlier save.
+  // A failed refetch leaves the cached copy in place, so show the error instead of loading it.
   useEffect(() => {
-    if (loaded || contest.id !== id || isRefreshingContest) {
+    if (loaded || loadError || contest.id !== id || isRefreshingContest) {
       return;
     }
     setValue('name', contest.name);
@@ -94,7 +95,7 @@ function ContestForm() {
     });
     setCategories(contest.categories);
     setLoadedId(id);
-  }, [contest, id, isRefreshingContest, loaded]);
+  }, [contest, id, isRefreshingContest, loadError, loaded]);
 
   useEffect(() => {
     if (!applyDefaultSchedule || !monthSchedule.submissionStart) {
@@ -253,8 +254,8 @@ function ContestForm() {
               <Typography variant="h6">Schedule</Typography>
               <Typography variant="caption" color="text.secondary">
                 A new month fills in the standard schedule (midnight
-                America/New_York). Adjust it if this contest needs a different
-                one.
+                America/New_York). Times are shown in your local time zone.
+                Adjust them if this contest needs a different schedule.
               </Typography>
             </Box>
             <ScheduleFields
