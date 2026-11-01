@@ -22,7 +22,8 @@
  *   { "tables": ["schema.table"], "columns": ["schema.table.column"], "objects": ["schema.name"] }
  * "objects" are functions or views to drop entirely, rather than reduce to a signature.
  *
- * Usage: `npm run dump-schema`, which reads DATABASE_URL (and DATABASE_SSL) from the root .env.
+ * Usage: `npm run dump-schema`, which reads DATABASE_URL (and DATABASE_SSL) from the root .env
+ * (through node's --env-file-if-exists, so it needs Node 22.9 or later).
  * Any URL for the shared instance works, since the schemas are dumped by name and
  * DATABASE_SCHEMA is ignored. A variable already set in the shell wins over .env, e.g. in
  * PowerShell:
