@@ -42,8 +42,8 @@ const normalizeCategories = (categories) => [
 ];
 
 /**
- * Validates the parts of a create/edit body that don't need the database. Timestamps that
- * aren't provided are skipped, so callers fill in any defaults first.
+ * Validates the parts of a create/edit body that don't need the database. All four
+ * timestamps are required, so callers fill in any defaults first (post does).
  *
  * @returns {string|null} An error message, or null if the body is valid.
  */
@@ -76,6 +76,10 @@ const getBodyError = ({
     )
   ) {
     return 'Categories must be a list of names.';
+  }
+  // The checks below and getOtherContestsError would pass silently on a missing timestamp.
+  if (![submissionStart, submissionEnd, voteStart, voteEnd].every(Boolean)) {
+    return 'Submission and vote start and end times are required.';
   }
   return (
     getScheduleOrderError({
