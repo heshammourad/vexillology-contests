@@ -8,6 +8,7 @@ export { default as AppHelmet } from './AppHelmet';
 export { default as RouterLinkIconButton } from './RouterLinkIconButton';
 export { default as Average } from './Average';
 export { default as CategoryLabel } from './CategoryLabel';
+export { default as ContestRulesLink } from './ContestRulesLink';
 export { default as Countdown } from './Countdown';
 export { default as CustomIconButton } from './CustomIconButton';
 export { default as CustomRadio } from './CustomRadio';

@@ -1,3 +1,4 @@
+import EventNoteIcon from '@mui/icons-material/EventNote';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import GradingIcon from '@mui/icons-material/Grading';
 import InsightsIcon from '@mui/icons-material/Insights';
@@ -12,6 +13,10 @@ const MODERATOR_MENU_ITEMS = {
   review: {
     Icon: FactCheckIcon,
     text: 'Review Submissions',
+  },
+  contests: {
+    Icon: EventNoteIcon,
+    text: 'Contests',
   },
   analyze: {
     Icon: InsightsIcon,
