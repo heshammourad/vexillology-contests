@@ -25,6 +25,7 @@ const hallOfFame = require('./api/hallOfFame');
 const images = require('./api/images');
 const init = require('./api/init');
 const manageContest = require('./api/manageContest');
+const modContests = require('./api/modContests');
 const reviewSubmissions = require('./api/reviewSubmissions');
 const revokeToken = require('./api/revokeToken');
 const staticContent = require('./api/staticContent');
@@ -128,6 +129,27 @@ if (!IS_DEV && cluster.isMaster) {
 
   modRouter.all('*', requireModerator);
   modRouter.route('/analyzeVotes/:id').get(analyzeVotes.get);
+  modRouter
+    .route('/contests')
+    .get(modContests.getUncertified)
+    .post(checkRequiredFields('name', 'date', 'prompt'), modContests.post);
+  modRouter
+    .route('/contests/:id')
+    .get(modContests.getOne)
+    .put(
+      checkRequiredFields(
+        'name',
+        'date',
+        'prompt',
+        'submissionStart',
+        'submissionEnd',
+        'voteStart',
+        'voteEnd',
+      ),
+      modContests.put,
+    )
+    .delete(modContests.delete);
+  modRouter.route('/contestSchedule').get(modContests.getMonthSchedule);
   modRouter.route('/contestSummary').get(contestSummary.get);
   modRouter
     .route('/manageContest')
