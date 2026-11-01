@@ -122,7 +122,7 @@ Moderation logic follows the rules in the paragraph above. A function that alrea
 **Key functions (called from `server/db/`):**
 
 - `has_user_permission(username, permission)` — used by `requireRole` middleware to check a user's role against `user_roles`.
-- `add_contest(...)` — creates a new contest + categories. Only `create_best_of_year_contest` still calls it: the moderator Manage Contests page (`server/api/modContests.js`) inserts in code, in a transaction (`addContest` in `server/db/queries.js`).
+- `add_contest(...)` — creates a new contest + categories. Only `create_best_of_year_contest` still calls it: the moderator Manage Contests page (`server/api/modContests/`) inserts in code, in a transaction (`addContest` in `server/api/modContests/db.js`).
 - `get_contest_results(...)` — full per-entry results (rank, votes, average, per-rating-value counts) for the moderator contest summary.
 - `copy_contest(id)` — copies one contest + its categories from the prod schema into `vexillology_contests_staging`, for testing a real contest's data in staging.
 - `backup_data(dest_schema, truncate)` — generic cross-schema sync: copies `user_roles`, `users`, `background_colors`, `contests`, `contest_categories`, `entries`, `contest_entries`, `votes` from the current schema into `dest_schema` (upserting on primary key), then refreshes every materialized view in `dest_schema`. This is the mechanism behind staging's periodic refresh from prod.
