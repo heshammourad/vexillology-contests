@@ -43,6 +43,17 @@ There is no top-level test command for the server package. The only test is reac
 - Direct commits to `master` are blocked by a Husky pre-commit hook; work on a feature branch and go through a PR.
 - Pre-commit runs `lint-staged`: `prettier-eslint --write` + `eslint --fix` on staged `.js`/`.jsx`, `prettier --write` on everything else.
 
+## Code standards
+
+Hesham's review rules (from PR #569), for every change, whoever writes it. ESLint doesn't enforce them, so `claude-pr-review.yml` and Autopilot check them instead. Existing code that breaks them stays until the work that touches it fixes it, and the Next.js migration is when they become lint rules (`react/no-multi-comp`, `max-lines`), since several files fail them today.
+
+1. **One React component per file**, unless there's a good reason. A sub-component used by one feature goes in that feature's directory; a shared one goes in `react-ui/src/components/`.
+2. **date-fns over hand-rolled date code**, on client and server: no manual `Date` arithmetic, string padding or formatting where a date-fns function does it more readably. Both packages already depend on `date-fns`. Add `date-fns-tz` when a change needs time zones, rather than converting by hand.
+3. **DRY.** Near-identical fields become one component, near-identical handlers one function with a parameter, add and edit one form, and repeated UI one shared component. Look for an existing helper before writing one: `react-ui/src/common/useFormState.jsx`, the MUI theme, the `data/useSwr*` hooks, `server/db/` helpers. Duplicate only for a stated reason, such as the copies being expected to diverge.
+4. **Small PRs.** When one gets large (roughly 400 changed lines, not counting lockfiles or `server/db/schema.sql`), split it into a GitHub stack of PRs, each based on the one before, typically backend first and frontend second, unless the split would leave a PR broken on its own.
+5. **Names say what the thing is.** A `now` parameter is always the current time, and a function that returns only uncertified contests isn't `getAllContests`. When a change alters what something does, rename it in the same change.
+6. **No new `eslint-disable` comments.** Fix the code instead. If a disable is unavoidable, make it line-level with a comment saying why. Don't remove existing disables before the Next.js migration.
+
 ## Environment configuration
 
 Two layers of config:
