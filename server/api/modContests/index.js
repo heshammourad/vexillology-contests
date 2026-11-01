@@ -8,11 +8,13 @@ const {
   getMonthRangeError,
   getPastMonthError,
   getScheduleOrderError,
-} = require('../contestSchedule');
+} = require('../../contestSchedule');
+const { getCategories } = require('../../db/queries');
+const { createLogger } = require('../../logger');
+
 const {
   addContest,
   deleteContest,
-  getCategories,
   getContestById,
   getContestForMonth,
   getNextContest,
@@ -21,8 +23,7 @@ const {
   getUsedCategories,
   hasContestEntries,
   updateContest,
-} = require('../db/queries');
-const { createLogger } = require('../logger');
+} = require('./db');
 
 const logger = createLogger('API/MOD_CONTESTS');
 
