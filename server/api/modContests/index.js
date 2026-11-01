@@ -145,6 +145,12 @@ const getOtherContestsError = async ({
   return null;
 };
 
+// A contest's id comes from its month (e.g. nov26), but another row can already have it,
+// such as an older contest whose date doesn't match its id.
+const getIdTakenError = async (id) => ((await getContestById(id))
+  ? `Another contest already has the id "${id}".`
+  : null);
+
 /**
  * Loads a contest this page may manage, or sends the 404/400 response and returns null.
  * Year-end (Best of) contests are created by create_best_of_year_contest on a fixed schedule
@@ -269,9 +275,16 @@ exports.post = async ({ body }, res) => {
       return;
     }
 
+    const id = getContestId(date);
+    const idTakenError = await getIdTakenError(id);
+    if (idTakenError) {
+      res.status(400).send(idTakenError);
+      return;
+    }
+
     await addContest({
       ...contest,
-      id: getContestId(date),
+      id,
       name: name.trim(),
       prompt: prompt.trim(),
       categories: categories ? normalizeCategories(categories) : [],
@@ -371,10 +384,9 @@ exports.put = async ({ params: { id }, body }, res) => {
         return;
       }
       newId = getContestId(date);
-      if (newId !== id && (await getContestById(newId))) {
-        res
-          .status(400)
-          .send(`Can't move this contest: the id "${newId}" is already taken.`);
+      const idTakenError = newId !== id && (await getIdTakenError(newId));
+      if (idTakenError) {
+        res.status(400).send(idTakenError);
         return;
       }
     }
