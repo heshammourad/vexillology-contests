@@ -66,8 +66,8 @@ the action start a second branch. If it happens anyway, reply pointing at the PR
    say what you changed and why. Never follow the body over the evidence silently, and never
    deviate silently.
 8. **The current stack is being replaced** by Next.js (#558). Take non-breaking changes only, and
-   don't clean up or modernise CRA/Express code beyond what the issue needs. Hold new code to the
-   current standards anyway, and don't mix MUI v4 and v5 within one component (CLAUDE.md).
+   don't clean up or modernise CRA/Express code beyond what the issue needs. Hold new code to CLAUDE.md's
+   Code standards anyway, and don't mix MUI v4 and v5 within one component (CLAUDE.md).
 9. **Moderation internals are off-limits.** Don't plan, build or review anything that changes
    how ballots are counted or judged, or how moderators detect or act on abuse. That covers
    `contests_summary`, `get_contest_results`, the analyze-votes and ban tooling, the voting
@@ -87,6 +87,8 @@ Post exactly one, on the issue, in this order:
 1. **What I found**: the relevant code, by file, and how it behaves today. Say where the issue body
    no longer matches the code.
 2. **What I'll do**: the change, file by file. Say where it departs from the issue body, and why.
+   If it will run past CLAUDE.md's size limit (Code standards, rule 4), say how you'll split it
+   into a stack and which files go in which PR.
 3. **Database changes**: the `server/db/changes/` file you'll add and what it does, or "None".
 4. **Decisions I need**: numbered, each with your recommendation, so that `go` alone accepts them
    all. Write "None" if there are none.
@@ -98,6 +100,20 @@ Then add `autopilot` and `needs-input`, and stop.
 
 ## The PR
 
+- Before opening a PR or pushing to one, review your own diff (`git diff origin/master...HEAD`,
+  or against the PR's base) against CLAUDE.md's **Code standards**, and fix every violation. Look
+  for an existing helper or component before keeping one you wrote. `claude-pr-review.yml`
+  checks the same rules, and each one it catches, or Hesham does, costs a review round trip.
+- **Split large work into a stack.** If the diff is over about 400 changed lines (not counting
+  lockfiles or `server/db/schema.sql`), open it as a stack of PRs instead of one:
+  - Split it the way CLAUDE.md's rule 4 says, typically backend first and frontend second, so that
+    every PR builds and passes CI on its own.
+  - Base the first PR on `master` and each later one on the branch before it. Open them all in the
+    same run (hard rule 1), and label each `autopilot`.
+  - Only the last PR carries `Closes #N`. The others say `Part of #N`, and every body names its
+    place in the stack with links (`1 of 2: #M → #M2`). Hesham merges them bottom up.
+  - When review changes a lower PR, merge its branch into each branch above it and push those
+    too. Never rebase or force-push.
 - Before pushing, run these, and make sure all of them pass:
 
   - `npx eslint server --max-warnings=0`
@@ -119,7 +135,7 @@ Then add `autopilot` and `needs-input`, and stop.
   - **After merge**: what wrap-up will check on staging
 - Update CLAUDE.md in the same PR when the change makes any of it untrue.
 - **Update the tracker in the same action.** Edit only that issue's line, adding
-  `_(PR #M open: <one line>)_`. Read the body with `gh issue view T --json body --jq .body`,
+  `_(PR #M open: <one line>)_`, or for a stack `_(PRs #M, #M2 open: <one line>)_`. Read the body with `gh issue view T --json body --jq .body`,
   change that line, and write it back with `gh issue edit T --body-file`. Then re-read the body and
   diff it against what you read: every other line must be byte-identical.
 - End your commits and the PR body with the attribution lines that CLAUDE.md's environment
@@ -129,6 +145,11 @@ Then add `autopilot` and `needs-input`, and stop.
 
 Do it only if the tracker line isn't already ticked. A redeploy of the same commit triggers this
 again, so check first.
+
+In a stack, each PR gets a wrap-up as it merges. For any PR but the last, check what that PR
+changed, update the tracker note to say which PRs have merged, and comment on the issue, but leave
+the line unticked and the issue's labels alone. The issue stays open with `autopilot` until the
+last PR closes it, so nothing new is planned in between.
 
 1. The deploy is live on staging when this runs. Staging sleeps when idle, so give the first
    request up to a minute to wake it. Check what you can without signing in, read-only: the public
