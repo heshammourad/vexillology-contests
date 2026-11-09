@@ -36,7 +36,7 @@ There is no top-level test command for the server package. The only test is reac
 
 ### CI
 
-`.github/workflows/ci.yml` runs on every PR and on `master`: `npx eslint server --max-warnings=0`, `npm run lint -- --max-warnings=0` in `react-ui/`, and `CI=false npm run build` in `react-ui/`. Run the same before pushing. `CI=false` matches Heroku's build; with `CI=true`, CRA turns the expected warning from `env.js`'s optional `require('./env.personal')` into an error. `claude-pr-review.yml` also posts a Claude review on non-bot PRs.
+`.github/workflows/ci.yml` runs on every PR and on `master`: `npx eslint server --max-warnings=0`, `npm run lint -- --max-warnings=0` in `react-ui/`, and `CI=false npm run build` in `react-ui/`. Run the same before pushing. `CI=false` matches Heroku's build; with `CI=true`, CRA turns the expected warning from `env.js`'s optional `require('./env.personal')` into an error. `ci.yml`'s `check` job is a required status check on `master`. `claude-pr-review.yml` also posts a Claude review on every PR except other bots' (Dependabot's); Autopilot's PRs, opened by `claude[bot]`, get one too.
 
 ### Git workflow
 

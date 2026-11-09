@@ -24,11 +24,13 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
       # Dependabot and other bots open PRs with `github.event.pull_request.user.type == 'Bot'`.
-      # Warn and skip the review for those instead of running (and failing) it.
+      # Warn and skip the review for those instead of running (and failing) it. The Claude GitHub
+      # App is the exception: Autopilot's PRs are opened by `claude[bot]`, and they are the PRs a
+      # review matters most for, since no person wrote them.
       - name: Check PR author
         id: author
         env:
-          IS_BOT: ${{ github.event_name == 'pull_request' && github.event.pull_request.user.type == 'Bot' }}
+          IS_BOT: ${{ github.event_name == 'pull_request' && github.event.pull_request.user.type == 'Bot' && github.event.pull_request.user.login != 'claude[bot]' }}
           AUTHOR: ${{ github.event.pull_request.user.login }}
         run: |
           if [ "$IS_BOT" = "true" ]; then
@@ -55,6 +57,10 @@ jobs:
         if: steps.author.outputs.skip != 'true'
         uses: anthropics/claude-code-action@v1
         with:
+          # The action refuses bot actors by default. Its pushes to an Autopilot PR make
+          # `claude[bot]` the actor of the `synchronize` run, so allow that one App by name (never
+          # '*': the repo is public). Fork PRs are already excluded by the job's `if`.
+          allowed_bots: claude
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
             REPO: ${{ github.repository }}
